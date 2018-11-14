@@ -21,7 +21,7 @@ public class JournalforingConsumer {
 
     public Optional<JournalforingDto> hentJournalforing(Integer id) {
         RestTemplate restTemplate = RestTemplateFactory.create(baseUrl);
-        ResponseEntity<JournalforingDto> journalforingDtoResponseEntity = restTemplate.getForEntity(baseUrl + "/journalpost/" + id, JournalforingDto.class);
+        ResponseEntity<JournalforingDto> journalforingDtoResponseEntity = restTemplate.getForEntity("/rest/journalfoerinngaaende/v1/journalposter/" + id, JournalforingDto.class);
         HttpStatus httpStatus = journalforingDtoResponseEntity.getStatusCode();
 
         LOGGER.info("JournalforingDto med id={} har http status {} - {}", id, httpStatus, httpStatus.getReasonPhrase());
