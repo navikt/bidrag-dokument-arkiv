@@ -62,7 +62,7 @@ import static org.mockito.Mockito.when;
     @DisplayName("skal hente Journalpost når den eksisterer")
     @Test void skalHenteJournalpostNarDenEksisterer() {
         when(restTemplateMock.getForEntity(eq("/rest/journalfoerinngaaende/v1/journalposter/1"), eq(JournalforingDto.class))).thenReturn(new ResponseEntity<>(
-                enJournalforingMedTilstand("MIDLERTIDIG"), HttpStatus.I_AM_A_TEAPOT
+                enJournalforingMedInnhold("MIDLERTIDIG"), HttpStatus.I_AM_A_TEAPOT
         ));
 
         ResponseEntity<JournalpostDto> responseEntity = testRestTemplate.getForEntity(initUrl() + "/journalpost/1", JournalpostDto.class);
@@ -72,13 +72,13 @@ import static org.mockito.Mockito.when;
         assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
                 () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
                 () -> assertThat(response.getBody()).extracting(JournalpostDto::getHello).isEqualTo("hello from bidrag-dokument"),
-                () -> assertThat(response.getBody()).extracting(JournalpostDto::getJournaltilstand).isEqualTo("MIDLERTIDIG")
+                () -> assertThat(response.getBody()).extracting(JournalpostDto::getInnhold).isEqualTo("MIDLERTIDIG")
         ));
     }
 
-    private JournalforingDto enJournalforingMedTilstand(@SuppressWarnings("SameParameterValue") String journaltilstand) {
+    private JournalforingDto enJournalforingMedInnhold(@SuppressWarnings("SameParameterValue") String innhold) {
         JournalforingDto journalforingDto = new JournalforingDto();
-        journalforingDto.setJournalTilstand(journaltilstand);
+        journalforingDto.setInnhold(innhold);
 
         return journalforingDto;
     }

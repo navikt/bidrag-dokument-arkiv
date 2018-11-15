@@ -11,8 +11,8 @@ import java.time.LocalDate;
 
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 @DisplayName("JournalpostMapper")
 class JournalpostMapperTest {
@@ -56,7 +56,7 @@ class JournalpostMapperTest {
                 () -> assertThat(journalpostDto.getJournalfortDato()).as("journalfortDato").isEqualTo(journalforingDto.getDatoJournal()),
                 () -> assertThat(journalpostDto.getJournalpostId()).as("journalpostId").isEqualTo("JOARK-" + journalforingDto.getJournalpostId()),
                 () -> assertThat(journalpostDto.getMottattDato()).as("mottattDato").isEqualTo(journalforingDto.getDatoMottatt()),
-                () -> assertThat(journalpostDto.getSaksnummerGsak()).as("saksnummerGsak").isEqualTo(journalforingDto.getArkivSak().getId())
+                () -> assertThat(journalpostDto.getSaksnummer()).as("saksnummerGsak").isEqualTo("GSAK-" + journalforingDto.getArkivSak().getId())
         );
     }
 }

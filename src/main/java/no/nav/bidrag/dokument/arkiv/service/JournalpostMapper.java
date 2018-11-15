@@ -1,5 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
+import no.nav.bidrag.dokument.arkiv.dto.ArkivSakDto;
 import no.nav.bidrag.dokument.arkiv.dto.BrukerDto;
 import no.nav.bidrag.dokument.arkiv.dto.JoarkDokumentDto;
 import no.nav.bidrag.dokument.arkiv.dto.JournalforingDto;
@@ -17,7 +18,6 @@ public class JournalpostMapper {
         journalpostDto.setAvsenderNavn(journalforingDto.getAvsenderDto() != null ? journalforingDto.getAvsenderDto().getAvsender() : null);
         journalpostDto.setFagomrade(journalforingDto.getFagomrade());
         journalpostDto.setDokumentDato(journalforingDto.getDatoDokument());
-        journalpostDto.setJournaltilstand(journalforingDto.getJournalTilstand());
         journalpostDto.setDokumenter(journalforingDto.getDokumenter().stream().map(this::tilDokumentDto).collect(Collectors.toList()));
         journalpostDto.setGjelderBrukerId(journalforingDto.getBrukere().stream().map(BrukerDto::getBrukerId).collect(Collectors.toList()));
         journalpostDto.setInnhold(journalforingDto.getInnhold());
@@ -26,9 +26,13 @@ public class JournalpostMapper {
         journalpostDto.setJournalfortDato(journalforingDto.getDatoJournal());
         journalpostDto.setJournalpostId("JOARK-" + journalforingDto.getJournalpostId());
         journalpostDto.setMottattDato(journalforingDto.getDatoMottatt());
-        journalpostDto.setSaksnummerGsak(journalforingDto.getArkivSak() != null ? journalforingDto.getArkivSak().getId() : null);
+        journalpostDto.setSaksnummer(prefixMedGSAK(journalforingDto.getArkivSak()));
 
         return journalpostDto;
+    }
+
+    private String prefixMedGSAK(ArkivSakDto arkivSakDto) {
+        return arkivSakDto != null ? "GSAK-" + arkivSakDto.getId() : null;
     }
 
     private DokumentDto tilDokumentDto(JoarkDokumentDto joarkDokumentDto) {
