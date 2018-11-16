@@ -25,4 +25,11 @@ public class JournalpostController {
                 .map(journalpostDto -> new ResponseEntity<>(journalpostDto, HttpStatus.OK))
                 .orElse(new ResponseEntity<>(HttpStatus.NO_CONTENT));
     }
+
+    @GetMapping("/")
+    @ApiOperation("Welcome Home Page")
+    public String index(){
+        return "Welcome to Bidrag Dokument Arkiv: Microservice for integration with JOARK for bidrag-dokument.";
+    }
+
 }
