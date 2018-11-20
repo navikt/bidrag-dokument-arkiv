@@ -19,7 +19,7 @@ public class JournalpostController {
     }
 
     @GetMapping("/journalpost/{journalpostId}")
-    @ApiOperation("Finn journalpost for en id")
+    @ApiOperation("Hent journalpost for en id")
     public ResponseEntity<JournalpostDto> get(@PathVariable Integer journalpostId) {
         return journalpostService.hentJournalpost(journalpostId)
                 .map(journalpostDto -> new ResponseEntity<>(journalpostDto, HttpStatus.OK))
@@ -28,7 +28,7 @@ public class JournalpostController {
 
     @GetMapping("/")
     @ApiOperation("Welcome Home Page")
-    public String index(){
+    public String index() {
         return "Welcome to Bidrag Dokument Arkiv: Microservice for integration with JOARK for bidrag-dokument.";
     }
 
