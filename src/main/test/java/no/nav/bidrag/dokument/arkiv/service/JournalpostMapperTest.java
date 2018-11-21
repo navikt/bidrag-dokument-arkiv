@@ -1,9 +1,9 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
-import no.nav.bidrag.dokument.arkiv.dto.BrukerDto;
-import no.nav.bidrag.dokument.arkiv.dto.JournalforingDto;
 import no.nav.bidrag.dokument.dto.DokumentDto;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
+import no.nav.dok.tjenester.journalfoerinngaaende.Bruker;
+import no.nav.dok.tjenester.journalfoerinngaaende.GetJournalpostResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -19,44 +19,40 @@ class JournalpostMapperTest {
 
     private JournalpostMapper journalpostMapper = new JournalpostMapper();
 
-    @DisplayName("skal mappe fra JournalforingDto") @SuppressWarnings("ConstantConditions")
-    @Test void skalMappeFraJournalforingDto() {
-        JournalforingDto journalforingDto = new JournalforingBuilder()
+    @DisplayName("skal mappe fra GetJournalpostResponse")
+    @Test void skalMappeFraGetJournalpostResponse() {
+        GetJournalpostResponse getJournalpostResponse = new GetJournalpostResponseBuilder()
                 .withArkivSakId("10101")
+                .withArkivSakSystem("BID")
                 .withAvsender("U. A. N. Svarlig")
                 .withBruker("06127412345")
-                .withFagomrade("BID")
-                .withDatoDokument(LocalDate.now().minusDays(3))
-                .withDatoJournal(LocalDate.now().minusDays(1))
-                .withDatoMottatt(LocalDate.now().minusDays(2))
+                .withForsendelseMottatt(LocalDate.now())
                 .withDokumentId("101")
-                .withInnhold("...and know, something completely different...")
-                .withJournalforendeEnhet("JUnit")
-                .withJournalfortAvNavn("Dr. A. Cula")
-                .withJournalpostId(101)
+                .withTittel("...and know, something completely different...")
+                .withJournalfEnhet("JUnit")
                 .withDokumentTypeId("N")
                 .get();
 
-        JournalpostDto journalpostDto = journalpostMapper.fraJournalfoering(journalforingDto);
+        JournalpostDto journalpostDto = journalpostMapper.fra(getJournalpostResponse, 101);
         assertThat(journalpostDto).isNotNull();
 
         assertAll(
-                () -> assertThat(journalpostDto.getAvsenderNavn()).as("avsenderNavn").isEqualTo(journalforingDto.getAvsenderDto().getAvsender()),
-                () -> assertThat(journalpostDto.getFagomrade()).as("fagomrade").isEqualTo(journalforingDto.getFagomrade()),
-                () -> assertThat(journalpostDto.getDokumentDato()).as("dokumentdato").isEqualTo(journalforingDto.getDatoDokument()),
+                () -> assertThat(journalpostDto.getAvsenderNavn()).as("avsenderNavn").isEqualTo(getJournalpostResponse.getAvsender().getNavn()),
+                () -> assertThat(journalpostDto.getFagomrade()).as("fagomrade").isEqualTo(getJournalpostResponse.getArkivSak().getArkivSakSystem()),
+                () -> assertThat(journalpostDto.getDokumentDato()).as("dokumentdato").isNull(),
                 () -> assertThat(journalpostDto.getDokumenter()).extracting(DokumentDto::getDokumentreferanse).as("dokumentreferanse")
-                        .isEqualTo(singletonList(journalforingDto.getDokumenter().get(0).getDokumentId())),
+                        .isEqualTo(singletonList(getJournalpostResponse.getDokumentListe().get(0).getDokumentId())),
                 () -> assertThat(journalpostDto.getDokumenter()).extracting(DokumentDto::getDokumentType).as("dokumentType")
-                        .isEqualTo(singletonList(journalforingDto.getDokumenter().get(0).getDokumentTypeId())),
+                        .isEqualTo(singletonList(getJournalpostResponse.getDokumentListe().get(0).getDokumentTypeId())),
                 () -> assertThat(journalpostDto.getGjelderBrukerId()).as("gjelderBrukerId")
-                        .isEqualTo(journalforingDto.getBrukere().stream().map(BrukerDto::getBrukerId).collect(toList())),
-                () -> assertThat(journalpostDto.getInnhold()).as("innhold").isEqualTo(journalforingDto.getInnhold()),
-                () -> assertThat(journalpostDto.getJournalforendeEnhet()).as("journalforendeEnhet").isEqualTo(journalforingDto.getJournalforendeEnhet()),
-                () -> assertThat(journalpostDto.getJournalfortAv()).as("journalfortAv").isEqualTo(journalforingDto.getJournalfortAvNavn()),
-                () -> assertThat(journalpostDto.getJournalfortDato()).as("journalfortDato").isEqualTo(journalforingDto.getDatoJournal()),
-                () -> assertThat(journalpostDto.getJournalpostId()).as("journalpostId").isEqualTo("JOARK-" + journalforingDto.getJournalpostId()),
-                () -> assertThat(journalpostDto.getMottattDato()).as("mottattDato").isEqualTo(journalforingDto.getDatoMottatt()),
-                () -> assertThat(journalpostDto.getSaksnummer()).as("saksnummerGsak").isEqualTo("GSAK-" + journalforingDto.getArkivSak().getId())
+                        .isEqualTo(getJournalpostResponse.getBrukerListe().stream().map(Bruker::getIdentifikator).collect(toList())),
+                () -> assertThat(journalpostDto.getInnhold()).as("innhold").isEqualTo(getJournalpostResponse.getTittel()),
+                () -> assertThat(journalpostDto.getJournalforendeEnhet()).as("journalforendeEnhet").isEqualTo(getJournalpostResponse.getJournalfEnhet()),
+                () -> assertThat(journalpostDto.getJournalfortAv()).as("journalfortAv").isNull(),
+                () -> assertThat(journalpostDto.getJournalfortDato()).as("journalfortDato").isEqualTo(LocalDate.now()),
+                () -> assertThat(journalpostDto.getJournalpostId()).as("journalpostId").isEqualTo("JOARK-101"),
+                () -> assertThat(journalpostDto.getMottattDato()).as("mottattDato").isEqualTo(LocalDate.now()),
+                () -> assertThat(journalpostDto.getSaksnummer()).as("saksnummerGsak").isEqualTo("GSAK-" + getJournalpostResponse.getArkivSak().getArkivSakId())
         );
     }
 }

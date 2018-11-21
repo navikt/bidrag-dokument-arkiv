@@ -1,8 +1,8 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
 import no.nav.bidrag.dokument.arkiv.consumer.JournalforingConsumer;
-import no.nav.bidrag.dokument.arkiv.dto.JournalforingDto;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
+import no.nav.dok.tjenester.journalfoerinngaaende.GetJournalpostResponse;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -19,7 +19,7 @@ public class JournalpostService {
     }
 
     public Optional<JournalpostDto> hentJournalpost(Integer journalpostId) {
-        Optional<JournalforingDto> muligJournalforing = journalforingConsumer.hentJournalforing(journalpostId);
-        return muligJournalforing.map(journalpostMapper::fraJournalfoering);
+        Optional<GetJournalpostResponse> muligJournalforing = journalforingConsumer.hentJournalforing(journalpostId);
+        return muligJournalforing.map(journalpostResponse -> journalpostMapper.fra(journalpostResponse, journalpostId));
     }
 }
