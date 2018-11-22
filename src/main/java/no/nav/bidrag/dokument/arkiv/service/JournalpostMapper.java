@@ -1,46 +1,94 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
-import no.nav.bidrag.dokument.arkiv.dto.ArkivSakDto;
-import no.nav.bidrag.dokument.arkiv.dto.BrukerDto;
-import no.nav.bidrag.dokument.arkiv.dto.JoarkDokumentDto;
-import no.nav.bidrag.dokument.arkiv.dto.JournalforingDto;
 import no.nav.bidrag.dokument.dto.DokumentDto;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
+import no.nav.dok.tjenester.journalfoerinngaaende.ArkivSakNoArkivsakSystemEnum;
+import no.nav.dok.tjenester.journalfoerinngaaende.Avsender;
+import no.nav.dok.tjenester.journalfoerinngaaende.Bruker;
+import no.nav.dok.tjenester.journalfoerinngaaende.Dokument;
+import no.nav.dok.tjenester.journalfoerinngaaende.GetJournalpostResponse;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
 public class JournalpostMapper {
 
-    JournalpostDto fraJournalfoering(JournalforingDto journalforingDto) {
+    JournalpostDto fra(GetJournalpostResponse getJournalpostResponse, Integer journalpostId) {
         JournalpostDto journalpostDto = new JournalpostDto();
-        journalpostDto.setAvsenderNavn(journalforingDto.getAvsenderDto() != null ? journalforingDto.getAvsenderDto().getAvsender() : null);
-        journalpostDto.setFagomrade(journalforingDto.getFagomrade());
-        journalpostDto.setDokumentDato(journalforingDto.getDatoDokument());
-        journalpostDto.setDokumenter(journalforingDto.getDokumenter().stream().map(this::tilDokumentDto).collect(Collectors.toList()));
-        journalpostDto.setGjelderBrukerId(journalforingDto.getBrukere().stream().map(BrukerDto::getBrukerId).collect(Collectors.toList()));
-        journalpostDto.setInnhold(journalforingDto.getInnhold());
-        journalpostDto.setJournalforendeEnhet(journalforingDto.getJournalforendeEnhet());
-        journalpostDto.setJournalfortAv(journalforingDto.getJournalfortAvNavn());
-        journalpostDto.setJournalfortDato(journalforingDto.getDatoJournal());
-        journalpostDto.setJournalpostId("JOARK-" + journalforingDto.getJournalpostId());
-        journalpostDto.setMottattDato(journalforingDto.getDatoMottatt());
-        journalpostDto.setSaksnummer(prefixMedGSAK(journalforingDto.getArkivSak()));
+        journalpostDto.setAvsenderNavn(fra(getJournalpostResponse.getAvsender()));
+        journalpostDto.setFagomrade(fra(getJournalpostResponse.getArkivSak()));
+        journalpostDto.setDokumentDato(null); // ???
+        journalpostDto.setDokumenter(fraDokumentListe(getJournalpostResponse.getDokumentListe()));
+        journalpostDto.setGjelderBrukerId(fraBrukerListe(getJournalpostResponse.getBrukerListe()));
+        journalpostDto.setInnhold(getJournalpostResponse.getTittel());
+        journalpostDto.setJournalforendeEnhet(getJournalpostResponse.getJournalfEnhet());
+        journalpostDto.setJournalfortAv(null); // ???
+        journalpostDto.setJournalfortDato(fra(getJournalpostResponse.getForsendelseMottatt()));
+        journalpostDto.setJournalpostId("JOARK-" + journalpostId);
+        journalpostDto.setMottattDato(fra(getJournalpostResponse.getForsendelseMottatt()));
+        journalpostDto.setSaksnummer(prefixMedGSAK(getJournalpostResponse.getArkivSak()));
 
         return journalpostDto;
     }
 
-    private String prefixMedGSAK(ArkivSakDto arkivSakDto) {
-        return arkivSakDto != null ? "GSAK-" + arkivSakDto.getId() : null;
+    private String fra(Avsender avsender) {
+        if (avsender != null) {
+            return avsender.getNavn();
+        }
+
+        return null;
     }
 
-    private DokumentDto tilDokumentDto(JoarkDokumentDto joarkDokumentDto) {
+    private String fra(ArkivSakNoArkivsakSystemEnum arkivSak) {
+        if (arkivSak != null) {
+            return arkivSak.getArkivSakSystem();
+        }
+
+        return null;
+    }
+
+    private List<DokumentDto> fraDokumentListe(List<Dokument> dokumentListe) {
+        if (dokumentListe != null) {
+            return dokumentListe.stream().map(this::fraDokument).collect(Collectors.toList());
+        }
+
+        return Collections.emptyList();
+    }
+
+    private DokumentDto fraDokument(Dokument dokument) {
         DokumentDto dokumentDto = new DokumentDto();
-        dokumentDto.setDokumentreferanse(joarkDokumentDto.getDokumentId());
-        dokumentDto.setTittel(joarkDokumentDto.getTittel());
-        dokumentDto.setDokumentType(joarkDokumentDto.getDokumentTypeId());
+        dokumentDto.setDokumentType(dokument.getDokumentTypeId());
+        dokumentDto.setDokumentreferanse(dokument.getDokumentId());
+        dokumentDto.setTittel(dokument.getTittel());
 
         return dokumentDto;
+    }
+
+    private List<String> fraBrukerListe(List<Bruker> brukerListe) {
+        if (brukerListe != null) {
+            return brukerListe.stream().map(Bruker::getIdentifikator).collect(Collectors.toList());
+        }
+
+        return Collections.emptyList();
+    }
+
+    private LocalDate fra(Date forsendelseMottatt) {
+        if (forsendelseMottatt != null) {
+            return forsendelseMottatt.toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate();
+        }
+
+        return null;
+    }
+
+    private String prefixMedGSAK(ArkivSakNoArkivsakSystemEnum arkivSaK) {
+        return arkivSaK != null ? "GSAK-" + arkivSaK.getArkivSakId() : null;
     }
 }

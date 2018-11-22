@@ -36,4 +36,4 @@ deretter<br>
 `docker run -p 8080:8080 bidrag-dokument-arkiv`
 
 Etter applikasjon er startet kan den nåes med browser på
-`http://localhost:8080/bidrag-dokument-arkiv/v2/api-docs`
+`http://localhost:8080/bidrag-dokument-arkiv/swagger-ui.html`
