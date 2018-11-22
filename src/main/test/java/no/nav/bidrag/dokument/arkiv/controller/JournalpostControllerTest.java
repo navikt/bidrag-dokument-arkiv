@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -47,11 +48,11 @@ import static org.mockito.Mockito.when;
 
     @DisplayName("skal ha body som null når journalpost ikke finnes")
     @Test void skalGiBodySomNullNarJournalpostIkkeFinnes() {
-        when(restTemplateMock.getForEntity(eq("/rest/journalfoerinngaaende/v1/journalposter/1"), eq(JournalforingDto.class))).thenReturn(new ResponseEntity<>(HttpStatus.I_AM_A_TEAPOT));
+        when(restTemplateMock.getForEntity(anyString(), eq(JournalforingDto.class))).thenReturn(new ResponseEntity<>(HttpStatus.I_AM_A_TEAPOT));
 
         ResponseEntity<JournalpostDto> journalpostResponseEntity = testRestTemplate.getForEntity(initUrl() + "/journalpost/1", JournalpostDto.class);
 
-        verify(restTemplateMock).getForEntity(eq("/rest/journalfoerinngaaende/v1/journalposter/1"), eq(JournalforingDto.class));
+        verify(restTemplateMock).getForEntity(eq("/journalposter/1"), eq(JournalforingDto.class));
 
         assertThat(Optional.of(journalpostResponseEntity)).hasValueSatisfying(response -> assertAll(
                 () -> assertThat(response.getBody()).isNull(),
@@ -61,13 +62,13 @@ import static org.mockito.Mockito.when;
 
     @DisplayName("skal hente Journalpost når den eksisterer")
     @Test void skalHenteJournalpostNarDenEksisterer() {
-        when(restTemplateMock.getForEntity(eq("/rest/journalfoerinngaaende/v1/journalposter/1"), eq(JournalforingDto.class))).thenReturn(new ResponseEntity<>(
+        when(restTemplateMock.getForEntity(anyString(), eq(JournalforingDto.class))).thenReturn(new ResponseEntity<>(
                 enJournalforingMedInnhold("MIDLERTIDIG"), HttpStatus.I_AM_A_TEAPOT
         ));
 
         ResponseEntity<JournalpostDto> responseEntity = testRestTemplate.getForEntity(initUrl() + "/journalpost/1", JournalpostDto.class);
 
-        verify(restTemplateMock).getForEntity(eq("/rest/journalfoerinngaaende/v1/journalposter/1"), eq(JournalforingDto.class));
+        verify(restTemplateMock).getForEntity(eq("/journalposter/1"), eq(JournalforingDto.class));
 
         assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
                 () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
