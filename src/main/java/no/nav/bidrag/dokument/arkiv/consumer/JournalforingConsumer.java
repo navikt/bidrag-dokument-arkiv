@@ -1,6 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.consumer;
 
-import no.nav.bidrag.dokument.arkiv.dto.JournalforingDto;
+import no.nav.dok.tjenester.journalfoerinngaaende.GetJournalpostResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -19,9 +19,9 @@ public class JournalforingConsumer {
         this.baseUrl = baseUrl;
     }
 
-    public Optional<JournalforingDto> hentJournalforing(Integer id) {
+    public Optional<GetJournalpostResponse> hentJournalforing(Integer id) {
         RestTemplate restTemplate = RestTemplateFactory.create(baseUrl);
-        ResponseEntity<JournalforingDto> journalforingDtoResponseEntity = restTemplate.getForEntity("/journalposter/" + id, JournalforingDto.class);
+        ResponseEntity<GetJournalpostResponse> journalforingDtoResponseEntity = restTemplate.getForEntity("/journalposter/" + id, GetJournalpostResponse.class);
         HttpStatus httpStatus = journalforingDtoResponseEntity.getStatusCode();
 
         LOGGER.info("JournalforingDto med id={} har http status {} - {}", id, httpStatus, httpStatus.getReasonPhrase());

@@ -1,8 +1,8 @@
 package no.nav.bidrag.dokument.arkiv.controller;
 
 import no.nav.bidrag.dokument.arkiv.consumer.RestTemplateFactory;
-import no.nav.bidrag.dokument.arkiv.dto.JournalforingDto;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
+import no.nav.dok.tjenester.journalfoerinngaaende.GetJournalpostResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -48,11 +48,11 @@ import static org.mockito.Mockito.when;
 
     @DisplayName("skal ha body som null når journalpost ikke finnes")
     @Test void skalGiBodySomNullNarJournalpostIkkeFinnes() {
-        when(restTemplateMock.getForEntity(anyString(), eq(JournalforingDto.class))).thenReturn(new ResponseEntity<>(HttpStatus.I_AM_A_TEAPOT));
+        when(restTemplateMock.getForEntity(anyString(), eq(GetJournalpostResponse.class))).thenReturn(new ResponseEntity<>(HttpStatus.I_AM_A_TEAPOT));
 
         ResponseEntity<JournalpostDto> journalpostResponseEntity = testRestTemplate.getForEntity(initUrl() + "/journalpost/1", JournalpostDto.class);
 
-        verify(restTemplateMock).getForEntity(eq("/journalposter/1"), eq(JournalforingDto.class));
+        verify(restTemplateMock).getForEntity(eq("/journalposter/1"), eq(GetJournalpostResponse.class));
 
         assertThat(Optional.of(journalpostResponseEntity)).hasValueSatisfying(response -> assertAll(
                 () -> assertThat(response.getBody()).isNull(),
@@ -62,26 +62,26 @@ import static org.mockito.Mockito.when;
 
     @DisplayName("skal hente Journalpost når den eksisterer")
     @Test void skalHenteJournalpostNarDenEksisterer() {
-        when(restTemplateMock.getForEntity(anyString(), eq(JournalforingDto.class))).thenReturn(new ResponseEntity<>(
-                enJournalforingMedInnhold("MIDLERTIDIG"), HttpStatus.I_AM_A_TEAPOT
+        when(restTemplateMock.getForEntity(anyString(), eq(GetJournalpostResponse.class))).thenReturn(new ResponseEntity<>(
+                enGetJournalpostResponseMedTittel("bidrag"), HttpStatus.I_AM_A_TEAPOT
         ));
 
         ResponseEntity<JournalpostDto> responseEntity = testRestTemplate.getForEntity(initUrl() + "/journalpost/1", JournalpostDto.class);
 
-        verify(restTemplateMock).getForEntity(eq("/journalposter/1"), eq(JournalforingDto.class));
+        verify(restTemplateMock).getForEntity(eq("/journalposter/1"), eq(GetJournalpostResponse.class));
 
         assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
                 () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
                 () -> assertThat(response.getBody()).extracting(JournalpostDto::getHello).isEqualTo("hello from bidrag-dokument"),
-                () -> assertThat(response.getBody()).extracting(JournalpostDto::getInnhold).isEqualTo("MIDLERTIDIG")
+                () -> assertThat(response.getBody()).extracting(JournalpostDto::getInnhold).isEqualTo("bidrag")
         ));
     }
 
-    private JournalforingDto enJournalforingMedInnhold(@SuppressWarnings("SameParameterValue") String innhold) {
-        JournalforingDto journalforingDto = new JournalforingDto();
-        journalforingDto.setInnhold(innhold);
+    private GetJournalpostResponse enGetJournalpostResponseMedTittel(@SuppressWarnings("SameParameterValue") String tittel) {
+        GetJournalpostResponse getJournalpostResponse = new GetJournalpostResponse();
+        getJournalpostResponse.setTittel(tittel);
 
-        return journalforingDto;
+        return getJournalpostResponse;
     }
 
     private String initUrl() {
