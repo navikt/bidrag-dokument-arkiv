@@ -129,7 +129,7 @@ node {
                   println("[INFO] Run cucumber tests")
                   sleep(20)
                   try {
-                      sh "docker run --rm -v ${env.WORKSPACE}/cucumber:/cucumber bidrag-cucumber"
+                      sh "docker run --rm -v ${env.WORKSPACE}/cucumber:/cucumber bidrag-dokument-cucumber"
                   } catch(e) {
                       result = 'UNSTABLE'
                   }
