@@ -1,13 +1,16 @@
 package no.nav.bidrag.dokument.arkiv.controller;
 
-import io.swagger.annotations.ApiOperation;
-import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
-import no.nav.bidrag.dokument.dto.JournalpostDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+
+import io.swagger.annotations.ApiOperation;
+import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
+import no.nav.bidrag.dokument.dto.JournalpostDto;
+import no.nav.security.oidc.api.ProtectedWithClaims;
+import no.nav.security.oidc.api.Unprotected;
 
 @RestController
 public class JournalpostController {
@@ -18,6 +21,7 @@ public class JournalpostController {
         this.journalpostService = journalpostService;
     }
 
+    @ProtectedWithClaims(issuer = "isso", claimMap = { "acr=Level4" })
     @GetMapping("/journalpost/{journalpostId}")
     @ApiOperation("Hent journalpost for en id")
     public ResponseEntity<JournalpostDto> get(@PathVariable Integer journalpostId) {
@@ -26,6 +30,7 @@ public class JournalpostController {
                 .orElse(new ResponseEntity<>(HttpStatus.NO_CONTENT));
     }
 
+    @Unprotected
     @GetMapping("/")
     @ApiOperation("Welcome Home Page")
     public String index() {
