@@ -8,11 +8,9 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
 import no.nav.security.oidc.test.support.spring.TokenGeneratorConfiguration;
 import no.nav.security.spring.oidc.api.EnableOIDCTokenValidation;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @SpringBootApplication @PropertySource("classpath:url.properties")
 @EnableOIDCTokenValidation(ignore = {"springfox.documentation.swagger.web.ApiResourceController", "org.springframework"})
