@@ -21,7 +21,7 @@ public class JournalpostController {
         this.journalpostService = journalpostService;
     }
 
-    @ProtectedWithClaims(issuer = "isso", claimMap = { "acr=Level4" })
+    @ProtectedWithClaims(issuer = "isso")
     @GetMapping("/journalpost/{journalpostId}")
     @ApiOperation("Hent journalpost for en id")
     public ResponseEntity<JournalpostDto> get(@PathVariable Integer journalpostId) {
