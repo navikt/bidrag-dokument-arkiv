@@ -1,8 +1,5 @@
-
 @Library('bidrag-dokument-jenkins') _
-   bidragDokumentPipeline {
+   multibranchMavenNaisPipeline {
+      gitHubProjectName = "bidrag-dokument-arkiv"
       mvnImage = "maven:3.6.0-jdk-11-slim"
-      application = "bidrag-dokument-arkiv"
-      branch = "master"
-      environment = "${EnvironmentOut}"
-   }
+    }
