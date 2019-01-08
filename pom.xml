@@ -13,7 +13,7 @@
 
 	<groupId>no.nav.bidrag.dokument</groupId>
 	<artifactId>bidrag-dokument-arkiv</artifactId>
-	<version>1.0.13-SNAPSHOT</version>
+	<version>1.0.15-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<description>Backend NAIS, bidrag-dokument-arkiv, henter fra arkiv (JOARK)</description>
@@ -51,8 +51,9 @@
 		<!-- dependent versions other than from spring-boot -->
 		<oidc-spring-support.version>0.2.13</oidc-spring-support.version>
 		<bidrag-dokument-dto.version>0.0.58-SNAPSHOT</bidrag-dokument-dto.version>
-		<logback.encoder.version>5.2</logback.encoder.version>
 		<dok-tjenester-journalfoerinngaaende.version>0.0.21</dok-tjenester-journalfoerinngaaende.version>
+        <logback.encoder.version>5.2</logback.encoder.version>
+		<org.junit.jupiter-version>5.3.2</org.junit.jupiter-version>
 		<springfox-swagger.version>2.9.2</springfox-swagger.version>
 
 		<!-- build -->
@@ -160,18 +161,21 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-api</artifactId>
-			<scope>test</scope>
+			<version>${org.junit.jupiter-version}</version>
+            <scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-params</artifactId>
+            <version>${org.junit.jupiter-version}</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
+            <version>${org.junit.jupiter-version}</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -189,25 +193,25 @@
 
 	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.version}</version>
 				<configuration>
-					<relase>${java.version}</relase>
-					<source>${java.version}</source>
-					<target>${java.version}</target>
+					<release>${java.version}</release>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
