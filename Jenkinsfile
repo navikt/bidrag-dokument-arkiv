@@ -1,5 +1,5 @@
 @Library('bidrag-dokument-jenkins') _
-   multibranchMavenNaisPipeline {
+   naisPipeline {
       gitHubProjectName = "bidrag-dokument-arkiv"
-      mvnImage = "maven:3.6.0-jdk-11-slim"
+      buildImage = "maven:3.6.0-jdk-11-slim"
     }
