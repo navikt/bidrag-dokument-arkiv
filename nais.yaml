@@ -43,6 +43,10 @@ fasitResources: # resources fetched from Fasit
     resourceType: restservice
     propertyMap:
       url: JOARK_URL # map the "url" property of restservice to JOARK_URL
+  - alias: isso-issuer
+    resourceType: baseUrl
+    propertyMap: 
+      url: ISSO_ISSUER_URL      
   exposed: # Will be registered as exposed services on an application instance in Fasit
   - alias: bidragDokumentArkiv
     resourceType: restservice
