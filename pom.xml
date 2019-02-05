@@ -54,8 +54,11 @@
 		<dok-tjenester-journalfoerinngaaende.version>0.0.21</dok-tjenester-journalfoerinngaaende.version>
         <logback.encoder.version>5.2</logback.encoder.version>
 		<springfox-swagger.version>2.9.2</springfox-swagger.version>
-
+		
 		<!-- build -->	
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<maven.compiler.release>${java.version}</maven.compiler.release>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
