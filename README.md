@@ -75,10 +75,10 @@ For localhost kan et gyldig id-token hentes med følgende URL dersom BidragDokum
 For preprod kan følgende CURL-kommando benyttes (krever tilgang til isso-agent-passord i Fasit for aktuelt miljø):
  
  
- <code>curl -X POST \</code><br>
-	  <code>-u "{isso-agent-brukernavn}:{isso-agent-passord}" \</code><br>
-	  <code>-d "grant_type=client_credentials&scope=openid" \</code><br>
-	  <code>{isso-issuer-url}/access_token</code><br>
+ <code> curl -X POST \ </code><br>
+	  <code> -u "{isso-agent-brukernavn}:{isso-agent-passord}" \ </code> <br>
+	  <code> -d "grant_type=client_credentials&scope=openid" \ </code> <br>
+	  <code> {isso-issuer-url}/access_token </code> <br>
  
   
 hvor <code>{isso-agent-brukernavn}</code> og <code>{isso-agent-passord}</code> hentes fra Fasit-ressurs OpenIdConnect bidrag-dokument-ui-oidc for aktuelt miljø (f.eks [https://fasit.adeo.no/resources/6419841](https://fasit.adeo.no/resources/6419841) for q0),
