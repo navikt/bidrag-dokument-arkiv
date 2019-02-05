@@ -11,6 +11,9 @@ import springfox.documentation.spring.web.plugins.Docket;
 
 @Configuration
 public class BidragDokumentArkivConfig {
+	
+	public static final String ISSUER = "isso";
+	
     private @Value("${JOARK_URL}") String baseUrl;
 
     @Bean JournalforingConsumer journalforingConsumer() {

@@ -1,10 +1,10 @@
 package no.nav.bidrag.dokument.arkiv.consumer;
 
-import org.springframework.boot.web.client.RootUriTemplateHandler;
-import org.springframework.web.client.RestTemplate;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.springframework.boot.web.client.RootUriTemplateHandler;
+import org.springframework.web.client.RestTemplate;
 
 public final class RestTemplateFactory {
 

@@ -57,11 +57,15 @@ BidragDokumentLocal brukes i stedet for BidragDokument ved lokal kjøring.
 #### Oppskrift for kjøring med sikkerhet lokalt
  - Start BidragDokumentLocal som standard Java-applikasjon
  
- - Registrere app-instans for bruk av oidc-test-support, naviger til:<br> 
- 	 - [http://localhost:8080/bidrag-dokument-journalpost/local/cookie?redirect=/bidrag-dokument-journalpost/api](http://localhost:8080/bidrag-dokument-journalpost/local/cookie?redirect=/bidrag-dokument-journalpost/api)
+ - Opprette cookie med test-token for nettleser, naviger til:<br> 
+ 	 - [http://localhost:8080/bidrag-dokument-journalpost/local/cookie?redirect=/bidrag-dokument-journalpost](http://localhost:8080/bidrag-dokument-journalpost/local/cookie?redirect=/bidrag-dokument-journalpost)
  	 
  - (Valgfri) Verifiser at test-tokengeneratoren fungerer ved å hente frem:<br>
  	 - [http://localhost:8080/bidrag-dokument-journalpost/local/jwt](http://localhost:8080/bidrag-dokument-journalpost/local/jwt)<br> 	  	
  	 - [http://localhost:8080/bidrag-dokument-journalpost/local/cookie](http://localhost:8080/bidrag-dokument-journalpost/local/cookie)<br> 	  	 
   	 - [http://localhost:8080/bidrag-dokument-journalpost/local/claims](http://localhost:8080/bidrag-dokument-journalpost/local/claims)<br>
   
+#### Swagger Authorize 
+Den grønne authorize-knappen øverst i Swagger-ui kan brukes til å autentisere requester om du har tilgang på et gyldig OIDC-token. For å benytte authorize må følgende legges i value-feltet:
+ - "Bearer id-token" (hvor id-token er en gyldig jwt-tekst-streng)
+ 
