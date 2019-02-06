@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.0.6.RELEASE</version>
+		<version>2.1.2.RELEASE</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
@@ -53,15 +53,12 @@
 		<bidrag-dokument-dto.version>0.0.57</bidrag-dokument-dto.version>
 		<dok-tjenester-journalfoerinngaaende.version>0.0.21</dok-tjenester-journalfoerinngaaende.version>
         <logback.encoder.version>5.2</logback.encoder.version>
-		<org.junit.jupiter-version>5.3.2</org.junit.jupiter-version>
 		<springfox-swagger.version>2.9.2</springfox-swagger.version>
-
-		<!-- build -->
-		<maven.compiler.version>3.8.0</maven.compiler.version>
+		
+		<!-- build -->	
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<maven.compiler.release>${java.version}</maven.compiler.release>
-		<maven.surefire.version>2.22.0</maven.surefire.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -161,21 +158,18 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-api</artifactId>
-			<version>${org.junit.jupiter-version}</version>
             <scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-params</artifactId>
-            <version>${org.junit.jupiter-version}</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-            <version>${org.junit.jupiter-version}</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -198,14 +192,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.version}</version>
 				<configuration>
 					<release>${java.version}</release>
 				</configuration>
 			</plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven.surefire.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

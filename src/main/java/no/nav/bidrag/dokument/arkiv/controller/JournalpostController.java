@@ -1,5 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.controller;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.ISSUER;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +23,7 @@ public class JournalpostController {
         this.journalpostService = journalpostService;
     }
 
-    @ProtectedWithClaims(issuer = "isso")
+    @ProtectedWithClaims(issuer = ISSUER)
     @GetMapping("/journalpost/{journalpostId}")
     @ApiOperation("Hent journalpost for en id")
     public ResponseEntity<JournalpostDto> get(@PathVariable Integer journalpostId) {
