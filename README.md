@@ -58,7 +58,7 @@ BidragDokumentLocal brukes i stedet for BidragDokument ved lokal kjøring.
  - Start BidragDokumentLocal som standard Java-applikasjon
  
  - Opprette cookie med test-token for nettleser, naviger til:<br> 
- 	 - [http://localhost:8080/bidrag-dokumentlocal/cookie?redirect=/bidrag-dokument](http://localhost:8080/bidrag-dokument/local/cookie?redirect=/bidrag-dokument)
+ 	 - [http://localhost:8080/bidrag-dokument/local/cookie?redirect=/bidrag-dokument](http://localhost:8080/bidrag-dokument/local/cookie?redirect=/bidrag-dokument)
  	 
  - (Valgfri) Verifiser at test-tokengeneratoren fungerer ved å hente frem:<br>
  	 - [http://localhost:8080/bidrag-dokument/local/jwt](http://localhost:8080/bidrag-dokument/local/jwt)<br> 	  	
