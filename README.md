@@ -58,22 +58,21 @@ BidragDokumentLocal brukes i stedet for BidragDokument ved lokal kjøring.
  - Start BidragDokumentLocal som standard Java-applikasjon
  
  - Opprette cookie med test-token for nettleser, naviger til:<br> 
- 	 - [http://localhost:8080/bidrag-dokument-journalpost/local/cookie?redirect=/bidrag-dokument-journalpost](http://localhost:8080/bidrag-dokument-journalpost/local/cookie?redirect=/bidrag-dokument-journalpost)
+ 	 - [http://localhost:8080/bidrag-dokumentlocal/cookie?redirect=/bidrag-dokument](http://localhost:8080/bidrag-dokument/local/cookie?redirect=/bidrag-dokument)
  	 
  - (Valgfri) Verifiser at test-tokengeneratoren fungerer ved å hente frem:<br>
- 	 - [http://localhost:8080/bidrag-dokument-journalpost/local/jwt](http://localhost:8080/bidrag-dokument-journalpost/local/jwt)<br> 	  	
- 	 - [http://localhost:8080/bidrag-dokument-journalpost/local/cookie](http://localhost:8080/bidrag-dokument-journalpost/local/cookie)<br> 	  	 
-  	 - [http://localhost:8080/bidrag-dokument-journalpost/local/claims](http://localhost:8080/bidrag-dokument-journalpost/local/claims)<br>
+ 	 - [http://localhost:8080/bidrag-dokument/local/jwt](http://localhost:8080/bidrag-dokument/local/jwt)<br> 	  	
+ 	 - [http://localhost:8080/bidrag-dokument-journalpost/local/cookie](http://localhost:8080/bidrag-dokument/local/cookie)<br> 	  	 
+  	 - [http://localhost:8080/bidrag-dokument/local/claims](http://localhost:8080/bidrag-dokument/local/claims)<br>
   
 #### Swagger Authorize 
 Den grønne authorize-knappen øverst i Swagger-ui kan brukes til å autentisere requester om du har tilgang på et gyldig OIDC-token. For å benytte authorize må følgende legges i value-feltet:
    - "Bearer id-token" (hvor id-token erstattes med et gyldig id-token (jwt-streng))
  
-For localhost kan et gyldig id-token hentes med følgende URL dersom BidragDokumentArkivLocal er startet på port 8080:
-   - [http://localhost:8080/bidrag-dokument-journalpost/local/jwt](http://localhost:8080/bidrag-dokument-journalpost/local/jwt)<br>
+For localhost kan et gyldig id-token hentes med følgende URL (gitt BidragDokumentArkivLocal er startet på port 8080):
+   - [http://localhost:8080/bidrag-dokument/local/jwt](http://localhost:8080/bidrag-dokument/local/jwt)<br>
    
-For preprod kan følgende CURL-kommando benyttes (krever tilgang til isso-agent-passord i Fasit for aktuelt miljø):
- 
+For preprod kan følgende CURL-kommando benyttes (krever tilgang til isso-agent-passord i Fasit for aktuelt miljø): 
  
  <code> curl -X POST \ </code><br>
 	  <code> -u "{isso-agent-brukernavn}:{isso-agent-passord}" \ </code> <br>
