@@ -9,20 +9,21 @@ import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv;
-import no.nav.bidrag.dokument.arkiv.consumer.RestTemplateFactory;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
 import no.nav.dok.tjenester.journalfoerinngaaende.GetJournalpostResponse;
-import org.junit.jupiter.api.BeforeEach;
+import no.nav.security.oidc.test.support.jersey.TestTokenGeneratorResource;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
@@ -37,18 +38,14 @@ class JournalpostControllerTest {
 
   @LocalServerPort
   private int port;
-  @Mock
+  @MockBean
   private RestTemplate restTemplateMock;
   @Value("${server.servlet.context-path}")
   private String contextPath;
   @Autowired
   private TestRestTemplate testRestTemplate;
 
-  @BeforeEach
-  void mockRestTemplateFactory() {
-    MockitoAnnotations.initMocks(this);
-    RestTemplateFactory.use(() -> restTemplateMock);
-  }
+  private HttpHeaders headersWithAuthorization;
 
   @Test
   @DisplayName("should map context path with random port")
@@ -61,14 +58,19 @@ class JournalpostControllerTest {
   void skalGiBodySomNullNarJournalpostIkkeFinnes() {
     when(restTemplateMock.getForEntity(anyString(), eq(GetJournalpostResponse.class))).thenReturn(new ResponseEntity<>(HttpStatus.I_AM_A_TEAPOT));
 
-    ResponseEntity<JournalpostDto> journalpostResponseEntity = testRestTemplate.getForEntity(initUrl() + "/journalpost/1", JournalpostDto.class);
-
-    verify(restTemplateMock).getForEntity(eq("/journalposter/1"), eq(GetJournalpostResponse.class));
+    ResponseEntity<JournalpostDto> journalpostResponseEntity = testRestTemplate.exchange(
+        initUrl() + "/journalpost/1",
+        HttpMethod.GET,
+        createEmptyHttpEntityWithAuthorization(),
+        JournalpostDto.class
+    );
 
     assertThat(Optional.of(journalpostResponseEntity)).hasValueSatisfying(response -> assertAll(
         () -> assertThat(response.getBody()).isNull(),
         () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT)
     ));
+
+    verify(restTemplateMock).getForEntity(eq("/journalposter/1"), eq(GetJournalpostResponse.class));
   }
 
   @Test
@@ -78,14 +80,35 @@ class JournalpostControllerTest {
         enGetJournalpostResponseMedTittel("bidrag"), HttpStatus.I_AM_A_TEAPOT
     ));
 
-    ResponseEntity<JournalpostDto> responseEntity = testRestTemplate.getForEntity(initUrl() + "/journalpost/1", JournalpostDto.class);
-
-    verify(restTemplateMock).getForEntity(eq("/journalposter/1"), eq(GetJournalpostResponse.class));
+    ResponseEntity<JournalpostDto> responseEntity = testRestTemplate.exchange(
+        initUrl() + "/journalpost/1",
+        HttpMethod.GET,
+        createEmptyHttpEntityWithAuthorization(),
+        JournalpostDto.class
+    );
 
     assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
         () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
         () -> assertThat(response.getBody()).extracting(JournalpostDto::getInnhold).isEqualTo("bidrag")
     ));
+
+    verify(restTemplateMock).getForEntity(eq("/journalposter/1"), eq(GetJournalpostResponse.class));
+  }
+
+  private <T> HttpEntity<T> createEmptyHttpEntityWithAuthorization() {
+    if (headersWithAuthorization == null) {
+      headersWithAuthorization = generateHeadersWithAuthorization();
+    }
+
+    return new HttpEntity<>(null, headersWithAuthorization);
+  }
+
+  private HttpHeaders generateHeadersWithAuthorization() {
+    TestTokenGeneratorResource testTokenGeneratorResource = new TestTokenGeneratorResource();
+    HttpHeaders httpHeaders = new HttpHeaders();
+    httpHeaders.add(HttpHeaders.AUTHORIZATION, "Bearer " + testTokenGeneratorResource.issueToken("localhost-idtoken"));
+
+    return httpHeaders;
   }
 
   private GetJournalpostResponse enGetJournalpostResponseMedTittel(@SuppressWarnings("SameParameterValue") String tittel) {

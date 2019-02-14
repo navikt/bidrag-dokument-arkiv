@@ -13,14 +13,13 @@ public class JournalforingConsumer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JournalforingConsumer.class);
 
-    private final String baseUrl;
+    private final RestTemplate restTemplate;
 
-    public JournalforingConsumer(String baseUrl) {
-        this.baseUrl = baseUrl;
+    public JournalforingConsumer(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 
     public Optional<GetJournalpostResponse> hentJournalforing(Integer id) {
-        RestTemplate restTemplate = RestTemplateFactory.create(baseUrl);
         ResponseEntity<GetJournalpostResponse> journalforingDtoResponseEntity = restTemplate.getForEntity("/journalposter/" + id, GetJournalpostResponse.class);
         HttpStatus httpStatus = journalforingDtoResponseEntity.getStatusCode();
 
