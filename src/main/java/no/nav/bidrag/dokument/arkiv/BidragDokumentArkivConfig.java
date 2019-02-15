@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv;
 
 import no.nav.bidrag.dokument.arkiv.consumer.JournalforingConsumer;
+import no.nav.security.oidc.context.OIDCRequestContextHolder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RootUriTemplateHandler;
 import org.springframework.context.annotation.Bean;
@@ -16,8 +17,8 @@ public class BidragDokumentArkivConfig {
   private String baseUrl;
 
   @Bean
-  JournalforingConsumer journalforingConsumer(RestTemplate restTemplate) {
+  JournalforingConsumer journalforingConsumer(RestTemplate restTemplate, OIDCRequestContextHolder oidcRequestContextHolder) {
     restTemplate.setUriTemplateHandler(new RootUriTemplateHandler(baseUrl));
-    return new JournalforingConsumer(restTemplate);
+    return new JournalforingConsumer(oidcRequestContextHolder, restTemplate);
   }
 }
