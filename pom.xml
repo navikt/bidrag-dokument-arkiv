@@ -1,209 +1,209 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.1.2.RELEASE</version>
-		<relativePath /> <!-- lookup parent from repository -->
-	</parent>
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.1.2.RELEASE</version>
+    <relativePath/> <!-- lookup parent from repository -->
+  </parent>
 
 	<groupId>no.nav.bidrag.dokument</groupId>
 	<artifactId>bidrag-dokument-arkiv</artifactId>
 	<version>1.0.21-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<description>Backend NAIS, bidrag-dokument-arkiv, henter fra arkiv (JOARK)</description>
-	<url>https://github.com/navikt/bidrag-dokument-arkiv</url>
+  <description>Backend NAIS, bidrag-dokument-arkiv, henter fra arkiv (JOARK)</description>
+  <url>https://github.com/navikt/bidrag-dokument-arkiv</url>
 
-	<repositories>
-		<repository>
-			<id>local-releases</id>
-			<name>Local stuff</name>
-			<url>https://repo.adeo.no/repository/maven-releases</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-	<distributionManagement>
-		<repository>
-			<id>m2internal</id>
-			<name>NAV Maven2 Internal Repository</name>
-			<url>http://maven.adeo.no/nexus/content/repositories/m2internal</url>
-		</repository>
-		<snapshotRepository>
-			<id>m2snapshot</id>
-			<name>NAV Maven2 Snapshot Repository</name>
-			<url>http://maven.adeo.no/nexus/content/repositories/m2snapshot</url>
-			<uniqueVersion>false</uniqueVersion>
-		</snapshotRepository>
-	</distributionManagement>
+  <repositories>
+    <repository>
+      <id>local-releases</id>
+      <name>Local stuff</name>
+      <url>https://repo.adeo.no/repository/maven-releases</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+  <distributionManagement>
+    <repository>
+      <id>m2internal</id>
+      <name>NAV Maven2 Internal Repository</name>
+      <url>http://maven.adeo.no/nexus/content/repositories/m2internal</url>
+    </repository>
+    <snapshotRepository>
+      <id>m2snapshot</id>
+      <name>NAV Maven2 Snapshot Repository</name>
+      <url>http://maven.adeo.no/nexus/content/repositories/m2snapshot</url>
+      <uniqueVersion>false</uniqueVersion>
+    </snapshotRepository>
+  </distributionManagement>
 
-	<properties>
+  <properties>
 
-		<!-- language -->
-		<java.version>11</java.version>
+    <!-- language -->
+    <java.version>11</java.version>
 
-		<!-- dependent versions other than from spring-boot -->
-		<oidc-spring-support.version>0.2.13</oidc-spring-support.version>
-		<bidrag-dokument-dto.version>0.0.57</bidrag-dokument-dto.version>
-		<dok-tjenester-journalfoerinngaaende.version>0.0.21</dok-tjenester-journalfoerinngaaende.version>
-        <logback.encoder.version>5.2</logback.encoder.version>
-		<springfox-swagger.version>2.9.2</springfox-swagger.version>
-		
-		<!-- build -->	
-		<maven.compiler.source>${java.version}</maven.compiler.source>
-		<maven.compiler.target>${java.version}</maven.compiler.target>
-		<maven.compiler.release>${java.version}</maven.compiler.release>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <!-- dependent versions other than from spring-boot -->
+    <oidc-spring-support.version>0.2.15</oidc-spring-support.version>
+    <bidrag-dokument-dto.version>0.0.78</bidrag-dokument-dto.version>
+    <dok-tjenester-journalfoerinngaaende.version>0.0.21</dok-tjenester-journalfoerinngaaende.version>
+    <logback.encoder.version>5.3</logback.encoder.version>
+    <springfox-swagger.version>2.9.2</springfox-swagger.version>
 
-	</properties>
+    <!-- build -->
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <maven.compiler.release>${java.version}</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-	<dependencies>
+  </properties>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jetty</artifactId>
-		</dependency>
+  <dependencies>
 
-		<dependency>
-			<groupId>no.nav.bidrag.dokument</groupId>
-			<artifactId>bidrag-dokument-dto</artifactId>
-			<version>${bidrag-dokument-dto.version}</version>
-		</dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-jetty</artifactId>
+    </dependency>
 
-		<dependency>
-			<groupId>no.nav.tjenester.fim</groupId>
-			<artifactId>no-nav-dok-tjenester-journalfoerinngaaende</artifactId>
-			<version>${dok-tjenester-journalfoerinngaaende.version}</version>
-		</dependency>
+    <dependency>
+      <groupId>no.nav.bidrag.dokument</groupId>
+      <artifactId>bidrag-dokument-dto</artifactId>
+      <version>${bidrag-dokument-dto.version}</version>
+    </dependency>
 
-		<dependency>
-			<groupId>no.nav.security</groupId>
-			<artifactId>oidc-spring-support</artifactId>
-			<version>${oidc-spring-support.version}</version>
-		</dependency>
+    <dependency>
+      <groupId>no.nav.tjenester.fim</groupId>
+      <artifactId>no-nav-dok-tjenester-journalfoerinngaaende</artifactId>
+      <version>${dok-tjenester-journalfoerinngaaende.version}</version>
+    </dependency>
 
-		<dependency>
-			<groupId>no.nav.security</groupId>
-			<artifactId>oidc-test-support</artifactId>
-			<version>${oidc-spring-support.version}</version>
-			<scope>test</scope>
-		</dependency>
+    <dependency>
+      <groupId>no.nav.security</groupId>
+      <artifactId>oidc-spring-support</artifactId>
+      <version>${oidc-spring-support.version}</version>
+    </dependency>
 
-		<!-- spring-boot -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
+    <dependency>
+      <groupId>no.nav.security</groupId>
+      <artifactId>oidc-test-support</artifactId>
+      <version>${oidc-spring-support.version}</version>
+      <scope>test</scope>
+    </dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-starter-tomcat</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+    <!-- spring-boot -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
 
-		<!-- swagger -->
-		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger2</artifactId>
-			<version>${springfox-swagger.version}</version>
-		</dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-tomcat</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
 
-		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger-ui</artifactId>
-			<version>${springfox-swagger.version}</version>
-		</dependency>
+    <!-- swagger -->
+    <dependency>
+      <groupId>io.springfox</groupId>
+      <artifactId>springfox-swagger2</artifactId>
+      <version>${springfox-swagger.version}</version>
+    </dependency>
 
-		<!-- logback -->
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-core</artifactId>
-		</dependency>
+    <dependency>
+      <groupId>io.springfox</groupId>
+      <artifactId>springfox-swagger-ui</artifactId>
+      <version>${springfox-swagger.version}</version>
+    </dependency>
 
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-		</dependency>
+    <!-- logback -->
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-core</artifactId>
+    </dependency>
 
-		<dependency>
-			<groupId>net.logstash.logback</groupId>
-			<artifactId>logstash-logback-encoder</artifactId>
-			<version>${logback.encoder.version}</version>
-		</dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+    </dependency>
 
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-		</dependency>
+    <dependency>
+      <groupId>net.logstash.logback</groupId>
+      <artifactId>logstash-logback-encoder</artifactId>
+      <version>${logback.encoder.version}</version>
+    </dependency>
 
-		<!-- test -->
-		<dependency>
-			<groupId>org.assertj</groupId>
-			<artifactId>assertj-core</artifactId>
-			<scope>test</scope>
-		</dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
 
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-api</artifactId>
-            <scope>test</scope>
-		</dependency>
+    <!-- test -->
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-params</artifactId>
-			<scope>test</scope>
-		</dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<scope>test</scope>
-		</dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<scope>test</scope>
-		</dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-	</dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<release>${java.version}</release>
-				</configuration>
-			</plugin>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <release>${java.version}</release>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>
