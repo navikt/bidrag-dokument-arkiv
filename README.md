@@ -8,9 +8,8 @@ Se [Sikkerhet](#Sikkerhet) for kjøring med sikkerhet lokalt.
 
 ### beskrivelse
 
-Dette er en mikrotjeneste som blir brukt av andre mikrotjenester, `bidrag-dokument` og
-`bidrag-dokument-hendelse`. Formålet med tjensten er å hente metadata om journalposter fra
-JOARK.
+Dette er en mikrotjeneste som blir brukt av `bidrag-dokument` for å hente metadata om
+journalposter fra JOARK.
 
 ### bygg og kjør applikasjon
 
