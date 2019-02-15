@@ -2,6 +2,7 @@ package no.nav.bidrag.dokument.arkiv.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -56,7 +57,8 @@ class JournalpostControllerTest {
   @Test
   @DisplayName("skal ha body som null når journalpost ikke finnes")
   void skalGiBodySomNullNarJournalpostIkkeFinnes() {
-    when(restTemplateMock.getForEntity(anyString(), eq(GetJournalpostResponse.class))).thenReturn(new ResponseEntity<>(HttpStatus.I_AM_A_TEAPOT));
+    when(restTemplateMock.exchange(anyString(), eq(HttpMethod.GET), any(), eq(GetJournalpostResponse.class)))
+        .thenReturn(new ResponseEntity<>(HttpStatus.I_AM_A_TEAPOT));
 
     ResponseEntity<JournalpostDto> journalpostResponseEntity = testRestTemplate.exchange(
         initUrl() + "/journalpost/1",
@@ -70,15 +72,14 @@ class JournalpostControllerTest {
         () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT)
     ));
 
-    verify(restTemplateMock).getForEntity(eq("/journalposter/1"), eq(GetJournalpostResponse.class));
+    verify(restTemplateMock).exchange(eq("/journalposter/1"), eq(HttpMethod.GET), any(), eq(GetJournalpostResponse.class));
   }
 
   @Test
   @DisplayName("skal hente Journalpost når den eksisterer")
   void skalHenteJournalpostNarDenEksisterer() {
-    when(restTemplateMock.getForEntity(anyString(), eq(GetJournalpostResponse.class))).thenReturn(new ResponseEntity<>(
-        enGetJournalpostResponseMedTittel("bidrag"), HttpStatus.I_AM_A_TEAPOT
-    ));
+    when(restTemplateMock.exchange(anyString(), eq(HttpMethod.GET), any(), eq(GetJournalpostResponse.class)))
+        .thenReturn(new ResponseEntity<>(enGetJournalpostResponseMedTittel("bidrag"), HttpStatus.I_AM_A_TEAPOT));
 
     ResponseEntity<JournalpostDto> responseEntity = testRestTemplate.exchange(
         initUrl() + "/journalpost/1",
@@ -89,10 +90,13 @@ class JournalpostControllerTest {
 
     assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
         () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
-        () -> assertThat(response.getBody()).extracting(JournalpostDto::getInnhold).isEqualTo("bidrag")
+        () -> {
+          assertThat(response.getBody()).isNotNull();
+          assertThat(response.getBody()).extracting(JournalpostDto::getInnhold).isEqualTo("bidrag");
+        }
     ));
 
-    verify(restTemplateMock).getForEntity(eq("/journalposter/1"), eq(GetJournalpostResponse.class));
+    verify(restTemplateMock).exchange(eq("/journalposter/1"), eq(HttpMethod.GET), any(), eq(GetJournalpostResponse.class));
   }
 
   private <T> HttpEntity<T> createEmptyHttpEntityWithAuthorization() {
