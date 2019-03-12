@@ -1,5 +1,6 @@
 package no.nav.bidrag.dokument.arkiv;
 
+import no.nav.bidrag.commons.ExceptionLogger;
 import no.nav.bidrag.commons.web.CorrelationIdFilter;
 import no.nav.bidrag.dokument.arkiv.consumer.JournalforingConsumer;
 import no.nav.security.oidc.context.OIDCRequestContextHolder;
@@ -26,5 +27,10 @@ public class BidragDokumentArkivConfig {
   @Bean
   public CorrelationIdFilter correlationIdFilter() {
     return new CorrelationIdFilter();
+  }
+
+  @Bean
+  public ExceptionLogger exceptionLogger() {
+    return new ExceptionLogger(BidragDokumentArkiv.class.getSimpleName());
   }
 }

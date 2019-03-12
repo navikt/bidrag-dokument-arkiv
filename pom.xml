@@ -155,6 +155,12 @@
       <artifactId>slf4j-api</artifactId>
     </dependency>
 
+    <!-- aspectj -->
+    <dependency>
+      <groupId>org.aspectj</groupId>
+      <artifactId>aspectjweaver</artifactId>
+    </dependency>
+
     <!-- test -->
     <dependency>
       <groupId>org.assertj</groupId>
