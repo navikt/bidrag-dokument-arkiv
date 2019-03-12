@@ -1,6 +1,5 @@
 package no.nav.bidrag.dokument.arkiv.consumer;
 
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -10,13 +9,13 @@ import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
 import no.nav.security.oidc.context.OIDCRequestContextHolder;
 import no.nav.security.oidc.context.OIDCValidationContext;
 import no.nav.security.oidc.context.TokenContext;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.client.HttpClientErrorException;
 
 @ActiveProfiles("dev")
 @SpringBootTest(classes = BidragDokumentArkivLocal.class)
@@ -40,9 +39,8 @@ class JournalforingConsumerTest {
   void skalFeileMedUgyldigBearerToken() {
     mockBearerToken();
 
-    assertThatExceptionOfType(HttpClientErrorException.class)
-        .isThrownBy(() -> journalforingConsumer.hentJournalforing(1001))
-        .withMessage("403 Forbidden");
+    Assertions.assertThatCode(() -> journalforingConsumer.hentJournalforing(1001))
+        .hasMessage("403 Forbidden");
   }
 
   private void mockBearerToken() {
