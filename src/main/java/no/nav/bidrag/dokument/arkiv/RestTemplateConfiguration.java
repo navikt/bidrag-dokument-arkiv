@@ -1,60 +1,37 @@
 package no.nav.bidrag.dokument.arkiv;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.ISSUER;
+
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.web.client.RootUriTemplateHandler;
+import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
+import no.nav.security.oidc.context.OIDCRequestContextHolder;
+import no.nav.security.oidc.context.TokenContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestClientException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
 public class RestTemplateConfiguration {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(RestTemplateConfiguration.class);
-
   @Bean
   @Scope("prototype")
-  public RestTemplate restTemplate() {
-    return new RestTemplateLogger();
+  public RestTemplate restTemplate(OIDCRequestContextHolder oidcRequestContextHolder) {
+    HttpHeaderRestTemplate httpHeaderRestTemplate = new HttpHeaderRestTemplate();
+
+    httpHeaderRestTemplate.addHeaderGenerator(
+        () -> new HttpHeaderRestTemplate.Header(HttpHeaders.AUTHORIZATION, () -> "Bearer " + fetchBearerToken(oidcRequestContextHolder))
+    );
+
+    return httpHeaderRestTemplate;
   }
 
-  private static class RestTemplateLogger extends RestTemplate {
-
-    @Override
-    public <T> ResponseEntity<T> exchange(String url, HttpMethod method, HttpEntity<?> requestEntity, Class<T> responseType, Object... uriVariables)
-        throws RestClientException {
-
-      return logExchange(url, () -> super.exchange(url, method, requestEntity, responseType, uriVariables));
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T> ResponseEntity<T> logExchange(String url, RestCaller restCaller) {
-      try {
-        return (ResponseEntity<T>) restCaller.doRestApi();
-      } catch (RuntimeException e) {
-        var baseUrl = Optional.ofNullable(getUriTemplateHandler())
-            .filter(handler -> handler instanceof RootUriTemplateHandler)
-            .map(handler -> (RootUriTemplateHandler) handler)
-            .map(RootUriTemplateHandler::getRootUri)
-            .orElse("RestTemplate not configured correctly");
-
-        LOGGER.error("Failed to execute rest api - {}{}: {}", baseUrl, url, e.getMessage());
-        LOGGER.error("Cause: " + e.getCause());
-
-        throw e;
-      }
-    }
-
-    @FunctionalInterface
-    private interface RestCaller {
-
-      Object doRestApi();
-    }
+  private String fetchBearerToken(OIDCRequestContextHolder oidcRequestContextHolder) {
+    return Optional.ofNullable(oidcRequestContextHolder)
+        .map(OIDCRequestContextHolder::getOIDCValidationContext)
+        .map(oidcValidationContext -> oidcValidationContext.getToken(ISSUER))
+        .map(TokenContext::getIdToken)
+        .orElseThrow(() -> new IllegalStateException("Kunne ikke videresende Bearer token"));
   }
 }
