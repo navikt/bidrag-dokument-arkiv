@@ -50,7 +50,8 @@
 
     <!-- dependent versions other than from spring-boot -->
     <oidc-spring-support.version>0.2.15</oidc-spring-support.version>
-    <bidrag-dokument-dto.version>0.0.78</bidrag-dokument-dto.version>
+    <bidrag-commons.version>0.0.8</bidrag-commons.version>
+    <bidrag-dokument-dto.version>0.0.95</bidrag-dokument-dto.version>
     <dok-tjenester-journalfoerinngaaende.version>0.0.21</dok-tjenester-journalfoerinngaaende.version>
     <logback.encoder.version>5.3</logback.encoder.version>
     <springfox-swagger.version>2.9.2</springfox-swagger.version>
@@ -94,6 +95,12 @@
       <artifactId>oidc-test-support</artifactId>
       <version>${oidc-spring-support.version}</version>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>no.nav.bidrag</groupId>
+      <artifactId>bidrag-commons</artifactId>
+      <version>${bidrag-commons.version}</version>
     </dependency>
 
     <!-- spring-boot -->
@@ -146,6 +153,12 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
+    </dependency>
+
+    <!-- aspectj -->
+    <dependency>
+      <groupId>org.aspectj</groupId>
+      <artifactId>aspectjweaver</artifactId>
     </dependency>
 
     <!-- test -->
