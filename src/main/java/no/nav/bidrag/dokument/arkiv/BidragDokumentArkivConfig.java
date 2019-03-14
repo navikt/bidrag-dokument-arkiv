@@ -19,7 +19,7 @@ public class BidragDokumentArkivConfig {
   private String baseUrl;
 
   @Bean
-  JournalforingConsumer journalforingConsumer(RestTemplate restTemplate, OIDCRequestContextHolder oidcRequestContextHolder) {
+  JournalforingConsumer journalforingConsumer(RestTemplate restTemplate) {
     restTemplate.setUriTemplateHandler(new RootUriTemplateHandler(baseUrl));
     return new JournalforingConsumer(restTemplate);
   }
