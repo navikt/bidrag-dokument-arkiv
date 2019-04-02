@@ -11,10 +11,10 @@
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
-	<groupId>no.nav.bidrag.dokument</groupId>
-	<artifactId>bidrag-dokument-arkiv</artifactId>
-	<version>1.0.31-SNAPSHOT</version>
-	<packaging>jar</packaging>
+  <groupId>no.nav.bidrag.dokument</groupId>
+  <artifactId>bidrag-dokument-arkiv</artifactId>
+  <version>1.0.31-SNAPSHOT</version>
+  <packaging>jar</packaging>
 
   <description>Backend NAIS, bidrag-dokument-arkiv, henter fra arkiv (JOARK)</description>
   <url>https://github.com/navikt/bidrag-dokument-arkiv</url>
@@ -51,7 +51,7 @@
     <!-- dependent versions other than from spring-boot -->
     <oidc-spring-support.version>0.2.15</oidc-spring-support.version>
     <bidrag-commons.version>0.0.19</bidrag-commons.version>
-    <bidrag-dokument-dto.version>0.0.95</bidrag-dokument-dto.version>
+    <bidrag-dokument-dto.version>0.0.103</bidrag-dokument-dto.version>
     <dok-tjenester-journalfoerinngaaende.version>0.0.21</dok-tjenester-journalfoerinngaaende.version>
     <logback.encoder.version>5.3</logback.encoder.version>
     <springfox-swagger.version>2.9.2</springfox-swagger.version>
