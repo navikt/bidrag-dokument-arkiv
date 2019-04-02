@@ -2,7 +2,10 @@ server:
   servlet:
     context-path: /bidrag-dokument-arkiv
 
-TOKEN_OBTAINED_BY: bidrag-dokument-ui
-    
-no.nav.security.oidc.issuer.isso.acceptedaudience: ${TOKEN_OBTAINED_BY}-${FASIT_ENVIRONMENT_NAME}
-no.nav.security.oidc.issuer.isso.discoveryurl: ${ISSO_ISSUER_URL}/.well-known/openid-configuration
+# OIDC          
+no.nav.security.oidc:
+  issuers: isso
+  issuer:
+    isso:
+      acceptedaudience: bisys-${FASIT_ENVIRONMENT_NAME}, bidrag-ui-master-${FASIT_ENVIRONMENT_NAME}, bidrag-dokument-ui-${FASIT_ENVIRONMENT_NAME}
+      discoveryurl: ${ISSO_ISSUER_URL}/.well-known/openid-configuration
