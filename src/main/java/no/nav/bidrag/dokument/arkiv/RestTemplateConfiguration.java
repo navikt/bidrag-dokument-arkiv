@@ -20,9 +20,7 @@ public class RestTemplateConfiguration {
   public RestTemplate restTemplate(OIDCRequestContextHolder oidcRequestContextHolder) {
     HttpHeaderRestTemplate httpHeaderRestTemplate = new HttpHeaderRestTemplate();
 
-    httpHeaderRestTemplate.addHeaderGenerator(
-        () -> new HttpHeaderRestTemplate.Header(HttpHeaders.AUTHORIZATION, () -> "Bearer " + fetchBearerToken(oidcRequestContextHolder))
-    );
+    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.AUTHORIZATION, () -> "Bearer " + fetchBearerToken(oidcRequestContextHolder));
 
     return httpHeaderRestTemplate;
   }
