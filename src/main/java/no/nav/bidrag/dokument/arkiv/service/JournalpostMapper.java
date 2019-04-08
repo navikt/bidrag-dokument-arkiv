@@ -1,10 +1,14 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
+import no.nav.bidrag.dokument.dto.AktorDto;
 import no.nav.bidrag.dokument.dto.DokumentDto;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
+import no.nav.bidrag.dokument.dto.OrganisasjonDto;
+import no.nav.bidrag.dokument.dto.PersonDto;
 import no.nav.dok.tjenester.journalfoerinngaaende.ArkivSakNoArkivsakSystemEnum;
 import no.nav.dok.tjenester.journalfoerinngaaende.Avsender;
 import no.nav.dok.tjenester.journalfoerinngaaende.Bruker;
+import no.nav.dok.tjenester.journalfoerinngaaende.Bruker.BrukerType;
 import no.nav.dok.tjenester.journalfoerinngaaende.Dokument;
 import no.nav.dok.tjenester.journalfoerinngaaende.GetJournalpostResponse;
 import org.springframework.stereotype.Component;
@@ -25,7 +29,7 @@ public class JournalpostMapper {
         journalpostDto.setFagomrade(fra(getJournalpostResponse.getArkivSak()));
         journalpostDto.setDokumentDato(null); // ???
         journalpostDto.setDokumenter(fraDokumentListe(getJournalpostResponse.getDokumentListe()));
-        journalpostDto.setGjelderBrukerId(fraBrukerListe(getJournalpostResponse.getBrukerListe()));
+        journalpostDto.setGjelderAktor(fraBrukerListe(getJournalpostResponse.getBrukerListe()));
         journalpostDto.setInnhold(getJournalpostResponse.getTittel());
         journalpostDto.setJournalforendeEnhet(getJournalpostResponse.getJournalfEnhet());
         journalpostDto.setJournalfortAv(null); // ???
@@ -70,12 +74,28 @@ public class JournalpostMapper {
         return dokumentDto;
     }
 
-    private List<String> fraBrukerListe(List<Bruker> brukerListe) {
+    private AktorDto fraBrukerListe(List<Bruker> brukerListe) {
         if (brukerListe != null) {
-            return brukerListe.stream().map(Bruker::getIdentifikator).collect(Collectors.toList());
+            return brukerListe.stream().findFirst().map(this::toAktor).orElse(null);
         }
 
-        return Collections.emptyList();
+        return null;
+    }
+
+    private AktorDto toAktor(Bruker bruker) {
+        if (bruker != null) {
+            if (BrukerType.PERSON == bruker.getBrukerType()) {
+                return new PersonDto(bruker.getIdentifikator());
+            }
+
+            if (BrukerType.ORGANISASJON == bruker.getBrukerType()) {
+                return new OrganisasjonDto(bruker.getIdentifikator());
+            }
+
+            return new AktorDto(bruker.getIdentifikator(), "ukjent", "ukjent");
+        }
+
+        return null;
     }
 
     private LocalDate fra(Date forsendelseMottatt) {

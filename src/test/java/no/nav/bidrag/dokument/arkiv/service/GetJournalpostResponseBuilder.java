@@ -3,6 +3,7 @@ package no.nav.bidrag.dokument.arkiv.service;
 import no.nav.dok.tjenester.journalfoerinngaaende.ArkivSakNoArkivsakSystemEnum;
 import no.nav.dok.tjenester.journalfoerinngaaende.Avsender;
 import no.nav.dok.tjenester.journalfoerinngaaende.Bruker;
+import no.nav.dok.tjenester.journalfoerinngaaende.Bruker.BrukerType;
 import no.nav.dok.tjenester.journalfoerinngaaende.Dokument;
 import no.nav.dok.tjenester.journalfoerinngaaende.GetJournalpostResponse;
 
@@ -42,6 +43,7 @@ import static java.util.Collections.singletonList;
     private Bruker initBruker(String identifikator) {
         Bruker bruker = new Bruker();
         bruker.setIdentifikator(identifikator);
+        bruker.setBrukerType(BrukerType.PERSON);
         return bruker;
     }
 
