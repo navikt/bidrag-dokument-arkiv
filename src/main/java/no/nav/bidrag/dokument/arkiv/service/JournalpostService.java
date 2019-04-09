@@ -1,5 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
+import java.util.Collections;
+import java.util.List;
 import no.nav.bidrag.dokument.arkiv.consumer.JournalforingConsumer;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
 import no.nav.dok.tjenester.journalfoerinngaaende.GetJournalpostResponse;
@@ -21,5 +23,9 @@ public class JournalpostService {
     public Optional<JournalpostDto> hentJournalpost(Integer journalpostId) {
         Optional<GetJournalpostResponse> muligJournalforing = journalforingConsumer.hentJournalforing(journalpostId);
         return muligJournalforing.map(journalpostResponse -> journalpostMapper.fra(journalpostResponse, journalpostId));
+    }
+
+    public List<JournalpostDto> finnJournalposter(Integer saksnummer, String fagomrade) {
+        return Collections.emptyList();
     }
 }

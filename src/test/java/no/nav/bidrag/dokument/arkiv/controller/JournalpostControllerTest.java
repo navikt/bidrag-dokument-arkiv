@@ -8,21 +8,21 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
+import no.nav.bidrag.commons.web.test.HttpHeaderTestRestTemplate;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
 import no.nav.dok.tjenester.journalfoerinngaaende.GetJournalpostResponse;
-import no.nav.security.oidc.test.support.jersey.TestTokenGeneratorResource;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,9 +41,7 @@ class JournalpostControllerTest {
   @Value("${server.servlet.context-path}")
   private String contextPath;
   @Autowired
-  private TestRestTemplate testRestTemplate;
-
-  private HttpHeaders headersWithAuthorization;
+  private HttpHeaderTestRestTemplate httpHeaderTestRestTemplate;
 
   @Test
   @DisplayName("should map context path with random port")
@@ -57,10 +55,10 @@ class JournalpostControllerTest {
     when(restTemplateMock.exchange(anyString(), eq(HttpMethod.GET), any(), eq(GetJournalpostResponse.class)))
         .thenReturn(new ResponseEntity<>(HttpStatus.I_AM_A_TEAPOT));
 
-    ResponseEntity<JournalpostDto> journalpostResponseEntity = testRestTemplate.exchange(
+    var journalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
         initUrl() + "/journalpost/1",
         HttpMethod.GET,
-        createEmptyHttpEntityWithAuthorization(),
+        null,
         JournalpostDto.class
     );
 
@@ -78,10 +76,10 @@ class JournalpostControllerTest {
     when(restTemplateMock.exchange(anyString(), eq(HttpMethod.GET), any(), eq(GetJournalpostResponse.class)))
         .thenReturn(new ResponseEntity<>(enGetJournalpostResponseMedTittel("bidrag"), HttpStatus.I_AM_A_TEAPOT));
 
-    ResponseEntity<JournalpostDto> responseEntity = testRestTemplate.exchange(
+    var responseEntity = httpHeaderTestRestTemplate.exchange(
         initUrl() + "/journalpost/1",
         HttpMethod.GET,
-        createEmptyHttpEntityWithAuthorization(),
+        null,
         JournalpostDto.class
     );
 
@@ -96,20 +94,23 @@ class JournalpostControllerTest {
     verify(restTemplateMock).exchange(eq("/journalposter/1"), eq(HttpMethod.GET), any(), eq(GetJournalpostResponse.class));
   }
 
-  private <T> HttpEntity<T> createEmptyHttpEntityWithAuthorization() {
-    if (headersWithAuthorization == null) {
-      headersWithAuthorization = generateHeadersWithAuthorization();
-    }
+  @Test
+  @Disabled("wip")
+  @DisplayName("skal hente journalposter for en bidragssak")
+  void skalHenteJournalposterForEnBidragssak() {
+    var jouralposterResponseEntity = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/sakjournal/1234567?fagomrade=BID", HttpMethod.GET, null, listeMedJournalposterTypeReference()
+    );
 
-    return new HttpEntity<>(null, headersWithAuthorization);
+    assertAll(
+        () -> assertThat(jouralposterResponseEntity).extracting(ResponseEntity::getStatusCode).isEqualTo(HttpStatus.OK),
+        () -> assertThat(jouralposterResponseEntity.getBody()).hasSize(3)
+    );
   }
 
-  private HttpHeaders generateHeadersWithAuthorization() {
-    TestTokenGeneratorResource testTokenGeneratorResource = new TestTokenGeneratorResource();
-    HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.add(HttpHeaders.AUTHORIZATION, "Bearer " + testTokenGeneratorResource.issueToken("localhost-idtoken"));
-
-    return httpHeaders;
+  private ParameterizedTypeReference<List<JournalpostDto>> listeMedJournalposterTypeReference() {
+    return new ParameterizedTypeReference<>() {
+    };
   }
 
   private GetJournalpostResponse enGetJournalpostResponseMedTittel(@SuppressWarnings("SameParameterValue") String tittel) {

@@ -51,6 +51,7 @@
     <!-- dependent versions other than from spring-boot -->
     <oidc-spring-support.version>0.2.15</oidc-spring-support.version>
     <bidrag-commons.version>0.0.21</bidrag-commons.version>
+    <bidrag-commons-test.version>0.0.9</bidrag-commons-test.version>
     <bidrag-dokument-dto.version>0.0.106</bidrag-dokument-dto.version>
     <dok-tjenester-journalfoerinngaaende.version>0.0.21</dok-tjenester-journalfoerinngaaende.version>
     <logback.encoder.version>5.3</logback.encoder.version>
@@ -162,6 +163,12 @@
     </dependency>
 
     <!-- test -->
+    <dependency>
+      <groupId>no.nav.bidrag</groupId>
+      <artifactId>bidrag-commons-test</artifactId>
+      <version>${bidrag-commons-test.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
