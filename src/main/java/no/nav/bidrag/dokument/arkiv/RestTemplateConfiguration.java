@@ -3,6 +3,7 @@ package no.nav.bidrag.dokument.arkiv;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.ISSUER;
 
 import java.util.Optional;
+import no.nav.bidrag.commons.CorrelationId;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.security.oidc.context.OIDCRequestContextHolder;
 import no.nav.security.oidc.context.TokenContext;
@@ -20,9 +21,8 @@ public class RestTemplateConfiguration {
   public RestTemplate restTemplate(OIDCRequestContextHolder oidcRequestContextHolder) {
     HttpHeaderRestTemplate httpHeaderRestTemplate = new HttpHeaderRestTemplate();
 
-    httpHeaderRestTemplate.addHeaderGenerator(
-        () -> new HttpHeaderRestTemplate.Header(HttpHeaders.AUTHORIZATION, () -> "Bearer " + fetchBearerToken(oidcRequestContextHolder))
-    );
+    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.AUTHORIZATION, () -> "Bearer " + fetchBearerToken(oidcRequestContextHolder));
+    httpHeaderRestTemplate.addHeaderGenerator(CorrelationId.CORRELATION_ID_HEADER, CorrelationId::fetchCorrelationIdForThread);
 
     return httpHeaderRestTemplate;
   }

@@ -8,31 +8,30 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import no.nav.bidrag.commons.web.test.HttpHeaderTestRestTemplate;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
-import no.nav.dok.tjenester.journalfoerinngaaende.GetJournalpostResponse;
-import no.nav.security.oidc.test.support.jersey.TestTokenGeneratorResource;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
 
 @ActiveProfiles("dev")
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = BidragDokumentArkiv.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("JournalpostController")
 class JournalpostControllerTest {
@@ -44,9 +43,7 @@ class JournalpostControllerTest {
   @Value("${server.servlet.context-path}")
   private String contextPath;
   @Autowired
-  private TestRestTemplate testRestTemplate;
-
-  private HttpHeaders headersWithAuthorization;
+  private HttpHeaderTestRestTemplate httpHeaderTestRestTemplate;
 
   @Test
   @DisplayName("should map context path with random port")
@@ -57,13 +54,13 @@ class JournalpostControllerTest {
   @Test
   @DisplayName("skal ha body som null når journalpost ikke finnes")
   void skalGiBodySomNullNarJournalpostIkkeFinnes() {
-    when(restTemplateMock.exchange(anyString(), eq(HttpMethod.GET), any(), eq(GetJournalpostResponse.class)))
+    when(restTemplateMock.exchange(anyString(), eq(HttpMethod.POST), any(), eq(Map.class)))
         .thenReturn(new ResponseEntity<>(HttpStatus.I_AM_A_TEAPOT));
 
-    ResponseEntity<JournalpostDto> journalpostResponseEntity = testRestTemplate.exchange(
+    var journalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
         initUrl() + "/journalpost/1",
         HttpMethod.GET,
-        createEmptyHttpEntityWithAuthorization(),
+        null,
         JournalpostDto.class
     );
 
@@ -72,19 +69,26 @@ class JournalpostControllerTest {
         () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT)
     ));
 
-    verify(restTemplateMock).exchange(eq("/journalposter/1"), eq(HttpMethod.GET), any(), eq(GetJournalpostResponse.class));
+    verify(restTemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(Map.class));
   }
 
   @Test
   @DisplayName("skal hente Journalpost når den eksisterer")
   void skalHenteJournalpostNarDenEksisterer() {
-    when(restTemplateMock.exchange(anyString(), eq(HttpMethod.GET), any(), eq(GetJournalpostResponse.class)))
-        .thenReturn(new ResponseEntity<>(enGetJournalpostResponseMedTittel("bidrag"), HttpStatus.I_AM_A_TEAPOT));
+    var innhold = new HashMap<>();
+    innhold.put("tittel", "bidrag");
+    var journalpostMap = new HashMap<>();
+    journalpostMap.put("journalpost", innhold);
+    var dataMap = new HashMap<>();
+    dataMap.put("data", journalpostMap);
 
-    ResponseEntity<JournalpostDto> responseEntity = testRestTemplate.exchange(
+    when(restTemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(Map.class)))
+        .thenReturn(new ResponseEntity<>(dataMap, HttpStatus.I_AM_A_TEAPOT));
+
+    var responseEntity = httpHeaderTestRestTemplate.exchange(
         initUrl() + "/journalpost/1",
         HttpMethod.GET,
-        createEmptyHttpEntityWithAuthorization(),
+        null,
         JournalpostDto.class
     );
 
@@ -96,30 +100,33 @@ class JournalpostControllerTest {
         }
     ));
 
-    verify(restTemplateMock).exchange(eq("/journalposter/1"), eq(HttpMethod.GET), any(), eq(GetJournalpostResponse.class));
+    verify(restTemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(Map.class));
   }
 
-  private <T> HttpEntity<T> createEmptyHttpEntityWithAuthorization() {
-    if (headersWithAuthorization == null) {
-      headersWithAuthorization = generateHeadersWithAuthorization();
-    }
+  @Test
+  @Disabled("wip")
+  @DisplayName("skal hente journalposter for en bidragssak")
+  void skalHenteJournalposterForEnBidragssak() {
+    when(restTemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(Map.class)))
+        .thenReturn(new ResponseEntity<>(enMapMedJournalposter(), HttpStatus.I_AM_A_TEAPOT));
 
-    return new HttpEntity<>(null, headersWithAuthorization);
+    var jouralposterResponseEntity = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/sakjournal/1234567?fagomrade=BID", HttpMethod.GET, null, listeMedJournalposterTypeReference()
+    );
+
+    assertAll(
+        () -> assertThat(jouralposterResponseEntity).extracting(ResponseEntity::getStatusCode).isEqualTo(HttpStatus.OK),
+        () -> assertThat(jouralposterResponseEntity.getBody()).hasSize(3)
+    );
   }
 
-  private HttpHeaders generateHeadersWithAuthorization() {
-    TestTokenGeneratorResource testTokenGeneratorResource = new TestTokenGeneratorResource();
-    HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.add(HttpHeaders.AUTHORIZATION, "Bearer " + testTokenGeneratorResource.issueToken("localhost-idtoken"));
-
-    return httpHeaders;
+  private Map<String, Object> enMapMedJournalposter() {
+    return Collections.emptyMap();
   }
 
-  private GetJournalpostResponse enGetJournalpostResponseMedTittel(@SuppressWarnings("SameParameterValue") String tittel) {
-    GetJournalpostResponse getJournalpostResponse = new GetJournalpostResponse();
-    getJournalpostResponse.setTittel(tittel);
-
-    return getJournalpostResponse;
+  private ParameterizedTypeReference<List<JournalpostDto>> listeMedJournalposterTypeReference() {
+    return new ParameterizedTypeReference<>() {
+    };
   }
 
   private String initUrl() {

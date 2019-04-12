@@ -13,18 +13,19 @@ import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("dev")
 @SpringBootTest(classes = BidragDokumentArkivLocal.class)
-@DisplayName("JournalforingConsumerTest")
-class JournalforingConsumerTest {
+@DisplayName("GraphQueryConsumer")
+class GraphQueryConsumerTest {
 
   @Autowired
-  private JournalforingConsumer journalforingConsumer;
+  private GraphQueryConsumer graphQueryConsumer;
+
   @MockBean
   private OIDCRequestContextHolder oidcRequestContextHolderMock;
 
   @Test
   @DisplayName("skal feile når Bearer token ikke finnes")
   void skalFeileUtenBearerToken() {
-    assertThatIllegalStateException().isThrownBy(() -> journalforingConsumer.hentJournalforing(1001))
+    assertThatIllegalStateException().isThrownBy(() -> graphQueryConsumer.hentJournalpost(1001))
         .withMessage("Kunne ikke videresende Bearer token");
   }
 }
