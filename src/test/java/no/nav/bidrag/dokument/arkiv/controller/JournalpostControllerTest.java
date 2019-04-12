@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -70,14 +69,21 @@ class JournalpostControllerTest {
         () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT)
     ));
 
-    verify(restTemplateMock).exchange(contains("/graphql"), eq(HttpMethod.POST), any(), eq(Map.class));
+    verify(restTemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(Map.class));
   }
 
   @Test
   @DisplayName("skal hente Journalpost når den eksisterer")
   void skalHenteJournalpostNarDenEksisterer() {
-    when(restTemplateMock.exchange(anyString(), eq(HttpMethod.POST), any(), eq(Map.class)))
-        .thenReturn(new ResponseEntity<>(enMapMedJournalpostMedTittel("bidrag"), HttpStatus.I_AM_A_TEAPOT));
+    var innhold = new HashMap<>();
+    innhold.put("tittel", "bidrag");
+    var journalpostMap = new HashMap<>();
+    journalpostMap.put("journalpost", innhold);
+    var dataMap = new HashMap<>();
+    dataMap.put("data", journalpostMap);
+
+    when(restTemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(Map.class)))
+        .thenReturn(new ResponseEntity<>(dataMap, HttpStatus.I_AM_A_TEAPOT));
 
     var responseEntity = httpHeaderTestRestTemplate.exchange(
         initUrl() + "/journalpost/1",
@@ -94,21 +100,14 @@ class JournalpostControllerTest {
         }
     ));
 
-    verify(restTemplateMock).exchange(contains("/graphql"), eq(HttpMethod.POST), any(), eq(Map.class));
-  }
-
-  private Map<String, Object> enMapMedJournalpostMedTittel(@SuppressWarnings("SameParameterValue") String tittel) {
-    var jsonMap = new HashMap<String, Object>();
-    jsonMap.put("tittel", tittel);
-
-    return jsonMap;
+    verify(restTemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(Map.class));
   }
 
   @Test
   @Disabled("wip")
   @DisplayName("skal hente journalposter for en bidragssak")
   void skalHenteJournalposterForEnBidragssak() {
-    when(restTemplateMock.exchange(anyString(), eq(HttpMethod.POST), any(), eq(Map.class)))
+    when(restTemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(Map.class)))
         .thenReturn(new ResponseEntity<>(enMapMedJournalposter(), HttpStatus.I_AM_A_TEAPOT));
 
     var jouralposterResponseEntity = httpHeaderTestRestTemplate.exchange(

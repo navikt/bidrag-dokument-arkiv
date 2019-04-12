@@ -31,7 +31,7 @@ public class JournalpostMapper {
     journalpostDto.setGjelderAktor(tilAktorDto(journalpostMap.get("bruker")));
     journalpostDto.setJournalforendeEnhet(asString(journalpostMap.get("journalforendeEnhet")));
     journalpostDto.setJournalfortAv(asString(journalpostMap.get("journalfortAvNavn")));
-    journalpostDto.setJournalfortDato(LocalDate.parse(asString(journalpostMap.get("datoOpprettet")), DATE_PATTERN));
+    journalpostDto.setJournalfortDato(hentDato(journalpostMap.get("datoOpprettet")));
     journalpostDto.setJournalpostId(asString(journalpostMap.get("journalpostId")));
     journalpostDto.setJournalstatus(asString(journalpostMap.get("journalstatus")));
     journalpostDto.setMottattDato(hentDatoRegistrert(journalpostMap.get("relevanteDatoer")));
@@ -78,7 +78,15 @@ public class JournalpostMapper {
 
   private LocalDate hentDatoRegistrert(Map<String, Object> relevantDatoMap) {
     if ("DATO_REGISTRERT".equals(relevantDatoMap.get("datotype"))) {
-      return LocalDate.parse(asString(relevantDatoMap.get("dato")), DATE_PATTERN);
+      return hentDato(relevantDatoMap.get("dato"));
+    }
+
+    return null;
+  }
+
+  private LocalDate hentDato(Object datoObjekt) {
+    if (datoObjekt != null) {
+      return LocalDate.parse(asString(datoObjekt), DATE_PATTERN);
     }
 
     return null;
