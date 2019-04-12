@@ -1,23 +1,39 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
-data class JournalpostQuery(val journalpostId: String) : GraphQuery() {
-    private val queru = """
+data class JournalpostQuery(val journalpostId: Int) : GraphQuery() {
+    private val query = """
 
     journalpost(journalpostId: "$journalpostId") {
-      journalpostId
-      tittel
-      journalposttype
-      journalstatus
-      temq
+      avsenderMottaker {
+        navn
+      }
+      bruker {
+        id
+        type
+      }
+      datoOpprettet
       dokumenter {
-        dokumentInfoId
         tittel
       }
+      journalforendeEnhet
+      journalfortAvNavn
+      journalpostId
+      journalposttype
+      journalstatus
+      relevanteDatoer {
+        dato
+        datotype
+      }
+      sak {
+        arkivsaksnummer
+      }
+      tema
+      tittel
     }
 
     """.trimIndent()
 
     override fun writeQuery(): String {
-        return fullQuery(queru)
+        return fullQuery(query)
     }
 }
