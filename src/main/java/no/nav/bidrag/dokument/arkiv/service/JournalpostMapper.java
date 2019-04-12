@@ -65,6 +65,10 @@ public class JournalpostMapper {
 
   @SuppressWarnings("unchecked")
   private LocalDate hentDatoRegistrert(Object relevanteDatoer) {
+    if (relevanteDatoer == null) {
+      return null;
+    }
+
     return ((List<Map<String, Object>>) relevanteDatoer).stream()
         .map(this::hentDatoRegistrert)
         .filter(Objects::nonNull)
@@ -86,6 +90,10 @@ public class JournalpostMapper {
 
   @SuppressWarnings("unchecked")
   private Map<String, Object> asMap(Object object) {
+    if (object == null) {
+      return Collections.emptyMap();
+    }
+
     if (!(object instanceof Map)) {
       throw new IllegalStateException("Object is not a map: " + object);
     }
