@@ -1,5 +1,5 @@
 # bidrag-dokument-arkiv
-Microservice for integration with JOARK for bidrag-dokument
+Microservice for integration with a rest-api using graph query language for bidrag-dokument
 
 ### kjøring lokalt
 Fila `src/main/resources/url.properties` må inneholde url til rest-api for joark tjeneste.
