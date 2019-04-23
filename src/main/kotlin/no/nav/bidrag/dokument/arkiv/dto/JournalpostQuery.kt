@@ -11,7 +11,6 @@ data class JournalpostQuery(val journalpostId: Int) : GraphQuery() {
         id
         type
       }
-      datoOpprettet
       dokumenter {
         tittel
       }
@@ -25,7 +24,7 @@ data class JournalpostQuery(val journalpostId: Int) : GraphQuery() {
         datotype
       }
       sak {
-        arkivsaksnummer
+        fagsakId
       }
       tema
       tittel
