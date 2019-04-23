@@ -24,4 +24,17 @@ class JournalpostMapperTest {
     assertThat(journalpostDto.getJournalfortDato()).isEqualTo(LocalDate.of(2008, 12, 6));
   }
 
+  @Test
+  @DisplayName("skal mappe fagsak Id som saksnummer")
+  void skalMappeFagsakIdSomSaksnummer() {
+    var sakMap = new HashMap<String, Object>();
+    var journalpostMap = new HashMap<String, Object>();
+
+    sakMap.put("fagsakId", "1001");
+    journalpostMap.put("sak", sakMap);
+
+    JournalpostDto journalpostDto = journalpostMapper.tilJournalpostDto(journalpostMap);
+
+    assertThat(journalpostDto.getSaksnummer()).isEqualTo("1001");
+  }
 }

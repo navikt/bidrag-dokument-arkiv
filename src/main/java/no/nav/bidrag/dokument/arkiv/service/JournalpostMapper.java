@@ -5,7 +5,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import no.nav.bidrag.dokument.dto.AktorDto;
 import no.nav.bidrag.dokument.dto.DokumentDto;
@@ -34,8 +33,9 @@ public class JournalpostMapper {
     journalpostDto.setJournalfortDato(hentDato(journalpostMap.get("datoOpprettet")));
     journalpostDto.setJournalpostId(asString(journalpostMap.get("journalpostId")));
     journalpostDto.setJournalstatus(asString(journalpostMap.get("journalstatus")));
-    journalpostDto.setMottattDato(hentDatoRegistrert(journalpostMap.get("relevanteDatoer")));
-    journalpostDto.setSaksnummer(asString(sakMap.get("arkivsaksnummer")));
+    journalpostDto.setSaksnummer(asString(sakMap.get("fagsakId")));
+
+    setMottattOgJournalfortDato(journalpostDto, asList(journalpostMap.get("relevanteDatoer")));
 
     return journalpostDto;
   }
@@ -63,25 +63,18 @@ public class JournalpostMapper {
     return new DokumentDto("", dokumenttype, asString(dokumentMap.get("tittel")));
   }
 
-  @SuppressWarnings("unchecked")
-  private LocalDate hentDatoRegistrert(Object relevanteDatoer) {
-    if (relevanteDatoer == null) {
-      return null;
-    }
-
-    return ((List<Map<String, Object>>) relevanteDatoer).stream()
-        .map(this::hentDatoRegistrert)
-        .filter(Objects::nonNull)
-        .findFirst()
-        .orElse(null);
+  private void setMottattOgJournalfortDato(JournalpostDto journalpostDto, List<Map<String, Object>> relevanteDatoer) {
+    relevanteDatoer.forEach(map -> setRelevanteDatoer(journalpostDto, map));
   }
 
-  private LocalDate hentDatoRegistrert(Map<String, Object> relevantDatoMap) {
-    if ("DATO_REGISTRERT".equals(relevantDatoMap.get("datotype"))) {
-      return hentDato(relevantDatoMap.get("dato"));
+  private void setRelevanteDatoer(JournalpostDto journalpostDto, Map<String, Object> datoMap) {
+    if ("DATO_REGISTRERT".equals(datoMap.get("datotype"))) {
+      journalpostDto.setMottattDato(hentDato(datoMap.get("dato")));
     }
 
-    return null;
+    if ("DATO_JOURNALFOERT".equals(datoMap.get("datotype"))) {
+      journalpostDto.setJournalfortDato(hentDato(datoMap.get("dato")));
+    }
   }
 
   private LocalDate hentDato(Object datoObjekt) {
@@ -103,9 +96,22 @@ public class JournalpostMapper {
     }
 
     if (!(object instanceof Map)) {
-      throw new IllegalStateException("Object is not a map: " + object);
+      throw new IllegalStateException(String.format("Object is not a map: %s/%s ", object.getClass(), object));
     }
 
     return (Map<String, Object>) object;
+  }
+
+  @SuppressWarnings("unchecked")
+  private List<Map<String, Object>> asList(Object object) {
+    if (object == null) {
+      return Collections.emptyList();
+    }
+
+    if (!(object instanceof List)) {
+      throw new IllegalStateException(String.format("Object is not a list: %s/%s ", object.getClass(), object));
+    }
+
+    return (List<Map<String, Object>>) object;
   }
 }
