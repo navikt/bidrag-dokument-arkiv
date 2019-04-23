@@ -29,7 +29,7 @@ public class GraphQueryConsumer {
   }
 
   public List<Map> finnJournalposter(Integer saksnummer, String fagomrade) {
-    var journalpostQuery = new DokumentoversiktFagsakQuery(saksnummer);
+    var journalpostQuery = new DokumentoversiktFagsakQuery(saksnummer, fagomrade);
 
     var jsonResponse = restTemplate.exchange(
         "/", HttpMethod.POST, new HttpEntity<>(journalpostQuery.writeQuery()), Map.class
