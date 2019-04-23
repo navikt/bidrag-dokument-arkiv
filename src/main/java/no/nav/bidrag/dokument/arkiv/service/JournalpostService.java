@@ -1,6 +1,8 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
-import java.util.Collections;
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,15 +27,24 @@ public class JournalpostService {
         .map(journalpostMapper::tilJournalpostDto);
   }
 
-  public List<JournalpostDto> finnJournalposter(Integer saksnummer, String fagomrade) {
-    return Collections.emptyList();
-  }
-
-  @SuppressWarnings("unchecked")
-  private Map<String, Object> tilJournalpostMap(Map<String, Object> mapFromConsumer) {
-    return (Map<String, Object>) Optional.ofNullable(mapFromConsumer.get("data"))
-        .map(obj -> obj instanceof Map ? ((Map<String, Object>) obj).get("journalpost") : null)
+  private Map tilJournalpostMap(Map mapFraConsumer) {
+    return (Map) Optional.ofNullable(mapFraConsumer.get("data"))
+        .map(obj -> obj instanceof Map ? ((Map) obj).get("journalpost") : null)
         .orElse(null);
   }
 
+  public List<JournalpostDto> finnJournalposter(Integer saksnummer, String fagomrade) {
+    return graphQueryConsumer.finnJournalposter(saksnummer, fagomrade).stream()
+        .map(this::tilJournalpostMapForListeAvJournalposter)
+        .flatMap(List::stream)
+        .map(journalpostMapper::tilJournalpostDto)
+        .collect(toList());
+  }
+
+  @SuppressWarnings("unchecked")
+  private List<Map> tilJournalpostMapForListeAvJournalposter(Map mapFraConsumer) {
+    return (List<Map>) Optional.ofNullable(mapFraConsumer.get("data"))
+        .map(obj -> obj instanceof Map ? ((Map) obj).get("journalposter") : null)
+        .orElse(emptyList());
+  }
 }

@@ -82,7 +82,7 @@ class JournalpostServiceTest {
   @DisplayName("skal oversette Map fra consumer til JournalpostDto")
   void skalOversetteMapFraConsumerTilJournalpostDto() throws IOException {
 
-    @SuppressWarnings("unchecked") Optional<Map<String, Object>> journalpostMapOversattMedJackson = Optional.of(
+    Optional<Map> journalpostMapOversattMedJackson = Optional.of(
         objectMapper.readValue(JSON, HashMap.class)
     );
 
