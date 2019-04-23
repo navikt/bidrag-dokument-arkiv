@@ -2,14 +2,14 @@
 Microservice for integration with a rest-api using graph query language for bidrag-dokument
 
 ### kjøring lokalt
-Fila `src/main/resources/url.properties` må inneholde url til rest-api for joark tjeneste.
+Fila `src/main/resources/url.properties` må inneholde url til rest-api for gaph query (sak og arkiv facade).
 
 Se [Sikkerhet](#Sikkerhet) for kjøring med sikkerhet lokalt.
 
 ### beskrivelse
 
 Dette er en mikrotjeneste som blir brukt av `bidrag-dokument` for å hente metadata om
-journalposter fra JOARK.
+journalposter fra sak og arkiv (sak og arkiv facade/saf).
 
 ### bygg og kjør applikasjon
 
@@ -82,7 +82,3 @@ For preprod kan følgende CURL-kommando benyttes (krever tilgang til isso-agent-
 hvor <code>{isso-agent-brukernavn}</code> og <code>{isso-agent-passord}</code> hentes fra Fasit-ressurs OpenIdConnect bidrag-dokument-ui-oidc for aktuelt miljø (f.eks [https://fasit.adeo.no/resources/6419841](https://fasit.adeo.no/resources/6419841) for q0),
 
 og <code>{isso-issuer-url}</code> hentes fra Fasit-ressurs BaseUrl isso-issuer (f.eks [https://fasit.adeo.no/resources/2291405](https://fasit.adeo.no/resources/2291405) for q0.
-
-
-
-  
