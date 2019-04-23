@@ -8,7 +8,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Collections;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +17,6 @@ import java.util.Optional;
 import no.nav.bidrag.commons.web.test.HttpHeaderTestRestTemplate;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +36,17 @@ import org.springframework.web.client.RestTemplate;
 @DisplayName("JournalpostController")
 class JournalpostControllerTest {
 
+  private static final String JOURNALPOSTER_JSON = String.join("\n", "{",
+      "  \"data\": {",
+      "    \"journalposter\": [",
+      "      { \"journalpostId\": \"1001001\" },",
+      "      { \"journalpostId\": \"1001002\" },",
+      "      { \"journalpostId\": \"1001003\" }",
+      "    ]",
+      "  }",
+      "}"
+  );
+
   @LocalServerPort
   private int port;
   @MockBean
@@ -44,6 +55,8 @@ class JournalpostControllerTest {
   private String contextPath;
   @Autowired
   private HttpHeaderTestRestTemplate httpHeaderTestRestTemplate;
+  @Autowired
+  private ObjectMapper objectMapper;
 
   @Test
   @DisplayName("should map context path with random port")
@@ -104,11 +117,12 @@ class JournalpostControllerTest {
   }
 
   @Test
-  @Disabled("wip")
   @DisplayName("skal hente journalposter for en bidragssak")
-  void skalHenteJournalposterForEnBidragssak() {
+  void skalHenteJournalposterForEnBidragssak() throws IOException {
+    Map journalposterMapOversattMedJackson = objectMapper.readValue(JOURNALPOSTER_JSON, HashMap.class);
+
     when(restTemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(Map.class)))
-        .thenReturn(new ResponseEntity<>(enMapMedJournalposter(), HttpStatus.I_AM_A_TEAPOT));
+        .thenReturn(new ResponseEntity<>(journalposterMapOversattMedJackson, HttpStatus.I_AM_A_TEAPOT));
 
     var jouralposterResponseEntity = httpHeaderTestRestTemplate.exchange(
         initUrl() + "/sakjournal/1234567?fagomrade=BID", HttpMethod.GET, null, listeMedJournalposterTypeReference()
@@ -118,10 +132,6 @@ class JournalpostControllerTest {
         () -> assertThat(jouralposterResponseEntity).extracting(ResponseEntity::getStatusCode).isEqualTo(HttpStatus.OK),
         () -> assertThat(jouralposterResponseEntity.getBody()).hasSize(3)
     );
-  }
-
-  private Map<String, Object> enMapMedJournalposter() {
-    return Collections.emptyMap();
   }
 
   private ParameterizedTypeReference<List<JournalpostDto>> listeMedJournalposterTypeReference() {
