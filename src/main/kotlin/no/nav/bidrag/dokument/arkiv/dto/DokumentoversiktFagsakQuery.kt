@@ -1,6 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
-data class DokumentoversiktFagsakQuery(val saksnummer: Int, val tema: String) : GraphQuery() {
+data class DokumentoversiktFagsakQuery(val saksnummer: String, val tema: String) : GraphQuery() {
     private val query = """
 
       dokumentoversiktFagsak(fagsak: {fagsakId: "$saksnummer", fagsaksystem: "BI01"}, tema:$tema, foerste: 50) {

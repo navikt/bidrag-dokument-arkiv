@@ -36,7 +36,7 @@ public class JournalpostController {
   @ProtectedWithClaims(issuer = ISSUER)
   @GetMapping("/sakjournal/{saksnummer}")
   @ApiOperation("Hent journalposter for en bidragssak")
-  public ResponseEntity<List<JournalpostDto>> get(@PathVariable Integer saksnummer, @RequestParam String fagomrade) {
+  public ResponseEntity<List<JournalpostDto>> get(@PathVariable String saksnummer, @RequestParam String fagomrade) {
     var journalposter = journalpostService.finnJournalposter(saksnummer, fagomrade);
 
     if (journalposter.isEmpty()) {

@@ -28,7 +28,7 @@ public class GraphQueryConsumer {
     return Optional.ofNullable(jsonResponse.getBody());
   }
 
-  public List<Map> finnJournalposter(Integer saksnummer, String fagomrade) {
+  public List<Map> finnJournalposter(String saksnummer, String fagomrade) {
     var dokumentoversiktFagsakQuery = new DokumentoversiktFagsakQuery(saksnummer, fagomrade);
 
     var jsonResponse = restTemplate.exchange(
