@@ -14,8 +14,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.bidrag.commons.web.test.HttpHeaderTestRestTemplate;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv;
+import no.nav.bidrag.dokument.arkiv.TestRestTemplateConfiguration;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,11 +31,13 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.client.RestTemplate;
 
 @ActiveProfiles("dev")
-@SpringBootTest(classes = BidragDokumentArkiv.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("JournalpostController")
+@SpringBootTest(
+    classes = {BidragDokumentArkiv.class, TestRestTemplateConfiguration.class},
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+)
 class JournalpostControllerTest {
 
   private static final String JOURNALPOSTER_JSON = String.join("\n", "{",
@@ -50,7 +54,7 @@ class JournalpostControllerTest {
   @LocalServerPort
   private int port;
   @MockBean
-  private RestTemplate restTemplateMock;
+  private HttpHeaderRestTemplate httpHeaderRestTemplateMock;
   @Value("${server.servlet.context-path}")
   private String contextPath;
   @Autowired
@@ -67,7 +71,7 @@ class JournalpostControllerTest {
   @Test
   @DisplayName("skal ha body som null når journalpost ikke finnes")
   void skalGiBodySomNullNarJournalpostIkkeFinnes() {
-    when(restTemplateMock.exchange(anyString(), eq(HttpMethod.POST), any(), eq(Map.class)))
+    when(httpHeaderRestTemplateMock.exchange(anyString(), eq(HttpMethod.POST), any(), eq(Map.class)))
         .thenReturn(new ResponseEntity<>(HttpStatus.I_AM_A_TEAPOT));
 
     var journalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
@@ -82,7 +86,7 @@ class JournalpostControllerTest {
         () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT)
     ));
 
-    verify(restTemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(Map.class));
+    verify(httpHeaderRestTemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(Map.class));
   }
 
   @Test
@@ -95,7 +99,7 @@ class JournalpostControllerTest {
     var dataMap = new HashMap<>();
     dataMap.put("data", journalpostMap);
 
-    when(restTemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(Map.class)))
+    when(httpHeaderRestTemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(Map.class)))
         .thenReturn(new ResponseEntity<>(dataMap, HttpStatus.I_AM_A_TEAPOT));
 
     var responseEntity = httpHeaderTestRestTemplate.exchange(
@@ -113,7 +117,7 @@ class JournalpostControllerTest {
         }
     ));
 
-    verify(restTemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(Map.class));
+    verify(httpHeaderRestTemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(Map.class));
   }
 
   @Test
@@ -121,7 +125,7 @@ class JournalpostControllerTest {
   void skalHenteJournalposterForEnBidragssak() throws IOException {
     Map journalposterMapOversattMedJackson = objectMapper.readValue(JOURNALPOSTER_JSON, HashMap.class);
 
-    when(restTemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(Map.class)))
+    when(httpHeaderRestTemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(Map.class)))
         .thenReturn(new ResponseEntity<>(journalposterMapOversattMedJackson, HttpStatus.I_AM_A_TEAPOT));
 
     var jouralposterResponseEntity = httpHeaderTestRestTemplate.exchange(

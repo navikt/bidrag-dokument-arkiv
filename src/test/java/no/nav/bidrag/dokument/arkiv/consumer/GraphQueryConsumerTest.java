@@ -2,15 +2,16 @@ package no.nav.bidrag.dokument.arkiv.consumer;
 
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.ISSUER;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
+import no.nav.modig.testcertificates.TestCertificates;
 import no.nav.security.oidc.context.OIDCRequestContextHolder;
 import no.nav.security.oidc.context.OIDCValidationContext;
 import no.nav.security.oidc.context.TokenContext;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.client.DefaultRequestExpectation;
-import org.springframework.test.web.client.ExpectedCount;
-import org.springframework.test.web.client.MockRestServiceServer;
-import org.springframework.web.client.RestTemplate;
 
 @ActiveProfiles("dev")
 @SpringBootTest(classes = BidragDokumentArkivLocal.class)
@@ -31,16 +28,12 @@ class GraphQueryConsumerTest {
 
   @Autowired
   private GraphQueryConsumer graphQueryConsumer;
-  @Autowired
-  private RestTemplate restTemplate;
   @MockBean
   private OIDCRequestContextHolder oidcRequestContextHolderMock;
 
-  private MockRestServiceServer mockRestServiceServer;
-
-  @BeforeEach
-  void createRestServiceServer() {
-    mockRestServiceServer = MockRestServiceServer.createServer(restTemplate);
+  @BeforeAll
+  static void setUpKeyAndTrustStore() {
+    TestCertificates.setupKeyAndTrustStore();
   }
 
   @Test
@@ -51,9 +44,7 @@ class GraphQueryConsumerTest {
   }
 
   @Test
-  @Disabled("PKIX path building failed Caused by: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target???")
-  @DisplayName("skal ikke feile når Baerer token kan utredes")
-  void skalIkkeFeileNarBearerTokenKanUtredes() {
+  void skalIkkeFeileMedIllegalStateExceptionNarBearerTokenKanUtredes() {
     OIDCValidationContext oidcValidationContextMock = mock(OIDCValidationContext.class);
     TokenContext tokenContextMock = mock(TokenContext.class);
 
@@ -61,8 +52,7 @@ class GraphQueryConsumerTest {
     when(oidcValidationContextMock.getToken(ISSUER)).thenReturn(tokenContextMock);
     when(tokenContextMock.getIdToken()).thenReturn("i'm so secure!!!");
 
-    graphQueryConsumer.hentJournalpost(1001);
-
-    mockRestServiceServer.expect(new DefaultRequestExpectation(ExpectedCount.once(), System.out::println));
+    assertThatThrownBy(() -> graphQueryConsumer.hentJournalpost(1001))
+        .hasMessageNotContaining("Kunne ikke videresende Bearer token");
   }
 }

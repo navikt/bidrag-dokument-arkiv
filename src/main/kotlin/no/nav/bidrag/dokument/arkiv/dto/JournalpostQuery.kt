@@ -1,9 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
 data class JournalpostQuery(val journalpostId: Int) : GraphQuery() {
-    private val query = """
-
-    journalpost(journalpostId: "$journalpostId") {
+    private val query = """journalpost(journalpostId: $journalpostId) {
       avsenderMottaker {
         navn
       }
@@ -28,11 +26,9 @@ data class JournalpostQuery(val journalpostId: Int) : GraphQuery() {
       }
       tema
       tittel
-    }
+    }""".trimIndent()
 
-    """.trimIndent()
-
-    override fun writeQuery(): String {
-        return fullQuery(query)
+    override fun getQuery(): String {
+        return query
     }
 }
