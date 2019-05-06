@@ -1,9 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
-data class DokumentoversiktFagsakQuery(val saksnummer: Int, val tema: String) : GraphQuery() {
-    private val query = """
-
-      dokumentoversiktFagsak(fagsak: {fagsakId: "$saksnummer", fagsaksystem: "BI01"}, tema:$tema, foerste: 50) {
+data class DokumentoversiktFagsakQuery(val saksnummer: String, val tema: String) : GraphQuery() {
+    private val query = """dokumentoversiktFagsak(fagsak: {fagsakId: \"$saksnummer\", fagsaksystem: \"BI01\"}, tema:$tema, foerste: 500) {
         journalposter {
           avsenderMottaker {
             navn
@@ -30,11 +28,9 @@ data class DokumentoversiktFagsakQuery(val saksnummer: Int, val tema: String) : 
           tema
           tittel
         }
-      }
+      }""".trimIndent()
 
-    """.trimIndent()
-
-    override fun writeQuery(): String {
-        return fullQuery(query)
+    override fun getQuery(): String {
+        return query
     }
 }

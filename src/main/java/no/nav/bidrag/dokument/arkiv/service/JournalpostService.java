@@ -33,7 +33,7 @@ public class JournalpostService {
         .orElse(null);
   }
 
-  public List<JournalpostDto> finnJournalposter(Integer saksnummer, String fagomrade) {
+  public List<JournalpostDto> finnJournalposter(String saksnummer, String fagomrade) {
     return graphQueryConsumer.finnJournalposter(saksnummer, fagomrade).stream()
         .map(this::tilJournalpostMapForListeAvJournalposter)
         .flatMap(List::stream)

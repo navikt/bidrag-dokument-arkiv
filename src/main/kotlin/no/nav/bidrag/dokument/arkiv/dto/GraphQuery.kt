@@ -1,9 +1,10 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
 abstract class GraphQuery {
-    protected fun fullQuery(query: String): String {
-        return "query {$query}"
-    }
+    abstract fun getQuery(): String
 
-    abstract fun writeQuery(): String
+    fun writeQuery(): String {
+        val query = getQuery().replace(Regex("\n"), "")
+        return "{\"query\":\"query {$query}\"}"
+    }
 }
