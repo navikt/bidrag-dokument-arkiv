@@ -1,7 +1,5 @@
 package no.nav.bidrag.dokument.arkiv;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,8 +24,8 @@ public class SwaggerConfig {
         .select()
         .apis(RequestHandlerSelectors.basePackage(BidragDokumentArkiv.class.getPackage().getName()))
         .build()
-        .securitySchemes(newArrayList(apiKey()))
-        .securityContexts(newArrayList(securityContext()));
+        .securitySchemes(List.of(apiKey()))
+        .securityContexts(List.of(securityContext()));
   }
 
   private ApiKey apiKey() {
