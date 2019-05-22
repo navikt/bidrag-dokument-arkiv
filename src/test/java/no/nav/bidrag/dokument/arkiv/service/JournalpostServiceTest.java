@@ -62,9 +62,6 @@ class JournalpostServiceTest {
       "          \"datotype\": \"DATO_REGISTRERT\"",
       "        }",
       "      ],",
-      "      \"sak\": {",
-      "        \"fagsakId\": \"1234567\"",
-      "      },",
       "      \"tema\": \"BID\",",
       "      \"tittel\": \"Filosofens bidrag\"",
       "    }",
@@ -110,7 +107,6 @@ class JournalpostServiceTest {
               () -> assertThat(journalpostDto.getJournalpostId()).as("journalpostId").isEqualTo("500"),
               () -> assertThat(journalpostDto.getJournalstatus()).as("journalstatus").isEqualTo("FERDIGSTILT"),
               () -> assertThat(journalpostDto.getMottattDato()).as("mottatt dato").isEqualTo(LocalDate.now().plusDays(1)),
-              () -> assertThat(journalpostDto.getSaksnummer()).as("saksnummer").isEqualTo("1234567"),
               () -> {
                 assertThat(dokumenter).as("dokumenter").hasSize(1);
                 assertThat(dokumenter.get(0)).extracting(DokumentDto::getDokumentType).as("dokument.type").isEqualTo("N");

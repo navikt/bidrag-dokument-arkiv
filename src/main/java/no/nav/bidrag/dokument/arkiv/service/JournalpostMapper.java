@@ -33,7 +33,6 @@ public class JournalpostMapper {
     journalpostDto.setJournalfortDato(hentDato(journalpostMap.get("datoOpprettet")));
     journalpostDto.setJournalpostId(asString(journalpostMap.get("journalpostId")));
     journalpostDto.setJournalstatus(asString(journalpostMap.get("journalstatus")));
-    journalpostDto.setSaksnummer(asString(sakMap.get("fagsakId")));
 
     setMottattOgJournalfortDato(journalpostDto, asList(journalpostMap.get("relevanteDatoer")));
 

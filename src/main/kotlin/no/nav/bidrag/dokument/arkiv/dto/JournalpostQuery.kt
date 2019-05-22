@@ -21,9 +21,6 @@ data class JournalpostQuery(val journalpostId: Int) : GraphQuery() {
         dato
         datotype
       }
-      sak {
-        fagsakId
-      }
       tema
       tittel
     }""".trimIndent()
