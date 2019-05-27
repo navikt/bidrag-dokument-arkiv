@@ -44,7 +44,7 @@ public class JournalpostMapper {
       return null;
     }
 
-    return new AktorDto(asString(asMap(bruker).get("id")), asString(asMap(bruker).get("type")));
+    return new AktorDto(asString(asMap(bruker).get("id")));
   }
 
   @SuppressWarnings("unchecked")

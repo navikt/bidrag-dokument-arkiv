@@ -35,8 +35,7 @@ class JournalpostServiceTest {
       "        \"navn\": \"Draugen, Do\"",
       "      },",
       "      \"bruker\": {",
-      "        \"id\": \"1000028562627\",",
-      "        \"type\": \"AKTOERID\"",
+      "        \"id\": \"1000028562627\"",
       "      },",
       "      \"dokumenter\": [",
       "        {",
@@ -96,7 +95,6 @@ class JournalpostServiceTest {
 
           assertAll(
               () -> assertThat(gjelderAktor).extracting(AktorDto::getIdent).as("aktor.ident").isEqualTo("1000028562627"),
-              () -> assertThat(gjelderAktor).extracting(AktorDto::getIdentType).as("aktor.identtype").isEqualTo("AKTOERID"),
               () -> assertThat(journalpostDto.getAvsenderNavn()).as("avsenders navn").isEqualTo("Draugen, Do"),
               () -> assertThat(journalpostDto.getDokumentType()).as("dokumenttype").isEqualTo("N"),
               () -> assertThat(journalpostDto.getFagomrade()).as("fagområde").isEqualTo("BID"),
