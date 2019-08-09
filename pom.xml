@@ -30,7 +30,7 @@
     <oidc-spring-support.version>0.2.18</oidc-spring-support.version>
     <bidrag-commons.version>0.1.7</bidrag-commons.version>
     <bidrag-commons-test.version>0.0.11</bidrag-commons-test.version>
-    <bidrag-dokument-dto.version>0.2.17</bidrag-dokument-dto.version>
+    <bidrag-dokument-dto.version>0.2.23</bidrag-dokument-dto.version>
     <logback.encoder.version>6.1</logback.encoder.version>
     <modig.version>1.2.5</modig.version>
     <springfox-swagger.version>2.9.2</springfox-swagger.version>
