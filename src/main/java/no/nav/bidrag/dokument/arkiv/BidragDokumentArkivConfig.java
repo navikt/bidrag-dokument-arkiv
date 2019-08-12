@@ -1,26 +1,57 @@
 package no.nav.bidrag.dokument.arkiv;
 
+import no.nav.bidrag.commons.ExceptionLogger;
+import no.nav.bidrag.commons.web.CorrelationIdFilter;
+import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
+import no.nav.bidrag.dokument.arkiv.consumer.GraphQueryConsumer;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RootUriTemplateHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import no.nav.bidrag.dokument.arkiv.consumer.JournalforingConsumer;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
+import org.springframework.http.HttpHeaders;
 
 @Configuration
 public class BidragDokumentArkivConfig {
-    private @Value("${JOARK_URL}") String baseUrl;
 
-    @Bean JournalforingConsumer journalforingConsumer() {
-        return new JournalforingConsumer(baseUrl);
+  public static final String ISSUER = "isso";
+
+  @Value("${SAF_GRAPHQL_URL}")
+  private String baseUrl;
+
+  @Bean
+  GraphQueryConsumer graphQueryConsumer(GraphQueryConfiguration graphQueryConfiguration) {
+    return new GraphQueryConsumer(graphQueryConfiguration.getHttpHeaderRestTemplate());
+  }
+
+  @Bean
+  GraphQueryConfiguration graphQueryConfiguration(HttpHeaderRestTemplate httpHeaderRestTemplate) {
+    httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(baseUrl));
+    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> "application/json");
+
+    return new GraphQueryConfiguration(httpHeaderRestTemplate, baseUrl);
+  }
+
+  @Bean
+  CorrelationIdFilter correlationIdFilter() {
+    return new CorrelationIdFilter();
+  }
+
+  @Bean
+  ExceptionLogger exceptionLogger() {
+    return new ExceptionLogger(BidragDokumentArkiv.class.getSimpleName());
+  }
+
+  public static class GraphQueryConfiguration {
+
+    private final HttpHeaderRestTemplate httpHeaderRestTemplate;
+
+    public GraphQueryConfiguration(HttpHeaderRestTemplate httpHeaderRestTemplate, String baseUrl) {
+      this.httpHeaderRestTemplate = httpHeaderRestTemplate;
+      httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(baseUrl));
     }
 
-    @Bean public Docket api() {
-        return new Docket(DocumentationType.SWAGGER_2)
-                .select()
-                .apis(RequestHandlerSelectors.basePackage(BidragDokumentArkiv.class.getPackage().getName()))
-                .build();
+    public HttpHeaderRestTemplate getHttpHeaderRestTemplate() {
+      return httpHeaderRestTemplate;
     }
+  }
 }

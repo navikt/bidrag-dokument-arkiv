@@ -39,10 +39,10 @@ ingress:
   disabled: false # if true, no ingress will be created and application can only be reached from inside cluster
 fasitResources: # resources fetched from Fasit
   used: # this will be injected into the application as environment variables
-  - alias: JournalfoerInngaaende_v1
+  - alias: saf.graphql
     resourceType: restservice
     propertyMap:
-      url: JOARK_URL # map the "url" property of restservice to JOARK_URL
+      url: SAF_GRAPHQL_URL # map the "url" property of restservice to variable
   - alias: isso-issuer
     resourceType: baseUrl
     propertyMap: 

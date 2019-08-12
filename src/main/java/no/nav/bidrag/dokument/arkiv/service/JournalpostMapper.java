@@ -1,94 +1,116 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import no.nav.bidrag.dokument.dto.AktorDto;
 import no.nav.bidrag.dokument.dto.DokumentDto;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
-import no.nav.dok.tjenester.journalfoerinngaaende.ArkivSakNoArkivsakSystemEnum;
-import no.nav.dok.tjenester.journalfoerinngaaende.Avsender;
-import no.nav.dok.tjenester.journalfoerinngaaende.Bruker;
-import no.nav.dok.tjenester.journalfoerinngaaende.Dokument;
-import no.nav.dok.tjenester.journalfoerinngaaende.GetJournalpostResponse;
 import org.springframework.stereotype.Component;
-
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class JournalpostMapper {
 
-    JournalpostDto fra(GetJournalpostResponse getJournalpostResponse, Integer journalpostId) {
-        JournalpostDto journalpostDto = new JournalpostDto();
-        journalpostDto.setAvsenderNavn(fra(getJournalpostResponse.getAvsender()));
-        journalpostDto.setFagomrade(fra(getJournalpostResponse.getArkivSak()));
-        journalpostDto.setDokumentDato(null); // ???
-        journalpostDto.setDokumenter(fraDokumentListe(getJournalpostResponse.getDokumentListe()));
-        journalpostDto.setGjelderBrukerId(fraBrukerListe(getJournalpostResponse.getBrukerListe()));
-        journalpostDto.setInnhold(getJournalpostResponse.getTittel());
-        journalpostDto.setJournalforendeEnhet(getJournalpostResponse.getJournalfEnhet());
-        journalpostDto.setJournalfortAv(null); // ???
-        journalpostDto.setJournalfortDato(fra(getJournalpostResponse.getForsendelseMottatt()));
-        journalpostDto.setJournalpostId("JOARK-" + journalpostId);
-        journalpostDto.setMottattDato(fra(getJournalpostResponse.getForsendelseMottatt()));
-        journalpostDto.setSaksnummer(prefixMedGSAK(getJournalpostResponse.getArkivSak()));
+  private static final DateTimeFormatter DATE_PATTERN = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
 
-        return journalpostDto;
+  JournalpostDto tilJournalpostDto(Map<String, Object> journalpostMap) {
+    var avsenderMottakerMap = asMap(asMap(journalpostMap).get("avsenderMottaker"));
+    var dokumenttype = asString(journalpostMap.get("journalposttype"));
+    var sakMap = asMap(journalpostMap.get("sak"));
+    var journalpostDto = new JournalpostDto();
+
+    journalpostDto.setAvsenderNavn(asString(avsenderMottakerMap.get("navn")));
+    journalpostDto.setDokumenter(tilDokumenter(journalpostMap.get("dokumenter"), dokumenttype));
+    journalpostDto.setDokumentType(dokumenttype);
+    journalpostDto.setFagomrade(asString(journalpostMap.get("tema")));
+    journalpostDto.setInnhold(asString(journalpostMap.get("tittel")));
+    journalpostDto.setGjelderAktor(tilAktorDto(journalpostMap.get("bruker")));
+    journalpostDto.setJournalforendeEnhet(asString(journalpostMap.get("journalforendeEnhet")));
+    journalpostDto.setJournalfortAv(asString(journalpostMap.get("journalfortAvNavn")));
+    journalpostDto.setJournalfortDato(hentDato(journalpostMap.get("datoOpprettet")));
+    journalpostDto.setJournalpostId(asString(journalpostMap.get("journalpostId")));
+    journalpostDto.setJournalstatus(asString(journalpostMap.get("journalstatus")));
+
+    setMottattOgJournalfortDato(journalpostDto, asList(journalpostMap.get("relevanteDatoer")));
+
+    return journalpostDto;
+  }
+
+  private AktorDto tilAktorDto(Object bruker) {
+    if (bruker == null) {
+      return null;
     }
 
-    private String fra(Avsender avsender) {
-        if (avsender != null) {
-            return avsender.getNavn();
-        }
+    return new AktorDto(asString(asMap(bruker).get("id")));
+  }
 
-        return null;
+  @SuppressWarnings("unchecked")
+  private List<DokumentDto> tilDokumenter(Object dokumenter, String dokumenttype) {
+    if (dokumenter == null) {
+      return Collections.emptyList();
     }
 
-    private String fra(ArkivSakNoArkivsakSystemEnum arkivSak) {
-        if (arkivSak != null) {
-            return arkivSak.getArkivSakSystem();
-        }
+    return ((List<Map<String, Object>>) dokumenter).stream()
+        .map(dokumentMap -> tilDokumentDto(dokumentMap, dokumenttype))
+        .collect(Collectors.toList());
+  }
 
-        return null;
+  private DokumentDto tilDokumentDto(Map<String, Object> dokumentMap, String dokumenttype) {
+    return new DokumentDto("", dokumenttype, asString(dokumentMap.get("tittel")));
+  }
+
+  private void setMottattOgJournalfortDato(JournalpostDto journalpostDto, List<Map<String, Object>> relevanteDatoer) {
+    relevanteDatoer.forEach(map -> setRelevanteDatoer(journalpostDto, map));
+  }
+
+  private void setRelevanteDatoer(JournalpostDto journalpostDto, Map<String, Object> datoMap) {
+    if ("DATO_REGISTRERT".equals(datoMap.get("datotype"))) {
+      journalpostDto.setMottattDato(hentDato(datoMap.get("dato")));
     }
 
-    private List<DokumentDto> fraDokumentListe(List<Dokument> dokumentListe) {
-        if (dokumentListe != null) {
-            return dokumentListe.stream().map(this::fraDokument).collect(Collectors.toList());
-        }
+    if ("DATO_JOURNALFOERT".equals(datoMap.get("datotype"))) {
+      journalpostDto.setJournalfortDato(hentDato(datoMap.get("dato")));
+    }
+  }
 
-        return Collections.emptyList();
+  private LocalDate hentDato(Object datoObjekt) {
+    if (datoObjekt != null) {
+      return LocalDate.parse(asString(datoObjekt), DATE_PATTERN);
     }
 
-    private DokumentDto fraDokument(Dokument dokument) {
-        DokumentDto dokumentDto = new DokumentDto();
-        dokumentDto.setDokumentType(dokument.getDokumentTypeId());
-        dokumentDto.setDokumentreferanse(dokument.getDokumentId());
-        dokumentDto.setTittel(dokument.getTittel());
+    return null;
+  }
 
-        return dokumentDto;
+  private String asString(Object object) {
+    return String.valueOf(object);
+  }
+
+  @SuppressWarnings("unchecked")
+  private Map<String, Object> asMap(Object object) {
+    if (object == null) {
+      return Collections.emptyMap();
     }
 
-    private List<String> fraBrukerListe(List<Bruker> brukerListe) {
-        if (brukerListe != null) {
-            return brukerListe.stream().map(Bruker::getIdentifikator).collect(Collectors.toList());
-        }
-
-        return Collections.emptyList();
+    if (!(object instanceof Map)) {
+      throw new IllegalStateException(String.format("Object is not a map: %s/%s ", object.getClass(), object));
     }
 
-    private LocalDate fra(Date forsendelseMottatt) {
-        if (forsendelseMottatt != null) {
-            return forsendelseMottatt.toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDate();
-        }
+    return (Map<String, Object>) object;
+  }
 
-        return null;
+  @SuppressWarnings("unchecked")
+  private List<Map<String, Object>> asList(Object object) {
+    if (object == null) {
+      return Collections.emptyList();
     }
 
-    private String prefixMedGSAK(ArkivSakNoArkivsakSystemEnum arkivSaK) {
-        return arkivSaK != null ? "GSAK-" + arkivSaK.getArkivSakId() : null;
+    if (!(object instanceof List)) {
+      throw new IllegalStateException(String.format("Object is not a list: %s/%s ", object.getClass(), object));
     }
+
+    return (List<Map<String, Object>>) object;
+  }
 }

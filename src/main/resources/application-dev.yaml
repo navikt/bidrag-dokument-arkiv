@@ -1,11 +1,6 @@
-server:
-  servlet:
-    context-path: /bidrag-dokument-arkiv
-
 no.nav.security.oidc:
   issuers: isso
-  issuer.isso : 
-     discoveryurl: http://metadata
-     accepted_audience: aud-localhost
-     cookie_name: localhost-idtoken
-     
+  issuer.isso :
+    discoveryurl: http://metadata
+    accepted_audience: aud-localhost
+    cookie_name: localhost-idtoken
