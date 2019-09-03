@@ -1,0 +1,37 @@
+{
+  "avsenderMottaker": {
+    "navn": "Tuborg"
+  },
+  "bruker": {
+    "id": "1000024690889",
+    "type": "AKTOERID"
+  },
+  "dokumenter": [
+    {
+      "tittel": "RØD SNØ"
+    },
+    {
+      "tittel": "SNØMANNEN"
+    }
+  ],
+  "journalforendeEnhet": "0104",
+  "journalfortAvNavn": "Terkelsen, Karin",
+  "journalpostId": "203915975",
+  "journalposttype": "I",
+  "journalstatus": "JOURNALFOERT",
+  "relevanteDatoer": [
+    {
+      "dato": "2010-12-16T00:00",
+      "datotype": "DATO_JOURNALFOERT"
+    },
+    {
+      "dato": "2010-12-15T00:00",
+      "datotype": "DATO_REGISTRERT"
+    }
+  ],
+  "sak": {
+    "fagsakId": "5276661"
+  },
+  "tema": "AAP",
+  "tittel": "...and so on..."
+}
