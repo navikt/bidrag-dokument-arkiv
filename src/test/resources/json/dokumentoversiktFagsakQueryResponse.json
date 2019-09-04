@@ -1,0 +1,110 @@
+{
+  "data": {
+    "dokumentoversiktFagsak": {
+      "journalposter": [
+        {
+          "avsenderMottaker": {
+            "navn": "MASKERT_FELT"
+          },
+          "bruker": {
+            "id": "1000024690889",
+            "type": "AKTOERID"
+          },
+          "dokumenter": [
+            {
+              "tittel": "MASKERT_FELT"
+            }
+          ],
+          "journalforendeEnhet": "0104",
+          "journalfortAvNavn": "Terkelsen, Karin",
+          "journalpostId": "203915975",
+          "journalposttype": "I",
+          "journalstatus": "JOURNALFOERT",
+          "relevanteDatoer": [
+            {
+              "dato": "2010-12-16T00:00",
+              "datotype": "DATO_JOURNALFOERT"
+            },
+            {
+              "dato": "2010-12-15T00:00",
+              "datotype": "DATO_REGISTRERT"
+            }
+          ],
+          "sak": {
+            "fagsakId": "5276661"
+          },
+          "tema": "AAP",
+          "tittel": "MASKERT_FELT"
+        },
+        {
+          "avsenderMottaker": {
+            "navn": "MASKERT_FELT"
+          },
+          "bruker": {
+            "id": "1000024690889",
+            "type": "AKTOERID"
+          },
+          "dokumenter": [
+            {
+              "tittel": "MASKERT_FELT"
+            }
+          ],
+          "journalforendeEnhet": "0104",
+          "journalfortAvNavn": "Terkelsen, Karin",
+          "journalpostId": "202581405",
+          "journalposttype": "I",
+          "journalstatus": "JOURNALFOERT",
+          "relevanteDatoer": [
+            {
+              "dato": "2010-12-07T00:00",
+              "datotype": "DATO_JOURNALFOERT"
+            },
+            {
+              "dato": "2010-12-03T00:00",
+              "datotype": "DATO_REGISTRERT"
+            }
+          ],
+          "sak": {
+            "fagsakId": "5276661"
+          },
+          "tema": "AAP",
+          "tittel": "MASKERT_FELT"
+        },
+        {
+          "avsenderMottaker": {
+            "navn": "Draugen, Do"
+          },
+          "bruker": {
+            "id": "1000024690889",
+            "type": "AKTOERID"
+          },
+          "dokumenter": [
+            {
+              "tittel": "Å være eller ikke være..."
+            }
+          ],
+          "journalforendeEnhet": "4817",
+          "journalfortAvNavn": "Bånn, Jaims",
+          "journalpostId": "201028011",
+          "journalposttype": "N",
+          "journalstatus": "JOURNALFOERT",
+          "relevanteDatoer": [
+            {
+              "dato": "2010-03-08T00:00",
+              "datotype": "DATO_JOURNALFOERT"
+            },
+            {
+              "dato": "2010-03-12T00:00",
+              "datotype": "DATO_REGISTRERT"
+            }
+          ],
+          "sak": {
+            "fagsakId": "5276661"
+          },
+          "tema": "BID",
+          "tittel": "Filosofens bidrag"
+        }
+      ]
+    }
+  }
+}
