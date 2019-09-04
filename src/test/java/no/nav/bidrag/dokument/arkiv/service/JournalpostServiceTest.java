@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("dev")
@@ -45,14 +46,16 @@ class JournalpostServiceTest {
     var jsonResponse = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJsonResource.getFile().toURI()))));
     var dokumentoversiktFagsakQueryResponse = objectMapper.readValue(jsonResponse, DokumentoversiktFagsakQueryResponse.class);
     var journalpostIdFraJson = 201028011;
+    var saksnummerFraJson = "5276661";
 
     when(graphQueryConsumerMock.hentJournalpost(journalpostIdFraJson)).thenReturn(Optional.of(
         dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostIdFraJson)
     ));
 
-    var muligJournalpost = journalpostService.hentJournalpost(journalpostIdFraJson);
+    var httpStatusJournalpostResponse = journalpostService.hentJournalpost(saksnummerFraJson, journalpostIdFraJson);
 
-    assertThat(muligJournalpost).hasValueSatisfying(journalpostDto -> assertAll(
+    assertThat(httpStatusJournalpostResponse.getHttpStatus()).as("httpStatus").isEqualTo(HttpStatus.OK);
+    assertThat(httpStatusJournalpostResponse.fetchOptionalResult()).hasValueSatisfying(journalpostDto -> assertAll(
         () -> {
           assertThat(journalpostDto).as("journalpost").isNotNull();
 

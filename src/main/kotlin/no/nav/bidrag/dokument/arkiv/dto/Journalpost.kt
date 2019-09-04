@@ -20,6 +20,7 @@ data class Journalpost(
         var journalposttype: String? = null,
         var journalstatus: String? = null,
         var relevanteDatoer: List<DatoType> = emptyList(),
+        var sak: Sak? = null,
         var tema: String? = null,
         var tittel: String? = null
 ) {
@@ -63,6 +64,8 @@ data class Journalpost(
 
         return registrert?.somDato()
     }
+
+    fun erTilknyttetSak(saksnummer: String) = sak?.fagsakId == saksnummer
 }
 
 data class AvsenderMottaker(
@@ -101,3 +104,7 @@ data class DatoType(
         throw IllegalStateException("Kunne ikke trekke ut dato fra: " + dato)
     }
 }
+
+data class Sak(
+        var fagsakId: String? = null
+)

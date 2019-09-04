@@ -64,13 +64,37 @@ class JournalpostControllerTest {
   }
 
   @Test
+  @DisplayName("skal ha 404 NOT FOUND når prefix mangler")
+  void skalHaNotFoundlNarPrefixPaJournalpostIdMangler() {
+    var journalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/sak/007/journal/1",
+        HttpMethod.GET,
+        null,
+        JournalpostDto.class
+    );
+
+    assertThat(journalpostResponseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+  }
+
+  @Test
+  @DisplayName("skal ha 404 NOT FOUND når prefix er feil")
+  void skalHaNotFoundlNarPrefixPaJournalpostIdErFeil() {
+    var journalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/sak/007/journal/BID-1",
+        HttpMethod.GET,
+        null,
+        JournalpostDto.class
+    );
+
+    assertThat(journalpostResponseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+  }
+
+  @Test
   @DisplayName("skal ha body som null når journalpost ikke finnes")
   void skalGiBodySomNullNarJournalpostIkkeFinnes() {
-    when(httpHeaderRestTemplateMock.exchange(anyString(), eq(HttpMethod.POST), any(), eq(Map.class)))
-        .thenReturn(new ResponseEntity<>(HttpStatus.I_AM_A_TEAPOT));
 
     var journalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
-        initUrl() + "/journalpost/1",
+        initUrl() + "/sak/007/journal/JOARK-1",
         HttpMethod.GET,
         null,
         JournalpostDto.class
@@ -78,10 +102,33 @@ class JournalpostControllerTest {
 
     assertThat(Optional.of(journalpostResponseEntity)).hasValueSatisfying(response -> assertAll(
         () -> assertThat(response.getBody()).isNull(),
-        () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT)
+        () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT),
+        () -> verify(httpHeaderRestTemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class))
     ));
+  }
 
-    verify(httpHeaderRestTemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class));
+  @Test
+  @DisplayName("skal få 404 NOT FOUND når eksisterende journalpost er knyttet til annen sak")
+  void skalFaNotFoundNarEksisterendeJournalpostErKnyttetTilAnnenSak() throws IOException {
+    var jsonResponse = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJsonResource.getFile().toURI()))));
+    var dokumentoversiktFagsakQueryResponse = objectMapper.readValue(jsonResponse, DokumentoversiktFagsakQueryResponse.class);
+    var journalpostIdFraJson = 201028011;
+
+    when(httpHeaderRestTemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class)))
+        .thenReturn(new ResponseEntity<>(dokumentoversiktFagsakQueryResponse, HttpStatus.I_AM_A_TEAPOT));
+
+    var responseEntity = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/sak/007/journal/JOARK-" + journalpostIdFraJson,
+        HttpMethod.GET,
+        null,
+        JournalpostDto.class
+    );
+
+    assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
+        () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND),
+        () -> assertThat(response.getBody()).isNull(),
+        () -> verify(httpHeaderRestTemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class))
+    ));
   }
 
   @Test
@@ -95,7 +142,7 @@ class JournalpostControllerTest {
         new ResponseEntity<>(dokumentoversiktFagsakQueryResponse, HttpStatus.I_AM_A_TEAPOT));
 
     var responseEntity = httpHeaderTestRestTemplate.exchange(
-        initUrl() + "/journalpost/" + journalpostIdFraJson,
+        initUrl() + "/sak/5276661/journal/JOARK-" + journalpostIdFraJson,
         HttpMethod.GET,
         null,
         JournalpostDto.class
@@ -103,13 +150,9 @@ class JournalpostControllerTest {
 
     assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
         () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
-        () -> {
-          assertThat(response.getBody()).isNotNull();
-          assertThat(response.getBody()).extracting(JournalpostDto::getInnhold).isEqualTo("Filosofens bidrag");
-        }
+        () -> assertThat(response.getBody()).isNotNull().extracting(JournalpostDto::getInnhold).isEqualTo("Filosofens bidrag"),
+        () -> verify(httpHeaderRestTemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class))
     ));
-
-    verify(httpHeaderRestTemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class));
   }
 
   @Test
