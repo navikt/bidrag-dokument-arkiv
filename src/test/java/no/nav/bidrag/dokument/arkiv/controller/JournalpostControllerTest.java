@@ -10,14 +10,17 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import java.util.HashMap;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.bidrag.commons.web.test.HttpHeaderTestRestTemplate;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv;
 import no.nav.bidrag.dokument.arkiv.TestRestTemplateConfiguration;
+import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQueryResponse;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,6 +30,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,21 +44,12 @@ import org.springframework.test.context.ActiveProfiles;
 )
 class JournalpostControllerTest {
 
-  private static final String JOURNALPOSTER_JSON = String.join("\n", "{",
-      "  \"data\": {",
-      "    \"journalposter\": [",
-      "      { \"journalpostId\": \"1001001\" },",
-      "      { \"journalpostId\": \"1001002\" },",
-      "      { \"journalpostId\": \"1001003\" }",
-      "    ]",
-      "  }",
-      "}"
-  );
-
   @LocalServerPort
   private int port;
   @MockBean
   private HttpHeaderRestTemplate httpHeaderRestTemplateMock;
+  @Value("classpath:json/dokumentoversiktFagsakQueryResponse.json")
+  private Resource responseJsonResource;
   @Value("${server.servlet.context-path}")
   private String contextPath;
   @Autowired
@@ -86,24 +81,21 @@ class JournalpostControllerTest {
         () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT)
     ));
 
-    verify(httpHeaderRestTemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(Map.class));
+    verify(httpHeaderRestTemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class));
   }
 
   @Test
   @DisplayName("skal hente Journalpost når den eksisterer")
-  void skalHenteJournalpostNarDenEksisterer() {
-    var innhold = new HashMap<>();
-    innhold.put("tittel", "bidrag");
-    var journalpostMap = new HashMap<>();
-    journalpostMap.put("journalpost", innhold);
-    var dataMap = new HashMap<>();
-    dataMap.put("data", journalpostMap);
+  void skalHenteJournalpostNarDenEksisterer() throws IOException {
+    var jsonResponse = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJsonResource.getFile().toURI()))));
+    var dokumentoversiktFagsakQueryResponse = objectMapper.readValue(jsonResponse, DokumentoversiktFagsakQueryResponse.class);
+    var journalpostIdFraJson = 201028011;
 
-    when(httpHeaderRestTemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(Map.class)))
-        .thenReturn(new ResponseEntity<>(dataMap, HttpStatus.I_AM_A_TEAPOT));
+    when(httpHeaderRestTemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class))).thenReturn(
+        new ResponseEntity<>(dokumentoversiktFagsakQueryResponse, HttpStatus.I_AM_A_TEAPOT));
 
     var responseEntity = httpHeaderTestRestTemplate.exchange(
-        initUrl() + "/journalpost/1",
+        initUrl() + "/journalpost/" + journalpostIdFraJson,
         HttpMethod.GET,
         null,
         JournalpostDto.class
@@ -113,23 +105,24 @@ class JournalpostControllerTest {
         () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
         () -> {
           assertThat(response.getBody()).isNotNull();
-          assertThat(response.getBody()).extracting(JournalpostDto::getInnhold).isEqualTo("bidrag");
+          assertThat(response.getBody()).extracting(JournalpostDto::getInnhold).isEqualTo("Filosofens bidrag");
         }
     ));
 
-    verify(httpHeaderRestTemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(Map.class));
+    verify(httpHeaderRestTemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class));
   }
 
   @Test
   @DisplayName("skal hente journalposter for en bidragssak")
   void skalHenteJournalposterForEnBidragssak() throws IOException {
-    Map journalposterMapOversattMedJackson = objectMapper.readValue(JOURNALPOSTER_JSON, HashMap.class);
+    var jsonResponse = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJsonResource.getFile().toURI()))));
+    var dokumentoversiktFagsakQueryResponse = objectMapper.readValue(jsonResponse, DokumentoversiktFagsakQueryResponse.class);
 
-    when(httpHeaderRestTemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(Map.class)))
-        .thenReturn(new ResponseEntity<>(journalposterMapOversattMedJackson, HttpStatus.I_AM_A_TEAPOT));
+    when(httpHeaderRestTemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class)))
+        .thenReturn(new ResponseEntity<>(dokumentoversiktFagsakQueryResponse, HttpStatus.I_AM_A_TEAPOT));
 
     var jouralposterResponseEntity = httpHeaderTestRestTemplate.exchange(
-        initUrl() + "/sakjournal/1234567?fagomrade=BID", HttpMethod.GET, null, listeMedJournalposterTypeReference()
+        initUrl() + "/sakjournal/5276661?fagomrade=BID", HttpMethod.GET, null, listeMedJournalposterTypeReference()
     );
 
     assertAll(

@@ -72,7 +72,7 @@
         },
         {
           "avsenderMottaker": {
-            "navn": "MASKERT_FELT"
+            "navn": "Draugen, Do"
           },
           "bruker": {
             "id": "1000024690889",
@@ -80,13 +80,13 @@
           },
           "dokumenter": [
             {
-              "tittel": "MASKERT_FELT"
+              "tittel": "Å være eller ikke være..."
             }
           ],
-          "journalforendeEnhet": "0104",
-          "journalfortAvNavn": "Persen, Knut",
+          "journalforendeEnhet": "4817",
+          "journalfortAvNavn": "Bånn, Jaims",
           "journalpostId": "201028011",
-          "journalposttype": "I",
+          "journalposttype": "N",
           "journalstatus": "JOURNALFOERT",
           "relevanteDatoer": [
             {
@@ -101,8 +101,8 @@
           "sak": {
             "fagsakId": "5276661"
           },
-          "tema": "AAP",
-          "tittel": "MASKERT_FELT"
+          "tema": "BID",
+          "tittel": "Filosofens bidrag"
         }
       ]
     }

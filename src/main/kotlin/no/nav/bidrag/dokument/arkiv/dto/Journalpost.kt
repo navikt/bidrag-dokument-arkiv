@@ -1,7 +1,12 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
+import no.nav.bidrag.dokument.dto.AktorDto
+import no.nav.bidrag.dokument.dto.DokumentDto
+import no.nav.bidrag.dokument.dto.JournalpostDto
 import java.time.LocalDate
+import java.util.stream.Collectors.toList
 
+private const val DATO_DOKUMENT = "DATO_DOKUMENT"
 private const val DATO_JOURNALFORT = "DATO_JOURNALFOERT"
 private const val DATO_REGISTRERT = "DATO_REGISTRERT"
 
@@ -31,6 +36,33 @@ data class Journalpost(
 
         return registrert?.somDato()
     }
+
+    fun tilJournalpostDto(): JournalpostDto {
+
+        @Suppress("UNCHECKED_CAST")
+        return JournalpostDto(
+                avsenderNavn = avsenderMottaker?.navn,
+                dokumenter = dokumenter.stream().map { dok -> dok?.tilDokumentDto(journalposttype) }.collect(toList()) as List<DokumentDto>,
+                dokumentDato = hentDokumentDat(),
+                dokumentType = journalposttype,
+                fagomrade = tema,
+                gjelderAktor = bruker?.tilAktorDto(),
+                innhold = tittel,
+                journalfortDato = hentDatoJournalfort(),
+                journalforendeEnhet = journalforendeEnhet,
+                journalfortAv = journalfortAvNavn,
+                journalpostId = "JOARK-" + journalpostId,
+                journalstatus = journalstatus,
+                mottattDato = hentDatoRegistrert()
+        )
+    }
+
+    private fun hentDokumentDat(): LocalDate? {
+        val registrert = relevanteDatoer
+                .find { it.datotype == DATO_DOKUMENT }
+
+        return registrert?.somDato()
+    }
 }
 
 data class AvsenderMottaker(
@@ -40,11 +72,20 @@ data class AvsenderMottaker(
 data class Bruker(
         var id: String? = null,
         var type: String? = null
-)
+) {
+    fun tilAktorDto(): AktorDto {
+        return if (id != null) AktorDto(id!!) else throw IllegalStateException("ingne id i $this")
+    }
+}
 
 data class Dokument(
         var tittel: String? = null
-)
+) {
+    fun tilDokumentDto(journalposttype: String?): DokumentDto = DokumentDto(
+            dokumentType = journalposttype,
+            tittel = this.tittel
+    )
+}
 
 data class DatoType(
         var dato: String? = null,

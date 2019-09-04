@@ -2,9 +2,10 @@ package no.nav.bidrag.dokument.arkiv.consumer;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQuery;
+import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQueryResponse;
+import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,30 +24,31 @@ public class GraphQueryConsumer {
     this.restTemplate = restTemplate;
   }
 
-  public Optional<Map> hentJournalpost(Integer journalpostId) {
+  public Optional<Journalpost> hentJournalpost(Integer journalpostId) {
     var journalpostQuery = new JournalpostQuery(journalpostId);
-    var jsonResponse = consumeQuery(journalpostQuery.writeQuery());
+    var muligQueryResponseEntity = consumeQuery(journalpostQuery.writeQuery());
 
-    return Optional.ofNullable(jsonResponse.getBody());
+    return muligQueryResponseEntity
+        .map(ResponseEntity::getBody)
+        .map(dokumentoversiktFagsakQueryResponse -> dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostId));
   }
 
-  public List<Map> finnJournalposter(String saksnummer, String fagomrade) {
+  public List<Journalpost> finnJournalposter(String saksnummer, String fagomrade) {
     var dokumentoversiktFagsakQuery = new DokumentoversiktFagsakQuery(saksnummer, fagomrade);
-    var jsonResponse = consumeQuery(dokumentoversiktFagsakQuery.writeQuery());
-    var body = jsonResponse.getBody();
+    var muligJsonResponse = consumeQuery(dokumentoversiktFagsakQuery.writeQuery());
 
-    if (body == null) {
-      return Collections.emptyList();
-    }
-
-    return List.of(body);
+    return muligJsonResponse
+        .map(HttpEntity::getBody)
+        .map(DokumentoversiktFagsakQueryResponse::hentJournalposter)
+        .orElseGet(Collections::emptyList);
   }
 
-  private ResponseEntity<Map> consumeQuery(String query) {
+  @SuppressWarnings("ConstantConditions")
+  private Optional<ResponseEntity<DokumentoversiktFagsakQueryResponse>> consumeQuery(String query) {
     LOGGER.info(query);
 
-    return restTemplate.exchange(
-        "/", HttpMethod.POST, new HttpEntity<>(query), Map.class
-    );
+    return Optional.ofNullable(restTemplate.exchange(
+        "/", HttpMethod.POST, new HttpEntity<>(query), DokumentoversiktFagsakQueryResponse.class
+    ));
   }
 }
