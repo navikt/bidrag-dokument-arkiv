@@ -3,6 +3,7 @@ package no.nav.bidrag.dokument.arkiv;
 import no.nav.bidrag.commons.ExceptionLogger;
 import no.nav.bidrag.commons.web.CorrelationIdFilter;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
+import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.GraphQueryConsumer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RootUriTemplateHandler;
@@ -15,16 +16,19 @@ public class BidragDokumentArkivConfig {
 
   public static final String ISSUER = "isso";
 
-  @Value("${SAF_GRAPHQL_URL}")
-  private String baseUrl;
-
   @Bean
   GraphQueryConsumer graphQueryConsumer(GraphQueryConfiguration graphQueryConfiguration) {
     return new GraphQueryConsumer(graphQueryConfiguration.getHttpHeaderRestTemplate());
   }
 
   @Bean
-  GraphQueryConfiguration graphQueryConfiguration(HttpHeaderRestTemplate httpHeaderRestTemplate) {
+  DokarkivConsumer dokarkivConsumer(HttpHeaderRestTemplate httpHeaderRestTemplate, @Value("${DOKARKIV_URL}") String baseUrl) {
+    httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(baseUrl));
+    return new DokarkivConsumer(httpHeaderRestTemplate);
+  }
+
+  @Bean
+  GraphQueryConfiguration graphQueryConfiguration(HttpHeaderRestTemplate httpHeaderRestTemplate, @Value("${SAF_GRAPHQL_URL}") String baseUrl) {
     httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(baseUrl));
     httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> "application/json");
 

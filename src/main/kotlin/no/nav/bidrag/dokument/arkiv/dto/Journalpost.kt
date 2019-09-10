@@ -44,7 +44,7 @@ data class Journalpost(
         return JournalpostDto(
                 avsenderNavn = avsenderMottaker?.navn,
                 dokumenter = dokumenter.stream().map { dok -> dok?.tilDokumentDto(journalposttype) }.collect(toList()) as List<DokumentDto>,
-                dokumentDato = hentDokumentDat(),
+                dokumentDato = hentDokumentDato(),
                 dokumentType = journalposttype,
                 fagomrade = tema,
                 gjelderAktor = bruker?.tilAktorDto(),
@@ -58,7 +58,7 @@ data class Journalpost(
         )
     }
 
-    private fun hentDokumentDat(): LocalDate? {
+    private fun hentDokumentDato(): LocalDate? {
         val registrert = relevanteDatoer
                 .find { it.datotype == DATO_DOKUMENT }
 
@@ -66,6 +66,8 @@ data class Journalpost(
     }
 
     fun erTilknyttetSak(saksnummer: String) = sak?.fagsakId == saksnummer
+
+    fun hentAvsenderNavn() = avsenderMottaker?.navn
 }
 
 data class AvsenderMottaker(

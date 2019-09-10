@@ -29,7 +29,8 @@ data class DokumentoversiktFagsakQuery(val saksnummer: String, val tema: String)
             tema
             tittel
           }
-        }""".trimIndent()
+        }
+        """.trimIndent()
 
     override fun getQuery(): String {
         return query
