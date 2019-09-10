@@ -43,6 +43,10 @@ fasitResources: # resources fetched from Fasit
     resourceType: restservice
     propertyMap:
       url: SAF_GRAPHQL_URL # map the "url" property of restservice to variable
+  - alias: dokarkiv
+    resourceType: restservice
+    propertyMap:
+      url: DOKARKIV_URL # map the "url" property of restservice to variable
   - alias: isso-issuer
     resourceType: baseUrl
     propertyMap: 
