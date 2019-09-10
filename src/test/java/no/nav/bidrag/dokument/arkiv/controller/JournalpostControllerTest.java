@@ -3,7 +3,6 @@ package no.nav.bidrag.dokument.arkiv.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -13,7 +12,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
@@ -21,6 +19,10 @@ import no.nav.bidrag.commons.web.test.HttpHeaderTestRestTemplate;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv;
 import no.nav.bidrag.dokument.arkiv.TestRestTemplateConfiguration;
 import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQueryResponse;
+import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
+import no.nav.bidrag.dokument.dto.EndreDokument;
+import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,6 +33,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -151,6 +154,7 @@ class JournalpostControllerTest {
     assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
         () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
         () -> assertThat(response.getBody()).isNotNull().extracting(JournalpostDto::getInnhold).isEqualTo("Filosofens bidrag"),
+        () -> assertThat(response.getBody()).isNotNull().extracting(JournalpostDto::getJournalpostId).isEqualTo("JOARK-" + journalpostIdFraJson),
         () -> verify(httpHeaderRestTemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class))
     ));
   }
@@ -177,6 +181,64 @@ class JournalpostControllerTest {
   private ParameterizedTypeReference<List<JournalpostDto>> listeMedJournalposterTypeReference() {
     return new ParameterizedTypeReference<>() {
     };
+  }
+
+  @Test
+  @DisplayName("skal endre journalpost")
+  void skalEndreJournalpost() throws IOException {
+    // given
+    var jsonResponse = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJsonResource.getFile().toURI()))));
+    var dokumentoversiktFagsakQueryResponse = objectMapper.readValue(jsonResponse, DokumentoversiktFagsakQueryResponse.class);
+    var journalpostIdFraJson = 201028011;
+    var saksnummerFraJson = "5276661";
+
+    var endreJournalpostCommand = new EndreJournalpostCommand();
+    endreJournalpostCommand.setAvsenderNavn("Dauden, Svarte");
+    endreJournalpostCommand.setGjelder("06127412345");
+    endreJournalpostCommand.setTittel("So Tired");
+    endreJournalpostCommand.setEndreDokumenter(List.of(
+        new EndreDokument("BLABLA", 1, "In a galazy far far away")
+    ));
+
+    when(httpHeaderRestTemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(HttpEntity.class), eq(DokumentoversiktFagsakQueryResponse.class)))
+        .thenReturn(new ResponseEntity<>(dokumentoversiktFagsakQueryResponse, HttpStatus.I_AM_A_TEAPOT));
+
+    when(httpHeaderRestTemplateMock.exchange(
+        eq("/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson),
+        eq(HttpMethod.PUT),
+        any(HttpEntity.class),
+        eq(OppdaterJournalpostResponse.class)
+    )).thenReturn(new ResponseEntity<>(new OppdaterJournalpostResponse(journalpostIdFraJson, null), HttpStatus.ACCEPTED));
+
+    // when
+    var journalpostDtoResponse = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/sak/" + saksnummerFraJson + "/journal/JOARK-" + journalpostIdFraJson,
+        HttpMethod.PUT,
+        new HttpEntity<>(endreJournalpostCommand),
+        JournalpostDto.class
+    );
+
+    // then
+    assertAll(
+        () -> assertThat(journalpostDtoResponse)
+            .extracting(ResponseEntity::getStatusCode)
+            .as("statusCode")
+            .isEqualTo(HttpStatus.ACCEPTED),
+        () -> {
+          var forventetUrlForOppdateringAvJournalpost = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson;
+          var oppdaterJournalpostRequest = new OppdaterJournalpostRequest(
+              journalpostIdFraJson, saksnummerFraJson, endreJournalpostCommand,
+              dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostIdFraJson)
+          );
+
+          verify(httpHeaderRestTemplateMock).exchange(
+              eq(forventetUrlForOppdateringAvJournalpost),
+              eq(HttpMethod.PUT),
+              eq(new HttpEntity<>(oppdaterJournalpostRequest.tilJournalpostApi())),
+              eq(OppdaterJournalpostResponse.class)
+          );
+        }
+    );
   }
 
   private String initUrl() {

@@ -30,7 +30,7 @@
     <oidc-spring-support.version>0.2.18</oidc-spring-support.version>
     <bidrag-commons.version>0.1.13</bidrag-commons.version>
     <bidrag-commons-test.version>0.1.0</bidrag-commons-test.version>
-    <bidrag-dokument-dto.version>0.3.1</bidrag-dokument-dto.version>
+    <bidrag-dokument-dto.version>0.4.1</bidrag-dokument-dto.version>
     <logback.encoder.version>6.1</logback.encoder.version>
     <modig.version>1.2.5</modig.version>
     <springfox-swagger.version>2.9.2</springfox-swagger.version>
@@ -232,13 +232,6 @@
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
       <scope>test</scope>
-    </dependency>
-
-    <!-- dependency som overskrives da transient dependency (versjon 2.9.8) inneholder sårbarheter -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>2.9.9.3</version>
     </dependency>
   </dependencies>
 

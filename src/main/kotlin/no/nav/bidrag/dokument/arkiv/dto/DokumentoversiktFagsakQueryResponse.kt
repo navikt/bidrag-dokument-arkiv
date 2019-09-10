@@ -7,10 +7,6 @@ data class DokumentoversiktFagsakQueryResponse(
         return data?.dokumentoversiktFagsak?.journalposter ?: throw IllegalStateException("Ingen journalposter blant data: $data")
     }
 
-    fun harJournalpostMedId(journalpostId: Int): Boolean {
-        return data?.dokumentoversiktFagsak?.journalposter?.find { it.journalpostId == journalpostId.toString() } != null
-    }
-
     fun hentJournalpost(journalpostId: Int): Journalpost {
         return data?.dokumentoversiktFagsak?.journalposter?.find { it.journalpostId == journalpostId.toString() }
                 ?: throw IllegalStateException("Ingen journalpst med id: $journalpostId")
