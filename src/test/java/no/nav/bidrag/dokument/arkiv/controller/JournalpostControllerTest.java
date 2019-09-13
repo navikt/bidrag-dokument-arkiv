@@ -3,6 +3,7 @@ package no.nav.bidrag.dokument.arkiv.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,9 +22,13 @@ import no.nav.bidrag.dokument.arkiv.TestRestTemplateConfiguration;
 import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQueryResponse;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
+import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostResponse;
 import no.nav.bidrag.dokument.dto.EndreDokument;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
+import no.nav.bidrag.dokument.dto.NyJournalpostCommand;
+import no.nav.bidrag.dokument.dto.OpprettDokument;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -211,7 +216,7 @@ class JournalpostControllerTest {
     )).thenReturn(new ResponseEntity<>(new OppdaterJournalpostResponse(journalpostIdFraJson, null), HttpStatus.ACCEPTED));
 
     // when
-    var journalpostDtoResponse = httpHeaderTestRestTemplate.exchange(
+    var oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
         initUrl() + "/sak/" + saksnummerFraJson + "/journal/JOARK-" + journalpostIdFraJson,
         HttpMethod.PUT,
         new HttpEntity<>(endreJournalpostCommand),
@@ -220,7 +225,7 @@ class JournalpostControllerTest {
 
     // then
     assertAll(
-        () -> assertThat(journalpostDtoResponse)
+        () -> assertThat(oppdaterJournalpostResponseEntity)
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.ACCEPTED),
@@ -236,6 +241,57 @@ class JournalpostControllerTest {
               eq(HttpMethod.PUT),
               eq(new HttpEntity<>(oppdaterJournalpostRequest.tilJournalpostApi())),
               eq(OppdaterJournalpostResponse.class)
+          );
+        }
+    );
+  }
+
+  @Test
+  @DisplayName("skal opprette journalpost")
+  void skalOppretteJournalpost() {
+    // given
+    var nyJournalpostCommand = new NyJournalpostCommand();
+    nyJournalpostCommand.setAvsenderNavn("Bjarne Bohem");
+    nyJournalpostCommand.setBehandlingstema("BI01");
+    nyJournalpostCommand.setFagomrade("BID");
+    nyJournalpostCommand.setDokumenter(List.of(new OpprettDokument("KODE", "KATEGORI", "Søknad")));
+    nyJournalpostCommand.setDokumentreferanse("dokref");
+    nyJournalpostCommand.setDokumentType("I");
+    nyJournalpostCommand.setGjelder("06127412345");
+    nyJournalpostCommand.setGjelderType("FNR");
+    nyJournalpostCommand.setJournalforendeEnhet("007");
+    nyJournalpostCommand.setSaksnummer("1001001");
+    nyJournalpostCommand.setTittel("Vil ha mer!");
+
+    when(httpHeaderRestTemplateMock.exchange(
+        anyString(),
+        eq(HttpMethod.POST),
+        any(HttpEntity.class),
+        eq(OpprettJournalpostResponse.class)
+    )).thenReturn(new ResponseEntity<>(new OpprettJournalpostResponse(101), HttpStatus.CREATED));
+
+    // when
+    var dtoResponseEntity = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/sak/1001001/journal/",
+        HttpMethod.POST,
+        new HttpEntity<>(nyJournalpostCommand),
+        JournalpostDto.class
+    );
+
+    // then
+    assertAll(
+        () -> assertThat(dtoResponseEntity)
+            .extracting(ResponseEntity::getStatusCode)
+            .as("statusCode")
+            .isEqualTo(HttpStatus.CREATED),
+        () -> {
+          var opprettJournalpostRequest = new OpprettJournalpostRequest(nyJournalpostCommand);
+
+          verify(httpHeaderRestTemplateMock).exchange(
+              eq("/rest/journalpostapi/v1/journalpost"),
+              eq(HttpMethod.POST),
+              eq(new HttpEntity<>(opprettJournalpostRequest)),
+              eq(OpprettJournalpostResponse.class)
           );
         }
     );

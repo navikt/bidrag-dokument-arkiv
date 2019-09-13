@@ -9,10 +9,13 @@ import io.swagger.annotations.ApiResponses;
 import java.util.List;
 import no.nav.bidrag.commons.KildesystemIdenfikator;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.bidrag.dokument.dto.EndretJournalpostResponse;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
+import no.nav.bidrag.dokument.dto.NyJournalpostCommand;
 import no.nav.security.oidc.api.ProtectedWithClaims;
 import no.nav.security.oidc.api.Unprotected;
 import org.slf4j.Logger;
@@ -21,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class JournalpostController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JournalpostController.class);
-  private static final String PATH_SAKSJOURNAL = "/sak/{saksnummer}/journal/{joarkJournalpostId}";
+  private static final String PATH_SAKSJOURNAL = "/sak/{saksnummer}/journal/";
 
   private final JournalpostService journalpostService;
 
@@ -39,7 +43,7 @@ public class JournalpostController {
     this.journalpostService = journalpostService;
   }
 
-  @GetMapping(PATH_SAKSJOURNAL)
+  @GetMapping(PATH_SAKSJOURNAL + "{joarkJournalpostId}")
   @ApiOperation("Hent en journalpost for en id på formatet '" + PREFIX_JOARK_COMPLETE + "<journalpostId>'")
   @ApiResponses(value = {
       @ApiResponse(code = 200, message = "Journalpost er hentet"),
@@ -87,7 +91,28 @@ public class JournalpostController {
     return new ResponseEntity<>(journalposter, HttpStatus.OK);
   }
 
-  @PutMapping(PATH_SAKSJOURNAL)
+  @PostMapping(PATH_SAKSJOURNAL)
+  @ApiOperation("registrer ny journalpost")
+  @ApiResponses(value = {
+      @ApiResponse(code = 201, message = "Journalpost er opprettet"),
+      @ApiResponse(code = 401, message = "Du mangler sikkerhetstoken"),
+      @ApiResponse(code = 403, message = "Sikkerhetstoken er ikke gyldig, eller du har ikke adgang til kode 6 og 7 (nav-ansatt)"),
+      @ApiResponse(code = 404, message = "Kan ikke finne saken som det skal registreres journalpost på")
+  })
+  public ResponseEntity<JournalpostDto> post(@PathVariable String saksnummer, @RequestBody NyJournalpostCommand nyJournalpostCommand) {
+
+    nyJournalpostCommand.setSaksnummer(saksnummer);
+    LOGGER.info("api, post /sak/{}/journal: {}", saksnummer, nyJournalpostCommand);
+
+    var registrertJournalpost = journalpostService.registrer(new OpprettJournalpostRequest(nyJournalpostCommand));
+    var dto = registrertJournalpost.fetchOptionalResult()
+        .map(OpprettJournalpostResponse::tilJournalpostDto)
+        .orElse(null);
+
+    return new ResponseEntity<>(dto, registrertJournalpost.getHttpStatus());
+  }
+
+  @PutMapping(PATH_SAKSJOURNAL + "{joarkJournalpostId}")
   @ApiOperation("endre eksisterende journalpost med journalpostId på formatet '" + PREFIX_JOARK_COMPLETE + "<journalpostId>'")
   @ApiResponses(value = {
       @ApiResponse(code = 203, message = "Journalpost er endret"),
