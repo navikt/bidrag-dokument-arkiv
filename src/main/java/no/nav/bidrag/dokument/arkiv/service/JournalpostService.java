@@ -9,6 +9,8 @@ import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.GraphQueryConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostResponse;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.bidrag.dokument.dto.EndreSaksnummer;
 import no.nav.bidrag.dokument.dto.EndretJournalpostResponse;
@@ -73,5 +75,9 @@ public class JournalpostService {
     return oppdatertJournalpostResponse.fetchOptionalResult()
         .map(response -> new HttpStatusResponse<>(oppdatertJournalpostResponse.getHttpStatus(), response.tilEndretJournalpostResponse()))
         .orElseGet(() -> new HttpStatusResponse<>(oppdatertJournalpostResponse.getHttpStatus()));
+  }
+
+  public HttpStatusResponse<OpprettJournalpostResponse> registrer(OpprettJournalpostRequest opprettJournalpostRequest) {
+    return dokarkivConsumer.opprett(opprettJournalpostRequest);
   }
 }
