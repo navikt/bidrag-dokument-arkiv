@@ -5,18 +5,18 @@ import no.nav.bidrag.dokument.dto.NyJournalpostCommand
 import no.nav.bidrag.dokument.dto.OpprettDokument
 import java.util.stream.Collectors.toList
 
-data class OpprettJournalpostRequest (
-        private var avsenderMottaker: OpprettAvsenderMottaker? = null,
-        private var behandlingstema: String? = null,
-        private var bruker: RegistrerBruker? = null,
-        private var dokumenter: List<OpprettDokumentApi> = emptyList(),
-        private var eksternReferanseId: String? = null,
-        private var journalfoerendeEnhet: String? = null,
-        private var journalpostType: String? = null,
-        private var kanal: String? = null,
-        private var sak: RegistrerSak? = null,
-        private var tema: String? = null,
-        private var tittel: String? = null
+data class OpprettJournalpostRequest(
+        var avsenderMottaker: OpprettAvsenderMottaker? = null,
+        var behandlingstema: String? = null,
+        var bruker: RegistrerBruker? = null,
+        var dokumenter: List<OpprettDokumentApi> = emptyList(),
+        var eksternReferanseId: String? = null,
+        var journalfoerendeEnhet: String? = null,
+        var journalpostType: String? = null,
+        var kanal: String? = null,
+        var sak: RegistrerSak? = null,
+        var tema: String? = null,
+        var tittel: String? = null
 ) {
     constructor(nyJournalpostCommand: NyJournalpostCommand) : this(
             avsenderMottaker = nyJournalpostCommand.avsenderNavn?.let { OpprettAvsenderMottaker(it) },
