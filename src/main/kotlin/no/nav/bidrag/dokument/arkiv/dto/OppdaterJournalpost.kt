@@ -2,7 +2,6 @@ package no.nav.bidrag.dokument.arkiv.dto
 
 import no.nav.bidrag.dokument.dto.EndreDokument
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
-import no.nav.bidrag.dokument.dto.EndretJournalpostResponse
 import java.util.stream.Collectors.toList
 
 data class OppdaterJournalpostRequest(
@@ -80,7 +79,4 @@ internal data class Dokumentendring(val endreDokument: EndreDokument) {
 data class OppdaterJournalpostResponse(
         var journalpostId: Int? = null,
         var saksnummer: String? = null
-) {
-    fun tilEndretJournalpostResponse() = EndretJournalpostResponse(saksnummer = saksnummer, journalpostId = "JOARK-" + journalpostId)
-}
-
+)
