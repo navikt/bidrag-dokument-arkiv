@@ -13,7 +13,6 @@ import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
-import no.nav.bidrag.dokument.dto.EndretJournalpostResponse;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
 import no.nav.bidrag.dokument.dto.NyJournalpostCommand;
 import no.nav.security.oidc.api.ProtectedWithClaims;
@@ -121,7 +120,7 @@ public class JournalpostController {
       @ApiResponse(code = 403, message = "Sikkerhetstoken er ikke gyldig, eller det er ikke gitt adgang til kode 6 og 7 (nav-ansatt)"),
       @ApiResponse(code = 404, message = "Fant ikke journalpost som skal endres, ingen 'payload' eller feil prefix/id på journalposten")
   })
-  public ResponseEntity<EndretJournalpostResponse> put(
+  public ResponseEntity<Void> put(
       @RequestBody EndreJournalpostCommand endreJournalpostCommand,
       @PathVariable String saksnummer,
       @PathVariable String joarkJournalpostId
@@ -139,7 +138,7 @@ public class JournalpostController {
     var journalpostId = KildesystemIdenfikator.hentJournalpostId();
     var endreJournalpostHttpResponse = journalpostService.endre(saksnummer, journalpostId, endreJournalpostCommand);
 
-    return new ResponseEntity<>(endreJournalpostHttpResponse.getBody(), endreJournalpostHttpResponse.getHttpStatus());
+    return new ResponseEntity<>(endreJournalpostHttpResponse.getHttpStatus());
   }
 
   @Unprotected

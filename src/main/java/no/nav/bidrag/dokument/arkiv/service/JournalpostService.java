@@ -13,7 +13,6 @@ import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostResponse;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.bidrag.dokument.dto.EndreSaksnummer;
-import no.nav.bidrag.dokument.dto.EndretJournalpostResponse;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +51,7 @@ public class JournalpostService {
         .collect(toList());
   }
 
-  public HttpStatusResponse<EndretJournalpostResponse> endre(
+  public HttpStatusResponse<Void> endre(
       String saksnummer,
       Integer journalpostId,
       EndreJournalpostCommand endreJournalpostCommand
@@ -72,9 +71,7 @@ public class JournalpostService {
       LOGGER.info("endret: {}", response);
     });
 
-    return oppdatertJournalpostResponse.fetchOptionalResult()
-        .map(response -> new HttpStatusResponse<>(oppdatertJournalpostResponse.getHttpStatus(), response.tilEndretJournalpostResponse()))
-        .orElseGet(() -> new HttpStatusResponse<>(oppdatertJournalpostResponse.getHttpStatus()));
+    return new HttpStatusResponse<>(oppdatertJournalpostResponse.getHttpStatus());
   }
 
   public HttpStatusResponse<OpprettJournalpostResponse> registrer(OpprettJournalpostRequest opprettJournalpostRequest) {
