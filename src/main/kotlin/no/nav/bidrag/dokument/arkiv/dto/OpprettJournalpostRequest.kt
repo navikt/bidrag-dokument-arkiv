@@ -21,6 +21,7 @@ data class OpprettJournalpostRequest(
     constructor(nyJournalpostCommand: NyJournalpostCommand) : this(
             avsenderMottaker = nyJournalpostCommand.avsenderNavn?.let { OpprettAvsenderMottaker(it) },
             behandlingstema = nyJournalpostCommand.behandlingstema,
+            bruker = nyJournalpostCommand.gjelder?.let { RegistrerBruker(it, "FNR") },
             eksternReferanseId = nyJournalpostCommand.dokumentreferanse,
             journalfoerendeEnhet = nyJournalpostCommand.journalforendeEnhet,
             journalpostType = nyJournalpostCommand.dokumentType,
@@ -32,7 +33,7 @@ data class OpprettJournalpostRequest(
                     .map { OpprettDokumentApi(it) }
                     .collect(toList())
     )
-// json som ikke er implementert
+// json som ikke er implementert i OpprettJournalpostRequest
 //    "tilleggsopplysninger": [{
 //        "nokkel": "bucid",
 //        "verdi": "eksempel_verdi_123"
@@ -43,7 +44,7 @@ data class OpprettAvsenderMottaker(
         var navn: String
 )
 
-class RegistrerBruker(
+data class RegistrerBruker(
         var id: String,
         val idType: String = "FNR"
 )
@@ -59,7 +60,7 @@ data class OpprettDokumentApi(
             tittel = opprettDokument.tittel
     )
 }
-// json som ikke er implementert
+// json som ikke er implementert i OpprettDokumentApi
 //    "dokumentvarianter": [
 //        {
 //            "filnavn": "eksempeldokument.pdf",
