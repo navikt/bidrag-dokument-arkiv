@@ -226,6 +226,13 @@
       <artifactId>httpclient</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <!-- vulnerable dependencies -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
   </dependencies>
 
   <repositories>
