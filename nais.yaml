@@ -3,9 +3,9 @@ kind: "Application"
 metadata:
   name: bidrag-dokument-arkiv
   labels:
-    team: teambidrag
+    team: bidrag
 spec:
-  image: repo.adeo.no:5443/bidrag-dokument-arkiv:{{version}}
+  image: {{ image }}
   port: 8080
   liveness:
     path: /bidrag-dokument-arkiv/actuator/health
@@ -28,6 +28,6 @@ spec:
       cpu: 500m
       memory: 512Mi
   ingresses:
-    - {{ingress}}
+    - {{ ingress }}
   vault:
     enabled: true

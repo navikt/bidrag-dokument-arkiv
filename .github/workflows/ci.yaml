@@ -5,7 +5,7 @@ on:
       - '**'
 
 env:
-  IMAGE: docker.pkg.github.com/${{ github.repository }}/bidrag-dokument:${{ github.sha }}
+  IMAGE: docker.pkg.github.com/${{ github.repository }}/bidrag-dokument-arkiv:${{ github.sha }}
 
 jobs:
 
