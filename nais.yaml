@@ -3,7 +3,7 @@ kind: "Application"
 metadata:
   name: bidrag-dokument-arkiv
   labels:
-    team: teambidrag
+    team: bidrag
 spec:
   image: repo.adeo.no:5443/bidrag-dokument-arkiv:{{version}}
   port: 8080
