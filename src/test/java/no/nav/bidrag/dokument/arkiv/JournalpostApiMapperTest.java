@@ -1,5 +1,6 @@
 package no.nav.bidrag.dokument.arkiv;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
@@ -14,7 +15,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-@ActiveProfiles("dev")
+@ActiveProfiles(PROFILE_TEST)
 @DisplayName("Mapping av json verdier")
 @PropertySource("classpath:url.properties")
 @TestPropertySource(locations = "/secret.properties")

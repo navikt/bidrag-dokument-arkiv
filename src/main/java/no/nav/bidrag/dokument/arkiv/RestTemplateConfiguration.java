@@ -5,8 +5,8 @@ import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.ISSUER;
 import java.util.Optional;
 import no.nav.bidrag.commons.CorrelationId;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
-import no.nav.security.oidc.context.OIDCRequestContextHolder;
-import no.nav.security.oidc.context.TokenContext;
+import no.nav.security.token.support.core.context.TokenValidationContextHolder;
+import no.nav.security.token.support.core.jwt.JwtToken;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -17,20 +17,21 @@ public class RestTemplateConfiguration {
 
   @Bean
   @Scope("prototype")
-  public HttpHeaderRestTemplate restTemplate(OIDCRequestContextHolder oidcRequestContextHolder) {
+  public HttpHeaderRestTemplate restTemplate(TokenValidationContextHolder tokenValidationContextHolder) {
     HttpHeaderRestTemplate httpHeaderRestTemplate = new HttpHeaderRestTemplate();
 
-    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.AUTHORIZATION, () -> "Bearer " + fetchBearerToken(oidcRequestContextHolder));
+    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.AUTHORIZATION, () -> "Bearer " + fetchBearerToken(tokenValidationContextHolder));
     httpHeaderRestTemplate.addHeaderGenerator(CorrelationId.CORRELATION_ID_HEADER, CorrelationId::fetchCorrelationIdForThread);
 
     return httpHeaderRestTemplate;
   }
 
-  private String fetchBearerToken(OIDCRequestContextHolder oidcRequestContextHolder) {
-    return Optional.ofNullable(oidcRequestContextHolder)
-        .map(OIDCRequestContextHolder::getOIDCValidationContext)
-        .map(oidcValidationContext -> oidcValidationContext.getToken(ISSUER))
-        .map(TokenContext::getIdToken)
+  private String fetchBearerToken(TokenValidationContextHolder tokenValidationContextHolder) {
+    return Optional.ofNullable(tokenValidationContextHolder)
+        .map(TokenValidationContextHolder::getTokenValidationContext)
+        .map(tokenValidationContext -> tokenValidationContext.getJwtTokenAsOptional(ISSUER))
+        .map(Optional::get)
+        .map(JwtToken::getTokenAsString)
         .orElseThrow(() -> new IllegalStateException("Kunne ikke videresende Bearer token"));
   }
 }

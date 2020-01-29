@@ -1,5 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.controller;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
@@ -16,8 +17,7 @@ import java.util.Objects;
 import java.util.Optional;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.bidrag.commons.web.test.HttpHeaderTestRestTemplate;
-import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv;
-import no.nav.bidrag.dokument.arkiv.TestRestTemplateConfiguration;
+import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
 import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQueryResponse;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
@@ -39,10 +39,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 
-@ActiveProfiles("dev")
+@ActiveProfiles(PROFILE_TEST)
 @DisplayName("JournalpostController")
 @SpringBootTest(
-    classes = {BidragDokumentArkiv.class, TestRestTemplateConfiguration.class},
+    classes = {BidragDokumentArkivLocal.class},
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 class JournalpostControllerTest {

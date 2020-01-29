@@ -1,7 +1,7 @@
 package no.nav.bidrag.dokument.arkiv;
 
 import no.nav.bidrag.commons.web.test.HttpHeaderTestRestTemplate;
-import no.nav.security.oidc.test.support.jersey.TestTokenGeneratorResource;
+import no.nav.security.token.support.test.jersey.TestTokenGeneratorResource;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
