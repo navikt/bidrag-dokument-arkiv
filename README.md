@@ -42,14 +42,19 @@ Etter applikasjon er startet kan den nåes med browser på
 `http://localhost:8080/bidrag-dokument-arkiv/swagger-ui.html`
 
 ### Sikkerhet
-Tjenestens endepunkter er sikret med navikt [oidc-spring-support](https://github.com/navikt/token-support/tree/master/oidc-spring-support)
-fra [token-support](https://github.com/navikt/token-support). Det betyr at gyldig OIDC-id-token må være inkludert som Bearer-token i Authorization 
-header for alle spørringer mot disse endepunktene. 
+Tjenestens endepunkter er sikret med navikt
+[token-validation-spring](https://github.com/navikt/token-support/tree/master/token-validation-spring)
+fra [token-support](https://github.com/navikt/token-support). Det betyr at gyldig
+OIDC-id-token må være inkludert som Bearer-token i Authorization header for alle
+spørringer mot disse endepunktene. 
 
-For kjøring lokalt benyttes [oidc-test-support](https://github.com/navikt/token-support/tree/master/oidc-test-support) som blant annet sørger for
-at det genereres id-tokens til test formål. For å redusere risikoen for at testgeneratoren ved en feil gjøres aktiv i produksjon er 
-oidc-test-support-modulen kun tilgjengelig i test-scope. I tillegg er bruken av testgeneratoren kun knyttet til en egen spring-boot app-definisjon
-, BidragDokumentLocal (lokalisert under test) som benytter dev-profil.
+For kjøring lokalt benyttes
+[token-validation-test-support](https://github.com/navikt/token-support/tree/master/token-validation-test-support)
+som blant annet sørger for at det genereres id-tokens til test formål. For å redusere
+risikoen for at testgeneratoren ved en feil gjøres aktiv i produksjon er
+token-validation-test-support-modulen kun tilgjengelig i test-scope. I tillegg er bruken av
+testgeneratoren kun knyttet til en egen spring-boot app-definisjon,
+BidragDokumentLocal (lokalisert under test) som benytter test-profil.
 
 BidragDokumentLocal brukes i stedet for BidragDokument ved lokal kjøring.
 
@@ -57,16 +62,11 @@ AUD bidrag-q-localhost er lagt til for å støtte localhost redirect i preprod. 
 preprod-tjenester uten å måtte legge inn host-mappinger. bidrag-q-localhost-agenten er satt opp vha https://github.com/navikt/amag. Denne er ikke, 
 og skal heller ikke være tilgjengelig i prod.
 
-#### Oppskrift for kjøring med sikkerhet lokalt
- - Start BidragDokumentLocal som standard Java-applikasjon
- 
- - Opprette cookie med test-token for nettleser, naviger til:<br> 
- 	 - [http://localhost:8080/bidrag-dokument-arkiv/local/cookie?redirect=/bidrag-dokument-arkiv](http://localhost:8080/bidrag-dokument-arkiv/local/cookie?redirect=/bidrag-dokument)
- 	 
- - (Valgfri) Verifiser at test-tokengeneratoren fungerer ved å hente frem:<br>
- 	 - [http://localhost:8080/bidrag-dokument-arkiv/local/jwt](http://localhost:8080/bidrag-dokument-arkiv/local/jwt)<br> 	  	
- 	 - [http://localhost:8080/bidrag-dokument-arkiv/local/cookie](http://localhost:8080/bidrag-dokument-arkiv/local/cookie)<br> 	  	 
-  	 - [http://localhost:8080/bidrag-dokument-arkiv/local/claims](http://localhost:8080/bidrag-dokument-arkiv/local/claims)<br>
+#### Oppskrift for kjøring med test-token i Swagger lokalt (ved integrasjonstesting mot AM eller bidrag-dokument-journalpost i NAIS, må token hentes fra bidrag-ui.<domene-navn>/session)
+ - Start BidragDokumentArkivLocal som standard Java-applikasjon
+ - Hent test-token [http://localhost:8080/bidrag-dokument-arkiv/local/jwt](http://localhost:8080/bidrag-dokument-arkiv/local/jwt)
+ - Åpne Swagger (http://localhost:8080/bidrag-dokument-arkiv/swagger-ui.html)
+ - Trykk Authorize, og oppdater value-feltet med: Bearer <testtoken-streng> fra steg 2.
   
 #### Swagger Authorize 
 Den grønne authorize-knappen øverst i Swagger-ui kan brukes til å autentisere requester om du har tilgang på et gyldig OIDC-token. For å benytte authorize må følgende legges i value-feltet:
