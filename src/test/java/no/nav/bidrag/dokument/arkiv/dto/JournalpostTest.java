@@ -1,5 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.dto;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
@@ -20,7 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.Resource;
 import org.springframework.test.context.ActiveProfiles;
 
-@ActiveProfiles("dev")
+@ActiveProfiles(PROFILE_TEST)
 @SpringBootTest(classes = BidragDokumentArkivLocal.class)
 @DisplayName("Journalpost")
 class JournalpostTest {

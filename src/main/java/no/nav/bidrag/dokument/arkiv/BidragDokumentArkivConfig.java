@@ -15,6 +15,8 @@ import org.springframework.http.HttpHeaders;
 public class BidragDokumentArkivConfig {
 
   public static final String ISSUER = "isso";
+  public static final String PROFILE_LIVE = "live";
+  public static final String PROFILE_TEST = "test";
 
   @Bean
   GraphQueryConsumer graphQueryConsumer(GraphQueryConfiguration graphQueryConfiguration) {

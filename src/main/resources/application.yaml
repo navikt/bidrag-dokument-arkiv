@@ -3,9 +3,24 @@ server:
     context-path: /bidrag-dokument-arkiv
 
 # OIDC          
-no.nav.security.oidc:
+no.nav.security.jwt:
   issuers: isso
   issuer:
     isso:
       acceptedaudience: bisys-${FASIT_ENVIRONMENT_NAME}, bidrag-ui-${FASIT_ENVIRONMENT_NAME}, bidrag-dokument-ui-${FASIT_ENVIRONMENT_NAME}, bidrag-q-localhost
       discoveryurl: ${ISSO_ISSUER_URL}/.well-known/openid-configuration
+
+---
+
+################## TEST #################
+
+spring:
+  profiles: test
+
+##### OIDC #####
+no.nav.security.jwt:
+  issuers: isso
+  issuer.isso:
+    discoveryurl: http://metadata
+    acceptedaudience: aud-localhost
+    cookie_name: localhost-idtoken
