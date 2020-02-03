@@ -1,5 +1,6 @@
 package no.nav.bidrag.dokument.arkiv;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.ISSUER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -11,10 +12,11 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import java.lang.reflect.Type;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
-import no.nav.security.oidc.context.OIDCRequestContextHolder;
-import no.nav.security.oidc.context.OIDCValidationContext;
-import no.nav.security.oidc.context.TokenContext;
+import no.nav.security.token.support.core.context.TokenValidationContext;
+import no.nav.security.token.support.core.context.TokenValidationContextHolder;
+import no.nav.security.token.support.core.jwt.JwtToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,11 +36,11 @@ class RestTemplateConfigurationTest {
   @Mock
   private Appender appenderMock;
   @Mock
-  private OIDCValidationContext oidcValidationContextMock;
+  private TokenValidationContext tokenValidationContextMock;
   @Mock
-  private OIDCRequestContextHolder oidcRequestContextHolderMock;
+  private TokenValidationContextHolder tokenContextHolderMock;
   @Mock
-  private TokenContext tokenContextMock;
+  private JwtToken jwtTokenMock;
   @Mock
   private Type typeMock;
 
@@ -58,19 +60,19 @@ class RestTemplateConfigurationTest {
   }
 
   private void mockOidcTokenContext() {
-    when(oidcRequestContextHolderMock.getOIDCValidationContext()).thenReturn(oidcValidationContextMock);
-    when(oidcValidationContextMock.getToken("isso")).thenReturn(tokenContextMock);
+    when(tokenContextHolderMock.getTokenValidationContext()).thenReturn(tokenValidationContextMock);
+    when(tokenValidationContextMock.getJwtTokenAsOptional(ISSUER)).thenReturn(Optional.of(jwtTokenMock));
   }
 
   @Test
   @DisplayName("skal gi RestTemplate som setter AUTHORIZATION dynamisk")
   void skalSetteAuthorizationHeaderValueDynamisk() {
-    when(tokenContextMock.getIdToken())
+    when(jwtTokenMock.getTokenAsString())
         .thenReturn("one")
         .thenReturn("two")
         .thenReturn("three");
 
-    RestTemplate restTemplate = restTemplateConfiguration.restTemplate(oidcRequestContextHolderMock);
+    RestTemplate restTemplate = restTemplateConfiguration.restTemplate(tokenContextHolderMock);
 
     assertAll(
         () -> {

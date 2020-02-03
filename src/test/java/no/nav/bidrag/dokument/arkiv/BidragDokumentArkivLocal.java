@@ -1,7 +1,10 @@
 package no.nav.bidrag.dokument.arkiv;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TEST;
 import static org.springframework.context.annotation.FilterType.ASSIGNABLE_TYPE;
 
+import no.nav.security.token.support.spring.api.EnableJwtTokenValidation;
+import no.nav.security.token.support.test.spring.TokenGeneratorConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
@@ -9,18 +12,16 @@ import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 
-import no.nav.security.oidc.test.support.spring.TokenGeneratorConfiguration;
-import no.nav.security.spring.oidc.api.EnableOIDCTokenValidation;
-
-@SpringBootApplication @PropertySource("classpath:url.properties")
-@EnableOIDCTokenValidation(ignore = {"springfox.documentation.swagger.web.ApiResourceController", "org.springframework"})
+@SpringBootApplication
+@PropertySource("classpath:url.properties")
+@EnableJwtTokenValidation(ignore = {"springfox.documentation.swagger.web.ApiResourceController"})
 @Import(TokenGeneratorConfiguration.class)
-@ComponentScan(excludeFilters = { @Filter(type = ASSIGNABLE_TYPE, value = BidragDokumentArkiv.class) })
-public class BidragDokumentArkivLocal  {
+@ComponentScan(excludeFilters = {@Filter(type = ASSIGNABLE_TYPE, value = BidragDokumentArkiv.class)})
+public class BidragDokumentArkivLocal {
 
-    public static void main(String[] args) {
-        SpringApplication app = new SpringApplication(BidragDokumentArkivLocal.class);
-        app.setAdditionalProfiles("dev");
-        app.run(args);
-    }
+  public static void main(String[] args) {
+    SpringApplication app = new SpringApplication(BidragDokumentArkivLocal.class);
+    app.setAdditionalProfiles(PROFILE_TEST);
+    app.run(args);
+  }
 }
