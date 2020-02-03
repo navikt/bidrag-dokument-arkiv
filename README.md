@@ -1,4 +1,5 @@
 # bidrag-dokument-arkiv
+![](https://github.com/navikt/bidrag-dokument-arkiv/workflows/continious%20integration/badge.svg)
 Microservice for integration with a rest-api using graph query language for bidrag-dokument
 
 ### kjøring lokalt
