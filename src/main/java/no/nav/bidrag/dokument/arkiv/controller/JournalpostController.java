@@ -48,20 +48,18 @@ public class JournalpostController {
       @ApiResponse(code = 404, message = "Journalpost som skal hentes er ikke koblet mot gitt saksnummer, eller det er feil prefix/id på journalposten")
   })
   public ResponseEntity<JournalpostDto> hentJournalpost(@PathVariable String saksnummer, @PathVariable String joarkJournalpostId) {
-    if (erUkjentPrefixEllerHarIkkeTallEtterPrefix(joarkJournalpostId) || erIkkePrefixetMedJoark(joarkJournalpostId)) {
+    KildesystemIdenfikator kildesystemIdenfikator = new KildesystemIdenfikator(joarkJournalpostId);
+
+    if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix() || erIkkePrefixetMedJoark(joarkJournalpostId)) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    var journalpostHttpStatusResponse = journalpostService.hentJournalpost(saksnummer, KildesystemIdenfikator.hentJournalpostId());
+    var journalpostHttpStatusResponse = journalpostService.hentJournalpost(saksnummer, kildesystemIdenfikator.hentJournalpostId());
     var journalpostDto = journalpostHttpStatusResponse.fetchOptionalResult()
         .map(Journalpost::tilJournalpostDto)
         .orElse(null);
 
     return new ResponseEntity<>(journalpostDto, journalpostHttpStatusResponse.getHttpStatus());
-  }
-
-  private boolean erUkjentPrefixEllerHarIkkeTallEtterPrefix(@PathVariable String joarkJournalpostId) {
-    return KildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix(joarkJournalpostId);
   }
 
   private boolean erIkkePrefixetMedJoark(@PathVariable String joarkJournalpostId) {
@@ -101,8 +99,9 @@ public class JournalpostController {
       @PathVariable String joarkJournalpostId
   ) {
     LOGGER.info("api: put /sak/{}/journal/{}, body: {}", saksnummer, joarkJournalpostId, endreJournalpostCommand);
+    KildesystemIdenfikator kildesystemIdenfikator = new KildesystemIdenfikator(joarkJournalpostId);
 
-    if (KildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix(joarkJournalpostId) ||
+    if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix() ||
         endreJournalpostCommand == null ||
         endreJournalpostCommand.getGjelder() == null
     ) {
@@ -110,8 +109,7 @@ public class JournalpostController {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    var journalpostId = KildesystemIdenfikator.hentJournalpostId();
-    var endreJournalpostHttpResponse = journalpostService.endre(saksnummer, journalpostId, endreJournalpostCommand);
+    var endreJournalpostHttpResponse = journalpostService.endre(saksnummer, kildesystemIdenfikator.hentJournalpostId(), endreJournalpostCommand);
 
     return new ResponseEntity<>(endreJournalpostHttpResponse.getHttpStatus());
   }
