@@ -11,7 +11,7 @@
 
   <groupId>no.nav.bidrag.dokument</groupId>
   <artifactId>bidrag-dokument-arkiv</artifactId>
-  <version>1.0.100-SNAPSHOT</version>
+  <version>1.0.101-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <description>Backend NAIS, bidrag-dokument-arkiv, henter fra arkiv (JOARK)</description>
