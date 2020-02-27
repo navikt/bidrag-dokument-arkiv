@@ -22,4 +22,4 @@ jobs:
       - uses: navikt/bidrag-actions/maven-setup@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: mvn -B install
+      - run: mvn -B install -e
