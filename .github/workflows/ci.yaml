@@ -15,21 +15,20 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v1.3.0
         with:
           java-version: '13'
       - run: env
-      - uses: actions/cache@v1
+      - uses: actions/cache@v1.1.2
         with:
           path: ~/.m2
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-      - uses: navikt/bidrag-actions/setup-maven@v4.0.3
+      - uses: navikt/bidrag-actions/maven-setup@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Verify that no dependencies are of type SNAPSHOT
-        uses: navikt/bidrag-actions/verify-mvn-dependencies@v1.0.1
+      - uses: navikt/bidrag-actions/maven-verify-dependencies@v5
       - run: mvn install -B -e
       - name: Build and publish Docker image
         env:
@@ -38,16 +37,6 @@ jobs:
           docker build --tag ${IMAGE} .
           docker login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
           docker push ${IMAGE}
-      - if: github.ref == 'refs/heads/master'
-        run: mvn release:update-versions
-      - if: github.ref == 'refs/heads/master'
-        run: mvn help:evaluate -Dexpression=project.version -q -DforceStdout > .new-version
-      - if: github.ref == 'refs/heads/master'
-        uses: navikt/bidrag-actions/git-commit@v4.0.7
-        with:
-          commit_message: "Bumped to new version: {}"
-          commit_message_file: .new-version
-          pattern: "pom.xml"
 
   deploy_dev:
     runs-on: ubuntu-latest
@@ -76,6 +65,54 @@ jobs:
           RESOURCE: deploy/nais.yaml
           VAR: namespace=q1,ingress=https://bidrag-dokument-arkiv-q1.nais.preprod.local/
 
+  bump_dev_version:
+    runs-on: ubuntu-latest
+    name: bump SNAPSHOT version
+    if: github.ref == 'refs/heads/master'
+    needs: deploy_dev
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v1.1.2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - run: mvn release:update-versions
+      - run: mvn help:evaluate -Dexpression=project.version -q -DforceStdout > .new-version
+      - uses: navikt/bidrag-actions/git-commit@v4.0.7
+        with:
+          commit_message: "Bumped to new version: {}"
+          commit_message_file: .new-version
+          pattern: "pom.xml"
+
+  run_cucumber:
+    runs-on: self-hosted
+    name: Run cucumber integration tests
+    needs: deploy_dev
+    steps:
+      - run: echo "If failures, then fix and run cucumber test suite manual"
+      - name: run cucumber backend tests
+        if: github.ref != 'refs/heads/master'
+        run: |
+          echo "Working directory:"
+          pwd
+          sudo rm -rf bidrag-cucumber-backend
+          git clone --depth 1 https://github.com/navikt/bidrag-cucumber-backend
+          cd bidrag-cucumber-backend
+
+          if [ "$GITHUB_REF" != "refs/heads/master" ]; then
+            export ENVIRONMENT=q1
+          else
+            export ENVIRONMENT=q0
+          fi
+
+          docker run --rm -v $PWD:/usr/src/mymaven -v ~/.m2:/root/.m2 -w /usr/src/mymaven maven:3.6.3-jdk-13 mvn clean test \
+            -DENVIRONMENT="$ENVIRONMENT" \
+            ${{ secrets.MAVEN_CUCUMBER_CREDENTIALS }} \
+            -Dcucumber.options='--tags "@bidrag-dokument-arkiv"'
+
   deploy_prod:
     runs-on: ubuntu-latest
     name: Deploy docker image to prod
@@ -100,7 +137,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/cache@v1
+      - uses: actions/cache@v1.1.2
         with:
           path: ~/.m2
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -111,3 +148,5 @@ jobs:
         with:
           tag_message: Releasing version {}
           tag_file: .tag-version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
