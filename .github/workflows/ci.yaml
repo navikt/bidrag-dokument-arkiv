@@ -73,7 +73,7 @@ jobs:
       - uses: navikt/bidrag-maven/cucumber-backend@v1.0.4
         with:
           maven_image: maven:3.6.3-jdk-13
-          cucumber_tag: bidrag-dokument
+          cucumber_tag: bidrag-dokument-arkiv
           username: j104364
           test_user: z992903
         env:
