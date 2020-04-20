@@ -33,8 +33,9 @@
     <springfox-swagger.version>2.9.2</springfox-swagger.version>
 
     <!-- build -->
-    <maven.compiler.source>${java.version}</maven.compiler.source>
-    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <build-helper-maven.version>3.1.0</build-helper-maven.version>
+    <maven.compiler.version>3.8.0</maven.compiler.version>
+    <maven.surefire.version>2.22.0</maven.surefire.version>
     <maven.compiler.release>${java.version}</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -262,10 +263,12 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
       </plugin>
+
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
+
       <plugin>
         <groupId>org.jetbrains.kotlin</groupId>
         <artifactId>kotlin-maven-plugin</artifactId>
@@ -289,12 +292,31 @@
           <jvmTarget>1.8</jvmTarget>
         </configuration>
       </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <release>${java.version}</release>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>${build-helper-maven.version}</version>
+        <executions>
+          <execution>
+            <id>remove-old-artifacts</id>
+            <phase>package</phase>
+            <goals>
+              <goal>remove-project-artifact</goal>
+            </goals>
+            <configuration>
+              <removeAll>true</removeAll>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
