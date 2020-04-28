@@ -66,7 +66,7 @@ public class JournalpostController {
     return !joarkJournalpostId.startsWith(PREFIX_JOARK_COMPLETE);
   }
 
-  @GetMapping("/sakjournal/{saksnummer}")
+  @GetMapping("/sak/{saksnummer}/journal")
   @ApiOperation("Finn journalposter for et saksnummer og fagområde. Parameter fagomrade=BID er bidragjournal og fagomrade=FAR er farskapsjournal")
   @ApiResponses(value = {
       @ApiResponse(code = 200, message = "Fant journalposter for saksnummer og fagområde"),

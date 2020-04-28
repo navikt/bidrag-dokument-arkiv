@@ -169,7 +169,7 @@ class JournalpostControllerTest {
         .thenReturn(new ResponseEntity<>(dokumentoversiktFagsakQueryResponse, HttpStatus.I_AM_A_TEAPOT));
 
     var jouralposterResponseEntity = httpHeaderTestRestTemplate.exchange(
-        initUrl() + "/sakjournal/5276661?fagomrade=BID", HttpMethod.GET, null, listeMedJournalposterTypeReference()
+        initUrl() + "/sak/5276661/journal?fagomrade=BID", HttpMethod.GET, null, listeMedJournalposterTypeReference()
     );
 
     assertAll(
