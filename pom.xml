@@ -44,7 +44,7 @@
 
   <dependencyManagement>
     <dependencies>
-      <!-- Override version of json-smart -->
+      <!-- Override SNAPSHOT version of json-smart -->
       <dependency>
         <groupId>net.minidev</groupId>
         <artifactId>json-smart</artifactId>
@@ -230,13 +230,6 @@
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
       <scope>test</scope>
-    </dependency>
-
-    <!-- vulnerable dependencies -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>${jackson.version}</version>
     </dependency>
   </dependencies>
 
