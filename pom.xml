@@ -30,7 +30,7 @@
     <bidrag-dokument-dto.version>0.8.2</bidrag-dokument-dto.version>
     <logback-encoder.version>6.3</logback-encoder.version>
     <springfox-swagger.version>2.9.2</springfox-swagger.version>
-    <springframework-cloud.version>3.0.0.M1</springframework-cloud.version>
+    <springframework-cloud.version>2.2.2.RELEASE</springframework-cloud.version>
     <token-support.version>1.1.4</token-support.version>
 
     <!-- build -->
