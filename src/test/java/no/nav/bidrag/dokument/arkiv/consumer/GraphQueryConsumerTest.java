@@ -8,11 +8,13 @@ import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TES
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
+import no.nav.bidrag.dokument.arkiv.NavConsumerTokenGenerator;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.security.token.support.core.context.TokenValidationContext;
 import no.nav.security.token.support.core.context.TokenValidationContextHolder;
@@ -40,6 +42,8 @@ class GraphQueryConsumerTest {
 
   @MockBean
   private TokenValidationContextHolder tokenValidationContextHolderMock;
+  @MockBean
+  private NavConsumerTokenGenerator navConsumerTokenGeneratorMock;
   @Autowired
   private GraphQueryConsumer graphQueryConsumer;
 
@@ -56,6 +60,17 @@ class GraphQueryConsumerTest {
   @Test
   @DisplayName("skal utføre SAF spørring uten å finne journalposter")
   void skalUtforeSafSporringUtenNoenJournalposter() {
+    // gitt
+    stubEmptyQueryResult();
+
+    // når
+    var journalposter = graphQueryConsumer.finnJournalposter("007", "BID");
+
+    // så
+    assertThat(journalposter).isEmpty();
+  }
+
+  private void stubEmptyQueryResult() {
     stubFor(post(urlEqualTo("/query/"))
         .willReturn(aResponse().withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
             .withStatus(200)
@@ -71,15 +86,12 @@ class GraphQueryConsumerTest {
             ))
         )
     );
-
-    var journalposter = graphQueryConsumer.finnJournalposter("007", "BID");
-
-    assertThat(journalposter).isEmpty();
   }
 
   @Test
   @DisplayName("skal utføre SAF spørring og finne en journalpost")
   void skalUtforeSafSporringOgFinneEnJournalpost() {
+    // gitt
     stubFor(post(urlEqualTo("/query/"))
         .willReturn(aResponse().withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
             .withStatus(200)
@@ -98,11 +110,26 @@ class GraphQueryConsumerTest {
         )
     );
 
+    // når
     var journalposter = graphQueryConsumer.finnJournalposter("007", "BID");
 
+    // så
     assertAll(
         () -> assertThat(journalposter).hasSize(1),
         () -> assertThat(journalposter.iterator().next()).extracting(Journalpost::getJournalpostId).isEqualTo("1001")
     );
+  }
+
+  @Test
+  @DisplayName("skal generere Nav-Consumer-Token header ved query kall")
+  void skalLeggeTokenBlantHeaders() {
+    // gitt
+    stubEmptyQueryResult();
+
+    // når
+    graphQueryConsumer.finnJournalposter("101", "BID");
+
+    // så
+    verify(navConsumerTokenGeneratorMock).generateToken();
   }
 }

@@ -17,11 +17,12 @@ public class RestTemplateConfiguration {
 
   @Bean
   @Scope("prototype")
-  public HttpHeaderRestTemplate restTemplate(TokenValidationContextHolder tokenValidationContextHolder) {
+  public HttpHeaderRestTemplate restTemplate(TokenValidationContextHolder tokenValidationContextHolder, NavConsumerTokenGenerator navConsumerTokenGenerator) {
     HttpHeaderRestTemplate httpHeaderRestTemplate = new HttpHeaderRestTemplate();
 
     httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.AUTHORIZATION, () -> "Bearer " + fetchBearerToken(tokenValidationContextHolder));
     httpHeaderRestTemplate.addHeaderGenerator(CorrelationId.CORRELATION_ID_HEADER, CorrelationId::fetchCorrelationIdForThread);
+    httpHeaderRestTemplate.addHeaderGenerator("Nav-Consumer-Token", navConsumerTokenGenerator::generateToken);
 
     return httpHeaderRestTemplate;
   }
