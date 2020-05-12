@@ -27,6 +27,7 @@ import no.nav.bidrag.dokument.dto.JournalpostDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -50,7 +51,11 @@ class JournalpostControllerTest {
   @LocalServerPort
   private int port;
   @MockBean
-  private HttpHeaderRestTemplate httpHeaderRestTemplateMock;
+  @Qualifier("saf")
+  private HttpHeaderRestTemplate restTemplateSafMock;
+  @MockBean
+  @Qualifier("dokarkiv")
+  private HttpHeaderRestTemplate restTemplateDokarkivMock;
   @Value("classpath:json/dokumentoversiktFagsakQueryResponse.json")
   private Resource responseJsonResource;
   @Value("${server.servlet.context-path}")
@@ -106,7 +111,7 @@ class JournalpostControllerTest {
     assertThat(Optional.of(journalpostResponseEntity)).hasValueSatisfying(response -> assertAll(
         () -> assertThat(response.getBody()).isNull(),
         () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT),
-        () -> verify(httpHeaderRestTemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class))
+        () -> verify(restTemplateSafMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class))
     ));
   }
 
@@ -117,7 +122,7 @@ class JournalpostControllerTest {
     var dokumentoversiktFagsakQueryResponse = objectMapper.readValue(jsonResponse, DokumentoversiktFagsakQueryResponse.class);
     var journalpostIdFraJson = 201028011;
 
-    when(httpHeaderRestTemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class)))
+    when(restTemplateSafMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class)))
         .thenReturn(new ResponseEntity<>(dokumentoversiktFagsakQueryResponse, HttpStatus.I_AM_A_TEAPOT));
 
     var responseEntity = httpHeaderTestRestTemplate.exchange(
@@ -130,7 +135,7 @@ class JournalpostControllerTest {
     assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
         () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND),
         () -> assertThat(response.getBody()).isNull(),
-        () -> verify(httpHeaderRestTemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class))
+        () -> verify(restTemplateSafMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class))
     ));
   }
 
@@ -141,7 +146,7 @@ class JournalpostControllerTest {
     var dokumentoversiktFagsakQueryResponse = objectMapper.readValue(jsonResponse, DokumentoversiktFagsakQueryResponse.class);
     var journalpostIdFraJson = 201028011;
 
-    when(httpHeaderRestTemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class))).thenReturn(
+    when(restTemplateSafMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class))).thenReturn(
         new ResponseEntity<>(dokumentoversiktFagsakQueryResponse, HttpStatus.I_AM_A_TEAPOT));
 
     var responseEntity = httpHeaderTestRestTemplate.exchange(
@@ -155,7 +160,7 @@ class JournalpostControllerTest {
         () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
         () -> assertThat(response.getBody()).isNotNull().extracting(JournalpostDto::getInnhold).isEqualTo("Filosofens bidrag"),
         () -> assertThat(response.getBody()).isNotNull().extracting(JournalpostDto::getJournalpostId).isEqualTo("JOARK-" + journalpostIdFraJson),
-        () -> verify(httpHeaderRestTemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class))
+        () -> verify(restTemplateSafMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class))
     ));
   }
 
@@ -165,7 +170,7 @@ class JournalpostControllerTest {
     var jsonResponse = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJsonResource.getFile().toURI()))));
     var dokumentoversiktFagsakQueryResponse = objectMapper.readValue(jsonResponse, DokumentoversiktFagsakQueryResponse.class);
 
-    when(httpHeaderRestTemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class)))
+    when(restTemplateSafMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class)))
         .thenReturn(new ResponseEntity<>(dokumentoversiktFagsakQueryResponse, HttpStatus.I_AM_A_TEAPOT));
 
     var jouralposterResponseEntity = httpHeaderTestRestTemplate.exchange(
@@ -200,10 +205,10 @@ class JournalpostControllerTest {
         new EndreDokument("BLABLA", 1, "In a galazy far far away")
     ));
 
-    when(httpHeaderRestTemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(HttpEntity.class), eq(DokumentoversiktFagsakQueryResponse.class)))
+    when(restTemplateSafMock.exchange(eq("/"), eq(HttpMethod.POST), any(HttpEntity.class), eq(DokumentoversiktFagsakQueryResponse.class)))
         .thenReturn(new ResponseEntity<>(dokumentoversiktFagsakQueryResponse, HttpStatus.I_AM_A_TEAPOT));
 
-    when(httpHeaderRestTemplateMock.exchange(
+    when(restTemplateDokarkivMock.exchange(
         eq("/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson),
         eq(HttpMethod.PUT),
         any(HttpEntity.class),
@@ -231,7 +236,7 @@ class JournalpostControllerTest {
               dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostIdFraJson)
           );
 
-          verify(httpHeaderRestTemplateMock).exchange(
+          verify(restTemplateDokarkivMock).exchange(
               eq(forventetUrlForOppdateringAvJournalpost),
               eq(HttpMethod.PUT),
               eq(new HttpEntity<>(oppdaterJournalpostRequest.tilJournalpostApi())),
