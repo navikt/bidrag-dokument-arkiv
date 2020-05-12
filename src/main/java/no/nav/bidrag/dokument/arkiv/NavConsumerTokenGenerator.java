@@ -1,8 +1,8 @@
 package no.nav.bidrag.dokument.arkiv;
 
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.stereotype.Component;
 
-@ComponentScan
+@Component
 public class NavConsumerTokenGenerator {
 
   public String generateToken() {

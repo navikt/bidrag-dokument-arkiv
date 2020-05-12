@@ -1,5 +1,6 @@
 package no.nav.bidrag.dokument.arkiv;
 
+import com.google.common.annotations.Beta;
 import no.nav.bidrag.commons.ExceptionLogger;
 import no.nav.bidrag.commons.web.CorrelationIdFilter;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
