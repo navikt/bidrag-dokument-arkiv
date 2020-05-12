@@ -6,6 +6,9 @@ import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.bidrag.dokument.arkiv.consumer.AccessTokenConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.GraphQueryConsumer;
+import no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator;
+import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
+import no.nav.security.token.support.core.context.TokenValidationContextHolder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RootUriTemplateHandler;
@@ -59,5 +62,15 @@ public class BidragDokumentArkivConfig {
   @Bean
   ExceptionLogger exceptionLogger() {
     return new ExceptionLogger(BidragDokumentArkiv.class.getSimpleName());
+  }
+
+  @Bean
+  TokenForBasicAuthenticationGenerator basicAuthenticationTokenGenerator() {
+    return new TokenForBasicAuthenticationGenerator();
+  }
+
+  @Bean
+  OidcTokenGenerator oidcTokenGenerator(TokenValidationContextHolder tokenValidationContextHolder) {
+    return new OidcTokenGenerator(tokenValidationContextHolder);
   }
 }

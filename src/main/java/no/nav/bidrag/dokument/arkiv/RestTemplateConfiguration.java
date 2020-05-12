@@ -1,12 +1,9 @@
 package no.nav.bidrag.dokument.arkiv;
 
-import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.ISSUER;
-
-import java.util.Optional;
 import no.nav.bidrag.commons.CorrelationId;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
-import no.nav.security.token.support.core.context.TokenValidationContextHolder;
-import no.nav.security.token.support.core.jwt.JwtToken;
+import no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator;
+import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,10 +37,10 @@ public class RestTemplateConfiguration {
   @Qualifier("dokarkiv")
   @Scope("prototype")
   public HttpHeaderRestTemplate dokarkivRestTemplate(
-      TokenValidationContextHolder tokenValidationContextHolder,
+      OidcTokenGenerator oidcTokenGenerator,
       @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate
   ) {
-    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.AUTHORIZATION, () -> "Bearer " + fetchBearerToken(tokenValidationContextHolder));
+    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.AUTHORIZATION, oidcTokenGenerator::fetchBearerToken);
 
     return httpHeaderRestTemplate;
   }
@@ -52,20 +49,12 @@ public class RestTemplateConfiguration {
   @Qualifier("saf")
   @Scope("prototype")
   public HttpHeaderRestTemplate safRestTemplate(
-      NavConsumerTokenGenerator navConsumerTokenGenerator,
+      TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator,
       @Qualifier("dokarkiv") HttpHeaderRestTemplate httpHeaderRestTemplate
   ) {
-    httpHeaderRestTemplate.addHeaderGenerator(NavConsumerTokenGenerator.HEADER_NAV_CONSUMER_TOKEN, navConsumerTokenGenerator::generateToken);
+    httpHeaderRestTemplate
+        .addHeaderGenerator(TokenForBasicAuthenticationGenerator.HEADER_NAV_CONSUMER_TOKEN, tokenForBasicAuthenticationGenerator::generateToken);
 
     return httpHeaderRestTemplate;
-  }
-
-  private String fetchBearerToken(TokenValidationContextHolder tokenValidationContextHolder) {
-    return Optional.ofNullable(tokenValidationContextHolder)
-        .map(TokenValidationContextHolder::getTokenValidationContext)
-        .map(tokenValidationContext -> tokenValidationContext.getJwtTokenAsOptional(ISSUER))
-        .map(Optional::get)
-        .map(JwtToken::getTokenAsString)
-        .orElseThrow(() -> new IllegalStateException("Kunne ikke videresende Bearer token"));
   }
 }

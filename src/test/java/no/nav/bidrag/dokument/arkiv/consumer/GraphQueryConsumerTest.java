@@ -14,7 +14,7 @@ import static org.mockito.Mockito.when;
 import java.util.Optional;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
-import no.nav.bidrag.dokument.arkiv.NavConsumerTokenGenerator;
+import no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.security.token.support.core.context.TokenValidationContext;
 import no.nav.security.token.support.core.context.TokenValidationContextHolder;
@@ -43,7 +43,7 @@ class GraphQueryConsumerTest {
   @MockBean
   private TokenValidationContextHolder tokenValidationContextHolderMock;
   @MockBean
-  private NavConsumerTokenGenerator navConsumerTokenGeneratorMock;
+  private TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGeneratorMock;
   @Autowired
   private GraphQueryConsumer graphQueryConsumer;
 
@@ -130,6 +130,6 @@ class GraphQueryConsumerTest {
     graphQueryConsumer.finnJournalposter("101", "BID");
 
     // så
-    verify(navConsumerTokenGeneratorMock).generateToken();
+    verify(tokenForBasicAuthenticationGeneratorMock).generateToken();
   }
 }
