@@ -15,6 +15,7 @@ import org.springframework.boot.web.client.RootUriTemplateHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 @Configuration
 public class BidragDokumentArkivConfig {
@@ -29,7 +30,7 @@ public class BidragDokumentArkivConfig {
       @Value("${SAF_GRAPHQL_URL}") String baseUrl
   ) {
     httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(baseUrl));
-    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> "application/json");
+    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
 
     return new GraphQueryConsumer(httpHeaderRestTemplate);
   }
@@ -46,10 +47,11 @@ public class BidragDokumentArkivConfig {
 
   @Bean
   AccessTokenConsumer accessTokenConsumer(
-      @Qualifier("token") HttpHeaderRestTemplate httpHeaderRestTemplate,
+      @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
       @Value("${ACCESS_TOKEN_URL}") String baseUrl
   ) {
     httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(baseUrl));
+    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 
     return new AccessTokenConsumer(httpHeaderRestTemplate);
   }
@@ -65,8 +67,11 @@ public class BidragDokumentArkivConfig {
   }
 
   @Bean
-  TokenForBasicAuthenticationGenerator basicAuthenticationTokenGenerator() {
-    return new TokenForBasicAuthenticationGenerator();
+  TokenForBasicAuthenticationGenerator basicAuthenticationTokenGenerator(
+      AccessTokenConsumer accessTokenConsumer,
+      @Value("SRV_BD_ARKIV_AUTH") String secretForServiceUserNotEncoded
+  ) {
+    return new TokenForBasicAuthenticationGenerator(accessTokenConsumer, secretForServiceUserNotEncoded);
   }
 
   @Bean
