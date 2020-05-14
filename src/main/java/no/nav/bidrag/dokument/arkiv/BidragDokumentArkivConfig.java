@@ -69,7 +69,7 @@ public class BidragDokumentArkivConfig {
   @Bean
   TokenForBasicAuthenticationGenerator basicAuthenticationTokenGenerator(
       AccessTokenConsumer accessTokenConsumer,
-      @Value("SRV_BD_ARKIV_AUTH") String secretForServiceUserNotEncoded
+      @Value("${SRV_BD_ARKIV_AUTH}") String secretForServiceUserNotEncoded
   ) {
     return new TokenForBasicAuthenticationGenerator(accessTokenConsumer, secretForServiceUserNotEncoded);
   }

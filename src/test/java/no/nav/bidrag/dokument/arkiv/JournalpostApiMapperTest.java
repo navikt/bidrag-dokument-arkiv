@@ -17,7 +17,7 @@ import org.springframework.test.context.TestPropertySource;
 
 @ActiveProfiles(PROFILE_TEST)
 @DisplayName("Mapping av json verdier")
-@PropertySource("classpath:url.properties")
+@PropertySource("classpath:resources.properties")
 @TestPropertySource(locations = "/secret.properties")
 @SpringBootTest(classes = BidragDokumentArkivLocal.class)
 class JournalpostApiMapperTest {

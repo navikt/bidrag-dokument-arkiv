@@ -37,5 +37,5 @@ spec:
   vault:
     enabled: true
     paths:
-      - kvPath: serviceuser/prod/svrbdarkiv
+      - kvPath: /serviceuser/data/prod/srvbdarkiv
         mountPath: secrets/prod/srvbdarkiv
