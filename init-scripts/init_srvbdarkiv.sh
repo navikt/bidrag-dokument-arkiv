@@ -9,5 +9,7 @@ else
   if test -f /var/run/secrets/prod/srvbdarkiv/password; then
     SRV_BD_ARKIV_AUTH=$(cat /var/run/secrets/prod/srvbdarkiv/password)
     echo Exporting srvbdarkiv authentication for prod cluster
+  else
+    echo No authentication for srvbdarkiv is exported...
   fi
 fi

@@ -38,4 +38,4 @@ spec:
     enabled: true
     paths:
       - kvPath: /serviceuser/data/dev/srvbdarkiv
-        mountPath: secrets/dev/srvbdarkiv
+        mountPath: /var/run/secrets/nais.io/srvbdarkiv
