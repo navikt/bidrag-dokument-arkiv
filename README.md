@@ -75,7 +75,7 @@ Den grønne authorize-knappen øverst i Swagger-ui kan brukes til å autentisere
    - "Bearer id-token" (hvor id-token erstattes med et gyldig id-token (jwt-streng))
  
 For localhost kan et gyldig id-token hentes med følgende URL (gitt BidragDokumentArkivLocal er startet på port 8080):
-   - [http://localhost:8080/bidrag-dokument-arkiv/local/jwt](http://localhost:8080/bidrag-dokument-arkiv/local/jwt)<br>
+   - [http://localhost:8080/bidrag-dokument-arkiv/local/jwt](http://localhost:8080/bidrag-dokument-arkiv/local/jwt)
    
 For preprod kan følgende CURL-kommando benyttes (krever tilgang til isso-agent-passord i Fasit for aktuelt miljø): 
  
