@@ -37,7 +37,7 @@ class TokenForBasicAuthenticationGeneratorTest {
   @Test
   @DisplayName("skal hente security token for srvbdarkiv")
   void skalHenteTokenForBasicAuthentication() {
-    stubFor(post(urlEqualTo("/v1/sts/token"))
+    stubFor(post(urlEqualTo("/rest/v1/sts/token"))
         .willReturn(aResponse().withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
             .withStatus(201)
             .withBody(String.join(
@@ -60,7 +60,7 @@ class TokenForBasicAuthenticationGeneratorTest {
   @DisplayName("skal legge til kodet header for servicebruker")
   void skalLeggeTilKodedHeaderForServiceBruker() {
 
-    stubFor(post(urlEqualTo("/v1/sts/token"))
+    stubFor(post(urlEqualTo("/rest/v1/sts/token"))
         .willReturn(aResponse().withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
             .withStatus(201)
             .withBody(String.join(
@@ -76,7 +76,7 @@ class TokenForBasicAuthenticationGeneratorTest {
 
     tokenForBasicAuthenticationGenerator.generateToken();
 
-    verify(postRequestedFor(urlEqualTo("/v1/sts/token"))
+    verify(postRequestedFor(urlEqualTo("/rest/v1/sts/token"))
         .withHeader(HttpHeaders.AUTHORIZATION, new AnythingPattern())
     );
   }

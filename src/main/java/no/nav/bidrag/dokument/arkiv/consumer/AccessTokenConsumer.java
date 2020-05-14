@@ -25,7 +25,7 @@ public class AccessTokenConsumer {
     }
   };
 
-  static final String REST_TOKEN_ENDPOINT = "/v1/sts/token";
+  static final String REST_TOKEN_ENDPOINT = "/rest/v1/sts/token";
 
   private final RestTemplate restTemplate;
 
@@ -37,6 +37,8 @@ public class AccessTokenConsumer {
     Validate.isTrue(serviceUser != null);
     Validate.isTrue(secretForServiceUserNotEncoded != null);
 
+    LOGGER.info("Henter security token for " + serviceUser);
+
     var encodedAuthentication = encode(serviceUser, secretForServiceUserNotEncoded);
     var headers = new HttpHeaders();
     headers.put(HttpHeaders.AUTHORIZATION, List.of(encodedAuthentication));
@@ -46,8 +48,6 @@ public class AccessTokenConsumer {
     );
 
     var tokenForBasicAuthentication = tokenForBasicAuthenticationResponse.getBody();
-
-    LOGGER.info("Henter security token for " + serviceUser);
 
     return Optional.ofNullable(tokenForBasicAuthentication)
         .map(TokenForBasicAuthentication::fetchToken)
