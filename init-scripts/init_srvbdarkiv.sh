@@ -2,14 +2,11 @@
 
 export SRV_BD_ARKIV_AUTH="No authentication available"
 
-if test -f /var/run/secrets/dev/srvbdarkiv/password; then
-    SRV_BD_ARKIV_AUTH=$(cat /var/run/secrets/dev/srvbdarkiv/password)
-    echo Exporting srvbdarkiv authentication for dev cluster
+PATH_PASSWORD=/var/run/secrets/nais.io/srvbdarkiv
+
+if test -f "$PATH_PASSWORD"; then
+  SRV_BD_ARKIV_AUTH=$(cat "$PATH_PASSWORD")
+  echo Exporting srvbdarkiv authentication
 else
-  if test -f /var/run/secrets/prod/srvbdarkiv/password; then
-    SRV_BD_ARKIV_AUTH=$(cat /var/run/secrets/prod/srvbdarkiv/password)
-    echo Exporting srvbdarkiv authentication for prod cluster
-  else
-    echo No authentication for srvbdarkiv is exported...
-  fi
+  echo No authentication for srvbdarkiv is exported...
 fi
