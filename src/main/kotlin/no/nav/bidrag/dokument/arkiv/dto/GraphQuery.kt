@@ -8,6 +8,6 @@ abstract class GraphQuery {
             {
               "query":"${getQuery()}"
             }
-        """.trimIndent()
+            """.trimIndent()
     }
 }

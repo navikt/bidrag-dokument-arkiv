@@ -35,7 +35,45 @@ public class GraphQueryConsumer {
 
   public List<Journalpost> finnJournalposter(String saksnummer, String fagomrade) {
     var dokumentoversiktFagsakQuery = new DokumentoversiktFagsakQuery(saksnummer, fagomrade);
-    var muligJsonResponse = consumeQuery(dokumentoversiktFagsakQuery.writeQuery());
+
+    var saf = String.join("\n", "",
+        "dokumentoversiktFagsak(fagsak: {fagsakId: \"" + saksnummer + "\", fagsaksystem: \"BISYS\"}, tema:" + fagomrade + ", foerste: 500) {",
+        "  journalposter {",
+        "    avsenderMottaker {",
+        "      navn",
+        "    }",
+        "    bruker {",
+        "      id",
+        "    type",
+        "    }",
+        "    dokumenter {",
+        "      tittel",
+        "    }",
+        "    journalforendeEnhet",
+        "    journalfortAvNavn",
+        "    journalpostId",
+        "    journalposttype",
+        "    journalstatus",
+        "    relevanteDatoer {",
+        "      dato",
+        "    datotype",
+        "    }",
+        "    sak {",
+        "      fagsakId",
+        "    }",
+        "    tema",
+        "    tittel",
+        "  }",
+        "}"
+    ).trim();
+
+    var query = String.join("\n", "",
+        "{",
+        "  \"query\":\"" + saf + "\"",
+        "{"
+    ).trim();
+
+    var muligJsonResponse = consumeQuery(query);
 
     return muligJsonResponse
         .map(HttpEntity::getBody)
@@ -45,7 +83,7 @@ public class GraphQueryConsumer {
 
   @SuppressWarnings("ConstantConditions")
   private Optional<ResponseEntity<DokumentoversiktFagsakQueryResponse>> consumeQuery(String query) {
-    LOGGER.info(query.replace(" ", ""));
+    LOGGER.info(query);
 
     return Optional.ofNullable(restTemplate.exchange(
         "/", HttpMethod.POST, new HttpEntity<>(query), DokumentoversiktFagsakQueryResponse.class
