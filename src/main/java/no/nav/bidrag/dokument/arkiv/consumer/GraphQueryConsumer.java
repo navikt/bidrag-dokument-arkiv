@@ -45,7 +45,7 @@ public class GraphQueryConsumer {
 
   @SuppressWarnings("ConstantConditions")
   private Optional<ResponseEntity<DokumentoversiktFagsakQueryResponse>> consumeQuery(String query) {
-    LOGGER.info(query);
+    LOGGER.info(query.replace(" ", ""));
 
     return Optional.ofNullable(restTemplate.exchange(
         "/", HttpMethod.POST, new HttpEntity<>(query), DokumentoversiktFagsakQueryResponse.class

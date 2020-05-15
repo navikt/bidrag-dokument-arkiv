@@ -84,7 +84,7 @@ class TokenForBasicAuthenticationGeneratorTest {
     tokenForBasicAuthenticationGenerator.generateToken();
 
     verify(postRequestedFor(urlEqualTo("/rest/v1/sts/token"))
-        .withHeader(HttpHeaders.AUTHORIZATION, equalTo(encodedBasicAuthentication))
+        .withHeader(HttpHeaders.AUTHORIZATION, equalTo("Basic " + encodedBasicAuthentication))
     );
   }
 }

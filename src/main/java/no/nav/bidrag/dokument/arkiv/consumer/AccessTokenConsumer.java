@@ -41,7 +41,7 @@ public class AccessTokenConsumer {
 
     var encodedAuthentication = encode(serviceUser, secretForServiceUserNotEncoded);
     var headers = new HttpHeaders();
-    headers.put(HttpHeaders.AUTHORIZATION, List.of(encodedAuthentication));
+    headers.put(HttpHeaders.AUTHORIZATION, List.of("Basic " + encodedAuthentication));
 
     var tokenForBasicAuthenticationResponse = restTemplate.exchange(
         REST_TOKEN_ENDPOINT, HttpMethod.POST, new HttpEntity<>(PARAMETERS, headers), TokenForBasicAuthentication.class
