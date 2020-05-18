@@ -8,6 +8,6 @@ abstract class GraphQuery {
             {
               "query":"{${getQuery()}}"
             }
-        """.replace("\n", "").replace(" ", "").trim()
+        """.replace("\n", "").trim()
     }
 }
