@@ -6,8 +6,8 @@ abstract class GraphQuery {
     fun writeQuery(): String {
         return """
             {
-              "query":"${getQuery()}"
+              "query":"{${getQuery()}}"
             }
-        """.replace("\n", "").replace(" ", "").trim()
+        """.replace("\n", "").trim()
     }
 }

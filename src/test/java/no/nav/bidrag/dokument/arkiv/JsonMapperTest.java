@@ -72,7 +72,7 @@ class JsonMapperTest {
           String safQuery = (String) jsonMap.get("query");
           assertThat(safQuery).as("query property").isNotNull();
           assertThat(safQuery).as("querystring")
-              .contains("fagsakId:\"666\"")
+              .contains("fagsakId: \"666\"")
               .contains("tema:BID");
         }
     );
