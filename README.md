@@ -3,12 +3,12 @@
 
 Microtjeneste som konnuniserer med et rest-api (GraphiQL): bidrag-dokument leser fra arkiv (JOARK)
 
-### kjøring lokalt
+## kjøring lokalt
 Fila `src/main/resources/url.properties` må inneholde url til rest-api for gaph query (sak og arkiv facade).
 
 Se [Sikkerhet](#Sikkerhet) for kjøring med sikkerhet lokalt.
 
-### beskrivelse
+## beskrivelse
 
 Dette er en mikrotjeneste som blir brukt av `bidrag-dokument` for å hente metadata om
 journalposter fra sak og arkiv (sak og arkiv facade/saf).
