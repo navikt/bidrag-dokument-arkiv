@@ -1,7 +1,7 @@
 # bidrag-dokument-arkiv
 ![](https://github.com/navikt/bidrag-dokument-arkiv/workflows/continious%20integration/badge.svg)
 
-Microservice for integration with a rest-api using graph query language for bidrag-dokument
+Microtjeneste som konnuniserer med et rest-api (GraphiQL): bidrag-dokument leser fra arkiv (JOARK)
 
 ### kjøring lokalt
 Fila `src/main/resources/url.properties` må inneholde url til rest-api for gaph query (sak og arkiv facade).
@@ -75,16 +75,16 @@ Den grønne authorize-knappen øverst i Swagger-ui kan brukes til å autentisere
    - "Bearer id-token" (hvor id-token erstattes med et gyldig id-token (jwt-streng))
  
 For localhost kan et gyldig id-token hentes med følgende URL (gitt BidragDokumentArkivLocal er startet på port 8080):
-   - [http://localhost:8080/bidrag-dokument-arkiv/local/jwt](http://localhost:8080/bidrag-dokument-arkiv/local/jwt)<br>
+   - [http://localhost:8080/bidrag-dokument-arkiv/local/jwt](http://localhost:8080/bidrag-dokument-arkiv/local/jwt)
    
 For preprod kan følgende CURL-kommando benyttes (krever tilgang til isso-agent-passord i Fasit for aktuelt miljø): 
  
- <code> curl -X POST \ </code><br>
-	  <code> -u "{isso-agent-brukernavn}:{isso-agent-passord}" \ </code> <br>
-	  <code> -d "grant_type=client_credentials&scope=openid" \ </code> <br>
-	  <code> {isso-issuer-url}/access_token </code> <br>
- 
+```
+  curl -X POST \
+	   -u "{isso-agent-brukernavn}:{isso-agent-passord}" \
+	   -d "grant_type=client_credentials&scope=openid" \
+	   {isso-issuer-url}/access_token
+```
   
-hvor <code>{isso-agent-brukernavn}</code> og <code>{isso-agent-passord}</code> hentes fra Fasit-ressurs OpenIdConnect bidrag-dokument-ui-oidc for aktuelt miljø (f.eks [https://fasit.adeo.no/resources/6419841](https://fasit.adeo.no/resources/6419841) for q0),
-
-og <code>{isso-issuer-url}</code> hentes fra Fasit-ressurs BaseUrl isso-issuer (f.eks [https://fasit.adeo.no/resources/2291405](https://fasit.adeo.no/resources/2291405) for q0.
+hvor `{isso-agent-brukernavn}` og `{isso-agent-passord}` hentes fra Fasit-ressurs OpenIdConnect bidrag-dokument-ui-oidc for aktuelt miljø (f.eks [https://fasit.adeo.no/resources/6419841](https://fasit.adeo.no/resources/6419841) for q0),
+og `{isso-issuer-url}` hentes fra Fasit-ressurs BaseUrl isso-issuer (f.eks [https://fasit.adeo.no/resources/2291405](https://fasit.adeo.no/resources/2291405) for q0.

@@ -3,6 +3,9 @@ kind: "Application"
 metadata:
   name: bidrag-dokument-arkiv
   namespace: {{ namespace }}
+  serviceuser:
+    p:
+      - srvbdarkiv
   labels:
     team: bidrag
 spec:
@@ -33,3 +36,6 @@ spec:
     - https://bidrag-dokument-arkiv.prod-fss.nais.io
   vault:
     enabled: true
+    paths:
+      - kvPath: /serviceuser/data/prod/srvbdarkiv
+        mountPath: /var/run/secrets/nais.io/srvbdarkiv

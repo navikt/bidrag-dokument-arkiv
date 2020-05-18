@@ -1,12 +1,10 @@
 package no.nav.bidrag.dokument.arkiv;
 
-import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.ISSUER;
-
-import java.util.Optional;
 import no.nav.bidrag.commons.CorrelationId;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
-import no.nav.security.token.support.core.context.TokenValidationContextHolder;
-import no.nav.security.token.support.core.jwt.JwtToken;
+import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
+import no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -16,22 +14,39 @@ import org.springframework.http.HttpHeaders;
 public class RestTemplateConfiguration {
 
   @Bean
+  @Qualifier("base")
   @Scope("prototype")
-  public HttpHeaderRestTemplate restTemplate(TokenValidationContextHolder tokenValidationContextHolder) {
+  public HttpHeaderRestTemplate restTemplate() {
     HttpHeaderRestTemplate httpHeaderRestTemplate = new HttpHeaderRestTemplate();
 
-    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.AUTHORIZATION, () -> "Bearer " + fetchBearerToken(tokenValidationContextHolder));
     httpHeaderRestTemplate.addHeaderGenerator(CorrelationId.CORRELATION_ID_HEADER, CorrelationId::fetchCorrelationIdForThread);
 
     return httpHeaderRestTemplate;
   }
 
-  private String fetchBearerToken(TokenValidationContextHolder tokenValidationContextHolder) {
-    return Optional.ofNullable(tokenValidationContextHolder)
-        .map(TokenValidationContextHolder::getTokenValidationContext)
-        .map(tokenValidationContext -> tokenValidationContext.getJwtTokenAsOptional(ISSUER))
-        .map(Optional::get)
-        .map(JwtToken::getTokenAsString)
-        .orElseThrow(() -> new IllegalStateException("Kunne ikke videresende Bearer token"));
+  @Bean
+  @Qualifier("dokarkiv")
+  @Scope("prototype")
+  public HttpHeaderRestTemplate dokarkivRestTemplate(
+      OidcTokenGenerator oidcTokenGenerator,
+      @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate
+  ) {
+    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.AUTHORIZATION, oidcTokenGenerator::fetchBearerToken);
+
+    return httpHeaderRestTemplate;
+  }
+
+  @Bean
+  @Qualifier("saf")
+  @Scope("prototype")
+  public HttpHeaderRestTemplate safRestTemplate(
+      TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator,
+      @Qualifier("dokarkiv") HttpHeaderRestTemplate httpHeaderRestTemplate
+  ) {
+    httpHeaderRestTemplate.addHeaderGenerator(
+        TokenForBasicAuthenticationGenerator.HEADER_NAV_CONSUMER_TOKEN, tokenForBasicAuthenticationGenerator::generateToken
+    );
+
+    return httpHeaderRestTemplate;
   }
 }

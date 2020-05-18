@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 
 @SpringBootApplication
-@PropertySource("classpath:url.properties")
+@PropertySource("classpath:resources.properties")
 @EnableJwtTokenValidation(ignore = {"springfox.documentation.swagger.web.ApiResourceController"})
 @Import(TokenGeneratorConfiguration.class)
 @ComponentScan(excludeFilters = {@Filter(type = ASSIGNABLE_TYPE, value = BidragDokumentArkiv.class)})

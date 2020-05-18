@@ -7,20 +7,19 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
+import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQuery;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 
 @ActiveProfiles(PROFILE_TEST)
 @DisplayName("Mapping av json verdier")
-@PropertySource("classpath:url.properties")
-@TestPropertySource(locations = "/secret.properties")
+@PropertySource("classpath:resources.properties")
 @SpringBootTest(classes = BidragDokumentArkivLocal.class)
-class JournalpostApiMapperTest {
+class JsonMapperTest {
 
   @Autowired
   private ObjectMapper objectMapper;
@@ -57,6 +56,25 @@ class JournalpostApiMapperTest {
         () -> assertThat(jsonMap.get("sak")).as("sak").isNotNull(),
         () -> assertThat(jsonMap.get("tema")).as("tema").isEqualTo("BID"),
         () -> assertThat(jsonMap.get("tittel")).as("tittel").isEqualTo("Tittelen på journalposten")
+    );
+  }
+
+  @Test
+  @DisplayName("skal mappe saf query til java.util.Map")
+  void skalMappeSafQueryTilMap() throws JsonProcessingException {
+    var query = new DokumentoversiktFagsakQuery("666", "BID").writeQuery();
+    var jsonMap = objectMapper.readValue(query, Map.class);
+
+    //noinspection unchecked
+    assertAll(
+        () -> assertThat(jsonMap).hasSize(1),
+        () -> {
+          String safQuery = (String) jsonMap.get("query");
+          assertThat(safQuery).as("query property").isNotNull();
+          assertThat(safQuery).as("querystring")
+              .contains("fagsakId:\"666\"")
+              .contains("tema:BID");
+        }
     );
   }
 }
