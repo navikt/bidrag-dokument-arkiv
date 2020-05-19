@@ -65,6 +65,8 @@ AUD bidrag-q-localhost er lagt til for å støtte localhost redirect i preprod. 
 preprod-tjenester uten å måtte legge inn host-mappinger. bidrag-q-localhost-agenten er satt opp vha https://github.com/navikt/amag. Denne er ikke, 
 og skal heller ikke være tilgjengelig i prod.
 
+***NB!*** Husk å sette miljøvaribler ihht. `src/test/resources/resources.properties`
+
 #### Oppskrift for kjøring med test-token i Swagger lokalt (ved integrasjonstesting mot AM eller bidrag-dokument-journalpost i NAIS, må token hentes fra bidrag-ui.<domene-navn>/session)
  - Start BidragDokumentArkivLocal som standard Java-applikasjon
  - Hent test-token [http://localhost:8080/bidrag-dokument-arkiv/local/jwt](http://localhost:8080/bidrag-dokument-arkiv/local/jwt)
