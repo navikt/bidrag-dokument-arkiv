@@ -4,7 +4,8 @@
 Microtjeneste som konnuniserer med et rest-api (GraphiQL): bidrag-dokument leser fra arkiv (JOARK)
 
 ## kjøring lokalt
-Fila `src/main/resources/url.properties` må inneholde url til rest-api for gaph query (sak og arkiv facade).
+Verdiene i `src/test/resources/resources.properties` må settes opp som miljøvariabler når man starter
+`BidragDokumentArkiv` for kjøring lokalt.
 
 Se [Sikkerhet](#Sikkerhet) for kjøring med sikkerhet lokalt.
 
