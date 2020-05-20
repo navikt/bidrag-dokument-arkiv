@@ -30,7 +30,7 @@
     <logback-encoder.version>6.3</logback-encoder.version>
     <springfox-swagger.version>2.9.2</springfox-swagger.version>
     <springframework-cloud.version>2.2.2.RELEASE</springframework-cloud.version>
-    <token-support.version>1.1.4</token-support.version>
+    <token-support.version>1.1.5</token-support.version>
 
     <!-- build -->
     <build-helper-maven.version>3.1.0</build-helper-maven.version>
