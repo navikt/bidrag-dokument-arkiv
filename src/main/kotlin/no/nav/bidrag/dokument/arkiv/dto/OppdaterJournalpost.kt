@@ -17,7 +17,7 @@ data class OppdaterJournalpostRequest(
             journalpostId = journalpostId,
             endreJournalpostCommand = endreJournalpostCommand
     ) {
-        avsenderNavn = if (endreJournalpostCommand.avsenderNavn != null) endreJournalpostCommand.avsenderNavn else journalpost.avsenderMottaker?.navn
+        avsenderNavn = if (endreJournalpostCommand.avsenderNavn != null) endreJournalpostCommand.avsenderNavn else journalpost.hentAvsenderNavn()
         journalforendeEnhet = if (endreJournalpostCommand.journalforendeEnhet != null) endreJournalpostCommand.journalforendeEnhet else journalpost.journalforendeEnhet
 
         val saksnummer: String?

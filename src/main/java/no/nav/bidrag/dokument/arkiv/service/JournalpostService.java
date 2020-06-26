@@ -3,7 +3,6 @@ package no.nav.bidrag.dokument.arkiv.service;
 import static java.util.stream.Collectors.toList;
 
 import java.util.List;
-import java.util.Optional;
 import no.nav.bidrag.commons.web.HttpStatusResponse;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.GraphQueryConsumer;

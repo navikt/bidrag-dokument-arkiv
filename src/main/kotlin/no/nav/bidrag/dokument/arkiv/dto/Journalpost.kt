@@ -3,6 +3,7 @@ package no.nav.bidrag.dokument.arkiv.dto
 import no.nav.bidrag.dokument.dto.AktorDto
 import no.nav.bidrag.dokument.dto.DokumentDto
 import no.nav.bidrag.dokument.dto.JournalpostDto
+import no.nav.bidrag.dokument.dto.JournalpostResponse
 import java.time.LocalDate
 import java.util.stream.Collectors.toList
 
@@ -56,6 +57,13 @@ data class Journalpost(
                 journalstatus = journalstatus,
                 mottattDato = hentDatoRegistrert()
         )
+    }
+
+    fun tilJournalpostResponse(): JournalpostResponse {
+        val journalpost = tilJournalpostDto()
+        val saksnummer = sak?.fagsakId
+
+        return JournalpostResponse(journalpost, if (saksnummer != null) listOf(saksnummer) else emptyList())
     }
 
     private fun hentDokumentDato(): LocalDate? {

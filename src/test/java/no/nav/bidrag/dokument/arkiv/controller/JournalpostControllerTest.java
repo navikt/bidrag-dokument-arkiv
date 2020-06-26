@@ -24,6 +24,7 @@ import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.dto.EndreDokument;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
+import no.nav.bidrag.dokument.dto.JournalpostResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -153,13 +154,15 @@ class JournalpostControllerTest {
         initUrl() + "/sak/5276661/journal/JOARK-" + journalpostIdFraJson,
         HttpMethod.GET,
         null,
-        JournalpostDto.class
+        JournalpostResponse.class
     );
+
+    var journalpost = responseEntity.getBody() != null ? responseEntity.getBody().getJournalpost() : null;
 
     assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
         () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
-        () -> assertThat(response.getBody()).isNotNull().extracting(JournalpostDto::getInnhold).isEqualTo("Filosofens bidrag"),
-        () -> assertThat(response.getBody()).isNotNull().extracting(JournalpostDto::getJournalpostId).isEqualTo("JOARK-" + journalpostIdFraJson),
+        () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getInnhold).isEqualTo("Filosofens bidrag"),
+        () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getJournalpostId).isEqualTo("JOARK-" + journalpostIdFraJson),
         () -> verify(restTemplateSafMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class))
     ));
   }

@@ -12,6 +12,7 @@ import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
+import no.nav.bidrag.dokument.dto.JournalpostResponse;
 import no.nav.security.token.support.core.api.ProtectedWithClaims;
 import no.nav.security.token.support.core.api.Unprotected;
 import org.slf4j.Logger;
@@ -47,7 +48,7 @@ public class JournalpostController {
       @ApiResponse(code = 403, message = "Du mangler eller har ugyldig sikkerhetstoken"),
       @ApiResponse(code = 404, message = "Journalpost som skal hentes er ikke koblet mot gitt saksnummer, eller det er feil prefix/id på journalposten")
   })
-  public ResponseEntity<JournalpostDto> hentJournalpost(@PathVariable String saksnummer, @PathVariable String joarkJournalpostId) {
+  public ResponseEntity<JournalpostResponse> hentJournalpost(@PathVariable String saksnummer, @PathVariable String joarkJournalpostId) {
     KildesystemIdenfikator kildesystemIdenfikator = new KildesystemIdenfikator(joarkJournalpostId);
 
     if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix() || erIkkePrefixetMedJoark(joarkJournalpostId)) {
@@ -56,13 +57,13 @@ public class JournalpostController {
 
     var journalpostHttpStatusResponse = journalpostService.hentJournalpost(saksnummer, kildesystemIdenfikator.hentJournalpostId());
     var journalpostDto = journalpostHttpStatusResponse.fetchOptionalResult()
-        .map(Journalpost::tilJournalpostDto)
+        .map(Journalpost::tilJournalpostResponse)
         .orElse(null);
 
     return new ResponseEntity<>(journalpostDto, journalpostHttpStatusResponse.getHttpStatus());
   }
 
-  private boolean erIkkePrefixetMedJoark(@PathVariable String joarkJournalpostId) {
+  private boolean erIkkePrefixetMedJoark(String joarkJournalpostId) {
     return !joarkJournalpostId.startsWith(PREFIX_JOARK_COMPLETE);
   }
 
@@ -74,7 +75,7 @@ public class JournalpostController {
       @ApiResponse(code = 401, message = "Du mangler eller har ugyldig sikkerhetstoken"),
       @ApiResponse(code = 403, message = "Du mangler eller har ugyldig sikkerhetstoken")
   })
-  public ResponseEntity<List<JournalpostDto>> get(@PathVariable String saksnummer, @RequestParam String fagomrade) {
+  public ResponseEntity<List<JournalpostDto>> hentJournal(@PathVariable String saksnummer, @RequestParam String fagomrade) {
     var journalposter = journalpostService.finnJournalposter(saksnummer, fagomrade);
 
     if (journalposter.isEmpty()) {
