@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.List;
+import java.util.Optional;
 import no.nav.bidrag.commons.KildesystemIdenfikator;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
@@ -31,7 +32,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class JournalpostController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JournalpostController.class);
-  private static final String PATH_SAKSJOURNAL = "/sak/{saksnummer}/journal/";
 
   private final JournalpostService journalpostService;
 
@@ -39,7 +39,7 @@ public class JournalpostController {
     this.journalpostService = journalpostService;
   }
 
-  @GetMapping(PATH_SAKSJOURNAL + "{joarkJournalpostId}")
+  @GetMapping("/journal/{joarkJournalpostId}")
   @ApiOperation("Hent en journalpost for en id på formatet '" + PREFIX_JOARK_COMPLETE + "<journalpostId>'")
   @ApiResponses(value = {
       @ApiResponse(code = 200, message = "Journalpost er hentet"),
@@ -48,19 +48,30 @@ public class JournalpostController {
       @ApiResponse(code = 403, message = "Du mangler eller har ugyldig sikkerhetstoken"),
       @ApiResponse(code = 404, message = "Journalpost som skal hentes er ikke koblet mot gitt saksnummer, eller det er feil prefix/id på journalposten")
   })
-  public ResponseEntity<JournalpostResponse> hentJournalpost(@PathVariable String saksnummer, @PathVariable String joarkJournalpostId) {
+  public ResponseEntity<JournalpostResponse> hentJournalpost(
+      @PathVariable String joarkJournalpostId,
+      @RequestParam(required = false) String saksnummer
+  ) {
     KildesystemIdenfikator kildesystemIdenfikator = new KildesystemIdenfikator(joarkJournalpostId);
 
     if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix() || erIkkePrefixetMedJoark(joarkJournalpostId)) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    var journalpostHttpStatusResponse = journalpostService.hentJournalpost(saksnummer, kildesystemIdenfikator.hentJournalpostId());
-    var journalpostDto = journalpostHttpStatusResponse.fetchOptionalResult()
-        .map(Journalpost::tilJournalpostResponse)
-        .orElse(null);
+    var httpStatusResponse = journalpostService.hentJournalpost(kildesystemIdenfikator.hentJournalpostId());
+    var muligJournalpost = httpStatusResponse.fetchOptionalResult();
 
-    return new ResponseEntity<>(journalpostDto, journalpostHttpStatusResponse.getHttpStatus());
+    if (muligJournalpost.isEmpty()) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    } else if (muligJournalpost.filter(journalpost -> journalpost.erTilknyttetSak(saksnummer)).isEmpty()) {
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    var journalpostResponse = httpStatusResponse.fetchOptionalResult()
+        .map(Journalpost::tilJournalpostResponse)
+        .orElseGet(JournalpostResponse::new);
+
+    return new ResponseEntity<>(journalpostResponse, httpStatusResponse.getHttpStatus());
   }
 
   private boolean erIkkePrefixetMedJoark(String joarkJournalpostId) {
@@ -85,21 +96,20 @@ public class JournalpostController {
     return new ResponseEntity<>(journalposter, HttpStatus.OK);
   }
 
-  @PutMapping(PATH_SAKSJOURNAL + "{joarkJournalpostId}")
+  @PutMapping("/journal/{joarkJournalpostId}")
   @ApiOperation("endre eksisterende journalpost med journalpostId på formatet '" + PREFIX_JOARK_COMPLETE + "<journalpostId>'")
   @ApiResponses(value = {
       @ApiResponse(code = 203, message = "Journalpost er endret"),
       @ApiResponse(code = 400, message = "Prefiks på journalpostId er ugyldig, JournalpostEndreJournalpostCommandDto.gjelder er ikke satt eller det ikke finnes en journalpost på gitt id"),
       @ApiResponse(code = 401, message = "Sikkerhetstoken er ikke gyldig"),
-      @ApiResponse(code = 403, message = "Sikkerhetstoken er ikke gyldig, eller det er ikke gitt adgang til kode 6 og 7 (nav-ansatt)"),
+      @ApiResponse(code = 403, message = "Sikkerhetstoke1n er ikke gyldig, eller det er ikke gitt adgang til kode 6 og 7 (nav-ansatt)"),
       @ApiResponse(code = 404, message = "Fant ikke journalpost som skal endres, ingen 'payload' eller feil prefix/id på journalposten")
   })
   public ResponseEntity<Void> put(
       @RequestBody EndreJournalpostCommand endreJournalpostCommand,
-      @PathVariable String saksnummer,
       @PathVariable String joarkJournalpostId
   ) {
-    LOGGER.info("api: put /sak/{}/journal/{}, body: {}", saksnummer, joarkJournalpostId, endreJournalpostCommand);
+    LOGGER.info("api: put /journal/{}, body: {}", joarkJournalpostId, endreJournalpostCommand);
     KildesystemIdenfikator kildesystemIdenfikator = new KildesystemIdenfikator(joarkJournalpostId);
 
     if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix() ||
@@ -110,7 +120,7 @@ public class JournalpostController {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    var endreJournalpostHttpResponse = journalpostService.endre(saksnummer, kildesystemIdenfikator.hentJournalpostId(), endreJournalpostCommand);
+    var endreJournalpostHttpResponse = journalpostService.endre(kildesystemIdenfikator.hentJournalpostId(), endreJournalpostCommand);
 
     return new ResponseEntity<>(endreJournalpostHttpResponse.getHttpStatus());
   }

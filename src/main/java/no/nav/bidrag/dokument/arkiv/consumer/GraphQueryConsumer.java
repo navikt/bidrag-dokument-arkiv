@@ -26,29 +26,26 @@ public class GraphQueryConsumer {
 
   public Optional<Journalpost> hentJournalpost(Integer journalpostId) {
     var journalpostQuery = new JournalpostQuery(journalpostId);
-    var muligQueryResponseEntity = consumeQuery(journalpostQuery.writeQuery());
+    var queryResponseEntity = consumeQuery(journalpostQuery.writeQuery());
 
-    return muligQueryResponseEntity
-        .map(ResponseEntity::getBody)
+    return Optional.ofNullable(queryResponseEntity.getBody())
         .map(dokumentoversiktFagsakQueryResponse -> dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostId));
   }
 
   public List<Journalpost> finnJournalposter(String saksnummer, String fagomrade) {
     var dokumentoversiktFagsakQuery = new DokumentoversiktFagsakQuery(saksnummer, fagomrade);
-    var muligJsonResponse = consumeQuery(dokumentoversiktFagsakQuery.writeQuery());
+    var queryResponseEntity = consumeQuery(dokumentoversiktFagsakQuery.writeQuery());
 
-    return muligJsonResponse
-        .map(HttpEntity::getBody)
+    return Optional.ofNullable(queryResponseEntity.getBody())
         .map(DokumentoversiktFagsakQueryResponse::hentJournalposter)
         .orElseGet(Collections::emptyList);
   }
 
-  @SuppressWarnings("ConstantConditions")
-  private Optional<ResponseEntity<DokumentoversiktFagsakQueryResponse>> consumeQuery(String query) {
+  private ResponseEntity<DokumentoversiktFagsakQueryResponse> consumeQuery(String query) {
     LOGGER.info(query);
 
-    return Optional.ofNullable(restTemplate.exchange(
+    return restTemplate.exchange(
         "/", HttpMethod.POST, new HttpEntity<>(query), DokumentoversiktFagsakQueryResponse.class
-    ));
+    );
   }
 }

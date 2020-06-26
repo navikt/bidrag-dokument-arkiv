@@ -47,14 +47,13 @@ class JournalpostServiceTest {
   void skalOversetteMapFraConsumerTilJournalpostDto() throws IOException {
     var jsonResponse = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJsonResource.getFile().toURI()))));
     var dokumentoversiktFagsakQueryResponse = objectMapper.readValue(jsonResponse, DokumentoversiktFagsakQueryResponse.class);
-    var journalpostIdFraJson = 201028011;
-    var saksnummerFraJson = "5276661";
+    Integer journalpostIdFraJson = 201028011;
 
     when(graphQueryConsumerMock.hentJournalpost(journalpostIdFraJson)).thenReturn(Optional.of(
         dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostIdFraJson)
     ));
 
-    var httpStatusJournalpostResponse = journalpostService.hentJournalpost(saksnummerFraJson, journalpostIdFraJson);
+    var httpStatusJournalpostResponse = journalpostService.hentJournalpost(journalpostIdFraJson);
 
     assertThat(httpStatusJournalpostResponse.getHttpStatus()).as("httpStatus").isEqualTo(HttpStatus.OK);
     assertThat(httpStatusJournalpostResponse.fetchOptionalResult()).hasValueSatisfying(journalpost -> assertAll(

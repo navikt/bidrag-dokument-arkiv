@@ -73,52 +73,54 @@ class JournalpostControllerTest {
   }
 
   @Test
-  @DisplayName("skal ha 404 NOT FOUND når prefix mangler")
-  void skalHaNotFoundlNarPrefixPaJournalpostIdMangler() {
+  @DisplayName("skal ha 400 BAD REQUEST når prefix mangler")
+  void skalHaBadRequestNarPrefixPaJournalpostIdMangler() {
     var journalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
-        initUrl() + "/sak/007/journal/1",
+        initUrl() + "/journal/1?saknummer=007",
         HttpMethod.GET,
         null,
         JournalpostDto.class
     );
 
-    assertThat(journalpostResponseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    assertThat(journalpostResponseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
   }
 
   @Test
-  @DisplayName("skal ha 404 NOT FOUND når prefix er feil")
-  void skalHaNotFoundlNarPrefixPaJournalpostIdErFeil() {
+  @DisplayName("skal ha 400 BAD REQUEST når prefix er feil")
+  void skalHaBadRequestlNarPrefixPaJournalpostIdErFeil() {
     var journalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
-        initUrl() + "/sak/007/journal/BID-1",
+        initUrl() + "/journal/BID-1?saksnummer=007",
         HttpMethod.GET,
         null,
         JournalpostDto.class
     );
 
-    assertThat(journalpostResponseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    assertThat(journalpostResponseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
   }
 
   @Test
   @DisplayName("skal ha body som null når journalpost ikke finnes")
   void skalGiBodySomNullNarJournalpostIkkeFinnes() {
+    when(restTemplateSafMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class)))
+        .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
 
     var journalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
-        initUrl() + "/sak/007/journal/JOARK-1",
+        initUrl() + "/journal/JOARK-1?saksnummer=007",
         HttpMethod.GET,
         null,
-        JournalpostDto.class
+        JournalpostResponse.class
     );
 
     assertThat(Optional.of(journalpostResponseEntity)).hasValueSatisfying(response -> assertAll(
         () -> assertThat(response.getBody()).isNull(),
-        () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT),
+        () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND),
         () -> verify(restTemplateSafMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class))
     ));
   }
 
   @Test
-  @DisplayName("skal få 404 NOT FOUND når eksisterende journalpost er knyttet til annen sak")
-  void skalFaNotFoundNarEksisterendeJournalpostErKnyttetTilAnnenSak() throws IOException {
+  @DisplayName("skal få 400 BAD REQUEST når eksisterende journalpost er knyttet til annen sak")
+  void skalFaBadRequestNarEksisterendeJournalpostErKnyttetTilAnnenSak() throws IOException {
     var jsonResponse = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJsonResource.getFile().toURI()))));
     var dokumentoversiktFagsakQueryResponse = objectMapper.readValue(jsonResponse, DokumentoversiktFagsakQueryResponse.class);
     var journalpostIdFraJson = 201028011;
@@ -127,14 +129,14 @@ class JournalpostControllerTest {
         .thenReturn(new ResponseEntity<>(dokumentoversiktFagsakQueryResponse, HttpStatus.I_AM_A_TEAPOT));
 
     var responseEntity = httpHeaderTestRestTemplate.exchange(
-        initUrl() + "/sak/007/journal/JOARK-" + journalpostIdFraJson,
+        initUrl() + "/journal/JOARK-" + journalpostIdFraJson + "?saksnummer=007",
         HttpMethod.GET,
         null,
-        JournalpostDto.class
+        JournalpostResponse.class
     );
 
     assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
-        () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND),
+        () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST),
         () -> assertThat(response.getBody()).isNull(),
         () -> verify(restTemplateSafMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class))
     ));
@@ -151,7 +153,7 @@ class JournalpostControllerTest {
         new ResponseEntity<>(dokumentoversiktFagsakQueryResponse, HttpStatus.I_AM_A_TEAPOT));
 
     var responseEntity = httpHeaderTestRestTemplate.exchange(
-        initUrl() + "/sak/5276661/journal/JOARK-" + journalpostIdFraJson,
+        initUrl() + "/journal/JOARK-" + journalpostIdFraJson + "?saksnummer=5276661",
         HttpMethod.GET,
         null,
         JournalpostResponse.class
@@ -198,7 +200,6 @@ class JournalpostControllerTest {
     var jsonResponse = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJsonResource.getFile().toURI()))));
     var dokumentoversiktFagsakQueryResponse = objectMapper.readValue(jsonResponse, DokumentoversiktFagsakQueryResponse.class);
     var journalpostIdFraJson = 201028011;
-    var saksnummerFraJson = "5276661";
 
     var endreJournalpostCommand = new EndreJournalpostCommand();
     endreJournalpostCommand.setAvsenderNavn("Dauden, Svarte");
@@ -220,7 +221,7 @@ class JournalpostControllerTest {
 
     // when
     var oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
-        initUrl() + "/sak/" + saksnummerFraJson + "/journal/JOARK-" + journalpostIdFraJson,
+        initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
         HttpMethod.PUT,
         new HttpEntity<>(endreJournalpostCommand),
         JournalpostDto.class

@@ -28,7 +28,7 @@ public class JournalpostService {
     this.dokarkivConsumer = dokarkivConsumer;
   }
 
-  public HttpStatusResponse<Journalpost> hentJournalpost(String saksnummer, Integer journalpostId) {
+  public HttpStatusResponse<Journalpost> hentJournalpost(Integer journalpostId) {
     var muligJournalpost = graphQueryConsumer.hentJournalpost(journalpostId);
 
     if (muligJournalpost.isEmpty()) {
@@ -36,7 +36,6 @@ public class JournalpostService {
     }
 
     return muligJournalpost
-        .filter(journalpost -> journalpost.erTilknyttetSak(saksnummer))
         .map(journalpostDto -> new HttpStatusResponse<>(HttpStatus.OK, journalpostDto))
         .orElseGet(() -> new HttpStatusResponse<>(HttpStatus.NOT_FOUND));
   }
@@ -48,20 +47,16 @@ public class JournalpostService {
   }
 
   public HttpStatusResponse<Void> endre(
-      String saksnummer,
       Integer journalpostId,
       EndreJournalpostCommand endreJournalpostCommand
   ) {
-    var journalpost = hentJournalpost(saksnummer, journalpostId).fetchOptionalResult()
+    var journalpost = hentJournalpost(journalpostId).fetchOptionalResult()
         .orElseThrow(() -> new IllegalArgumentException(String.format("Kunne ikke hente journalpost med id %s til å endre!", journalpostId)));
 
     var oppdaterJournalpostRequest = new OppdaterJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost);
     var oppdatertJournalpostResponse = dokarkivConsumer.endre(oppdaterJournalpostRequest);
 
-    oppdatertJournalpostResponse.fetchOptionalResult().ifPresent(response -> {
-      response.setSaksnummer(saksnummer);
-      LOGGER.info("endret: {}", response);
-    });
+    oppdatertJournalpostResponse.fetchOptionalResult().ifPresent(response -> LOGGER.info("endret: {}", response));
 
     return new HttpStatusResponse<>(oppdatertJournalpostResponse.getHttpStatus());
   }
