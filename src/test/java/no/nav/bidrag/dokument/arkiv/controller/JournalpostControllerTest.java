@@ -232,8 +232,7 @@ class JournalpostControllerTest {
         () -> {
           var forventetUrlForOppdateringAvJournalpost = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson;
           var oppdaterJournalpostRequest = new OppdaterJournalpostRequest(
-              journalpostIdFraJson, saksnummerFraJson, endreJournalpostCommand,
-              dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostIdFraJson)
+              journalpostIdFraJson, endreJournalpostCommand, dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostIdFraJson)
           );
 
           verify(restTemplateDokarkivMock).exchange(

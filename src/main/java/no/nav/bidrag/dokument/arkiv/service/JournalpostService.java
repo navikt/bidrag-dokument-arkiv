@@ -10,7 +10,6 @@ import no.nav.bidrag.dokument.arkiv.consumer.GraphQueryConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
-import no.nav.bidrag.dokument.dto.EndreSaksnummer;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,15 +56,11 @@ public class JournalpostService {
     var journalpost = hentJournalpost(saksnummer, journalpostId).fetchOptionalResult()
         .orElseThrow(() -> new IllegalArgumentException(String.format("Kunne ikke hente journalpost med id %s til å endre!", journalpostId)));
 
-    var saksnummerTilEndring = Optional.ofNullable(endreJournalpostCommand.getSaksnummer())
-        .map(EndreSaksnummer::getSaksnummer)
-        .orElse(saksnummer);
-
-    var oppdaterJournalpostRequest = new OppdaterJournalpostRequest(journalpostId, saksnummerTilEndring, endreJournalpostCommand, journalpost);
+    var oppdaterJournalpostRequest = new OppdaterJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost);
     var oppdatertJournalpostResponse = dokarkivConsumer.endre(oppdaterJournalpostRequest);
 
     oppdatertJournalpostResponse.fetchOptionalResult().ifPresent(response -> {
-      response.setSaksnummer(saksnummerTilEndring);
+      response.setSaksnummer(saksnummer);
       LOGGER.info("endret: {}", response);
     });
 

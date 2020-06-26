@@ -6,29 +6,33 @@ import java.util.stream.Collectors.toList
 
 data class OppdaterJournalpostRequest(
         val journalpostId: Int,
-        private val avsenderNavn: String?,
-        private val behandlingstema: String?,
-        private val endreDokumenter: List<EndreDokument> = emptyList(),
-        private val gjelder: String,
-        private var gjelderType: String,
-        private var journalforendeEnhet: String?,
-        private val saksnummer: String,
-        private val tema: String?,
-        private val tittel: String?
+        private val endreJournalpostCommand: EndreJournalpostCommand,
+        private var avsenderNavn: String? = null,
+        private var journalforendeEnhet: String? = null
 ) {
-    constructor(journalpostId: Int, saksnummerTilEndring: String, endreCmd: EndreJournalpostCommand, journalpost: Journalpost) : this(
-            journalpostId = journalpostId,
-            avsenderNavn = if (endreCmd.avsenderNavn != null) endreCmd.avsenderNavn else journalpost.avsenderMottaker?.navn,
-            behandlingstema = endreCmd.behandlingstema,
-            endreDokumenter = endreCmd.endreDokumenter,
-            gjelder = endreCmd.gjelder!!,
-            gjelderType = if (endreCmd.gjelderType != null) endreCmd.gjelderType!! else "FNR",
-            journalforendeEnhet = if (endreCmd.journalforendeEnhet != null) endreCmd.journalforendeEnhet else journalpost.journalforendeEnhet,
-            saksnummer = saksnummerTilEndring,
-            tema = endreCmd.fagomrade,
-            tittel = endreCmd.tittel
+    private var sakJson = SakJson()
+    private val tittel = Tittel()
 
-    )
+    constructor(journalpostId: Int, endreJournalpostCommand: EndreJournalpostCommand, journalpost: Journalpost) : this(
+            journalpostId = journalpostId,
+            endreJournalpostCommand = endreJournalpostCommand
+    ) {
+        avsenderNavn = if (endreJournalpostCommand.avsenderNavn != null) endreJournalpostCommand.avsenderNavn else journalpost.avsenderMottaker?.navn
+        journalforendeEnhet = if (endreJournalpostCommand.journalforendeEnhet != null) endreJournalpostCommand.journalforendeEnhet else journalpost.journalforendeEnhet
+
+        val saksnummer: String?
+
+        if (endreJournalpostCommand.tilknyttSaker.isNotEmpty()) {
+            if (endreJournalpostCommand.tilknyttSaker.size > 1)
+                throw IllegalArgumentException("joark støtter bare en sak per journalpost")
+
+            saksnummer = endreJournalpostCommand.tilknyttSaker.first()
+        } else {
+            saksnummer = journalpost.sak?.fagsakId
+        }
+
+        sakJson = SakJson(saksnummer)
+    }
 
     fun tilJournalpostApi(): String {
         return """
@@ -36,20 +40,17 @@ data class OppdaterJournalpostRequest(
                  "avsenderMottaker": {
                    "navn": "$avsenderNavn"
                  },
-                 "behandlingstema": "$behandlingstema",
+                 "behandlingstema": "${endreJournalpostCommand.fagomrade}",
                  "bruker": {
-                   "id": $gjelder,
-                   "idType": "$gjelderType"
+                   "id": ${endreJournalpostCommand.gjelder},
+                   "idType": "${hentGjelderType()}"
                  },
-                 "dokumenter": [${hentJsonForEndredeDokumenter()}],
+                 ${hentJsonForEndredeDokumenter()}
                  "journalfoerendeEnhet": $journalforendeEnhet,
-                 "sak": {
-                   "arkivsaksnummer": $saksnummer,
-                   "arkivsaksystem": "GSAK"
-                 },
-                 "tema": "$tema",
+                 ${sakJson.tilJson()}
+                 "tema": "${endreJournalpostCommand.fagomrade}",
                  "tilleggsopplysninger": [],
-                 "tittel": "$tittel"
+                 ${tittel.tilJson()}"
                }
                """.trimIndent()
     }
@@ -59,21 +60,34 @@ data class OppdaterJournalpostRequest(
 //        "verdi": "eksempel_verdi_123"
 //    }],
 
-    private fun hentJsonForEndredeDokumenter(): String {
-        return endreDokumenter.stream()
-                .map { dok: EndreDokument -> Dokumentendring(dok).tilJson()  }
-                .collect(toList()).joinToString(",")
-    }
-}
+    private fun hentGjelderType() = if (endreJournalpostCommand.gjelderType != null) endreJournalpostCommand.gjelderType!! else "FNR"
+    private fun hentJsonForEndredeDokumenter() = if (endreJournalpostCommand.endreDokumenter.isEmpty()) "" else """"dokumenter": [${hentJsonPerDokument()}],"""
+    private fun hentJsonPerDokument() = endreJournalpostCommand.endreDokumenter.stream()
+            .map { dok -> Dokumentendring(dok).tilJson() }
+            .collect(toList()).joinToString(",")
 
-internal data class Dokumentendring(val endreDokument: EndreDokument) {
-    fun tilJson() = """
+    private class Dokumentendring(private val endreDokument: EndreDokument) {
+        fun tilJson() = """
         {
           "brevkode": "${endreDokument.brevkode}",
           "dokumentInfoId": ${endreDokument.dokId},
           "tittel": "${endreDokument.tittel}"
         }
         """.trimIndent()
+    }
+
+    private class SakJson(private val saksnummer: String? = null) {
+        fun tilJson() = """
+        "sak": {
+          "arkivsaksnummer": $saksnummer,
+          "arkivsaksystem": "GSAK"
+        },
+        """.trimIndent()
+    }
+
+    private class Tittel(private val tittel: String? = null) {
+        fun tilJson() = if (tittel == null) "" else """"tittel":"$tittel""""
+    }
 }
 
 data class OppdaterJournalpostResponse(
