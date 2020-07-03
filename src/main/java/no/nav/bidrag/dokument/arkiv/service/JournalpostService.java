@@ -1,9 +1,10 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.Collections.emptyList;
 
 import java.util.List;
-import no.nav.bidrag.commons.web.HttpStatusResponse;
+import java.util.stream.Collectors;
+import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.GraphQueryConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
@@ -12,7 +13,6 @@ import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -28,36 +28,42 @@ public class JournalpostService {
     this.dokarkivConsumer = dokarkivConsumer;
   }
 
-  public HttpStatusResponse<Journalpost> hentJournalpost(Integer journalpostId) {
-    var muligJournalpost = graphQueryConsumer.hentJournalpost(journalpostId);
+  public HttpResponse<Journalpost> hentJournalpost(Integer journalpostId) {
+    return graphQueryConsumer.hentJournalpost(journalpostId);
+  }
 
-    if (muligJournalpost.isEmpty()) {
-      return new HttpStatusResponse<>(HttpStatus.NO_CONTENT);
+  public HttpResponse<List<JournalpostDto>> finnJournalposter(String saksnummer, String fagomrade) {
+    var journalposterResponse = graphQueryConsumer.finnJournalposter(saksnummer, fagomrade);
+    var muligeJournalposter = journalposterResponse.fetchBody();
+
+    List<JournalpostDto> journalposter = emptyList();
+
+    if (muligeJournalposter.isPresent()) {
+      journalposter = muligeJournalposter.get().stream()
+          .map(Journalpost::tilJournalpostDto)
+          .collect(Collectors.toList());
     }
 
-    return muligJournalpost
-        .map(journalpostDto -> new HttpStatusResponse<>(HttpStatus.OK, journalpostDto))
-        .orElseGet(() -> new HttpStatusResponse<>(HttpStatus.NOT_FOUND));
+    return HttpResponse.from(
+        journalposter,
+        journalposterResponse.fetchHeaders(),
+        journalposterResponse.getResponseEntity().getStatusCode()
+    );
   }
 
-  public List<JournalpostDto> finnJournalposter(String saksnummer, String fagomrade) {
-    return graphQueryConsumer.finnJournalposter(saksnummer, fagomrade).stream()
-        .map(Journalpost::tilJournalpostDto)
-        .collect(toList());
-  }
-
-  public HttpStatusResponse<Void> endre(
-      Integer journalpostId,
-      EndreJournalpostCommand endreJournalpostCommand
-  ) {
-    var journalpost = hentJournalpost(journalpostId).fetchOptionalResult()
-        .orElseThrow(() -> new IllegalArgumentException(String.format("Kunne ikke hente journalpost med id %s til å endre!", journalpostId)));
+  public HttpResponse<Void> endre(Integer journalpostId, EndreJournalpostCommand endreJournalpostCommand) {
+    var journalpost = hentJournalpost(journalpostId).fetchBody().orElseThrow(
+        () -> new IllegalArgumentException(String.format("Kunne ikke hente journalpost med id %s til å endre!", journalpostId))
+    );
 
     var oppdaterJournalpostRequest = new OppdaterJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost);
     var oppdatertJournalpostResponse = dokarkivConsumer.endre(oppdaterJournalpostRequest);
 
-    oppdatertJournalpostResponse.fetchOptionalResult().ifPresent(response -> LOGGER.info("endret: {}", response));
+    oppdatertJournalpostResponse.fetchBody().ifPresent(response -> LOGGER.info("endret: {}", response));
 
-    return new HttpStatusResponse<>(oppdatertJournalpostResponse.getHttpStatus());
+    return HttpResponse.from(
+        oppdatertJournalpostResponse.fetchHeaders(),
+        oppdatertJournalpostResponse.getResponseEntity().getStatusCode()
+    );
   }
 }

@@ -36,6 +36,7 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -162,7 +163,7 @@ class JournalpostControllerTest {
     var journalpost = responseEntity.getBody() != null ? responseEntity.getBody().getJournalpost() : null;
 
     assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
-        () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
+        () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.I_AM_A_TEAPOT),
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getInnhold).isEqualTo("Filosofens bidrag"),
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getJournalpostId).isEqualTo("JOARK-" + journalpostIdFraJson),
         () -> verify(restTemplateSafMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class))
@@ -246,6 +247,29 @@ class JournalpostControllerTest {
               eq(OppdaterJournalpostResponse.class)
           );
         }
+    );
+  }
+
+  @Test
+  @DisplayName("skal videresende eventuelle headere fra kall mot GraphQuery")
+  void skalReturnereHeadereFraSaf() throws IOException {
+    var jsonResponse = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJsonResource.getFile().toURI()))));
+    var dokumentoversiktFagsakQueryResponse = objectMapper.readValue(jsonResponse, DokumentoversiktFagsakQueryResponse.class);
+    var httpHeader = new HttpHeaders();
+    httpHeader.add(HttpHeaders.CONTENT_LANGUAGE, "røverspråk");
+
+    when(restTemplateSafMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(DokumentoversiktFagsakQueryResponse.class)))
+        .thenReturn(new ResponseEntity<>(dokumentoversiktFagsakQueryResponse, httpHeader, HttpStatus.I_AM_A_TEAPOT));
+
+    var jouralposterResponseEntity = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/sak/5276661/journal?fagomrade=BID", HttpMethod.GET, null, listeMedJournalposterTypeReference()
+    );
+
+    var contentLanguage = jouralposterResponseEntity.getHeaders().getFirst(HttpHeaders.CONTENT_LANGUAGE);
+
+    assertAll(
+        () -> assertThat(jouralposterResponseEntity).extracting(ResponseEntity::getStatusCode).as("status").isEqualTo(HttpStatus.OK),
+        () -> assertThat(contentLanguage).as("language").isEqualTo("røverspråk")
     );
   }
 

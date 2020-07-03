@@ -11,7 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Objects;
-import java.util.Optional;
+import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
 import no.nav.bidrag.dokument.arkiv.consumer.GraphQueryConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker;
@@ -49,14 +49,14 @@ class JournalpostServiceTest {
     var dokumentoversiktFagsakQueryResponse = objectMapper.readValue(jsonResponse, DokumentoversiktFagsakQueryResponse.class);
     Integer journalpostIdFraJson = 201028011;
 
-    when(graphQueryConsumerMock.hentJournalpost(journalpostIdFraJson)).thenReturn(Optional.of(
-        dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostIdFraJson)
-    ));
+    when(graphQueryConsumerMock.hentJournalpost(journalpostIdFraJson)).thenReturn(
+        HttpResponse.from(HttpStatus.OK, dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostIdFraJson))
+    );
 
     var httpStatusJournalpostResponse = journalpostService.hentJournalpost(journalpostIdFraJson);
 
-    assertThat(httpStatusJournalpostResponse.getHttpStatus()).as("httpStatus").isEqualTo(HttpStatus.OK);
-    assertThat(httpStatusJournalpostResponse.fetchOptionalResult()).hasValueSatisfying(journalpost -> assertAll(
+    assertThat(httpStatusJournalpostResponse.getResponseEntity().getStatusCode()).as("httpStatus").isEqualTo(HttpStatus.OK);
+    assertThat(httpStatusJournalpostResponse.fetchBody()).hasValueSatisfying(journalpost -> assertAll(
         () -> {
           assertThat(journalpost).as("journalpost").isNotNull();
 

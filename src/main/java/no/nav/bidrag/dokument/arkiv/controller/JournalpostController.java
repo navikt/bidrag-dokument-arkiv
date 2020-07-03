@@ -7,9 +7,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.List;
-import java.util.Optional;
 import no.nav.bidrag.commons.KildesystemIdenfikator;
-import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
@@ -58,20 +56,20 @@ public class JournalpostController {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    var httpStatusResponse = journalpostService.hentJournalpost(kildesystemIdenfikator.hentJournalpostId());
-    var muligJournalpost = httpStatusResponse.fetchOptionalResult();
+    var httpResponse = journalpostService.hentJournalpost(kildesystemIdenfikator.hentJournalpostId());
+    var muligJournalpost = httpResponse.fetchBody();
 
     if (muligJournalpost.isEmpty()) {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      return new ResponseEntity<>(httpResponse.fetchHeaders(), HttpStatus.NOT_FOUND);
     } else if (muligJournalpost.filter(journalpost -> journalpost.erTilknyttetSak(saksnummer)).isEmpty()) {
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>(httpResponse.fetchHeaders(), HttpStatus.BAD_REQUEST);
     }
 
-    var journalpostResponse = httpStatusResponse.fetchOptionalResult()
-        .map(Journalpost::tilJournalpostResponse)
-        .orElseGet(JournalpostResponse::new);
-
-    return new ResponseEntity<>(journalpostResponse, httpStatusResponse.getHttpStatus());
+    return new ResponseEntity<>(
+        muligJournalpost.get().tilJournalpostResponse(),
+        httpResponse.fetchHeaders(),
+        httpResponse.getResponseEntity().getStatusCode()
+    );
   }
 
   private boolean erIkkePrefixetMedJoark(String joarkJournalpostId) {
@@ -87,13 +85,13 @@ public class JournalpostController {
       @ApiResponse(code = 403, message = "Du mangler eller har ugyldig sikkerhetstoken")
   })
   public ResponseEntity<List<JournalpostDto>> hentJournal(@PathVariable String saksnummer, @RequestParam String fagomrade) {
-    var journalposter = journalpostService.finnJournalposter(saksnummer, fagomrade);
+    var journalposterResponse = journalpostService.finnJournalposter(saksnummer, fagomrade);
 
-    if (journalposter.isEmpty()) {
-      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    if (journalposterResponse.fetchBody().isEmpty() || journalposterResponse.fetchBody().get().isEmpty()) {
+      return new ResponseEntity<>(journalposterResponse.fetchHeaders(), HttpStatus.NO_CONTENT);
     }
 
-    return new ResponseEntity<>(journalposter, HttpStatus.OK);
+    return new ResponseEntity<>(journalposterResponse.fetchBody().get(), journalposterResponse.fetchHeaders(), HttpStatus.OK);
   }
 
   @PutMapping("/journal/{joarkJournalpostId}")
@@ -122,7 +120,7 @@ public class JournalpostController {
 
     var endreJournalpostHttpResponse = journalpostService.endre(kildesystemIdenfikator.hentJournalpostId(), endreJournalpostCommand);
 
-    return new ResponseEntity<>(endreJournalpostHttpResponse.getHttpStatus());
+    return new ResponseEntity<>(endreJournalpostHttpResponse.getResponseEntity().getStatusCode());
   }
 
   @Unprotected
