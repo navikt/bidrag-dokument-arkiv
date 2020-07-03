@@ -64,7 +64,8 @@ class GraphQueryConsumerTest {
     stubEmptyQueryResult();
 
     // når
-    var journalposter = graphQueryConsumer.finnJournalposter("007", "BID");
+    var journalposter = graphQueryConsumer.finnJournalposter("007", "BID").fetchBody()
+        .orElseThrow(() -> new AssertionError("Fant ingen journalpster for sak 007"));
 
     // så
     assertThat(journalposter).isEmpty();
@@ -111,7 +112,8 @@ class GraphQueryConsumerTest {
     );
 
     // når
-    var journalposter = graphQueryConsumer.finnJournalposter("007", "BID");
+    var journalposter = graphQueryConsumer.finnJournalposter("007", "BID").fetchBody()
+        .orElseThrow(() -> new AssertionError("Fant ingen journalpster for sak 007"));
 
     // så
     assertAll(

@@ -1,6 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.consumer;
 
-import no.nav.bidrag.commons.web.HttpStatusResponse;
+import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import org.springframework.http.HttpEntity;
@@ -17,13 +17,13 @@ public class DokarkivConsumer {
     this.restTemplate = restTemplate;
   }
 
-  public HttpStatusResponse<OppdaterJournalpostResponse> endre(OppdaterJournalpostRequest oppdaterJournalpostRequest) {
+  public HttpResponse<OppdaterJournalpostResponse> endre(OppdaterJournalpostRequest oppdaterJournalpostRequest) {
     var oppdaterJoarnalpostApiUrl = URL_JOURNALPOSTAPI_V1 + '/' + oppdaterJournalpostRequest.getJournalpostId();
 
     var oppdaterJournalpostResponseEntity = restTemplate.exchange(
         oppdaterJoarnalpostApiUrl, HttpMethod.PUT, new HttpEntity<>(oppdaterJournalpostRequest.tilJournalpostApi()), OppdaterJournalpostResponse.class
     );
 
-    return new HttpStatusResponse<>(oppdaterJournalpostResponseEntity.getStatusCode(), oppdaterJournalpostResponseEntity.getBody());
+    return new HttpResponse<>(oppdaterJournalpostResponseEntity);
   }
 }
