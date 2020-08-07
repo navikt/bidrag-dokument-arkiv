@@ -80,6 +80,11 @@ jobs:
         env:
           USER_AUTHENTICATION: ${{ secrets.USER_AUTHENTICATION }}
           TEST_USER_AUTHENTICATION: ${{ secrets.TEST_USER_AUTHENTICATION }}
+      - name: Remove files from workspace
+        run: |
+          cd $RUNNER_WORKSPACE
+          sudo rm -rf *
+        if: ${{ failure() || success() }}
 
   bump_dev_version:
     runs-on: ubuntu-latest
