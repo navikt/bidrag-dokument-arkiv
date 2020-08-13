@@ -49,7 +49,7 @@ jobs:
         with:
           path: deploy
       - name: Deploy to dev-fss, default namespace
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
         uses: nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
@@ -57,7 +57,7 @@ jobs:
           RESOURCE: deploy/nais/nais.yaml
           VARS: deploy/nais/q0.json
       - name: Deploy to dev-fss, namespace q1
-        if: github.ref != 'refs/heads/master'
+        if: github.ref != 'refs/heads/main'
         uses: nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
@@ -89,7 +89,7 @@ jobs:
   bump_dev_version:
     runs-on: ubuntu-latest
     name: Bump SNAPSHOT version
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
     needs: run_cucumber
 
     steps:
