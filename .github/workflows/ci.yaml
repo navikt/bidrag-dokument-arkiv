@@ -1,4 +1,4 @@
-name: continious integration
+name: continuous integration
 on:
   push:
     branches:
@@ -57,23 +57,23 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-fss
           RESOURCE: deploy/nais/nais.yaml
-          VARS: deploy/nais/q0.json
-      - name: Deploy to dev-fss, namespace q1
+          VARS: deploy/nais/main.json
+      - name: Deploy to dev-fss, "feature" namespace
         if: github.ref != 'refs/heads/main'
         uses: nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-fss
           RESOURCE: deploy/nais/nais.yaml
-          VARS: deploy/nais/q1.json
+          VARS: deploy/nais/feature.json
 
   run_cucumber:
     runs-on: self-hosted
     name: Run cucumber integration tests
     needs: deploy_dev
     steps:
-      - uses: navikt/bidrag-integration/cucumber-clone@v1.0.3
-      - uses: navikt/bidrag-maven/cucumber-backend@v3.0.1
+      - uses: navikt/bidrag-integration/cucumber-clone@v4
+      - uses: navikt/bidrag-maven/cucumber-backend@v5
         with:
           maven_image: maven:3.6.3-jdk-13
           cucumber_tag: bidrag-dokument-arkiv

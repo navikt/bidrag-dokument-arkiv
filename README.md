@@ -1,5 +1,5 @@
 # bidrag-dokument-arkiv
-![](https://github.com/navikt/bidrag-dokument-arkiv/workflows/continious%20integration/badge.svg)
+![](https://github.com/navikt/bidrag-dokument-arkiv/workflows/continuous%20integration/badge.svg)
 
 Microtjeneste som konnuniserer med et rest-api (GraphiQL): bidrag-dokument leser fra arkiv (JOARK)
 
