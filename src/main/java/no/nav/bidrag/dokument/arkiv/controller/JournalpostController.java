@@ -8,6 +8,8 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.List;
 import no.nav.bidrag.commons.KildesystemIdenfikator;
+import no.nav.bidrag.commons.web.EnhetFilter;
+import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -105,7 +108,8 @@ public class JournalpostController {
   })
   public ResponseEntity<Void> put(
       @RequestBody EndreJournalpostCommand endreJournalpostCommand,
-      @PathVariable String joarkJournalpostId
+      @PathVariable String joarkJournalpostId,
+      @RequestHeader(EnhetFilter.X_ENHET_HEADER) String enhet
   ) {
     LOGGER.info("api: put /journal/{}, body: {}", joarkJournalpostId, endreJournalpostCommand);
     KildesystemIdenfikator kildesystemIdenfikator = new KildesystemIdenfikator(joarkJournalpostId);
@@ -118,7 +122,9 @@ public class JournalpostController {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    var endreJournalpostHttpResponse = journalpostService.endre(kildesystemIdenfikator.hentJournalpostId(), endreJournalpostCommand);
+    var endreJournalpostHttpResponse = journalpostService.endre(
+        kildesystemIdenfikator.hentJournalpostId(), new EndreJournalpostCommandIntern(endreJournalpostCommand, enhet)
+    );
 
     return new ResponseEntity<>(endreJournalpostHttpResponse.getResponseEntity().getStatusCode());
   }

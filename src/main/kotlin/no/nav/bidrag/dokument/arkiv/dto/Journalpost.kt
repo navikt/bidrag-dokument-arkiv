@@ -2,6 +2,8 @@ package no.nav.bidrag.dokument.arkiv.dto
 
 import no.nav.bidrag.dokument.dto.AktorDto
 import no.nav.bidrag.dokument.dto.DokumentDto
+import no.nav.bidrag.dokument.dto.EndreDokument
+import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
 import no.nav.bidrag.dokument.dto.JournalpostDto
 import no.nav.bidrag.dokument.dto.JournalpostResponse
 import java.time.LocalDate
@@ -53,7 +55,7 @@ data class Journalpost(
                 journalfortDato = hentDatoJournalfort(),
                 journalforendeEnhet = journalforendeEnhet,
                 journalfortAv = journalfortAvNavn,
-                journalpostId = "JOARK-" + journalpostId,
+                journalpostId = "JOARK-$journalpostId",
                 journalstatus = journalstatus,
                 mottattDato = hentDatoRegistrert()
         )
@@ -111,10 +113,43 @@ data class DatoType(
             return LocalDate.parse(datoStreng)
         }
 
-        throw IllegalStateException("Kunne ikke trekke ut dato fra: " + dato)
+        throw IllegalStateException("Kunne ikke trekke ut dato fra: $dato")
     }
 }
 
 data class Sak(
         var fagsakId: String? = null
 )
+
+data class EndreJournalpostCommandIntern(
+        val endreJournalpostCommand: EndreJournalpostCommand,
+        val enhet: String
+) {
+    fun hentAvsenderNavn(journalpost: Journalpost) = endreJournalpostCommand.avsenderNavn ?: journalpost.hentAvsenderNavn()
+    fun harEnTilknyttetSak(): Boolean {
+        if (endreJournalpostCommand.tilknyttSaker.size > 1)
+            throw IllegalArgumentException("joark støtter bare en sak per journalpost")
+
+        return endreJournalpostCommand.tilknyttSaker.size == 1
+    }
+
+    fun hentTilknyttetSak() = endreJournalpostCommand.tilknyttSaker.first()
+    fun hentFagomrade() = endreJournalpostCommand.fagomrade
+    fun hentGjelder() = endreJournalpostCommand.gjelder
+    fun hentGjelderType() = if (endreJournalpostCommand.gjelderType != null) endreJournalpostCommand.gjelderType!! else "FNR"
+    fun hentJsonForEndredeDokumenter() = if (endreJournalpostCommand.endreDokumenter.isEmpty()) "" else """"dokumenter": [${hentJsonPerDokument()}],"""
+
+    private fun hentJsonPerDokument() = endreJournalpostCommand.endreDokumenter.stream()
+            .map { dok -> Dokumentendring(dok).tilJson() }
+            .collect(toList()).joinToString(",")
+
+    private class Dokumentendring(private val endreDokument: EndreDokument) {
+        fun tilJson() = """
+        {
+          "brevkode": "${endreDokument.brevkode}",
+          "dokumentInfoId": ${endreDokument.dokId},
+          "tittel": "${endreDokument.tittel}"
+        }
+        """
+    }
+}
