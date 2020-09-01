@@ -15,10 +15,12 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import no.nav.bidrag.commons.web.EnhetFilter;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.bidrag.commons.web.test.HttpHeaderTestRestTemplate;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
 import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQueryResponse;
+import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.dto.EndreDokument;
@@ -201,6 +203,8 @@ class JournalpostControllerTest {
     var jsonResponse = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJsonResource.getFile().toURI()))));
     var dokumentoversiktFagsakQueryResponse = objectMapper.readValue(jsonResponse, DokumentoversiktFagsakQueryResponse.class);
     var journalpostIdFraJson = 201028011;
+    var headersMedEnhet = new HttpHeaders();
+    headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, "1234");
 
     var endreJournalpostCommand = new EndreJournalpostCommand();
     endreJournalpostCommand.setAvsenderNavn("Dauden, Svarte");
@@ -224,7 +228,7 @@ class JournalpostControllerTest {
     var oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
         initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
         HttpMethod.PUT,
-        new HttpEntity<>(endreJournalpostCommand),
+        new HttpEntity<>(endreJournalpostCommand, headersMedEnhet),
         JournalpostDto.class
     );
 
@@ -237,7 +241,9 @@ class JournalpostControllerTest {
         () -> {
           var forventetUrlForOppdateringAvJournalpost = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson;
           var oppdaterJournalpostRequest = new OppdaterJournalpostRequest(
-              journalpostIdFraJson, endreJournalpostCommand, dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostIdFraJson)
+              journalpostIdFraJson,
+              new EndreJournalpostCommandIntern(endreJournalpostCommand, "1234"),
+              dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostIdFraJson)
           );
 
           verify(restTemplateDokarkivMock).exchange(
