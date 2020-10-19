@@ -6,7 +6,7 @@
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>2.3.4.RELEASE</version>
-    <relativePath /> <!-- lookup parent from repository -->
+    <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
   <groupId>no.nav.bidrag.dokument</groupId>
@@ -30,7 +30,7 @@
     <logback-encoder.version>6.4</logback-encoder.version>
     <springfox-swagger.version>2.9.2</springfox-swagger.version>
     <springframework-cloud.version>2.2.2.RELEASE</springframework-cloud.version>
-    <token-support.version>1.2.0</token-support.version>
+    <token-support.version>1.3.0</token-support.version>
 
     <!-- build -->
     <build-helper-maven.version>3.1.0</build-helper-maven.version>
