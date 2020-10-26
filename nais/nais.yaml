@@ -1,7 +1,7 @@
 apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
-  name: bidrag-dokument-arkiv
+  name: {{ name }}
   namespace: {{ namespace }}
   serviceuser:
     q:
@@ -33,7 +33,7 @@ spec:
       memory: 512Mi
   ingresses:
     - {{ ingress_preprod }}
-    - {{ ingress_nais }}
+    - {{ ingress_adeo }}
   vault:
     enabled: true
     paths:

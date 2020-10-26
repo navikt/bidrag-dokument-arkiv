@@ -1,5 +1,6 @@
 {
-  "namespace": "q1",
-  "ingress_preprod": "https://bidrag-dokument-arkiv-q1.nais.preprod.local/",
-  "ingress_nais": "https://bidrag-dokument-arkiv-q1.dev-fss.nais.io/"
+  "name": "bidrag-dokument-arkiv-feature",
+  "namespace": "bidrag",
+  "ingress_preprod": "https://bidrag-dokument-arkiv-feature.nais.preprod.local/",
+  "ingress_adeo": "https://bidrag-dokument-arkiv-feature.dev.adeo.no/"
 }
