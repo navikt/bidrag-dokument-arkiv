@@ -11,7 +11,7 @@
 
   <groupId>no.nav.bidrag.dokument</groupId>
   <artifactId>bidrag-dokument-arkiv</artifactId>
-  <version>1.0.142-SNAPSHOT</version>
+  <version>1.0.143-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <description>Backend NAIS, bidrag-dokument-arkiv, henter fra arkiv (JOARK)</description>
@@ -213,6 +213,7 @@
 
   <build>
     <plugins>
+
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
       </plugin>
@@ -271,6 +272,7 @@
           </execution>
         </executions>
       </plugin>
+
     </plugins>
   </build>
 
