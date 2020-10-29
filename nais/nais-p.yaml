@@ -34,6 +34,17 @@ spec:
   ingresses:
     - https://bidrag-dokument-arkiv.nais.adeo.no/
     - https://bidrag-dokument-arkiv.prod-fss.nais.io
+  env:
+    - name: ACCEPTED_AUDIENCE
+      value: bisys-p,bidrag-ui-p,bidrag-dokument-ui-p
+    - name: ISSO_ISSUER_URL
+      value: https://isso.adeo.no:443/isso/oauth2
+    - name: DOKARKIV_URL
+      value: https://dokarkiv.adeo.no/rest/intern/journalpostapi/v1
+    - name: SAF_GRAPHQL_URL
+      value: https://saf.adeo.no/graphql
+    - name: ACCESS_TOKEN_URL
+      value: https://security-token-service.adeo.no
   vault:
     enabled: true
     paths:
