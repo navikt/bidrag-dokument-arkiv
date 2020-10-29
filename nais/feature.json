@@ -1,6 +1,14 @@
 {
   "name": "bidrag-dokument-arkiv-feature",
-  "namespace": "bidrag",
-  "ingress_preprod": "https://bidrag-dokument-arkiv-feature.nais.preprod.local/",
-  "ingress_adeo": "https://bidrag-dokument-arkiv-feature.dev.adeo.no/"
+  "ingresses": [
+    "https://bidrag-dokument-arkiv-feature.nais.preprod.local/",
+    "https://bidrag-dokument-arkiv-feature.dev.adeo.no/"
+  ],
+  "env": {
+    "ACCEPTED_AUDIENCE": "bisys-q1,bidrag-ui-q1,bidrag-dokument-ui-q1,bidrag-q-localhost,ida-q",
+    "ISSO_ISSUER_URL": "https://isso-q.adeo.no:443/isso/oauth2",
+    "DOKARKIV_URL": "https://dokarkiv-q1.nais.preprod.local/rest/intern/journalpostapi/v1",
+    "SAF_GRAPHQL_URL": "https://saf-q1.nais.preprod.local/graphql",
+    "ACCESS_TOKEN_URL": "https://security-token-service.nais.preprod.local"
+  }
 }
