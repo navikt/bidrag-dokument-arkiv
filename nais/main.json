@@ -5,10 +5,10 @@
     "https://bidrag-dokument-arkiv.dev.adeo.no/"
   ],
   "env": {
-    "ACCEPTED_AUDIENCE": "bisys-q0,bidrag-ui-q0,bidrag-dokument-ui-q0,bidrag-q-localhost,ida-q",
+    "ACCEPTED_AUDIENCE": "bisys-q2,bidrag-ui-q2,bidrag-dokument-ui-q2,bidrag-q-localhost,ida-q",
     "ISSO_ISSUER_URL": "https://isso-q.adeo.no:443/isso/oauth2",
     "DOKARKIV_URL": "https://dokarkiv.nais.preprod.local/rest/intern/journalpostapi/v1",
-    "SAF_GRAPHQL_URL": "https://saf-q0.nais.preprod.local/graphql",
+    "SAF_GRAPHQL_URL": "https://saf-q1.nais.preprod.local/graphql",
     "ACCESS_TOKEN_URL": "https://security-token-service.nais.preprod.local"
   }
 }
