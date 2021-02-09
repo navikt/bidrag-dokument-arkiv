@@ -77,8 +77,8 @@ jobs:
         with:
           maven_image: maven:3.6.3-openjdk-15
           cucumber_tag: bidrag-dokument-arkiv
-          username: j104364
-          test_user: z992903
+          username: s148719
+          test_user: z991656
         env:
           USER_AUTHENTICATION: ${{ secrets.USER_AUTHENTICATION }}
           TEST_USER_AUTHENTICATION: ${{ secrets.TEST_USER_AUTHENTICATION }}
