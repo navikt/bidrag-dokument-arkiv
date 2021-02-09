@@ -3,6 +3,8 @@ package no.nav.bidrag.dokument.arkiv;
 import no.nav.bidrag.commons.ExceptionLogger;
 import no.nav.bidrag.commons.web.CorrelationIdFilter;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
+import no.nav.bidrag.dokument.arkiv.aop.AspectExceptionLogger;
+import no.nav.bidrag.dokument.arkiv.aop.HttpStatusRestControllerAdvice;
 import no.nav.bidrag.dokument.arkiv.consumer.AccessTokenConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.GraphQueryConsumer;
@@ -67,7 +69,9 @@ public class BidragDokumentArkivConfig {
 
   @Bean
   ExceptionLogger exceptionLogger() {
-    return new ExceptionLogger(BidragDokumentArkiv.class.getSimpleName());
+    return new ExceptionLogger(
+        BidragDokumentArkiv.class.getSimpleName(), AspectExceptionLogger.class, HttpStatusRestControllerAdvice.class
+    );
   }
 
   @Bean
