@@ -56,16 +56,16 @@ jobs:
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-fss
-          RESOURCE: deploy/nais/nais.yaml
-          VARS: deploy/nais/main.json
+          RESOURCE: deploy/.nais/nais.yaml
+          VARS: deploy/.nais/main.json
       - name: Deploy feature to dev-fss
         if: github.ref != 'refs/heads/main'
         uses: nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-fss
-          RESOURCE: deploy/nais/nais.yaml
-          VARS: deploy/nais/feature.json
+          RESOURCE: deploy/.nais/nais.yaml
+          VARS: deploy/.nais/feature.json
 
   run_cucumber:
     runs-on: self-hosted
@@ -132,7 +132,7 @@ jobs:
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-fss
-          RESOURCE: deploy/nais/nais-p.yaml
+          RESOURCE: deploy/.nais/nais-p.yaml
           VAR: namespace=default
 
   tag_prod_deploy:
