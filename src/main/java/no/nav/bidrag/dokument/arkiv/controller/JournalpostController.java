@@ -82,16 +82,15 @@ public class JournalpostController {
   @GetMapping("/sak/{saksnummer}/journal")
   @ApiOperation("Finn journalposter for et saksnummer og fagområde. Parameter fagomrade=BID er bidragjournal og fagomrade=FAR er farskapsjournal")
   @ApiResponses(value = {
-      @ApiResponse(code = 200, message = "Fant journalposter for saksnummer og fagområde"),
-      @ApiResponse(code = 204, message = "Ingen journalposter for saksnummer og fagområde"),
+      @ApiResponse(code = 200, message = "Liste over journalposter for saksnummer og fagområde"),
       @ApiResponse(code = 401, message = "Du mangler eller har ugyldig sikkerhetstoken"),
       @ApiResponse(code = 403, message = "Du mangler eller har ugyldig sikkerhetstoken")
   })
   public ResponseEntity<List<JournalpostDto>> hentJournal(@PathVariable String saksnummer, @RequestParam String fagomrade) {
     var journalposterResponse = journalpostService.finnJournalposter(saksnummer, fagomrade);
 
-    if (journalposterResponse.fetchBody().isEmpty() || journalposterResponse.fetchBody().get().isEmpty()) {
-      return new ResponseEntity<>(journalposterResponse.fetchHeaders(), HttpStatus.NO_CONTENT);
+    if (journalposterResponse.fetchBody().isEmpty()) {
+      return new ResponseEntity<>(journalposterResponse.fetchHeaders(), HttpStatus.OK);
     }
 
     return new ResponseEntity<>(journalposterResponse.fetchBody().get(), journalposterResponse.fetchHeaders(), HttpStatus.OK);
