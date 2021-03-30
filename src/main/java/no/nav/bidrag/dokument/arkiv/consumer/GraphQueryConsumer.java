@@ -1,8 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.consumer;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQuery;
 import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQueryResponse;
