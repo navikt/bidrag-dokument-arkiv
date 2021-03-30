@@ -81,7 +81,7 @@ jobs:
       - uses: navikt/bidrag-scripts/create-cucumber-shell@v1
         id: creator
         with:
-          cucumber_tag: bidrag-dokument
+          cucumber_tag: bidrag-dokument-arkiv
           user: j104364
       - run: ${{ steps.creator.outputs.created_shell }}
         env:
