@@ -2,7 +2,7 @@
 ![](https://github.com/navikt/bidrag-dokument-arkiv/workflows/continuous%20integration/badge.svg)
 ![](https://github.com/navikt/bidrag-dokument-arkiv/workflows/test%20build%20on%20pull%20request/badge.svg)
 
-Microtjeneste som konnuniserer med et rest-api (GraphiQL): bidrag-dokument leser fra arkiv (JOARK)
+Microtjeneste som kommuniserer med et rest-api (GraphiQL): bidrag-dokument leser fra arkiv (JOARK)
 
 ## kjøring lokalt
 Verdiene i `src/test/resources/resources.properties` må settes opp som miljøvariabler når man starter
