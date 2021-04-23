@@ -14,31 +14,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: navikt/bidrag-docker/exists@v2
+        id: dockerimage
+        with:
+          image_name: bidrag-dokument
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: echo NOT_FOUND=${{ steps.dockerimage.outputs.not_found }} >> $GITHUB_ENV
       - uses: actions/checkout@v2
+        if: env.NOT_FOUND == 'true'
       - uses: actions/setup-java@v1
+        if: env.NOT_FOUND == 'true'
         with:
           java-version: '15'
-      - run: env
       - uses: actions/cache@v1
+        if: env.NOT_FOUND == 'true'
         with:
           path: ~/.m2
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
       - uses: navikt/bidrag-maven/setup@v4
+        if: env.NOT_FOUND == 'true'
         with:
           repositories: maven-central=https://repo.maven.apache.org/maven2,github-packages=https://maven.pkg.github.com/navikt/maven-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: navikt/bidrag-maven/verify-dependencies@v1
+        if: env.NOT_FOUND == 'true'
       - run: mvn install -B -e
+        if: env.NOT_FOUND == 'true'
       - name: Build and publish Docker image
+        if: env.NOT_FOUND == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          sudo podman build --tag ${IMAGE} .
-          sudo podman login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
-          sudo podman push ${IMAGE}
+          docker build --tag ${IMAGE} .
+          docker login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
+          docker push ${IMAGE}
 
   deploy_dev:
     runs-on: ubuntu-latest
@@ -57,7 +70,7 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-fss
           RESOURCE: deploy/.nais/nais.yaml
-          VARS: deploy/.nais/main.json
+          VARS: deploy/.nais/main.yaml
       - name: Deploy feature to dev-fss
         if: github.ref != 'refs/heads/main'
         uses: nais/deploy/actions/deploy@v1
@@ -65,12 +78,13 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-fss
           RESOURCE: deploy/.nais/nais.yaml
-          VARS: deploy/.nais/feature.json
+          VARS: deploy/.nais/feature.yaml
 
   run_cucumber:
     runs-on: self-hosted
     name: Run cucumber integration tests
     needs: deploy_dev
+
     steps:
       - uses: navikt/bidrag-integration/cucumber-clone@v5
         id: clone
@@ -134,7 +148,7 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-fss
           RESOURCE: deploy/.nais/nais-p.yaml
-          VAR: namespace=default
+          VAR: namespace=bidrag
 
   tag_prod_deploy:
     runs-on: ubuntu-latest
