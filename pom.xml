@@ -56,11 +56,6 @@
         <artifactId>oauth2-oidc-sdk</artifactId>
         <version>8.36.2</version>
       </dependency>
-      <dependency>
-        <groupId>org.yaml</groupId>
-        <artifactId>snakeyaml</artifactId>
-        <version>1.26</version>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 
