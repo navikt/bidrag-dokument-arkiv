@@ -1,0 +1,15 @@
+name: bidrag-dokument-arkiv
+ingresses:
+  - https://bidrag-dokument-arkiv.nais.preprod.local/
+  - https://bidrag-dokument-arkiv.dev.adeo.no/
+env:
+  - name: ACCEPTED_AUDIENCE
+    value: bisys-q2,bidrag-ui-q2,bidrag-dokument-ui-q2,bidrag-q-localhost,ida-q,
+  - name: ISSO_ISSUER_URL
+    value: https://isso-q.adeo.no:443/isso/oauth2
+  - name: DOKARKIV_URL
+    value: https://dokarkiv.nais.preprod.local/rest/intern/journalpostapi/v1
+  - name: SAF_GRAPHQL_URL
+    value: https://saf-q1.nais.preprod.local/graphql
+  - name: ACCESS_TOKEN_URL
+    value: https://security-token-service.nais.preprod.local
