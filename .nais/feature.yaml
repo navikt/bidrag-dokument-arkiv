@@ -1,7 +1,7 @@
 name: bidrag-dokument-arkiv-feature
 ingresses:
-  https://bidrag-dokument-arkiv-feature.nais.preprod.local/
-  https://bidrag-dokument-arkiv-feature.dev.adeo.no/
+  - https://bidrag-dokument-arkiv-feature.nais.preprod.local/
+  - https://bidrag-dokument-arkiv-feature.dev.adeo.no/
 env:
   - name: ACCEPTED_AUDIENCE
     value: bisys-q1,bidrag-ui-q1,bidrag-dokument-ui-q1,bidrag-q-localhost,ida-q
