@@ -17,7 +17,7 @@ journalposter fra sak og arkiv (sak og arkiv facade/saf).
 
 ### bygg og kjør applikasjon
 
-Dette er en spring-boot applikasjon og kan kjøres som ren java applikasjon, ved å
+Dette er en spring-boot applikasjon og kan kjøres som java applikasjon, ved å
 bruke `maven` eller ved å bygge et docker-image og kjøre dette 
 
 Se [Sikkerhet](#Sikkerhet) for kjøring med sikkerhet lokalt.

@@ -140,7 +140,7 @@ jobs:
     if: github.ref == 'refs/heads/release'
 
     steps:
-      - run: git clone --depth 1 https://www.github.com/${{ github.repository }}
+      - run: git clone --depth 1 https://github.com/${{ github.repository }}
       - name: check if commit to build exists in main branch
         run: |
           cd $( echo ${{ github.repository }} | sed 's;navikt/;;' )
@@ -148,33 +148,20 @@ jobs:
 
   build_release:
     name: Build release with maven and docker
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: verify_release
 
     steps:
+      - run: sudo rm -rf *
       - uses: actions/checkout@v2
-      - uses: actions/cache@v1
-        with:
-          path: ~/.m2'
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-      - uses: navikt/bidrag-maven/setup@v4
-        with:
-          repositories: maven-central=https://repo.maven.apache.org/maven2,github-packages=https://maven.pkg.github.com/navikt/maven-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-java@v1
-        with:
-          java-version: '15'
       - run: mvn install -B -e -DskipTests
       - name: Build and publish Docker image
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          docker build --tag ${IMAGE} .
-          docker login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
-          docker push ${IMAGE}
+          sudo podman build --tag ${IMAGE} .
+          sudo podman login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
+          sudo podman push ${IMAGE}
 
   deploy_prod:
     runs-on: ubuntu-latest
