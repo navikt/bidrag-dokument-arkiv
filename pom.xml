@@ -21,7 +21,7 @@
 
     <!-- language -->
     <java.version>15</java.version>
-    <kotlin.version>1.4.32</kotlin.version>
+    <kotlin.version>1.5.0</kotlin.version>
 
     <!-- dependent versions other than from spring-boot -->
     <bidrag-commons.version>0.5.6</bidrag-commons.version>
@@ -55,6 +55,11 @@
         <groupId>com.nimbusds</groupId>
         <artifactId>oauth2-oidc-sdk</artifactId>
         <version>8.36.2</version>
+      </dependency>
+      <dependency>
+        <groupId>net.minidev</groupId>
+        <artifactId>json-smart</artifactId>
+        <version>2.4.1</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
