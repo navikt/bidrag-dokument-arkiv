@@ -33,15 +33,13 @@ jobs:
           java-version: '15'
       - uses: actions/cache@v1
         with:
-          path: ~/.m2'
+          path: ~/.m2
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
       - uses: navikt/bidrag-maven/setup@v7
         with:
           repositories: maven-central=https://repo.maven.apache.org/maven2,github-packages=https://maven.pkg.github.com/navikt/maven-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: mvn install -B -e -DskipTests
       - name: Build and publish Docker image
         env:
@@ -85,7 +83,7 @@ jobs:
         id: release
       - uses: navikt/bidrag-git/tag@v5
         with:
-          tag_message: "Releasing version ${{ steps.release.outputs.tag }}"
+          tag_message: Releasing version ${{ steps.release.outputs.tag }}
           tag: ${{ steps.release.outputs.tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
