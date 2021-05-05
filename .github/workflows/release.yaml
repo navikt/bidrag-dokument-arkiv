@@ -40,6 +40,8 @@ jobs:
       - uses: navikt/bidrag-maven/setup@v7
         with:
           repositories: maven-central=https://repo.maven.apache.org/maven2,github-packages=https://maven.pkg.github.com/navikt/maven-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: mvn install -B -e -DskipTests
       - name: Build and publish Docker image
         env:
@@ -87,17 +89,3 @@ jobs:
           tag: ${{ steps.release.outputs.tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  remove_files_from_workspace:
-    name: Remove files from workspace
-    runs-on: self-hosted
-    needs: build
-
-    if: ${{ always() }}
-
-    steps:
-      - name: Remove files from workspace
-        run: |
-          cd $RUNNER_WORKSPACE
-          echo deleting files in $RUNNER_WORKSPACE
-          sudo rm -rf *
