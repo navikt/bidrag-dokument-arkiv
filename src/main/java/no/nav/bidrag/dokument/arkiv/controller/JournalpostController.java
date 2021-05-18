@@ -6,6 +6,7 @@ import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.ISSUER;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import java.util.List;
 import no.nav.bidrag.commons.KildesystemIdenfikator;
 import no.nav.bidrag.commons.web.EnhetFilter;
@@ -41,7 +42,10 @@ public class JournalpostController {
   }
 
   @GetMapping("/journal/{joarkJournalpostId}")
-  @Operation(description = "Hent en journalpost for en id på formatet '" + PREFIX_JOARK_COMPLETE + "<journalpostId>'")
+  @Operation(
+      description = "Hent en journalpost for en id på formatet '" + PREFIX_JOARK_COMPLETE + "<journalpostId>'",
+      security = {@SecurityRequirement(name = "bearer-key")}
+  )
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Journalpost er hentet"),
       @ApiResponse(responseCode = "204", description = "Fant ikke journalpost som skal hentes"),
