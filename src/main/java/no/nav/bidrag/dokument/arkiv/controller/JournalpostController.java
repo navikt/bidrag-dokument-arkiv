@@ -3,9 +3,10 @@ package no.nav.bidrag.dokument.arkiv.controller;
 import static no.nav.bidrag.commons.KildesystemIdenfikator.PREFIX_JOARK_COMPLETE;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.ISSUER;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import java.util.List;
 import no.nav.bidrag.commons.KildesystemIdenfikator;
 import no.nav.bidrag.commons.web.EnhetFilter;
@@ -41,13 +42,16 @@ public class JournalpostController {
   }
 
   @GetMapping("/journal/{joarkJournalpostId}")
-  @ApiOperation("Hent en journalpost for en id på formatet '" + PREFIX_JOARK_COMPLETE + "<journalpostId>'")
+  @Operation(
+      description = "Hent en journalpost for en id på formatet '" + PREFIX_JOARK_COMPLETE + "<journalpostId>'",
+      security = {@SecurityRequirement(name = "bearer-key")}
+  )
   @ApiResponses(value = {
-      @ApiResponse(code = 200, message = "Journalpost er hentet"),
-      @ApiResponse(code = 204, message = "Fant ikke journalpost som skal hentes"),
-      @ApiResponse(code = 401, message = "Du mangler eller har ugyldig sikkerhetstoken"),
-      @ApiResponse(code = 403, message = "Du mangler eller har ugyldig sikkerhetstoken"),
-      @ApiResponse(code = 404, message = "Journalpost som skal hentes er ikke koblet mot gitt saksnummer, eller det er feil prefix/id på journalposten")
+      @ApiResponse(responseCode = "200", description = "Journalpost er hentet"),
+      @ApiResponse(responseCode = "204", description = "Fant ikke journalpost som skal hentes"),
+      @ApiResponse(responseCode = "401", description = "Du mangler eller har ugyldig sikkerhetstoken"),
+      @ApiResponse(responseCode = "403", description = "Du mangler eller har ugyldig sikkerhetstoken"),
+      @ApiResponse(responseCode = "404", description = "Journalpost som skal hentes er ikke koblet mot gitt saksnummer, eller det er feil prefix/id på journalposten")
   })
   public ResponseEntity<JournalpostResponse> hentJournalpost(
       @PathVariable String joarkJournalpostId,
@@ -80,11 +84,11 @@ public class JournalpostController {
   }
 
   @GetMapping("/sak/{saksnummer}/journal")
-  @ApiOperation("Finn journalposter for et saksnummer og fagområde. Parameter fagomrade=BID er bidragjournal og fagomrade=FAR er farskapsjournal")
+  @Operation(description = "Finn journalposter for et saksnummer og fagområde. Parameter fagomrade=BID er bidragjournal og fagomrade=FAR er farskapsjournal")
   @ApiResponses(value = {
-      @ApiResponse(code = 200, message = "Liste over journalposter for saksnummer og fagområde"),
-      @ApiResponse(code = 401, message = "Du mangler eller har ugyldig sikkerhetstoken"),
-      @ApiResponse(code = 403, message = "Du mangler eller har ugyldig sikkerhetstoken")
+      @ApiResponse(responseCode = "200", description = "Liste over journalposter for saksnummer og fagområde"),
+      @ApiResponse(responseCode = "401", description = "Du mangler eller har ugyldig sikkerhetstoken"),
+      @ApiResponse(responseCode = "403", description = "Du mangler eller har ugyldig sikkerhetstoken")
   })
   public ResponseEntity<List<JournalpostDto>> hentJournal(@PathVariable String saksnummer, @RequestParam String fagomrade) {
     var journalposterResponse = journalpostService.finnJournalposter(saksnummer, fagomrade);
@@ -97,13 +101,13 @@ public class JournalpostController {
   }
 
   @PutMapping("/journal/{joarkJournalpostId}")
-  @ApiOperation("endre eksisterende journalpost med journalpostId på formatet '" + PREFIX_JOARK_COMPLETE + "<journalpostId>'")
+  @Operation(description = "endre eksisterende journalpost med journalpostId på formatet '" + PREFIX_JOARK_COMPLETE + "<journalpostId>'")
   @ApiResponses(value = {
-      @ApiResponse(code = 203, message = "Journalpost er endret"),
-      @ApiResponse(code = 400, message = "Prefiks på journalpostId er ugyldig, JournalpostEndreJournalpostCommandDto.gjelder er ikke satt eller det ikke finnes en journalpost på gitt id"),
-      @ApiResponse(code = 401, message = "Sikkerhetstoken er ikke gyldig"),
-      @ApiResponse(code = 403, message = "Sikkerhetstoke1n er ikke gyldig, eller det er ikke gitt adgang til kode 6 og 7 (nav-ansatt)"),
-      @ApiResponse(code = 404, message = "Fant ikke journalpost som skal endres, ingen 'payload' eller feil prefix/id på journalposten")
+      @ApiResponse(responseCode = "203", description = "Journalpost er endret"),
+      @ApiResponse(responseCode = "400", description = "Prefiks på journalpostId er ugyldig, JournalpostEndreJournalpostCommandDto.gjelder er ikke satt eller det ikke finnes en journalpost på gitt id"),
+      @ApiResponse(responseCode = "401", description = "Sikkerhetstoken er ikke gyldig"),
+      @ApiResponse(responseCode = "403", description = "Sikkerhetstoke1n er ikke gyldig, eller det er ikke gitt adgang til kode 6 og 7 (nav-ansatt)"),
+      @ApiResponse(responseCode = "404", description = "Fant ikke journalpost som skal endres, ingen 'payload' eller feil prefix/id på journalposten")
   })
   public ResponseEntity<Void> put(
       @RequestBody EndreJournalpostCommand endreJournalpostCommand,
@@ -130,7 +134,7 @@ public class JournalpostController {
 
   @Unprotected
   @GetMapping("/")
-  @ApiOperation("Welcome Home Page")
+  @Operation(description = "Welcome Home Page")
   public String index() {
     return "Welcome to Bidrag Dokument Arkiv: Microservice for integration with JOARK for bidrag-dokument.";
   }

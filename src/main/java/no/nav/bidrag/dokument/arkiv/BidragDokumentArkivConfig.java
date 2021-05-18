@@ -1,5 +1,10 @@
 package no.nav.bidrag.dokument.arkiv;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import no.nav.bidrag.commons.ExceptionLogger;
 import no.nav.bidrag.commons.web.CorrelationIdFilter;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
@@ -11,6 +16,7 @@ import no.nav.bidrag.dokument.arkiv.consumer.GraphQueryConsumer;
 import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
 import no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator;
 import no.nav.security.token.support.core.context.TokenValidationContextHolder;
+import no.nav.security.token.support.spring.api.EnableJwtTokenValidation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -22,6 +28,17 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 @Configuration
+@EnableJwtTokenValidation(ignore = {"org.springdoc", "org.springframework"})
+@OpenAPIDefinition(
+    info = @Info(title = "bidrag-dokument-arkiv", version = "v1"),
+    security = @SecurityRequirement(name = "bearer-key")
+)
+@SecurityScheme(
+    bearerFormat = "JWT",
+    name = "bearer-key",
+    scheme = "bearer",
+    type = SecuritySchemeType.HTTP
+)
 public class BidragDokumentArkivConfig {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BidragDokumentArkivConfig.class);
