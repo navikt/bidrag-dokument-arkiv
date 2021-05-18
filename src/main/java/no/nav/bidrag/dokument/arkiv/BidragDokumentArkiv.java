@@ -7,7 +7,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-@EnableJwtTokenValidation(ignore = {"springfox.documentation.swagger.web.ApiResourceController", "org.springframework"})
+@EnableJwtTokenValidation(ignore = {"org.springdoc", "org.springframework"})
 public class BidragDokumentArkiv {
 
   public static void main(String... args) {

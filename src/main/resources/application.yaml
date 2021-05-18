@@ -2,7 +2,10 @@ server:
   servlet:
     context-path: /bidrag-dokument-arkiv
 
-# OIDC          
+springdoc:
+  packages-to-scan: no.nav.bidrag.dokument.arkiv.controller
+
+# OIDC
 no.nav.security.jwt:
   issuers: isso
   issuer:
