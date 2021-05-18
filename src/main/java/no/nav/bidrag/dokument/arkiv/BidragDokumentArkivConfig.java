@@ -16,6 +16,7 @@ import no.nav.bidrag.dokument.arkiv.consumer.GraphQueryConsumer;
 import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
 import no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator;
 import no.nav.security.token.support.core.context.TokenValidationContextHolder;
+import no.nav.security.token.support.spring.api.EnableJwtTokenValidation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -27,6 +28,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 @Configuration
+@EnableJwtTokenValidation(ignore = {"org.springdoc", "org.springframework"})
 @OpenAPIDefinition(
     info = @Info(title = "bidrag-dokument-arkiv", version = "v1"),
     security = @SecurityRequirement(name = "bearer-key")
