@@ -4,6 +4,8 @@ import static no.nav.bidrag.commons.KildesystemIdenfikator.PREFIX_JOARK_COMPLETE
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.ISSUER;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -48,10 +50,10 @@ public class JournalpostController {
   )
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Journalpost er hentet"),
-      @ApiResponse(responseCode = "204", description = "Fant ikke journalpost som skal hentes"),
-      @ApiResponse(responseCode = "401", description = "Du mangler eller har ugyldig sikkerhetstoken"),
-      @ApiResponse(responseCode = "403", description = "Du mangler eller har ugyldig sikkerhetstoken"),
-      @ApiResponse(responseCode = "404", description = "Journalpost som skal hentes er ikke koblet mot gitt saksnummer, eller det er feil prefix/id på journalposten")
+      @ApiResponse(responseCode = "204", description = "Fant ikke journalpost som skal hentes", content = @Content(schema = @Schema(hidden = true))),
+      @ApiResponse(responseCode = "401", description = "Du mangler eller har ugyldig sikkerhetstoken", content = @Content(schema = @Schema(hidden = true))),
+      @ApiResponse(responseCode = "403", description = "Du mangler eller har ugyldig sikkerhetstoken", content = @Content(schema = @Schema(hidden = true))),
+      @ApiResponse(responseCode = "404", description = "Journalpost som skal hentes er ikke koblet mot gitt saksnummer, eller det er feil prefix/id på journalposten", content = @Content(schema = @Schema(hidden = true)))
   })
   public ResponseEntity<JournalpostResponse> hentJournalpost(
       @PathVariable String joarkJournalpostId,
@@ -87,8 +89,8 @@ public class JournalpostController {
   @Operation(description = "Finn journalposter for et saksnummer og fagområde. Parameter fagomrade=BID er bidragjournal og fagomrade=FAR er farskapsjournal")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Liste over journalposter for saksnummer og fagområde"),
-      @ApiResponse(responseCode = "401", description = "Du mangler eller har ugyldig sikkerhetstoken"),
-      @ApiResponse(responseCode = "403", description = "Du mangler eller har ugyldig sikkerhetstoken")
+      @ApiResponse(responseCode = "401", description = "Du mangler eller har ugyldig sikkerhetstoken", content = @Content(schema = @Schema(hidden = true))),
+      @ApiResponse(responseCode = "403", description = "Du mangler eller har ugyldig sikkerhetstoken", content = @Content(schema = @Schema(hidden = true)))
   })
   public ResponseEntity<List<JournalpostDto>> hentJournal(@PathVariable String saksnummer, @RequestParam String fagomrade) {
     var journalposterResponse = journalpostService.finnJournalposter(saksnummer, fagomrade);
