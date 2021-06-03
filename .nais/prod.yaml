@@ -1,52 +1,18 @@
-apiVersion: "nais.io/v1alpha1"
-kind: "Application"
-metadata:
-  name: bidrag-dokument-arkiv
-  namespace: bidrag
-  serviceuser:
-    p:
-      - srvbdarkiv
-  labels:
-    team: bidrag
-spec:
-  image: {{ image }}
-  port: 8080
-  liveness:
-    path: /bidrag-dokument-arkiv/actuator/health
-    initialDelay: 20
-    timeout: 1
-    periodSeconds: 5
-    failureThreshold: 10
-  readiness:
-    path: /bidrag-dokument-arkiv/actuator/health
-    initialDelay: 20
-    timeout: 1
-  prometheus:
-    enabled: true
-    path: /bidrag-dokument-arkiv/actuator/prometheus
-  resources:
-    limits:
-      cpu: 1000m
-      memory: 1024Mi
-    requests:
-      cpu: 500m
-      memory: 512Mi
-  ingresses:
-    - https://bidrag-dokument-arkiv.nais.adeo.no/
-    - https://bidrag-dokument-arkiv.prod-fss.nais.io
-  env:
-    - name: ACCEPTED_AUDIENCE
-      value: bisys-p,bidrag-ui-p,bidrag-dokument-ui-p
-    - name: ISSO_ISSUER_URL
-      value: https://isso.adeo.no:443/isso/oauth2
-    - name: DOKARKIV_URL
-      value: https://dokarkiv.adeo.no/rest/intern/journalpostapi/v1
-    - name: SAF_GRAPHQL_URL
-      value: https://saf.adeo.no/graphql
-    - name: ACCESS_TOKEN_URL
-      value: https://security-token-service.adeo.no
-  vault:
-    enabled: true
-    paths:
-      - kvPath: /serviceuser/data/prod/srvbdarkiv
-        mountPath: /var/run/secrets/nais.io/srvbdarkiv
+name: bidrag-dokument-arkiv
+serviceuser: p
+ingresses:
+  - https://bidrag-dokument-arkiv.nais.adeo.no/
+  - https://bidrag-dokument-arkiv.prod-fss.nais.io
+env:
+  - name: ACCEPTED_AUDIENCE
+    value: bisys-p,bidrag-ui-p,bidrag-dokument-ui-p
+  - name: ISSO_ISSUER_URL
+    value: https://isso.adeo.no:443/isso/oauth2
+  - name: DOKARKIV_URL
+    value: https://dokarkiv.adeo.no/rest/intern/journalpostapi/v1
+  - name: SAF_GRAPHQL_URL
+    value: https://saf.adeo.no/graphql
+  - name: ACCESS_TOKEN_URL
+    value: https://security-token-service.adeo.no
+vault:
+  kvPath: prod
