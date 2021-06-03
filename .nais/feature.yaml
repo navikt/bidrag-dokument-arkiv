@@ -1,4 +1,5 @@
 name: bidrag-dokument-arkiv-feature
+serviceuser: q
 ingresses:
   - https://bidrag-dokument-arkiv-feature.nais.preprod.local/
   - https://bidrag-dokument-arkiv-feature.dev.adeo.no/
@@ -14,3 +15,5 @@ env:
     value: https://saf-q1.nais.preprod.local/graphql
   - name: ACCESS_TOKEN_URL
     value: https://security-token-service.nais.preprod.local
+vault:
+  kvPath: dev

@@ -4,7 +4,7 @@ metadata:
   name: {{ name }}
   namespace: bidrag
   serviceuser:
-    q:
+    {{ serviceuser }}:
       - srvbdarkiv
   labels:
     team: bidrag
@@ -43,5 +43,5 @@ spec:
   vault:
     enabled: true
     paths:
-      - kvPath: /serviceuser/data/dev/srvbdarkiv
+      - kvPath: /serviceuser/data/{{ vault.kvPath }}/srvbdarkiv
         mountPath: /var/run/secrets/nais.io/srvbdarkiv
