@@ -6,12 +6,12 @@
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>2.5.0</version>
-    <relativePath/> <!-- lookup parent from repository -->
+    <relativePath /> <!-- lookup parent from repository -->
   </parent>
 
   <groupId>no.nav.bidrag.dokument</groupId>
   <artifactId>bidrag-dokument-arkiv</artifactId>
-  <version>1.0.186-SNAPSHOT</version>
+  <version>1.0.187-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <description>Backend NAIS, bidrag-dokument-arkiv, henter fra arkiv (JOARK)</description>
