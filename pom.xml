@@ -6,7 +6,7 @@
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>2.5.0</version>
-    <relativePath /> <!-- lookup parent from repository -->
+    <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
   <groupId>no.nav.bidrag.dokument</groupId>
@@ -21,7 +21,7 @@
 
     <!-- language -->
     <java.version>15</java.version>
-    <kotlin.version>1.5.10</kotlin.version>
+    <kotlin.version>1.5.20</kotlin.version>
 
     <!-- dependent versions other than from spring-boot -->
     <bidrag-commons.version>0.5.6</bidrag-commons.version>
