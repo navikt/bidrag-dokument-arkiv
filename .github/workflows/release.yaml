@@ -5,7 +5,7 @@ on:
       - release
 
 env:
-  IMAGE: docker.pkg.github.com/${{ github.repository }}/bidrag-dokument-arkiv:${{ github.sha }}
+  IMAGE: ghcr.io/${{ github.repository }}:${{ github.sha }}
 
 jobs:
   verify:
