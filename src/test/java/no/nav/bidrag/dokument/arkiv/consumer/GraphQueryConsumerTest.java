@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import java.util.Optional;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
+import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
 import no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.security.token.support.core.context.TokenValidationContext;
@@ -41,9 +42,7 @@ import org.springframework.test.context.ActiveProfiles;
 class GraphQueryConsumerTest {
 
   @MockBean
-  private TokenValidationContextHolder tokenValidationContextHolderMock;
-  @MockBean
-  private TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGeneratorMock;
+  private OidcTokenGenerator oidcTokenGenerator;
   @Autowired
   private GraphQueryConsumer graphQueryConsumer;
 
@@ -52,7 +51,7 @@ class GraphQueryConsumerTest {
     var tokenValidationContextMock = mock(TokenValidationContext.class);
     var jwtTokenMock = mock(JwtToken.class);
 
-    when(tokenValidationContextHolderMock.getTokenValidationContext()).thenReturn(tokenValidationContextMock);
+    when(oidcTokenGenerator.fetchBearerToken()).thenReturn("token");
     when(tokenValidationContextMock.getJwtTokenAsOptional(BidragDokumentArkivConfig.ISSUER)).thenReturn(Optional.of(jwtTokenMock));
     when(jwtTokenMock.getTokenAsString()).thenReturn("A very secure token");
   }
@@ -132,6 +131,6 @@ class GraphQueryConsumerTest {
     graphQueryConsumer.finnJournalposter("101", "BID");
 
     // så
-    verify(tokenForBasicAuthenticationGeneratorMock).generateToken();
+    verify(oidcTokenGenerator).fetchBearerToken();
   }
 }
