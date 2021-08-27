@@ -40,12 +40,10 @@ public class RestTemplateConfiguration {
   @Qualifier("saf")
   @Scope("prototype")
   public HttpHeaderRestTemplate safRestTemplate(
-      TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator,
+      OidcTokenGenerator oidcTokenGenerator,
       @Qualifier("dokarkiv") HttpHeaderRestTemplate httpHeaderRestTemplate
   ) {
-    httpHeaderRestTemplate.addHeaderGenerator(
-        TokenForBasicAuthenticationGenerator.HEADER_NAV_CONSUMER_TOKEN, tokenForBasicAuthenticationGenerator::generateToken
-    );
+    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.AUTHORIZATION, oidcTokenGenerator::fetchBearerToken);
 
     return httpHeaderRestTemplate;
   }

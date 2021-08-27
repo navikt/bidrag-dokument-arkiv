@@ -5,7 +5,7 @@ ingresses:
   - https://bidrag-dokument-arkiv.prod-fss.nais.io
 env:
   - name: ACCEPTED_AUDIENCE
-    value: bisys-p,bidrag-ui-p,bidrag-dokument-ui-p
+    value: bisys-p,bidrag-ui-p
   - name: ISSO_ISSUER_URL
     value: https://isso.adeo.no:443/isso/oauth2
   - name: DOKARKIV_URL
