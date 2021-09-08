@@ -11,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Objects;
-import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
 import no.nav.bidrag.dokument.arkiv.consumer.GraphQueryConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker;
@@ -25,7 +24,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles(PROFILE_TEST)
@@ -49,14 +47,11 @@ class JournalpostServiceTest {
     var dokumentoversiktFagsakQueryResponse = objectMapper.readValue(jsonResponse, DokumentoversiktFagsakQueryResponse.class);
     Integer journalpostIdFraJson = 201028011;
 
-    when(graphQueryConsumerMock.hentJournalpost(journalpostIdFraJson)).thenReturn(
-        HttpResponse.from(HttpStatus.OK, dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostIdFraJson))
-    );
+    when(graphQueryConsumerMock.hentJournalpost(journalpostIdFraJson)).thenReturn(dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostIdFraJson));
 
-    var httpStatusJournalpostResponse = journalpostService.hentJournalpost(journalpostIdFraJson);
+    var journalpost = journalpostService.hentJournalpost(journalpostIdFraJson);
 
-    assertThat(httpStatusJournalpostResponse.getResponseEntity().getStatusCode()).as("httpStatus").isEqualTo(HttpStatus.OK);
-    assertThat(httpStatusJournalpostResponse.fetchBody()).hasValueSatisfying(journalpost -> assertAll(
+    assertAll(
         () -> {
           assertThat(journalpost).as("journalpost").isNotNull();
 
@@ -81,7 +76,6 @@ class JournalpostServiceTest {
                 assertThat(dokumenter.get(0)).extracting(Dokument::getTittel).as("dokument.tittel").isEqualTo("Å være eller ikke være...");
               }
           );
-        }
-    ));
+        });
   }
 }

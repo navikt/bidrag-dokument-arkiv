@@ -1,9 +1,13 @@
 package no.nav.bidrag.dokument.arkiv.consumer;
 
+import com.netflix.graphql.dgs.client.DefaultGraphQLClient;
+import com.netflix.graphql.dgs.client.GraphQLResponse;
+import com.netflix.graphql.dgs.client.HttpResponse;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQuery;
-import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQueryResponse;
+import no.nav.bidrag.dokument.arkiv.dto.GraphqlException;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostQuery;
 import org.slf4j.Logger;
@@ -23,42 +27,36 @@ public class GraphQueryConsumer {
     this.restTemplate = restTemplate;
   }
 
-  public HttpResponse<Journalpost> hentJournalpost(Integer journalpostId) {
+  public Journalpost hentJournalpost(Integer journalpostId) {
     var journalpostQuery = new JournalpostQuery(journalpostId);
-    var queryResponseEntity = consumeQuery(journalpostQuery.writeQuery());
-    var httpHeaders = queryResponseEntity.getHeaders();
-
-    if (queryResponseEntity.getBody() != null) {
-      var dokumentoversiktFagsakQueryResponse = queryResponseEntity.getBody();
-      var journalpost = dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostId);
-      var status = queryResponseEntity.getStatusCode();
-
-      return new HttpResponse<>(new ResponseEntity<>(journalpost, httpHeaders, status));
-    }
-
-    return HttpResponse.from(httpHeaders, queryResponseEntity.getStatusCode());
+    return consumeEnkelJournalpostQuery(journalpostQuery.getQuery());
   }
 
-  public HttpResponse<List<Journalpost>> finnJournalposter(String saksnummer, String fagomrade) {
+  public List<Journalpost> finnJournalposter(String saksnummer, String fagomrade) {
     var dokumentoversiktFagsakQuery = new DokumentoversiktFagsakQuery(saksnummer, fagomrade);
-    var queryResponseEntity = consumeQuery(dokumentoversiktFagsakQuery.writeQuery());
-
-    if (queryResponseEntity.getBody() == null) {
-      return HttpResponse.from(queryResponseEntity.getHeaders(), queryResponseEntity.getStatusCode());
-    }
-
-    return HttpResponse.from(
-        queryResponseEntity.getBody().hentJournalposter(),
-        queryResponseEntity.getHeaders(),
-        queryResponseEntity.getStatusCode()
-    );
+    var response = consumeQuery(dokumentoversiktFagsakQuery.getQuery());
+    return Arrays.asList(response.extractValueAsObject("dokumentoversiktFagsak.journalposter", Journalpost[].class));
   }
 
-  private ResponseEntity<DokumentoversiktFagsakQueryResponse> consumeQuery(String query) {
-    LOGGER.info(query);
+  private Journalpost consumeEnkelJournalpostQuery(String query) {
+    GraphQLResponse response = consumeQuery(query);
+    return response.extractValueAsObject("journalpost", Journalpost.class);
+  }
 
-    return restTemplate.exchange(
-        "/", HttpMethod.POST, new HttpEntity<>(query), DokumentoversiktFagsakQueryResponse.class
-    );
+  private GraphQLResponse consumeQuery(String query) {
+    LOGGER.info(query);
+    var graphQLClient = new DefaultGraphQLClient("");
+    var response = graphQLClient.executeQuery(query, new HashMap<>(), (url, headers, body) -> {
+      ResponseEntity<String> exchange = restTemplate.exchange("/", HttpMethod.POST, new HttpEntity<>(body), String.class);
+      return new HttpResponse(exchange.getStatusCodeValue(), exchange.getBody());
+    });
+
+    if (response.hasErrors()){
+      var error = response.getErrors().get(0);
+      var errorReason = response.getParsed().read("errors[0].extensions.code");
+      var errorReasonString = errorReason != null ? errorReason.toString() : "ukjent";
+      throw new GraphqlException(error.getMessage(), errorReasonString);
+    }
+    return response;
   }
 }

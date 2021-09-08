@@ -9,14 +9,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import java.util.List;
 import no.nav.bidrag.commons.KildesystemIdenfikator;
 import no.nav.bidrag.commons.web.EnhetFilter;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
+import no.nav.bidrag.dokument.arkiv.dto.GraphqlException;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
-import no.nav.bidrag.dokument.dto.JournalpostDto;
-import no.nav.bidrag.dokument.dto.JournalpostResponse;
 import no.nav.security.token.support.core.api.ProtectedWithClaims;
 import no.nav.security.token.support.core.api.Unprotected;
 import org.slf4j.Logger;
@@ -55,30 +53,33 @@ public class JournalpostController {
       @ApiResponse(responseCode = "403", description = "Du mangler eller har ugyldig sikkerhetstoken", content = @Content(schema = @Schema(hidden = true))),
       @ApiResponse(responseCode = "404", description = "Journalpost som skal hentes er ikke koblet mot gitt saksnummer, eller det er feil prefix/id på journalposten", content = @Content(schema = @Schema(hidden = true)))
   })
-  public ResponseEntity<JournalpostResponse> hentJournalpost(
+  public ResponseEntity hentJournalpost(
       @PathVariable String joarkJournalpostId,
       @RequestParam(required = false) String saksnummer
   ) {
     KildesystemIdenfikator kildesystemIdenfikator = new KildesystemIdenfikator(joarkJournalpostId);
 
     if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix() || erIkkePrefixetMedJoark(joarkJournalpostId)) {
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+      return ResponseEntity.badRequest().build();
     }
 
-    var httpResponse = journalpostService.hentJournalpost(kildesystemIdenfikator.hentJournalpostId());
-    var muligJournalpost = httpResponse.fetchBody();
-
-    if (muligJournalpost.isEmpty()) {
-      return new ResponseEntity<>(httpResponse.fetchHeaders(), HttpStatus.NOT_FOUND);
-    } else if (muligJournalpost.filter(journalpost -> journalpost.erTilknyttetSak(saksnummer)).isEmpty()) {
-      return new ResponseEntity<>(httpResponse.fetchHeaders(), HttpStatus.BAD_REQUEST);
+    var journalpostId = kildesystemIdenfikator.hentJournalpostId();
+    if (journalpostId == null){
+      return ResponseEntity.badRequest().build();
     }
 
-    return new ResponseEntity<>(
-        muligJournalpost.get().tilJournalpostResponse(),
-        httpResponse.fetchHeaders(),
-        httpResponse.getResponseEntity().getStatusCode()
-    );
+    try {
+      var journalpost = journalpostService.hentJournalpost(journalpostId);
+      if (saksnummer != null && !journalpost.erTilknyttetSak(saksnummer)) {
+        return ResponseEntity.badRequest().build();
+      }
+
+      return ResponseEntity.ok(journalpost.tilJournalpostResponse());
+    } catch (GraphqlException e) {
+      LOGGER.warn(e.getMessage());
+      return ResponseEntity.status(e.status()).body(e.getMessage());
+    }
+
   }
 
   private boolean erIkkePrefixetMedJoark(String joarkJournalpostId) {
@@ -92,14 +93,14 @@ public class JournalpostController {
       @ApiResponse(responseCode = "401", description = "Du mangler eller har ugyldig sikkerhetstoken", content = @Content(schema = @Schema(hidden = true))),
       @ApiResponse(responseCode = "403", description = "Du mangler eller har ugyldig sikkerhetstoken", content = @Content(schema = @Schema(hidden = true)))
   })
-  public ResponseEntity<List<JournalpostDto>> hentJournal(@PathVariable String saksnummer, @RequestParam String fagomrade) {
-    var journalposterResponse = journalpostService.finnJournalposter(saksnummer, fagomrade);
-
-    if (journalposterResponse.fetchBody().isEmpty()) {
-      return new ResponseEntity<>(journalposterResponse.fetchHeaders(), HttpStatus.OK);
+  public ResponseEntity hentJournal(@PathVariable String saksnummer, @RequestParam String fagomrade) {
+    try {
+      var journalposterResponse = journalpostService.finnJournalposter(saksnummer, fagomrade);
+      return ResponseEntity.ok(journalposterResponse);
+    } catch (GraphqlException e) {
+      LOGGER.warn(e.getMessage());
+      return ResponseEntity.status(e.status()).body(e.getMessage());
     }
-
-    return new ResponseEntity<>(journalposterResponse.fetchBody().get(), journalposterResponse.fetchHeaders(), HttpStatus.OK);
   }
 
   @PutMapping("/journal/{joarkJournalpostId}")

@@ -62,19 +62,13 @@ class JsonMapperTest {
   @Test
   @DisplayName("skal mappe saf query til java.util.Map")
   void skalMappeSafQueryTilMap() throws JsonProcessingException {
-    var query = new DokumentoversiktFagsakQuery("666", "BID").writeQuery();
-    var jsonMap = objectMapper.readValue(query, Map.class);
+    var safQuery = new DokumentoversiktFagsakQuery("666", "BID").getQuery();
 
     //noinspection unchecked
     assertAll(
-        () -> assertThat(jsonMap).hasSize(1),
-        () -> {
-          String safQuery = (String) jsonMap.get("query");
-          assertThat(safQuery).as("query property").isNotNull();
-          assertThat(safQuery).as("querystring")
-              .contains("fagsakId: \"666\"")
-              .contains("tema:BID");
-        }
+        () -> assertThat(safQuery).as("querystring")
+            .contains("fagsakId: \"666\"")
+            .contains("tema:BID")
     );
   }
 }

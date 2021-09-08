@@ -1,7 +1,5 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
-import static java.util.Collections.emptyList;
-
 import java.util.List;
 import java.util.stream.Collectors;
 import no.nav.bidrag.commons.web.HttpResponse;
@@ -28,33 +26,20 @@ public class JournalpostService {
     this.dokarkivConsumer = dokarkivConsumer;
   }
 
-  public HttpResponse<Journalpost> hentJournalpost(Integer journalpostId) {
+  public Journalpost hentJournalpost(Integer journalpostId) {
     return graphQueryConsumer.hentJournalpost(journalpostId);
   }
 
-  public HttpResponse<List<JournalpostDto>> finnJournalposter(String saksnummer, String fagomrade) {
+  public List<JournalpostDto> finnJournalposter(String saksnummer, String fagomrade) {
     var journalposterResponse = graphQueryConsumer.finnJournalposter(saksnummer, fagomrade);
-    var muligeJournalposter = journalposterResponse.fetchBody();
+    return journalposterResponse.stream()
+        .map(Journalpost::tilJournalpostDto)
+        .collect(Collectors.toList());
 
-    List<JournalpostDto> journalposter = emptyList();
-
-    if (muligeJournalposter.isPresent()) {
-      journalposter = muligeJournalposter.get().stream()
-          .map(Journalpost::tilJournalpostDto)
-          .collect(Collectors.toList());
-    }
-
-    return HttpResponse.from(
-        journalposter,
-        journalposterResponse.fetchHeaders(),
-        journalposterResponse.getResponseEntity().getStatusCode()
-    );
   }
 
   public HttpResponse<Void> endre(Integer journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand) {
-    var journalpost = hentJournalpost(journalpostId).fetchBody().orElseThrow(
-        () -> new IllegalArgumentException(String.format("Kunne ikke hente journalpost med id %s til å endre!", journalpostId))
-    );
+    var journalpost = hentJournalpost(journalpostId);
 
     var oppdaterJournalpostRequest = new OppdaterJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost);
     var oppdatertJournalpostResponse = dokarkivConsumer.endre(oppdaterJournalpostRequest);
