@@ -68,7 +68,7 @@
     <dependency>
       <groupId>com.netflix.graphql.dgs</groupId>
       <artifactId>graphql-dgs-client</artifactId>
-      <version>4.7.3</version>
+      <version>4.7.4</version>
     </dependency>
 
     <dependency>
