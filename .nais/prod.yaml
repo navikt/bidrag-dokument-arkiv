@@ -9,7 +9,7 @@ env:
   - name: ISSO_ISSUER_URL
     value: https://isso.adeo.no:443/isso/oauth2
   - name: DOKARKIV_URL
-    value: https://dokarkiv.adeo.no/rest/intern/journalpostapi/v1
+    value: https://dokarkiv.adeo.no/
   - name: SAF_GRAPHQL_URL
     value: https://saf.adeo.no/graphql
   - name: ACCESS_TOKEN_URL
