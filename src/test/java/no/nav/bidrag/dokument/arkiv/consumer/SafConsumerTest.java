@@ -15,12 +15,10 @@ import static org.mockito.Mockito.when;
 import java.util.Optional;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
-import no.nav.bidrag.dokument.arkiv.dto.GraphqlException;
+import no.nav.bidrag.dokument.arkiv.dto.SafException;
 import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
-import no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.security.token.support.core.context.TokenValidationContext;
-import no.nav.security.token.support.core.context.TokenValidationContextHolder;
 import no.nav.security.token.support.core.jwt.JwtToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -42,12 +40,12 @@ import org.springframework.test.context.ActiveProfiles;
     webEnvironment = WebEnvironment.DEFINED_PORT
 )
 @AutoConfigureWireMock(port = 8090)
-class GraphQueryConsumerTest {
+class SafConsumerTest {
 
   @MockBean
   private OidcTokenGenerator oidcTokenGenerator;
   @Autowired
-  private GraphQueryConsumer graphQueryConsumer;
+  private SafConsumer safConsumer;
 
   @BeforeEach
   void mockTokenValidation() {
@@ -66,7 +64,7 @@ class GraphQueryConsumerTest {
     stubEmptyQueryResult();
 
     // når
-    var journalposter = graphQueryConsumer.finnJournalposter("007", "BID");
+    var journalposter = safConsumer.finnJournalposter("007", "BID");
 
     // så
     assertThat(journalposter).isEmpty();
@@ -113,7 +111,7 @@ class GraphQueryConsumerTest {
     );
 
     // når
-    var journalposter = graphQueryConsumer.finnJournalposter("007", "BID");
+    var journalposter = safConsumer.finnJournalposter("007", "BID");
 
     // så
     assertAll(
@@ -168,7 +166,7 @@ class GraphQueryConsumerTest {
     );
 
     // når
-    var journalpost =  graphQueryConsumer.hentJournalpost(23424234);
+    var journalpost =  safConsumer.hentJournalpost(23424234);
     assertThat(journalpost).isNotNull();
     assertThat(journalpost.getTema()).isEqualTo("BID");
     assertThat(journalpost.getAvsenderMottaker().getNavn()).isEqualTo("Avsender");
@@ -214,9 +212,9 @@ class GraphQueryConsumerTest {
 
     // når
     try {
-      graphQueryConsumer.hentJournalpost(23424234);
+      safConsumer.hentJournalpost(23424234);
       fail("Saf kallet skal feile");
-    } catch (GraphqlException e) {
+    } catch (SafException e) {
       assertThat(e.getMessage()).isEqualTo(
           "Tilgang til ressurs ble avvist. Saksbehandler eller system har ikke tilgang til ressurs tilhørende bruker som har kode 6/7, egen ansatt eller utenfor tillatt geografisk område.");
       assertThat(e.status()).isEqualTo(HttpStatus.FORBIDDEN);
@@ -261,9 +259,9 @@ class GraphQueryConsumerTest {
 
     // når
     try {
-      graphQueryConsumer.hentJournalpost(23424234);
+      safConsumer.hentJournalpost(23424234);
       fail("Saf kallet skal feile");
-    } catch (GraphqlException e) {
+    } catch (SafException e) {
       assertThat(e.getMessage()).isEqualTo(
           "Fant ikke journalpost i fagarkivet. journalpostId=910536260");
       assertThat(e.status()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -277,7 +275,7 @@ class GraphQueryConsumerTest {
     stubEmptyQueryResult();
 
     // når
-    graphQueryConsumer.finnJournalposter("101", "BID");
+    safConsumer.finnJournalposter("101", "BID");
 
     // så
     verify(oidcTokenGenerator).fetchBearerToken();

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
-import no.nav.bidrag.dokument.arkiv.consumer.GraphQueryConsumer;
+import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
@@ -18,20 +18,20 @@ public class JournalpostService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JournalpostService.class);
 
-  private final GraphQueryConsumer graphQueryConsumer;
+  private final SafConsumer safConsumer;
   private final DokarkivConsumer dokarkivConsumer;
 
-  public JournalpostService(GraphQueryConsumer graphQueryConsumer, DokarkivConsumer dokarkivConsumer) {
-    this.graphQueryConsumer = graphQueryConsumer;
+  public JournalpostService(SafConsumer safConsumer, DokarkivConsumer dokarkivConsumer) {
+    this.safConsumer = safConsumer;
     this.dokarkivConsumer = dokarkivConsumer;
   }
 
   public Journalpost hentJournalpost(Integer journalpostId) {
-    return graphQueryConsumer.hentJournalpost(journalpostId);
+    return safConsumer.hentJournalpost(journalpostId);
   }
 
   public List<JournalpostDto> finnJournalposter(String saksnummer, String fagomrade) {
-    var journalposterResponse = graphQueryConsumer.finnJournalposter(saksnummer, fagomrade);
+    var journalposterResponse = safConsumer.finnJournalposter(saksnummer, fagomrade);
     return journalposterResponse.stream()
         .map(Journalpost::tilJournalpostDto)
         .collect(Collectors.toList());

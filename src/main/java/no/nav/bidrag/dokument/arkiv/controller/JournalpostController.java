@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import no.nav.bidrag.commons.KildesystemIdenfikator;
 import no.nav.bidrag.commons.web.EnhetFilter;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
-import no.nav.bidrag.dokument.arkiv.dto.GraphqlException;
+import no.nav.bidrag.dokument.arkiv.dto.SafException;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.security.token.support.core.api.ProtectedWithClaims;
@@ -75,7 +75,7 @@ public class JournalpostController {
       }
 
       return ResponseEntity.ok(journalpost.tilJournalpostResponse());
-    } catch (GraphqlException e) {
+    } catch (SafException e) {
       LOGGER.warn(e.getMessage());
       return ResponseEntity.status(e.status()).body(e.getMessage());
     }
@@ -97,7 +97,7 @@ public class JournalpostController {
     try {
       var journalposterResponse = journalpostService.finnJournalposter(saksnummer, fagomrade);
       return ResponseEntity.ok(journalposterResponse);
-    } catch (GraphqlException e) {
+    } catch (SafException e) {
       LOGGER.warn(e.getMessage());
       return ResponseEntity.status(e.status()).body(e.getMessage());
     }

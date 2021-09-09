@@ -12,7 +12,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Objects;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
-import no.nav.bidrag.dokument.arkiv.consumer.GraphQueryConsumer;
+import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker;
 import no.nav.bidrag.dokument.arkiv.dto.Bruker;
 import no.nav.bidrag.dokument.arkiv.dto.Dokument;
@@ -36,7 +36,7 @@ class JournalpostServiceTest {
   @Autowired
   private JournalpostService journalpostService;
   @MockBean
-  private GraphQueryConsumer graphQueryConsumerMock;
+  private SafConsumer safConsumerMock;
   @Value("classpath:json/dokumentoversiktFagsakQueryResponse.json")
   private Resource responseJsonResource;
 
@@ -47,7 +47,7 @@ class JournalpostServiceTest {
     var dokumentoversiktFagsakQueryResponse = objectMapper.readValue(jsonResponse, DokumentoversiktFagsakQueryResponse.class);
     Integer journalpostIdFraJson = 201028011;
 
-    when(graphQueryConsumerMock.hentJournalpost(journalpostIdFraJson)).thenReturn(dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostIdFraJson));
+    when(safConsumerMock.hentJournalpost(journalpostIdFraJson)).thenReturn(dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostIdFraJson));
 
     var journalpost = journalpostService.hentJournalpost(journalpostIdFraJson);
 
