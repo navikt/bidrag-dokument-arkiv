@@ -27,6 +27,7 @@
     <bidrag-commons.version>0.5.9</bidrag-commons.version>
     <bidrag-commons-test.version>0.2.1</bidrag-commons-test.version>
     <bidrag-dokument-dto.version>0.18.1</bidrag-dokument-dto.version>
+    <graphq-dgs-client.version>4.7.4</graphq-dgs-client.version>
     <logback-encoder.version>6.6</logback-encoder.version>
     <nimbus-jose-jwt.version>8.22.1</nimbus-jose-jwt.version>
     <springdoc-openapi-ui.version>1.5.10</springdoc-openapi-ui.version>
@@ -68,7 +69,7 @@
     <dependency>
       <groupId>com.netflix.graphql.dgs</groupId>
       <artifactId>graphql-dgs-client</artifactId>
-      <version>4.7.4</version>
+      <version>${graphq-dgs-client.version}</version>
     </dependency>
 
     <dependency>
