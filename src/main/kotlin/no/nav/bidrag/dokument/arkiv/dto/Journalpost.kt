@@ -75,7 +75,7 @@ data class Journalpost(
         return registrert?.somDato()
     }
 
-    fun erTilknyttetSak(saksnummer: String) = sak?.fagsakId == saksnummer
+    fun erTilknyttetSak(saksnummer: String?) = sak?.fagsakId == saksnummer
 
     fun hentAvsenderNavn() = avsenderMottaker?.navn
 }

@@ -3,7 +3,6 @@ package no.nav.bidrag.dokument.arkiv;
 import no.nav.bidrag.commons.CorrelationId;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
-import no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +19,8 @@ public class RestTemplateConfiguration {
     HttpHeaderRestTemplate httpHeaderRestTemplate = new HttpHeaderRestTemplate();
 
     httpHeaderRestTemplate.addHeaderGenerator(CorrelationId.CORRELATION_ID_HEADER, CorrelationId::fetchCorrelationIdForThread);
+    httpHeaderRestTemplate.addHeaderGenerator("Nav-Callid", CorrelationId::fetchCorrelationIdForThread);
+    httpHeaderRestTemplate.addHeaderGenerator("Nav-Consumer-Id", ()-> "bidrag-dokument-arkiv");
 
     return httpHeaderRestTemplate;
   }
@@ -40,12 +41,10 @@ public class RestTemplateConfiguration {
   @Qualifier("saf")
   @Scope("prototype")
   public HttpHeaderRestTemplate safRestTemplate(
-      TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator,
+      OidcTokenGenerator oidcTokenGenerator,
       @Qualifier("dokarkiv") HttpHeaderRestTemplate httpHeaderRestTemplate
   ) {
-    httpHeaderRestTemplate.addHeaderGenerator(
-        TokenForBasicAuthenticationGenerator.HEADER_NAV_CONSUMER_TOKEN, tokenForBasicAuthenticationGenerator::generateToken
-    );
+    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.AUTHORIZATION, oidcTokenGenerator::fetchBearerToken);
 
     return httpHeaderRestTemplate;
   }

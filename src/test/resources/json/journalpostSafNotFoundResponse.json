@@ -1,0 +1,23 @@
+{
+  "errors": [
+    {
+      "message": "Fant ikke journalpost i fagarkivet. journalpostId=910536260",
+      "locations": [
+        {
+          "line": 2,
+          "column": 3
+        }
+      ],
+      "path": [
+        "journalpost"
+      ],
+      "extensions": {
+        "code": "not_found",
+        "classification": "ExecutionAborted"
+      }
+    }
+  ],
+  "data": {
+    "journalpost": null
+  }
+}

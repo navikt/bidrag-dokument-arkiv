@@ -1,12 +1,10 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
-import static java.util.Collections.emptyList;
-
 import java.util.List;
 import java.util.stream.Collectors;
 import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
-import no.nav.bidrag.dokument.arkiv.consumer.GraphQueryConsumer;
+import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
@@ -20,41 +18,28 @@ public class JournalpostService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JournalpostService.class);
 
-  private final GraphQueryConsumer graphQueryConsumer;
+  private final SafConsumer safConsumer;
   private final DokarkivConsumer dokarkivConsumer;
 
-  public JournalpostService(GraphQueryConsumer graphQueryConsumer, DokarkivConsumer dokarkivConsumer) {
-    this.graphQueryConsumer = graphQueryConsumer;
+  public JournalpostService(SafConsumer safConsumer, DokarkivConsumer dokarkivConsumer) {
+    this.safConsumer = safConsumer;
     this.dokarkivConsumer = dokarkivConsumer;
   }
 
-  public HttpResponse<Journalpost> hentJournalpost(Integer journalpostId) {
-    return graphQueryConsumer.hentJournalpost(journalpostId);
+  public Journalpost hentJournalpost(Integer journalpostId) {
+    return safConsumer.hentJournalpost(journalpostId);
   }
 
-  public HttpResponse<List<JournalpostDto>> finnJournalposter(String saksnummer, String fagomrade) {
-    var journalposterResponse = graphQueryConsumer.finnJournalposter(saksnummer, fagomrade);
-    var muligeJournalposter = journalposterResponse.fetchBody();
+  public List<JournalpostDto> finnJournalposter(String saksnummer, String fagomrade) {
+    var journalposterResponse = safConsumer.finnJournalposter(saksnummer, fagomrade);
+    return journalposterResponse.stream()
+        .map(Journalpost::tilJournalpostDto)
+        .collect(Collectors.toList());
 
-    List<JournalpostDto> journalposter = emptyList();
-
-    if (muligeJournalposter.isPresent()) {
-      journalposter = muligeJournalposter.get().stream()
-          .map(Journalpost::tilJournalpostDto)
-          .collect(Collectors.toList());
-    }
-
-    return HttpResponse.from(
-        journalposter,
-        journalposterResponse.fetchHeaders(),
-        journalposterResponse.getResponseEntity().getStatusCode()
-    );
   }
 
   public HttpResponse<Void> endre(Integer journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand) {
-    var journalpost = hentJournalpost(journalpostId).fetchBody().orElseThrow(
-        () -> new IllegalArgumentException(String.format("Kunne ikke hente journalpost med id %s til å endre!", journalpostId))
-    );
+    var journalpost = hentJournalpost(journalpostId);
 
     var oppdaterJournalpostRequest = new OppdaterJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost);
     var oppdatertJournalpostResponse = dokarkivConsumer.endre(oppdaterJournalpostRequest);

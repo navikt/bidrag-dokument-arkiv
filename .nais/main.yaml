@@ -6,7 +6,7 @@ ingresses:
   - https://bidrag-dokument-arkiv.dev.intern.nav.no/
 env:
   - name: ACCEPTED_AUDIENCE
-    value: bisys-q2,bidrag-ui-q2,bidrag-dokument-ui-q2,bidrag-q-localhost,ida-q
+    value: bisys-q2,bidrag-ui-q2,bidrag-q-localhost,ida-q
   - name: ISSO_ISSUER_URL
     value: https://isso-q.adeo.no:443/isso/oauth2
   - name: DOKARKIV_URL

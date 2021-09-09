@@ -12,7 +12,7 @@ import no.nav.bidrag.dokument.arkiv.aop.AspectExceptionLogger;
 import no.nav.bidrag.dokument.arkiv.aop.HttpStatusRestControllerAdvice;
 import no.nav.bidrag.dokument.arkiv.consumer.AccessTokenConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
-import no.nav.bidrag.dokument.arkiv.consumer.GraphQueryConsumer;
+import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
 import no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator;
 import no.nav.security.token.support.core.context.TokenValidationContextHolder;
@@ -48,14 +48,14 @@ public class BidragDokumentArkivConfig {
   public static final String PROFILE_TEST = "test";
 
   @Bean
-  GraphQueryConsumer graphQueryConsumer(
+  SafConsumer graphQueryConsumer(
       @Qualifier("saf") HttpHeaderRestTemplate httpHeaderRestTemplate,
       EnvironmentProperties environmentProperties
   ) {
     httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.safQraphiQlUrl));
     httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
 
-    return new GraphQueryConsumer(httpHeaderRestTemplate);
+    return new SafConsumer(httpHeaderRestTemplate);
   }
 
   @Bean
