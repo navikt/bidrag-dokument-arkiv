@@ -6,6 +6,7 @@ import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
+import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
@@ -43,6 +44,12 @@ public class JournalpostService {
 
     var oppdaterJournalpostRequest = new OppdaterJournalpostRequest(journalpostId.toString(), endreJournalpostCommand, journalpost);
     var oppdatertJournalpostResponse = dokarkivConsumer.endre(oppdaterJournalpostRequest);
+
+    if (oppdatertJournalpostResponse.is2xxSuccessful() && endreJournalpostCommand.skalJournalfores()){
+      var journalforRequest = new FerdigstillJournalpostRequest(journalpostId.toString(), endreJournalpostCommand.getEnhet());
+      dokarkivConsumer.ferdigstill(journalforRequest);
+      LOGGER.info("Journalpost med id {} er ferdigstillt", journalpostId);
+    }
 
     oppdatertJournalpostResponse.fetchBody().ifPresent(response -> LOGGER.info("endret: {}", response));
 

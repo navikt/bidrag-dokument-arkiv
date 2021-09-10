@@ -125,6 +125,7 @@ data class EndreJournalpostCommandIntern(
         val endreJournalpostCommand: EndreJournalpostCommand,
         val enhet: String
 ) {
+    fun skalJournalfores() = endreJournalpostCommand.skalJournalfores;
     fun hentAvsenderNavn(journalpost: Journalpost) = endreJournalpostCommand.avsenderNavn ?: journalpost.hentAvsenderNavn()
     fun harEnTilknyttetSak(): Boolean {
         if (endreJournalpostCommand.tilknyttSaker.size > 1)
