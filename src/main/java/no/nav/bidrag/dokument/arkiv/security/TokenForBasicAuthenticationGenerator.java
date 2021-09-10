@@ -15,6 +15,6 @@ public class TokenForBasicAuthenticationGenerator {
   }
 
   public String generateToken() {
-    return accessTokenConsumer.finnTokenFor("srvbdarkivering", secretForServiceUserNotEncoded);
+    return accessTokenConsumer.finnTokenFor("srvbdarkiv", secretForServiceUserNotEncoded);
   }
 }
