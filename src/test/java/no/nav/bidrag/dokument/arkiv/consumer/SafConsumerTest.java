@@ -18,6 +18,7 @@ import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
 import no.nav.bidrag.dokument.arkiv.dto.SafException;
 import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator;
 import no.nav.security.token.support.core.context.TokenValidationContext;
 import no.nav.security.token.support.core.jwt.JwtToken;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,6 +45,8 @@ class SafConsumerTest {
 
   @MockBean
   private OidcTokenGenerator oidcTokenGenerator;
+  @MockBean
+  private TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator;
   @Autowired
   private SafConsumer safConsumer;
 
@@ -53,6 +56,7 @@ class SafConsumerTest {
     var jwtTokenMock = mock(JwtToken.class);
 
     when(oidcTokenGenerator.fetchBearerToken()).thenReturn("token");
+    when(tokenForBasicAuthenticationGenerator.generateToken()).thenReturn("token");
     when(tokenValidationContextMock.getJwtTokenAsOptional(BidragDokumentArkivConfig.ISSUER)).thenReturn(Optional.of(jwtTokenMock));
     when(jwtTokenMock.getTokenAsString()).thenReturn("A very secure token");
   }

@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.consumer;
 
 import no.nav.bidrag.commons.web.HttpResponse;
+import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import org.springframework.http.HttpEntity;
@@ -18,10 +19,18 @@ public class DokarkivConsumer {
   }
 
   public HttpResponse<OppdaterJournalpostResponse> endre(OppdaterJournalpostRequest oppdaterJournalpostRequest) {
-    var oppdaterJoarnalpostApiUrl = URL_JOURNALPOSTAPI_V1 + '/' + oppdaterJournalpostRequest.getJournalpostId();
-
+    var oppdaterJoarnalpostApiUrl = URL_JOURNALPOSTAPI_V1 + '/' + oppdaterJournalpostRequest.hentJournalpostId();
     var oppdaterJournalpostResponseEntity = restTemplate.exchange(
-        oppdaterJoarnalpostApiUrl, HttpMethod.PUT, new HttpEntity<>(oppdaterJournalpostRequest.tilJournalpostApi()), OppdaterJournalpostResponse.class
+        oppdaterJoarnalpostApiUrl, HttpMethod.PUT, new HttpEntity<>(oppdaterJournalpostRequest), OppdaterJournalpostResponse.class
+    );
+
+    return new HttpResponse<>(oppdaterJournalpostResponseEntity);
+  }
+
+  public HttpResponse<Void> ferdigstill(FerdigstillJournalpostRequest ferdigstillJournalpostRequest) {
+    var oppdaterJoarnalpostApiUrl = URL_JOURNALPOSTAPI_V1 + '/' + ferdigstillJournalpostRequest.getJournalpostId() + "/ferdigstill";
+    var oppdaterJournalpostResponseEntity = restTemplate.exchange(
+        oppdaterJoarnalpostApiUrl, HttpMethod.PATCH, new HttpEntity<>(ferdigstillJournalpostRequest), Void.class
     );
 
     return new HttpResponse<>(oppdaterJournalpostResponseEntity);
