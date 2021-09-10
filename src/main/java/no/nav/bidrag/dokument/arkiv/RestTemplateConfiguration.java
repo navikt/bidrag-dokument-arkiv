@@ -1,5 +1,7 @@
 package no.nav.bidrag.dokument.arkiv;
 
+import static no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator.HEADER_NAV_CONSUMER_TOKEN;
+
 import no.nav.bidrag.commons.CorrelationId;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.EnvironmentProperties;
@@ -10,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 @Configuration
 public class RestTemplateConfiguration {
@@ -38,8 +41,8 @@ public class RestTemplateConfiguration {
       @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate
   ) {
     httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.AUTHORIZATION, oidcTokenGenerator::fetchBearerToken);
-    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, ()->"application/json");
-    httpHeaderRestTemplate.addHeaderGenerator("Nav-Consumer-Token", tokenForBasicAuthenticationGenerator::generateToken);
+    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
+    httpHeaderRestTemplate.addHeaderGenerator(HEADER_NAV_CONSUMER_TOKEN, tokenForBasicAuthenticationGenerator::generateToken);
 
     return httpHeaderRestTemplate;
   }
