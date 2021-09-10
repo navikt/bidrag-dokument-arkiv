@@ -50,7 +50,7 @@ class JsonMapperTest {
     endreJournalpostCommand.setTilknyttSaker(Arrays.asList("sakIdent"));
 
     var endreJournalpostIntern = new EndreJournalpostCommandIntern(endreJournalpostCommand, "4805");
-    var oppdaterJp = new OppdaterJournalpostRequest("12345", endreJournalpostIntern, journalpost);
+    var oppdaterJp = new OppdaterJournalpostRequest(12345, endreJournalpostIntern, journalpost);
 
     var jsonMap = objectMapper.convertValue(oppdaterJp, Map.class);
 

@@ -252,7 +252,7 @@ class JournalpostControllerTest {
         () -> {
           var forventetUrlForOppdateringAvJournalpost = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson;
           var oppdaterJournalpostRequest = new OppdaterJournalpostRequest(
-              String.valueOf(journalpostIdFraJson),
+              journalpostIdFraJson,
               new EndreJournalpostCommandIntern(endreJournalpostCommand, xEnhet),
               journalpostSafResponse
           );
@@ -266,7 +266,7 @@ class JournalpostControllerTest {
         },
         ()->{
           var ferdigstillJournalpostUrl = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson + "/ferdigstill";
-          var ferdigstillJournalpostRequest = new FerdigstillJournalpostRequest(String.valueOf(journalpostIdFraJson), xEnhet);
+          var ferdigstillJournalpostRequest = new FerdigstillJournalpostRequest(journalpostIdFraJson, xEnhet);
           verify(restTemplateDokarkivMock).exchange(
               eq(ferdigstillJournalpostUrl),
               eq(HttpMethod.PATCH),
@@ -323,7 +323,7 @@ class JournalpostControllerTest {
         () -> {
           var forventetUrlForOppdateringAvJournalpost = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson;
           var oppdaterJournalpostRequest = new OppdaterJournalpostRequest(
-              String.valueOf(journalpostIdFraJson),
+              journalpostIdFraJson,
               new EndreJournalpostCommandIntern(endreJournalpostCommand, xEnhet),
               journalpostSafResponse
           );
@@ -337,7 +337,7 @@ class JournalpostControllerTest {
         },
         ()->{
           var ferdigstillJournalpostUrl = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson + "/ferdigstill";
-          var ferdigstillJournalpostRequest = new FerdigstillJournalpostRequest(String.valueOf(journalpostIdFraJson), xEnhet);
+          var ferdigstillJournalpostRequest = new FerdigstillJournalpostRequest(journalpostIdFraJson, xEnhet);
           verify(restTemplateDokarkivMock, never()).exchange(
               eq(ferdigstillJournalpostUrl),
               eq(HttpMethod.PATCH),
