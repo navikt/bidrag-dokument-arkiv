@@ -128,6 +128,12 @@
       <artifactId>httpclient</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.15</version>
+    </dependency>
+
     <!-- kotlin -->
     <dependency>
       <groupId>org.jetbrains.kotlin</groupId>
@@ -199,12 +205,6 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
       <scope>test</scope>
     </dependency>
 
