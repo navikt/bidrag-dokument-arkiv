@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -20,6 +21,7 @@ import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.bidrag.commons.web.test.HttpHeaderTestRestTemplate;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
+import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
@@ -201,24 +203,20 @@ class JournalpostControllerTest {
   }
 
   @Test
-  @DisplayName("skal endre journalpost")
-  void skalEndreJournalpost() throws IOException, JSONException {
+  @DisplayName("skal endre og journalføre journalpost")
+  void skalEndreOgJournalforeJournalpost() throws IOException, JSONException {
     // given
 
+    var xEnhet = "1234";
     var jsonResponse = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJournalpostJsonResource.getFile().toURI()))));
     var jsonObject = new JSONObject(jsonResponse);
     var journalpostSafResponse = objectMapper.readValue(jsonObject.getJSONObject("data").getString("journalpost"), Journalpost.class);
     var journalpostIdFraJson = 201028011;
     var headersMedEnhet = new HttpHeaders();
-    headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, "1234");
+    headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
 
-    var endreJournalpostCommand = new EndreJournalpostCommand();
-    endreJournalpostCommand.setAvsenderNavn("Dauden, Svarte");
-    endreJournalpostCommand.setGjelder("06127412345");
-    endreJournalpostCommand.setTittel("So Tired");
-    endreJournalpostCommand.setEndreDokumenter(List.of(
-        new EndreDokument("BLABLA", 1, "In a galazy far far away")
-    ));
+    var endreJournalpostCommand = createEndreJournalpostCommand();
+    endreJournalpostCommand.setSkalJournalfores(true);
 
     when(restTemplateSafMock.exchange(eq("/"), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
         .thenReturn(new ResponseEntity<>(jsonResponse, HttpStatus.OK));
@@ -229,6 +227,13 @@ class JournalpostControllerTest {
         any(HttpEntity.class),
         eq(OppdaterJournalpostResponse.class)
     )).thenReturn(new ResponseEntity<>(new OppdaterJournalpostResponse(journalpostIdFraJson, null), HttpStatus.ACCEPTED));
+
+    when(restTemplateDokarkivMock.exchange(
+        eq("/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson + "/ferdigstill"),
+        eq(HttpMethod.PATCH),
+        any(HttpEntity.class),
+        eq(FerdigstillJournalpostRequest.class)
+    )).thenReturn(new ResponseEntity<>(HttpStatus.ACCEPTED));
 
     // when
     var oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
@@ -248,7 +253,7 @@ class JournalpostControllerTest {
           var forventetUrlForOppdateringAvJournalpost = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson;
           var oppdaterJournalpostRequest = new OppdaterJournalpostRequest(
               String.valueOf(journalpostIdFraJson),
-              new EndreJournalpostCommandIntern(endreJournalpostCommand, "1234"),
+              new EndreJournalpostCommandIntern(endreJournalpostCommand, xEnhet),
               journalpostSafResponse
           );
 
@@ -258,11 +263,103 @@ class JournalpostControllerTest {
               eq(new HttpEntity<>(oppdaterJournalpostRequest)),
               eq(OppdaterJournalpostResponse.class)
           );
+        },
+        ()->{
+          var ferdigstillJournalpostUrl = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson + "/ferdigstill";
+          var ferdigstillJournalpostRequest = new FerdigstillJournalpostRequest(String.valueOf(journalpostIdFraJson), xEnhet);
+          verify(restTemplateDokarkivMock).exchange(
+              eq(ferdigstillJournalpostUrl),
+              eq(HttpMethod.PATCH),
+              eq(new HttpEntity<>(ferdigstillJournalpostRequest)),
+              eq(Void.class)
+          );
+        }
+    );
+  }
+
+  @Test
+  @DisplayName("skal endre journalpost")
+  void skalEndreJournalpost() throws IOException, JSONException {
+    // given
+    var xEnhet = "1234";
+    var jsonResponse = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJournalpostJsonResource.getFile().toURI()))));
+    var jsonObject = new JSONObject(jsonResponse);
+    var journalpostSafResponse = objectMapper.readValue(jsonObject.getJSONObject("data").getString("journalpost"), Journalpost.class);
+    var journalpostIdFraJson = 201028011;
+    var headersMedEnhet = new HttpHeaders();
+    headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
+
+    var endreJournalpostCommand = createEndreJournalpostCommand();
+
+    when(restTemplateSafMock.exchange(eq("/"), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+        .thenReturn(new ResponseEntity<>(jsonResponse, HttpStatus.OK));
+
+    when(restTemplateDokarkivMock.exchange(
+        eq("/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson),
+        eq(HttpMethod.PUT),
+        any(HttpEntity.class),
+        eq(OppdaterJournalpostResponse.class)
+    )).thenReturn(new ResponseEntity<>(new OppdaterJournalpostResponse(journalpostIdFraJson, null), HttpStatus.ACCEPTED));
+    when(restTemplateDokarkivMock.exchange(
+        eq("/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson + "/ferdigstill"),
+        eq(HttpMethod.PATCH),
+        any(HttpEntity.class),
+        eq(FerdigstillJournalpostRequest.class)
+    )).thenReturn(new ResponseEntity<>(HttpStatus.ACCEPTED));
+    // when
+    var oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
+        HttpMethod.PUT,
+        new HttpEntity<>(endreJournalpostCommand, headersMedEnhet),
+        JournalpostDto.class
+    );
+
+    // then
+    assertAll(
+        () -> assertThat(oppdaterJournalpostResponseEntity)
+            .extracting(ResponseEntity::getStatusCode)
+            .as("statusCode")
+            .isEqualTo(HttpStatus.ACCEPTED),
+        () -> {
+          var forventetUrlForOppdateringAvJournalpost = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson;
+          var oppdaterJournalpostRequest = new OppdaterJournalpostRequest(
+              String.valueOf(journalpostIdFraJson),
+              new EndreJournalpostCommandIntern(endreJournalpostCommand, xEnhet),
+              journalpostSafResponse
+          );
+
+          verify(restTemplateDokarkivMock).exchange(
+              eq(forventetUrlForOppdateringAvJournalpost),
+              eq(HttpMethod.PUT),
+              eq(new HttpEntity<>(oppdaterJournalpostRequest)),
+              eq(OppdaterJournalpostResponse.class)
+          );
+        },
+        ()->{
+          var ferdigstillJournalpostUrl = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson + "/ferdigstill";
+          var ferdigstillJournalpostRequest = new FerdigstillJournalpostRequest(String.valueOf(journalpostIdFraJson), xEnhet);
+          verify(restTemplateDokarkivMock, never()).exchange(
+              eq(ferdigstillJournalpostUrl),
+              eq(HttpMethod.PATCH),
+              eq(new HttpEntity<>(ferdigstillJournalpostRequest)),
+              eq(Void.class)
+          );
         }
     );
   }
 
   private String initUrl() {
     return "http://localhost:" + port + contextPath;
+  }
+
+  private EndreJournalpostCommand createEndreJournalpostCommand(){
+    var endreJournalpostCommand = new EndreJournalpostCommand();
+    endreJournalpostCommand.setAvsenderNavn("Dauden, Svarte");
+    endreJournalpostCommand.setGjelder("06127412345");
+    endreJournalpostCommand.setTittel("So Tired");
+    endreJournalpostCommand.setEndreDokumenter(List.of(
+        new EndreDokument("BLABLA", 1, "In a galazy far far away")
+    ));
+    return endreJournalpostCommand;
   }
 }

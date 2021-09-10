@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.5.3</version>
+    <version>2.5.4</version>
     <relativePath /> <!-- lookup parent from repository -->
   </parent>
 
@@ -123,6 +123,11 @@
       <artifactId>spring-boot-starter-validation</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+    </dependency>
+
     <!-- kotlin -->
     <dependency>
       <groupId>org.jetbrains.kotlin</groupId>
@@ -209,6 +214,7 @@
       <version>${springframework-cloud.version}</version>
       <scope>test</scope>
     </dependency>
+
   </dependencies>
 
   <build>
