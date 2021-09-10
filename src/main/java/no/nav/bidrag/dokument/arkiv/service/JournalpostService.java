@@ -42,11 +42,11 @@ public class JournalpostService {
   public HttpResponse<Void> endre(Integer journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand) {
     var journalpost = hentJournalpost(journalpostId);
 
-    var oppdaterJournalpostRequest = new OppdaterJournalpostRequest(journalpostId.toString(), endreJournalpostCommand, journalpost);
+    var oppdaterJournalpostRequest = new OppdaterJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost);
     var oppdatertJournalpostResponse = dokarkivConsumer.endre(oppdaterJournalpostRequest);
 
     if (oppdatertJournalpostResponse.is2xxSuccessful() && endreJournalpostCommand.skalJournalfores()){
-      var journalforRequest = new FerdigstillJournalpostRequest(journalpostId.toString(), endreJournalpostCommand.getEnhet());
+      var journalforRequest = new FerdigstillJournalpostRequest(journalpostId, endreJournalpostCommand.getEnhet());
       dokarkivConsumer.ferdigstill(journalforRequest);
       LOGGER.info("Journalpost med id {} er ferdigstillt", journalpostId);
     }
