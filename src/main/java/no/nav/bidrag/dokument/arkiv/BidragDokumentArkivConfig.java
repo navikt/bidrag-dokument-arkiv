@@ -109,9 +109,10 @@ public class BidragDokumentArkivConfig {
       @Value("${DOKARKIV_URL}") String dokarkivUrl,
       @Value("${SAF_GRAPHQL_URL}") String safQraphiQlUrl,
       @Value("${SRV_BD_ARKIV_AUTH}") String secretForServiceUser,
-      @Value("${ACCESS_TOKEN_URL}") String securityTokenUrl
+      @Value("${ACCESS_TOKEN_URL}") String securityTokenUrl,
+      @Value("${NAIS_APP_NAME}") String naisAppName
   ) {
-    var environmentProperties = new EnvironmentProperties(dokarkivUrl, safQraphiQlUrl, secretForServiceUser, securityTokenUrl);
+    var environmentProperties = new EnvironmentProperties(dokarkivUrl, safQraphiQlUrl, secretForServiceUser, securityTokenUrl, naisAppName);
     LOGGER.info(String.format("> Environment: %s",  environmentProperties));
 
     return environmentProperties;
@@ -123,12 +124,14 @@ public class BidragDokumentArkivConfig {
     final String safQraphiQlUrl;
     final String secretForServiceUser;
     final String securityTokenUrl;
+    final String naisAppName;
 
-    public EnvironmentProperties(String dokarkivUrl, String safQraphiQlUrl, String secretForServiceUser, String securityTokenUrl) {
+    public EnvironmentProperties(String dokarkivUrl, String safQraphiQlUrl, String secretForServiceUser, String securityTokenUrl, String naisAppName) {
       this.dokarkivUrl = dokarkivUrl;
       this.safQraphiQlUrl = safQraphiQlUrl;
       this.secretForServiceUser = secretForServiceUser;
       this.securityTokenUrl = securityTokenUrl;
+      this.naisAppName = naisAppName;
     }
 
     @Override
@@ -136,6 +139,7 @@ public class BidragDokumentArkivConfig {
       return "dokarkivUrl='" + dokarkivUrl + '\'' +
           ", safQraphiQlUrl='" + safQraphiQlUrl + '\'' +
           ", securityTokenUrl='" + securityTokenUrl + '\'' +
+          ", naisAppName='" + naisAppName + '\'' +
           ", secretForServiceUser '" + notActualValue() + "'.";
     }
 

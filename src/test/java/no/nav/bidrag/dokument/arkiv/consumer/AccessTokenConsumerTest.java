@@ -46,7 +46,7 @@ class AccessTokenConsumerTest {
   @DisplayName("skal hente token for basic authentication")
   void skalHenteTokenForBasicAuthentication() {
     TokenForBasicAuthentication tokenForBasicAuthentication = new TokenForBasicAuthentication();
-    tokenForBasicAuthentication.setAccessToken("secret");
+    tokenForBasicAuthentication.setAccess_token("secret");
     tokenForBasicAuthentication.setTokenType("top");
 
     when(restTemplateMock.exchange(eq(AccessTokenConsumer.REST_TOKEN_ENDPOINT), eq(POST), any(), eq(TokenForBasicAuthentication.class)))

@@ -11,7 +11,7 @@
 
   <groupId>no.nav.bidrag.dokument</groupId>
   <artifactId>bidrag-dokument-arkiv</artifactId>
-  <version>1.0.193-SNAPSHOT</version>
+  <version>1.0.192-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <description>Backend NAIS, bidrag-dokument-arkiv, henter fra arkiv (JOARK)</description>
@@ -24,9 +24,9 @@
     <kotlin.version>1.5.21</kotlin.version>
 
     <!-- dependent versions other than from spring-boot -->
-    <bidrag-commons.version>0.5.9</bidrag-commons.version>
+    <bidrag-commons.version>0.5.8</bidrag-commons.version>
     <bidrag-commons-test.version>0.2.1</bidrag-commons-test.version>
-    <bidrag-dokument-dto.version>0.18.1</bidrag-dokument-dto.version>
+    <bidrag-dokument-dto.version>0.18.0</bidrag-dokument-dto.version>
     <logback-encoder.version>6.6</logback-encoder.version>
     <nimbus-jose-jwt.version>8.22.1</nimbus-jose-jwt.version>
     <springdoc-openapi-ui.version>1.5.10</springdoc-openapi-ui.version>
@@ -65,6 +65,14 @@
   </dependencyManagement>
 
   <dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-cache</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.github.ben-manes.caffeine</groupId>
+      <artifactId>caffeine</artifactId>
+    </dependency>
     <dependency>
       <groupId>com.netflix.graphql.dgs</groupId>
       <artifactId>graphql-dgs-client</artifactId>
@@ -113,6 +121,17 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.15</version>
     </dependency>
 
     <!-- kotlin -->
@@ -190,17 +209,12 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-starter-contract-stub-runner</artifactId>
       <version>${springframework-cloud.version}</version>
       <scope>test</scope>
     </dependency>
+
   </dependencies>
 
   <build>
