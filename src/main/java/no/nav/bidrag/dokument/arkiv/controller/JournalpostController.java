@@ -64,7 +64,7 @@ public class JournalpostController {
     }
 
     var journalpostId = kildesystemIdenfikator.hentJournalpostId();
-    if (journalpostId == null){
+    if (journalpostId == null) {
       return ResponseEntity.badRequest().build();
     }
 
@@ -128,11 +128,16 @@ public class JournalpostController {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    var endreJournalpostHttpResponse = journalpostService.endre(
-        kildesystemIdenfikator.hentJournalpostId(), new EndreJournalpostCommandIntern(endreJournalpostCommand, enhet)
-    );
+    try {
+      var endreJournalpostHttpResponse = journalpostService.endre(
+          kildesystemIdenfikator.hentJournalpostId(), new EndreJournalpostCommandIntern(endreJournalpostCommand, enhet)
+      );
+      return new ResponseEntity<>(endreJournalpostHttpResponse.getResponseEntity().getStatusCode());
+    } catch (SafException e) {
+      LOGGER.warn(e.getMessage());
+      return ResponseEntity.status(e.status()).build();
+    }
 
-    return new ResponseEntity<>(endreJournalpostHttpResponse.getResponseEntity().getStatusCode());
   }
 
   @Unprotected
