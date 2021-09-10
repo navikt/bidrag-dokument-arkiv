@@ -6,11 +6,11 @@ ingresses:
   - https://bidrag-dokument-arkiv-feature.dev.intern.nav.no/
 env:
   - name: ACCEPTED_AUDIENCE
-    value: bisys-q1,bidrag-ui-feature-q1,bidrag-q-localhost,ida-q
+    value: bisys-q1,bidrag-ui-q1,bidrag-ui-feature-q1,bidrag-q-localhost,ida-q
   - name: ISSO_ISSUER_URL
     value: https://isso-q.adeo.no:443/isso/oauth2
   - name: DOKARKIV_URL
-    value: https://dokarkiv-q1.nais.preprod.local/rest/intern/journalpostapi/v1
+    value: https://dokarkiv-q1.nais.preprod.local/
   - name: SAF_GRAPHQL_URL
     value: https://saf-q1.nais.preprod.local/graphql
   - name: ACCESS_TOKEN_URL
