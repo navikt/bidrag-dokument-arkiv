@@ -18,10 +18,9 @@ public class DokarkivConsumer {
   }
 
   public HttpResponse<OppdaterJournalpostResponse> endre(OppdaterJournalpostRequest oppdaterJournalpostRequest) {
-    var oppdaterJoarnalpostApiUrl = URL_JOURNALPOSTAPI_V1 + '/' + oppdaterJournalpostRequest.getJournalpostId();
-
+    var oppdaterJoarnalpostApiUrl = URL_JOURNALPOSTAPI_V1 + '/' + oppdaterJournalpostRequest.hentJournalpostId();
     var oppdaterJournalpostResponseEntity = restTemplate.exchange(
-        oppdaterJoarnalpostApiUrl, HttpMethod.PUT, new HttpEntity<>(oppdaterJournalpostRequest.tilJournalpostApi()), OppdaterJournalpostResponse.class
+        oppdaterJoarnalpostApiUrl, HttpMethod.PUT, new HttpEntity<>(oppdaterJournalpostRequest), OppdaterJournalpostResponse.class
     );
 
     return new HttpResponse<>(oppdaterJournalpostResponseEntity);

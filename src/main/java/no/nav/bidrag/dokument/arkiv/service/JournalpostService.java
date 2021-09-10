@@ -41,7 +41,7 @@ public class JournalpostService {
   public HttpResponse<Void> endre(Integer journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand) {
     var journalpost = hentJournalpost(journalpostId);
 
-    var oppdaterJournalpostRequest = new OppdaterJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost);
+    var oppdaterJournalpostRequest = new OppdaterJournalpostRequest(journalpostId.toString(), endreJournalpostCommand, journalpost);
     var oppdatertJournalpostResponse = dokarkivConsumer.endre(oppdaterJournalpostRequest);
 
     oppdatertJournalpostResponse.fetchBody().ifPresent(response -> LOGGER.info("endret: {}", response));

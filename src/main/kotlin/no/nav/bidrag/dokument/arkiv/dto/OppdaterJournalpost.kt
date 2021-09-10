@@ -1,67 +1,49 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
-data class OppdaterJournalpostRequest(
-        val journalpostId: Int,
-        private val endreJournalpostCommand: EndreJournalpostCommandIntern,
-        private var avsenderNavn: String? = null,
-        private var journalforendeEnhet: String? = null
-) {
-    private var sakJson = SakJson()
-    private val tittel = Tittel()
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonInclude
 
-    constructor(journalpostId: Int, endreJournalpostCommand: EndreJournalpostCommandIntern, journalpost: Journalpost) : this(
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class OppdaterJournalpostRequest(
+        private val journalpostId: String,
+        private val endreJournalpostCommand: EndreJournalpostCommandIntern,
+) {
+    var sak = Sak()
+    var tittel: String? = null
+    var tema: String? = null
+    var bruker = Bruker()
+    var dokumenter = emptyList<Dokument>()
+    var avsenderMottaker = AvsenderMottaker()
+
+    fun hentJournalpostId() = journalpostId;
+
+    constructor(journalpostId: String, endreJournalpostCommand: EndreJournalpostCommandIntern, journalpost: Journalpost) : this(
             journalpostId = journalpostId,
             endreJournalpostCommand = endreJournalpostCommand
     ) {
-        avsenderNavn = endreJournalpostCommand.hentAvsenderNavn(journalpost)
-        journalforendeEnhet = endreJournalpostCommand.enhet
+        avsenderMottaker = AvsenderMottaker(endreJournalpostCommand.hentAvsenderNavn(journalpost))
 
         val saksnummer = if (endreJournalpostCommand.harEnTilknyttetSak()) {
             endreJournalpostCommand.hentTilknyttetSak()
         } else {
             journalpost.sak?.fagsakId
         }
-
-        sakJson = SakJson(saksnummer)
+        bruker = Bruker(endreJournalpostCommand.hentGjelder(), endreJournalpostCommand.hentGjelderType())
+        tittel = endreJournalpostCommand.endreJournalpostCommand.tittel
+        sak = Sak(saksnummer)
+        tema = if (endreJournalpostCommand.hentFagomrade() != null) endreJournalpostCommand.hentFagomrade() else journalpost.tema
+        dokumenter = endreJournalpostCommand.endreJournalpostCommand.endreDokumenter
+                .map { dokument -> Dokument(dokument.dokId.toString(), dokument.tittel, dokument.brevkode) }
     }
 
-    fun tilJournalpostApi(): String {
-        return """
-               {
-                 "avsenderMottaker": {
-                   "navn": "$avsenderNavn"
-                 },
-                 "behandlingstema": "${endreJournalpostCommand.hentFagomrade()}",
-                 "bruker": {
-                   "id": ${endreJournalpostCommand.hentGjelder()},
-                   "idType": "${endreJournalpostCommand.hentGjelderType()}"
-                 },
-                 ${endreJournalpostCommand.hentJsonForEndredeDokumenter()}
-                 "journalfoerendeEnhet": $journalforendeEnhet,
-                 ${sakJson.tilJson()}
-                 "tema": "${endreJournalpostCommand.hentFagomrade()}",
-                 "tilleggsopplysninger": [],
-                 ${tittel.tilJson()}"
-               }
-               """.trimIndent()
-    }
-// json som ikke er implementert
-//    "tilleggsopplysninger": [{
-//        "nokkel": "bucid",
-//        "verdi": "eksempel_verdi_123"
-//    }],
+    data class AvsenderMottaker(val navn: String? = null)
+    data class Dokument(val dokumentInfoId: String? = null, val tittel: String? = null, val brevkode: String? = null)
+    data class Bruker(val id: String? = null, val idType: String? = null)
 
-    private class SakJson(private val saksnummer: String? = null) {
-        fun tilJson() = """
-        "sak": {
-          "arkivsaksnummer": $saksnummer,
-          "arkivsaksystem": "GSAK"
-        },
-        """
-    }
-
-    private class Tittel(private val tittel: String? = null) {
-        fun tilJson() = if (tittel == null) "" else """"tittel":"$tittel""""
+    data class Sak(val fagsakId: String? = null) {
+        val fagsaksystem = if (fagsakId == null) null else "BISYS"
+        val sakstype = if (fagsakId === null) null else "FAGSAK"
     }
 }
 

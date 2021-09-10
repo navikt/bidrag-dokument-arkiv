@@ -137,19 +137,4 @@ data class EndreJournalpostCommandIntern(
     fun hentFagomrade() = endreJournalpostCommand.fagomrade
     fun hentGjelder() = endreJournalpostCommand.gjelder
     fun hentGjelderType() = if (endreJournalpostCommand.gjelderType != null) endreJournalpostCommand.gjelderType!! else "FNR"
-    fun hentJsonForEndredeDokumenter() = if (endreJournalpostCommand.endreDokumenter.isEmpty()) "" else """"dokumenter": [${hentJsonPerDokument()}],"""
-
-    private fun hentJsonPerDokument() = endreJournalpostCommand.endreDokumenter.stream()
-            .map { dok -> Dokumentendring(dok).tilJson() }
-            .collect(toList()).joinToString(",")
-
-    private class Dokumentendring(private val endreDokument: EndreDokument) {
-        fun tilJson() = """
-        {
-          "brevkode": "${endreDokument.brevkode}",
-          "dokumentInfoId": ${endreDokument.dokId},
-          "tittel": "${endreDokument.tittel}"
-        }
-        """
-    }
 }
