@@ -15,9 +15,12 @@ import static org.mockito.Mockito.when;
 import java.util.Optional;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
-import no.nav.bidrag.dokument.arkiv.dto.SafException;
-import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
+import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker;
+import no.nav.bidrag.dokument.arkiv.dto.Bruker;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.SafException;
+import no.nav.bidrag.dokument.arkiv.dto.Sak;
+import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
 import no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator;
 import no.nav.security.token.support.core.context.TokenValidationContext;
 import no.nav.security.token.support.core.jwt.JwtToken;
@@ -170,19 +173,22 @@ class SafConsumerTest {
     );
 
     // når
-    var journalpost =  safConsumer.hentJournalpost(23424234);
+    var journalpost = safConsumer.hentJournalpost(23424234);
     assertThat(journalpost).isNotNull();
-    assertThat(journalpost.getTema()).isEqualTo("BID");
-    assertThat(journalpost.getAvsenderMottaker().getNavn()).isEqualTo("Avsender");
-    assertThat(journalpost.getBruker().getId()).isEqualTo("1385076492416");
-    assertThat(journalpost.getJournalforendeEnhet()).isEqualTo("4806");
-    assertThat(journalpost.getTittel()).isEqualTo("KOPIFORSIDE");
-    assertThat(journalpost.getSak().getFagsakId()).isEqualTo("2106534");
+
+    assertAll(
+        () -> assertThat(journalpost.getTema()).as("tema").isEqualTo("BID"),
+        () -> assertThat(journalpost.getAvsenderMottaker()).as("navn").extracting(AvsenderMottaker::getNavn).isEqualTo("Avsender"),
+        () -> assertThat(journalpost.getBruker()).as("bruker.id").extracting(Bruker::getId).isEqualTo("1385076492416"),
+        () -> assertThat(journalpost.getJournalforendeEnhet()).as("journalforendeEnhet").isEqualTo("4806"),
+        () -> assertThat(journalpost.getTittel()).as("tittel").isEqualTo("KOPIFORSIDE"),
+        () -> assertThat(journalpost.getSak()).as("sak.fagsakId").extracting(Sak::getFagsakId).isEqualTo("2106534")
+    );
   }
 
   @Test
   @DisplayName("skal kaste feil når SAF responderer med feil")
-  void skalFeileNårSafGirIngenTilgang() {
+  void skalFeileNarSafGirIngenTilgang() {
     // gitt
     stubFor(post(urlEqualTo("/query/"))
         .willReturn(aResponse().withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
@@ -229,7 +235,7 @@ class SafConsumerTest {
 
   @Test
   @DisplayName("skal kaste feil når SAF responderer med journalpost ikke funnet")
-  void skalFeileNårSafIkkeFinnerJournalpost() {
+  void skalFeileNarSafIkkeFinnerJournalpost() {
     // gitt
     stubFor(post(urlEqualTo("/query/"))
         .willReturn(aResponse().withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)

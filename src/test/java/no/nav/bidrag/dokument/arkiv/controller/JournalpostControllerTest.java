@@ -110,8 +110,8 @@ class JournalpostControllerTest {
   }
 
   @Test
-  @DisplayName("skal ha body som null når journalpost ikke finnes")
-  void skalGiBodySomNullNarJournalpostIkkeFinnes() throws IOException {
+  @DisplayName("skal ha body som er null samt header warning når journalpost ikke finnes")
+  void skalHaBodySomErNullSamtHeaderWarningNarJournalpostIkkeFinnes() throws IOException {
     var jsonResponse = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJournalpostNotFoundJsonResource.getFile().toURI()))));
     when(restTemplateSafMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(String.class)))
         .thenReturn(new ResponseEntity<>(jsonResponse, HttpStatus.OK));
@@ -124,8 +124,10 @@ class JournalpostControllerTest {
     );
 
     assertThat(Optional.of(journalpostResponseEntity)).hasValueSatisfying(response -> assertAll(
-        () -> assertThat(response.getBody()).isEqualTo("Fant ikke journalpost i fagarkivet. journalpostId=910536260"),
-        () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND),
+        () -> assertThat(response.getBody()).as("body").isNull(),
+        () -> assertThat(response.getHeaders().get(HttpHeaders.WARNING)).as("header warning").first()
+            .isEqualTo("Fant ikke journalpost i fagarkivet. journalpostId=910536260"),
+        () -> assertThat(response.getStatusCode()).as("status").isEqualTo(HttpStatus.NOT_FOUND),
         () -> verify(restTemplateSafMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(String.class))
     ));
   }

@@ -3,6 +3,7 @@ package no.nav.bidrag.dokument.arkiv.security;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.ISSUER;
 
 import java.util.Optional;
+import no.nav.bidrag.dokument.arkiv.dto.TokenException;
 import no.nav.security.token.support.core.context.TokenValidationContextHolder;
 import no.nav.security.token.support.core.jwt.JwtToken;
 
@@ -25,6 +26,6 @@ public class OidcTokenGenerator {
         .map(tokenValidationContext -> tokenValidationContext.getJwtTokenAsOptional(ISSUER))
         .map(Optional::get)
         .map(JwtToken::getTokenAsString)
-        .orElseThrow(() -> new IllegalStateException("Kunne ikke videresende Bearer token"));
+        .orElseThrow(() -> new TokenException("Kunne ikke videresende Bearer token"));
   }
 }

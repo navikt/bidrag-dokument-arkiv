@@ -10,7 +10,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TEST;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.github.tomakehurst.wiremock.matching.AnythingPattern;
 import java.util.Base64;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
 import org.junit.jupiter.api.DisplayName;

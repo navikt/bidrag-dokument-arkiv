@@ -1,8 +1,8 @@
 package no.nav.bidrag.dokument.arkiv.consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpMethod.POST;
 
+import no.nav.bidrag.dokument.arkiv.dto.TokenException;
 import no.nav.bidrag.dokument.arkiv.dto.security.TokenForBasicAuthentication;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -63,7 +64,7 @@ class AccessTokenConsumerTest {
     when(restTemplateMock.exchange(anyString(), any(), any(), eq(TokenForBasicAuthentication.class)))
         .thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
 
-    assertThatIllegalStateException().isThrownBy(() -> accessTokenConsumer.finnTokenFor("some", "thing"))
+    assertThatExceptionOfType(TokenException.class).isThrownBy(() -> accessTokenConsumer.finnTokenFor("some", "thing"))
         .withMessageContaining(String.valueOf(HttpStatus.NO_CONTENT));
   }
 }
