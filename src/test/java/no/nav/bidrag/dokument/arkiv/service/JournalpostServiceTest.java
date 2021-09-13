@@ -49,12 +49,13 @@ class JournalpostServiceTest {
 
     when(safConsumerMock.hentJournalpost(journalpostIdFraJson)).thenReturn(dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostIdFraJson));
 
-    var journalpost = journalpostService.hentJournalpost(journalpostIdFraJson);
+    var muligJournalpost = journalpostService.hentJournalpost(journalpostIdFraJson);
 
     assertAll(
         () -> {
-          assertThat(journalpost).as("journalpost").isNotNull();
+          assertThat(muligJournalpost).as("journalpost").isPresent();
 
+          var journalpost = muligJournalpost.get();
           var avsenderMottaker = journalpost.getAvsenderMottaker();
           var bruker = journalpost.getBruker();
           var dokumenter = journalpost.getDokumenter();

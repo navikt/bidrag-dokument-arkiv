@@ -70,12 +70,9 @@ public class JournalpostController {
       return ResponseEntity.badRequest().build();
     }
 
-    var journalpost = journalpostService.hentJournalpost(journalpostId);
-    if (saksnummer != null && !journalpost.erTilknyttetSak(saksnummer)) {
-      return ResponseEntity.badRequest().build();
-    }
-
-    return ResponseEntity.ok(journalpost.tilJournalpostResponse());
+    return journalpostService.hentJournalpost(journalpostId, saksnummer)
+        .map(journalpost -> ResponseEntity.ok(journalpost.tilJournalpostResponse()))
+        .orElse(ResponseEntity.badRequest().build());
   }
 
   private boolean erIkkePrefixetMedJoark(String joarkJournalpostId) {

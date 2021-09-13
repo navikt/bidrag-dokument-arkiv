@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
@@ -8,6 +9,7 @@ import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
 import org.slf4j.Logger;
@@ -27,8 +29,18 @@ public class JournalpostService {
     this.dokarkivConsumer = dokarkivConsumer;
   }
 
-  public Journalpost hentJournalpost(Integer journalpostId) {
-    return safConsumer.hentJournalpost(journalpostId);
+  public Optional<Journalpost> hentJournalpost(Integer journalpostId) {
+    return hentJournalpost(journalpostId, null);
+  }
+
+  public Optional<Journalpost> hentJournalpost(Integer journalpostId, String saksnummer) {
+    var journalpost = safConsumer.hentJournalpost(journalpostId);
+
+    if (journalpost.erIkkeTilknyttetSakNarOppgitt(saksnummer)) {
+      return Optional.empty();
+    }
+
+    return Optional.of(journalpost);
   }
 
   public List<JournalpostDto> finnJournalposter(String saksnummer, String fagomrade) {
@@ -40,12 +52,14 @@ public class JournalpostService {
   }
 
   public HttpResponse<Void> endre(Integer journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand) {
-    var journalpost = hentJournalpost(journalpostId);
+    var journalpost = hentJournalpost(journalpostId).orElseThrow(
+        () -> new JournalpostIkkeFunnetException("Kunne ikke finne journalpost med id: " + journalpostId)
+    );
 
     var oppdaterJournalpostRequest = new OppdaterJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost);
     var oppdatertJournalpostResponse = dokarkivConsumer.endre(oppdaterJournalpostRequest);
 
-    if (oppdatertJournalpostResponse.is2xxSuccessful() && endreJournalpostCommand.skalJournalfores()){
+    if (oppdatertJournalpostResponse.is2xxSuccessful() && endreJournalpostCommand.skalJournalfores()) {
       var journalforRequest = new FerdigstillJournalpostRequest(journalpostId, endreJournalpostCommand.getEnhet());
       dokarkivConsumer.ferdigstill(journalforRequest);
       LOGGER.info("Journalpost med id {} er ferdigstillt", journalpostId);

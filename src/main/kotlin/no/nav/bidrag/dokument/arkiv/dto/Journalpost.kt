@@ -2,7 +2,6 @@ package no.nav.bidrag.dokument.arkiv.dto
 
 import no.nav.bidrag.dokument.dto.AktorDto
 import no.nav.bidrag.dokument.dto.DokumentDto
-import no.nav.bidrag.dokument.dto.EndreDokument
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
 import no.nav.bidrag.dokument.dto.JournalpostDto
 import no.nav.bidrag.dokument.dto.JournalpostResponse
@@ -76,8 +75,8 @@ data class Journalpost(
     }
 
     fun erTilknyttetSak(saksnummer: String?) = sak?.fagsakId == saksnummer
-
     fun hentAvsenderNavn() = avsenderMottaker?.navn
+    fun erIkkeTilknyttetSakNarOppgitt(saksnummer: String?) = if (saksnummer == null) false else !erTilknyttetSak(saksnummer)
 }
 
 data class AvsenderMottaker(
@@ -121,7 +120,7 @@ data class EndreJournalpostCommandIntern(
     val endreJournalpostCommand: EndreJournalpostCommand,
     val enhet: String
 ) {
-    fun skalJournalfores() = endreJournalpostCommand.skalJournalfores;
+    fun skalJournalfores() = endreJournalpostCommand.skalJournalfores
     fun hentAvsenderNavn(journalpost: Journalpost) = endreJournalpostCommand.avsenderNavn ?: journalpost.hentAvsenderNavn()
     fun harEnTilknyttetSak(): Boolean {
         if (endreJournalpostCommand.tilknyttSaker.size > 1)
