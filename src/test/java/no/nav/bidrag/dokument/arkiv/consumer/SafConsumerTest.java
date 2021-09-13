@@ -18,6 +18,7 @@ import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker;
 import no.nav.bidrag.dokument.arkiv.dto.Bruker;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.dto.SafException;
 import no.nav.bidrag.dokument.arkiv.dto.Sak;
 import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
@@ -169,7 +170,9 @@ class SafConsumerTest {
                         }
                     }
                 }
-                """))
+                """
+            )
+        )
     );
 
     // når
@@ -217,7 +220,9 @@ class SafConsumerTest {
                         "journalpost": null
                     }
                 }
-                """))
+                """
+            )
+        )
     );
 
     // når
@@ -227,10 +232,8 @@ class SafConsumerTest {
     } catch (SafException e) {
       assertThat(e.getMessage()).isEqualTo(
           "Tilgang til ressurs ble avvist. Saksbehandler eller system har ikke tilgang til ressurs tilhørende bruker som har kode 6/7, egen ansatt eller utenfor tillatt geografisk område.");
-      assertThat(e.status()).isEqualTo(HttpStatus.FORBIDDEN);
+      assertThat(e.getStatus()).isEqualTo(HttpStatus.FORBIDDEN);
     }
-
-
   }
 
   @Test
@@ -264,17 +267,18 @@ class SafConsumerTest {
                         "journalpost": null
                     }
                 }
-                """))
+                """
+            )
+        )
     );
 
     // når
     try {
       safConsumer.hentJournalpost(23424234);
       fail("Saf kallet skal feile");
-    } catch (SafException e) {
-      assertThat(e.getMessage()).isEqualTo(
-          "Fant ikke journalpost i fagarkivet. journalpostId=910536260");
-      assertThat(e.status()).isEqualTo(HttpStatus.NOT_FOUND);
+    } catch (JournalpostIkkeFunnetException e) {
+      assertThat(e.getMessage()).isEqualTo("Fant ikke journalpost i fagarkivet. journalpostId=910536260");
+      assertThat(e.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
     }
   }
 

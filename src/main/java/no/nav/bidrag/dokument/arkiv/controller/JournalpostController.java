@@ -13,7 +13,6 @@ import java.util.List;
 import no.nav.bidrag.commons.KildesystemIdenfikator;
 import no.nav.bidrag.commons.web.EnhetFilter;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
-import no.nav.bidrag.dokument.arkiv.dto.SafException;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
@@ -22,7 +21,6 @@ import no.nav.security.token.support.core.api.ProtectedWithClaims;
 import no.nav.security.token.support.core.api.Unprotected;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -52,10 +50,10 @@ public class JournalpostController {
   )
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Journalpost er hentet"),
-      @ApiResponse(responseCode = "204", description = "Fant ikke journalpost som skal hentes", content = @Content(schema = @Schema(hidden = true))),
+      @ApiResponse(responseCode = "400", description = "Journalpost som skal hentes er ikke koblet mot gitt saksnummer, eller det er feil prefix/id på journalposten", content = @Content(schema = @Schema(hidden = true))),
       @ApiResponse(responseCode = "401", description = "Du mangler eller har ugyldig sikkerhetstoken", content = @Content(schema = @Schema(hidden = true))),
       @ApiResponse(responseCode = "403", description = "Du mangler eller har ugyldig sikkerhetstoken", content = @Content(schema = @Schema(hidden = true))),
-      @ApiResponse(responseCode = "404", description = "Journalpost som skal hentes er ikke koblet mot gitt saksnummer, eller det er feil prefix/id på journalposten", content = @Content(schema = @Schema(hidden = true)))
+      @ApiResponse(responseCode = "404", description = "Fant ikke journalpost som skal hentes", content = @Content(schema = @Schema(hidden = true)))
   })
   public ResponseEntity<JournalpostResponse> hentJournalpost(
       @PathVariable String joarkJournalpostId,
@@ -72,18 +70,12 @@ public class JournalpostController {
       return ResponseEntity.badRequest().build();
     }
 
-    try {
-      var journalpost = journalpostService.hentJournalpost(journalpostId);
-      if (saksnummer != null && !journalpost.erTilknyttetSak(saksnummer)) {
-        return ResponseEntity.badRequest().build();
-      }
-
-      return ResponseEntity.ok(journalpost.tilJournalpostResponse());
-    } catch (SafException e) {
-      LOGGER.warn(e.getMessage());
-      return ResponseEntity.status(e.status()).header(HttpHeaders.WARNING, e.getMessage()).build();
+    var journalpost = journalpostService.hentJournalpost(journalpostId);
+    if (saksnummer != null && !journalpost.erTilknyttetSak(saksnummer)) {
+      return ResponseEntity.badRequest().build();
     }
 
+    return ResponseEntity.ok(journalpost.tilJournalpostResponse());
   }
 
   private boolean erIkkePrefixetMedJoark(String joarkJournalpostId) {
@@ -95,16 +87,11 @@ public class JournalpostController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Liste over journalposter for saksnummer og fagområde"),
       @ApiResponse(responseCode = "401", description = "Du mangler eller har ugyldig sikkerhetstoken", content = @Content(schema = @Schema(hidden = true))),
-      @ApiResponse(responseCode = "403", description = "Du mangler eller har ugyldig sikkerhetstoken", content = @Content(schema = @Schema(hidden = true)))
+      @ApiResponse(responseCode = "403", description = "Du har ikke rettigheter til å hentede data", content = @Content(schema = @Schema(hidden = true))),
+      @ApiResponse(responseCode = "404", description = "Fant ikke journalposter for oppgitt sak og fagområde", content = @Content(schema = @Schema(hidden = true)))
   })
   public ResponseEntity<List<JournalpostDto>> hentJournal(@PathVariable String saksnummer, @RequestParam String fagomrade) {
-    try {
-      var journalposter = journalpostService.finnJournalposter(saksnummer, fagomrade);
-      return ResponseEntity.ok(journalposter);
-    } catch (SafException e) {
-      LOGGER.warn(e.getMessage());
-      return ResponseEntity.status(e.status()).header(HttpHeaders.WARNING, e.getMessage()).build();
-    }
+    return ResponseEntity.ok(journalpostService.finnJournalposter(saksnummer, fagomrade));
   }
 
   @PutMapping("/journal/{joarkJournalpostId}")
@@ -132,16 +119,10 @@ public class JournalpostController {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    try {
-      var endreJournalpostHttpResponse = journalpostService.endre(
-          kildesystemIdenfikator.hentJournalpostId(), new EndreJournalpostCommandIntern(endreJournalpostCommand, enhet)
-      );
-      return new ResponseEntity<>(endreJournalpostHttpResponse.getResponseEntity().getStatusCode());
-    } catch (SafException e) {
-      LOGGER.warn(e.getMessage());
-      return ResponseEntity.status(e.status()).build();
-    }
-
+    var endreJournalpostHttpResponse = journalpostService.endre(
+        kildesystemIdenfikator.hentJournalpostId(), new EndreJournalpostCommandIntern(endreJournalpostCommand, enhet)
+    );
+    return new ResponseEntity<>(endreJournalpostHttpResponse.getResponseEntity().getStatusCode());
   }
 
   @Unprotected
