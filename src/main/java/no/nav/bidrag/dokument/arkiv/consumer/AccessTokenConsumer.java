@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
+import no.nav.bidrag.dokument.arkiv.dto.TokenException;
 import no.nav.bidrag.dokument.arkiv.dto.security.TokenForBasicAuthentication;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -55,7 +56,7 @@ public class AccessTokenConsumer {
 
     return Optional.ofNullable(tokenForBasicAuthentication)
         .map(TokenForBasicAuthentication::fetchToken)
-        .orElseThrow(() -> new IllegalStateException(
+        .orElseThrow(() -> new TokenException(
             String.format("Kunne ikke hente token fra '%s', response: %s", REST_TOKEN_ENDPOINT, tokenForBasicAuthenticationResponse.getStatusCode())
         ));
   }

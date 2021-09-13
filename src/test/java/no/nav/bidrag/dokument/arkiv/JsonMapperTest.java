@@ -6,8 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQuery;
@@ -35,7 +33,7 @@ class JsonMapperTest {
 
   @Test
   @DisplayName("skal mappe OppdaterJournalpost til json")
-  void skalMappeOppdaterJournalpostTilJson() throws IOException {
+  void skalMappeOppdaterJournalpostTilJson() {
     var journalpost = new Journalpost();
     var endreDokument = new EndreDokument();
     endreDokument.setTittel("Tittelen på dokument");
@@ -43,28 +41,28 @@ class JsonMapperTest {
 
     var endreJournalpostCommand = new EndreJournalpostCommand();
     endreJournalpostCommand.setAvsenderNavn("AvsenderNavn");
-    endreJournalpostCommand.setEndreDokumenter(Arrays.asList(endreDokument));
+    endreJournalpostCommand.setEndreDokumenter(List.of(endreDokument));
     endreJournalpostCommand.setFagomrade("BID");
     endreJournalpostCommand.setGjelder("1234");
     endreJournalpostCommand.setTittel("Tittelen på journalposten");
     endreJournalpostCommand.setGjelderType("FNR");
-    endreJournalpostCommand.setTilknyttSaker(Arrays.asList("sakIdent"));
+    endreJournalpostCommand.setTilknyttSaker(List.of("sakIdent"));
 
     var endreJournalpostIntern = new EndreJournalpostCommandIntern(endreJournalpostCommand, "4805");
     var oppdaterJp = new OppdaterJournalpostRequest(12345, endreJournalpostIntern, journalpost);
 
-    var jsonMap = objectMapper.convertValue(oppdaterJp, Map.class);
+    @SuppressWarnings("unchecked") var jsonMap = (Map<String, Object>) objectMapper.convertValue(oppdaterJp, Map.class);
+    var jsonObjects = new JsonObjects(jsonMap);
 
     assertAll(
-        () -> assertThat(((Map<String, String>) jsonMap.get("avsenderMottaker")).get("navn")).as("avsenderMottaker").isEqualTo("AvsenderNavn"),
-        () -> assertThat(((Map<String, String>) jsonMap.get("bruker")).get("id")).as("id").isEqualTo("1234"),
-        () -> assertThat(((Map<String, String>) jsonMap.get("bruker")).get("idType")).as("idType").isEqualTo("FNR"),
-        () -> assertThat(((Map<String, String>) jsonMap.get("sak")).get("fagsakId")).as("fagsakId").isEqualTo("sakIdent"),
-        () -> assertThat(((Map<String, String>) jsonMap.get("sak")).get("fagsaksystem")).as("fagsaksystem").isEqualTo("BISYS"),
-        () -> assertThat(((Map<String, String>) jsonMap.get("sak")).get("sakstype")).as("fagsaksystem").isEqualTo("FAGSAK"),
-        () -> assertThat(((List<Map<String, String>>) jsonMap.get("dokumenter")).get(0).get("dokumentInfoId")).as("dokumentInfoId")
-            .isEqualTo("55555"),
-        () -> assertThat(((List<Map<String, String>>) jsonMap.get("dokumenter")).get(0).get("tittel")).as("tittel").isEqualTo("Tittelen på dokument"),
+        () -> assertThat(jsonObjects.objekt("avsenderMottaker").get("navn")).as("avsenderMottaker").isEqualTo("AvsenderNavn"),
+        () -> assertThat(jsonObjects.objekt("bruker").get("id")).as("id").isEqualTo("1234"),
+        () -> assertThat(jsonObjects.objekt("bruker").get("idType")).as("idType").isEqualTo("FNR"),
+        () -> assertThat(jsonObjects.objekt("sak").get("fagsakId")).as("fagsakId").isEqualTo("sakIdent"),
+        () -> assertThat(jsonObjects.objekt("sak").get("fagsaksystem")).as("fagsaksystem").isEqualTo("BISYS"),
+        () -> assertThat(jsonObjects.objekt("sak").get("sakstype")).as("fagsaksystem").isEqualTo("FAGSAK"),
+        () -> assertThat(jsonObjects.listeMedObjekter("dokumenter").get(0).get("dokumentInfoId")).as("dokumentInfoId").isEqualTo("55555"),
+        () -> assertThat(jsonObjects.listeMedObjekter("dokumenter").get(0).get("tittel")).as("tittel").isEqualTo("Tittelen på dokument"),
         () -> assertThat(jsonMap.get("tema")).as("tema").isEqualTo("BID"),
         () -> assertThat(jsonMap.get("tittel")).as("tittel").isEqualTo("Tittelen på journalposten")
     );
@@ -107,10 +105,9 @@ class JsonMapperTest {
 
   @Test
   @DisplayName("skal mappe saf dokumentOversiktFagsak query til java.util.Map")
-  void skalMappeSafDokumentOversiktQueryTilMap() throws JsonProcessingException {
+  void skalMappeSafDokumentOversiktQueryTilMap() {
     var safQuery = new DokumentoversiktFagsakQuery("666", "BID");
 
-    //noinspection unchecked
     assertAll(
         () -> assertThat(safQuery.getQuery()).as("querystring")
             .contains("fagsakId: $fagsakId")
@@ -123,15 +120,33 @@ class JsonMapperTest {
 
   @Test
   @DisplayName("skal mappe saf journalpost query til java.util.Map")
-  void skalMappeSafJournalpostQueryTilMap() throws JsonProcessingException {
+  void skalMappeSafJournalpostQueryTilMap()  {
     var safQuery = new JournalpostQuery(1235);
 
-    //noinspection unchecked
     assertAll(
         () -> assertThat(safQuery.getQuery()).as("querystring")
             .contains("journalpostId: $journalpostId"),
         () -> assertThat(safQuery.getVariables()).as("Variables")
             .containsEntry("journalpostId", 1235)
     );
+  }
+
+  private static class JsonObjects {
+
+    private final Map<String, Object> jsonMap;
+
+    public JsonObjects(Map<String, Object> jsonMap) {
+      this.jsonMap = jsonMap;
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, String> objekt(String key) {
+      return (Map<String, String>) jsonMap.get(key);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> listeMedObjekter(String key) {
+      return (List<Map<String, Object>>) jsonMap.get(key);
+    }
   }
 }
