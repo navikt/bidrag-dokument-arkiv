@@ -13,6 +13,7 @@ import java.util.Map;
 import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQuery;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostQuery;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.dto.EndreDokument;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
@@ -55,14 +56,15 @@ class JsonMapperTest {
     var jsonMap = objectMapper.convertValue(oppdaterJp, Map.class);
 
     assertAll(
-        () -> assertThat(((Map<String, String>)jsonMap.get("avsenderMottaker")).get("navn")).as("avsenderMottaker").isEqualTo("AvsenderNavn"),
-        () -> assertThat(((Map<String, String>)jsonMap.get("bruker")).get("id")).as("id").isEqualTo("1234"),
-        () -> assertThat(((Map<String, String>)jsonMap.get("bruker")).get("idType")).as("idType").isEqualTo("FNR"),
-        () -> assertThat(((Map<String, String>)jsonMap.get("sak")).get("fagsakId")).as("fagsakId").isEqualTo("sakIdent"),
-        () -> assertThat(((Map<String, String>)jsonMap.get("sak")).get("fagsaksystem")).as("fagsaksystem").isEqualTo("BISYS"),
-        () -> assertThat(((Map<String, String>)jsonMap.get("sak")).get("sakstype")).as("fagsaksystem").isEqualTo("FAGSAK"),
-        () -> assertThat(((List<Map<String, String>>)jsonMap.get("dokumenter")).get(0).get("dokumentInfoId")).as("dokumentInfoId").isEqualTo("55555"),
-        () -> assertThat(((List<Map<String, String>>)jsonMap.get("dokumenter")).get(0).get("tittel")).as("tittel").isEqualTo("Tittelen på dokument"),
+        () -> assertThat(((Map<String, String>) jsonMap.get("avsenderMottaker")).get("navn")).as("avsenderMottaker").isEqualTo("AvsenderNavn"),
+        () -> assertThat(((Map<String, String>) jsonMap.get("bruker")).get("id")).as("id").isEqualTo("1234"),
+        () -> assertThat(((Map<String, String>) jsonMap.get("bruker")).get("idType")).as("idType").isEqualTo("FNR"),
+        () -> assertThat(((Map<String, String>) jsonMap.get("sak")).get("fagsakId")).as("fagsakId").isEqualTo("sakIdent"),
+        () -> assertThat(((Map<String, String>) jsonMap.get("sak")).get("fagsaksystem")).as("fagsaksystem").isEqualTo("BISYS"),
+        () -> assertThat(((Map<String, String>) jsonMap.get("sak")).get("sakstype")).as("fagsaksystem").isEqualTo("FAGSAK"),
+        () -> assertThat(((List<Map<String, String>>) jsonMap.get("dokumenter")).get(0).get("dokumentInfoId")).as("dokumentInfoId")
+            .isEqualTo("55555"),
+        () -> assertThat(((List<Map<String, String>>) jsonMap.get("dokumenter")).get(0).get("tittel")).as("tittel").isEqualTo("Tittelen på dokument"),
         () -> assertThat(jsonMap.get("tema")).as("tema").isEqualTo("BID"),
         () -> assertThat(jsonMap.get("tittel")).as("tittel").isEqualTo("Tittelen på journalposten")
     );
@@ -104,15 +106,32 @@ class JsonMapperTest {
   }
 
   @Test
-  @DisplayName("skal mappe saf query til java.util.Map")
-  void skalMappeSafQueryTilMap() throws JsonProcessingException {
-    var safQuery = new DokumentoversiktFagsakQuery("666", "BID").getQuery();
+  @DisplayName("skal mappe saf dokumentOversiktFagsak query til java.util.Map")
+  void skalMappeSafDokumentOversiktQueryTilMap() throws JsonProcessingException {
+    var safQuery = new DokumentoversiktFagsakQuery("666", "BID");
 
     //noinspection unchecked
     assertAll(
-        () -> assertThat(safQuery).as("querystring")
-            .contains("fagsakId: \"666\"")
-            .contains("tema:BID")
+        () -> assertThat(safQuery.getQuery()).as("querystring")
+            .contains("fagsakId: $fagsakId")
+            .contains("tema:$tema"),
+        () -> assertThat(safQuery.getVariables()).as("Variables")
+            .containsEntry("fagsakId", "666")
+            .containsEntry("tema", "BID")
+    );
+  }
+
+  @Test
+  @DisplayName("skal mappe saf journalpost query til java.util.Map")
+  void skalMappeSafJournalpostQueryTilMap() throws JsonProcessingException {
+    var safQuery = new JournalpostQuery(1235);
+
+    //noinspection unchecked
+    assertAll(
+        () -> assertThat(safQuery.getQuery()).as("querystring")
+            .contains("journalpostId: $journalpostId"),
+        () -> assertThat(safQuery.getVariables()).as("Variables")
+            .containsEntry("journalpostId", 1235)
     );
   }
 }

@@ -2,8 +2,8 @@ package no.nav.bidrag.dokument.arkiv.dto
 
 data class DokumentoversiktFagsakQuery(val saksnummer: String, val tema: String) : GraphQuery() {
     private val query = """
-        {
-            dokumentoversiktFagsak(fagsak: {fagsakId: "$saksnummer", fagsaksystem: "BISYS"}, tema:$tema, foerste: 500) {
+        query dokumentoversiktFagsak(${"$"}fagsakId: String!, ${"$"}tema: [Tema]){
+            dokumentoversiktFagsak(fagsak: {fagsakId: ${"$"}fagsakId, fagsaksystem: "BISYS"}, tema:${"$"}tema, foerste: 500) {
               journalposter {
                 avsenderMottaker {
                   navn
@@ -36,5 +36,9 @@ data class DokumentoversiktFagsakQuery(val saksnummer: String, val tema: String)
 
     override fun getQuery(): String {
         return query
+    }
+
+    override fun getVariables(): HashMap<String, Any> {
+        return hashMapOf("fagsakId" to saksnummer, "tema" to tema);
     }
 }
