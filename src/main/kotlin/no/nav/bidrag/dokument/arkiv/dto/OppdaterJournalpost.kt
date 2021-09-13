@@ -1,67 +1,60 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
+import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonInclude
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class OppdaterJournalpostRequest(
-        val journalpostId: Int,
+        private val journalpostId: Int,
         private val endreJournalpostCommand: EndreJournalpostCommandIntern,
-        private var avsenderNavn: String? = null,
-        private var journalforendeEnhet: String? = null
 ) {
-    private var sakJson = SakJson()
-    private val tittel = Tittel()
+    var sak: Sak? = null
+    var tittel: String? = null
+    var tema: String? = null
+    var bruker: Bruker? = null
+    var dokumenter = emptyList<Dokument>()
+    var avsenderMottaker: AvsenderMottaker? = null
+
+    fun hentJournalpostId() = journalpostId;
 
     constructor(journalpostId: Int, endreJournalpostCommand: EndreJournalpostCommandIntern, journalpost: Journalpost) : this(
             journalpostId = journalpostId,
             endreJournalpostCommand = endreJournalpostCommand
     ) {
-        avsenderNavn = endreJournalpostCommand.hentAvsenderNavn(journalpost)
-        journalforendeEnhet = endreJournalpostCommand.enhet
+        avsenderMottaker = AvsenderMottaker(endreJournalpostCommand.hentAvsenderNavn(journalpost))
 
         val saksnummer = if (endreJournalpostCommand.harEnTilknyttetSak()) {
             endreJournalpostCommand.hentTilknyttetSak()
         } else {
             journalpost.sak?.fagsakId
         }
-
-        sakJson = SakJson(saksnummer)
+        bruker = Bruker(endreJournalpostCommand.hentGjelder(), endreJournalpostCommand.hentGjelderType())
+        tittel = endreJournalpostCommand.endreJournalpostCommand.tittel
+        sak = if (saksnummer != null) Sak(saksnummer) else null;
+        tema = if (endreJournalpostCommand.hentFagomrade() != null) endreJournalpostCommand.hentFagomrade() else journalpost.tema
+        dokumenter = endreJournalpostCommand.endreJournalpostCommand.endreDokumenter
+                .map { dokument -> Dokument(dokument.dokId.toString(), dokument.tittel, dokument.brevkode) }
     }
 
-    fun tilJournalpostApi(): String {
-        return """
-               {
-                 "avsenderMottaker": {
-                   "navn": "$avsenderNavn"
-                 },
-                 "behandlingstema": "${endreJournalpostCommand.hentFagomrade()}",
-                 "bruker": {
-                   "id": ${endreJournalpostCommand.hentGjelder()},
-                   "idType": "${endreJournalpostCommand.hentGjelderType()}"
-                 },
-                 ${endreJournalpostCommand.hentJsonForEndredeDokumenter()}
-                 "journalfoerendeEnhet": $journalforendeEnhet,
-                 ${sakJson.tilJson()}
-                 "tema": "${endreJournalpostCommand.hentFagomrade()}",
-                 "tilleggsopplysninger": [],
-                 ${tittel.tilJson()}"
-               }
-               """.trimIndent()
-    }
-// json som ikke er implementert
-//    "tilleggsopplysninger": [{
-//        "nokkel": "bucid",
-//        "verdi": "eksempel_verdi_123"
-//    }],
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    data class AvsenderMottaker(val navn: String? = null)
 
-    private class SakJson(private val saksnummer: String? = null) {
-        fun tilJson() = """
-        "sak": {
-          "arkivsaksnummer": $saksnummer,
-          "arkivsaksystem": "GSAK"
-        },
-        """
-    }
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    data class Dokument(val dokumentInfoId: String? = null, val tittel: String? = null, val brevkode: String? = null)
 
-    private class Tittel(private val tittel: String? = null) {
-        fun tilJson() = if (tittel == null) "" else """"tittel":"$tittel""""
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    data class Bruker(val id: String? = null, val idType: String? = null)
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    data class Sak(val fagsakId: String? = null) {
+        val fagsaksystem = if (fagsakId == null) null else "BISYS"
+        val sakstype = if (fagsakId === null) null else "FAGSAK"
     }
 }
 
@@ -69,3 +62,9 @@ data class OppdaterJournalpostResponse(
         var journalpostId: Int? = null,
         var saksnummer: String? = null
 )
+
+data class FerdigstillJournalpostRequest(
+        @JsonIgnore
+        var journalpostId: Int,
+        var journalfoerendeEnhet: String
+);

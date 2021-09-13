@@ -1,5 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.consumer;
 
+import static no.nav.bidrag.dokument.arkiv.CacheConfig.STS_SERVICE_USER_TOKEN_CACHE;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
@@ -8,6 +10,7 @@ import no.nav.bidrag.dokument.arkiv.dto.security.TokenForBasicAuthentication;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -33,6 +36,7 @@ public class AccessTokenConsumer {
     this.restTemplate = restTemplate;
   }
 
+  @Cacheable(STS_SERVICE_USER_TOKEN_CACHE)
   public String finnTokenFor(String serviceUser, String secretForServiceUserNotEncoded) {
     Validate.isTrue(serviceUser != null);
     Validate.isTrue(secretForServiceUserNotEncoded != null);
