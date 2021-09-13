@@ -11,6 +11,7 @@ import java.util.Map;
 import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQuery;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostQuery;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.dto.EndreDokument;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
@@ -103,14 +104,30 @@ class JsonMapperTest {
   }
 
   @Test
-  @DisplayName("skal mappe saf query til java.util.Map")
-  void skalMappeSafQueryTilMap() {
-    var safQuery = new DokumentoversiktFagsakQuery("666", "BID").getQuery();
+  @DisplayName("skal mappe saf dokumentOversiktFagsak query til java.util.Map")
+  void skalMappeSafDokumentOversiktQueryTilMap() {
+    var safQuery = new DokumentoversiktFagsakQuery("666", "BID");
 
     assertAll(
-        () -> assertThat(safQuery).as("querystring")
-            .contains("fagsakId: \"666\"")
-            .contains("tema:BID")
+        () -> assertThat(safQuery.getQuery()).as("querystring")
+            .contains("fagsakId: $fagsakId")
+            .contains("tema:$tema"),
+        () -> assertThat(safQuery.getVariables()).as("Variables")
+            .containsEntry("fagsakId", "666")
+            .containsEntry("tema", "BID")
+    );
+  }
+
+  @Test
+  @DisplayName("skal mappe saf journalpost query til java.util.Map")
+  void skalMappeSafJournalpostQueryTilMap()  {
+    var safQuery = new JournalpostQuery(1235);
+
+    assertAll(
+        () -> assertThat(safQuery.getQuery()).as("querystring")
+            .contains("journalpostId: $journalpostId"),
+        () -> assertThat(safQuery.getVariables()).as("Variables")
+            .containsEntry("journalpostId", 1235)
     );
   }
 

@@ -46,7 +46,7 @@ public class SafConsumer {
     var queryString = query.getQuery();
     LOGGER.info(queryString);
     var graphQLClient = new DefaultGraphQLClient("");
-    var response = graphQLClient.executeQuery(queryString, new HashMap<>(), (url, headers, body) -> {
+    var response = graphQLClient.executeQuery(queryString, query.getVariables(), (url, headers, body) -> {
       ResponseEntity<String> exchange = restTemplate.exchange("/", HttpMethod.POST, new HttpEntity<>(body), String.class);
       return new HttpResponse(exchange.getStatusCodeValue(), exchange.getBody());
     });

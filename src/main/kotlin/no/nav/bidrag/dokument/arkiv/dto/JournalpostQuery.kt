@@ -2,8 +2,8 @@ package no.nav.bidrag.dokument.arkiv.dto
 
 data class JournalpostQuery(val journalpostId: Int) : GraphQuery() {
     private val query ="""
-        {
-            journalpost(journalpostId: "$journalpostId") {
+        query journalpost(${"$"}journalpostId: String!) {
+            journalpost(journalpostId: ${"$"}journalpostId) {
               avsenderMottaker {
                 navn
               }
@@ -35,4 +35,10 @@ data class JournalpostQuery(val journalpostId: Int) : GraphQuery() {
     override fun getQuery(): String {
         return query
     }
+
+    override fun getVariables(): HashMap<String, Any> {
+        return hashMapOf("journalpostId" to journalpostId)
+    }
+
+
 }
