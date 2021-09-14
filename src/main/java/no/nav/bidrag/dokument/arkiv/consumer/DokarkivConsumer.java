@@ -27,12 +27,8 @@ public class DokarkivConsumer {
     return new HttpResponse<>(oppdaterJournalpostResponseEntity);
   }
 
-  public HttpResponse<Void> ferdigstill(FerdigstillJournalpostRequest ferdigstillJournalpostRequest) {
+  public void ferdigstill(FerdigstillJournalpostRequest ferdigstillJournalpostRequest) {
     var oppdaterJoarnalpostApiUrl = URL_JOURNALPOSTAPI_V1 + '/' + ferdigstillJournalpostRequest.getJournalpostId() + "/ferdigstill";
-    var oppdaterJournalpostResponseEntity = restTemplate.exchange(
-        oppdaterJoarnalpostApiUrl, HttpMethod.PATCH, new HttpEntity<>(ferdigstillJournalpostRequest), Void.class
-    );
-
-    return new HttpResponse<>(oppdaterJournalpostResponseEntity);
+    restTemplate.exchange(oppdaterJoarnalpostApiUrl, HttpMethod.PATCH, new HttpEntity<>(ferdigstillJournalpostRequest), Void.class);
   }
 }

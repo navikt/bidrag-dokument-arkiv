@@ -1,6 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.aop;
 
-import no.nav.bidrag.dokument.arkiv.dto.HttpStatusException;
+import no.nav.bidrag.dokument.arkiv.model.HttpStatusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;

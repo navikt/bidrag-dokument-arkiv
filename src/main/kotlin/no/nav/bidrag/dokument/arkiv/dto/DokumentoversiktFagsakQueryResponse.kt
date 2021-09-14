@@ -1,5 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
+import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException
+
 data class DokumentoversiktFagsakQueryResponse(
     var data: DokumentoversiktFagsak? = null
 ) {

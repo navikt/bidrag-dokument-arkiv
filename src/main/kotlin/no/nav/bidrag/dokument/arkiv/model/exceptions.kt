@@ -1,4 +1,4 @@
-package no.nav.bidrag.dokument.arkiv.dto
+package no.nav.bidrag.dokument.arkiv.model
 
 import org.springframework.http.HttpStatus
 
@@ -11,6 +11,7 @@ class JournalIkkeFunnetException(message: String) : HttpStatusException(message)
 }
 
 class JournalpostDataException(message: String) : RuntimeException(message)
+class JournalpostHendelseException(message: String, throwable: Throwable) : RuntimeException(message, throwable)
 class JournalpostIkkeFunnetException(message: String) : HttpStatusException(message) {
     override val status: HttpStatus get() = HttpStatus.NOT_FOUND
 }

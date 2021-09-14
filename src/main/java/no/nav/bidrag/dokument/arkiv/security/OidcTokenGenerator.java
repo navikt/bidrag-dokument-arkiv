@@ -3,7 +3,7 @@ package no.nav.bidrag.dokument.arkiv.security;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.ISSUER;
 
 import java.util.Optional;
-import no.nav.bidrag.dokument.arkiv.dto.TokenException;
+import no.nav.bidrag.dokument.arkiv.model.TokenException;
 import no.nav.security.token.support.core.context.TokenValidationContextHolder;
 import no.nav.security.token.support.core.jwt.JwtToken;
 

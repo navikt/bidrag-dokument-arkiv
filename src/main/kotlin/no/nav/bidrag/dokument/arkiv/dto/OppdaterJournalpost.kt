@@ -17,7 +17,7 @@ data class OppdaterJournalpostRequest(
     var dokumenter = emptyList<Dokument>()
     var avsenderMottaker: AvsenderMottaker? = null
 
-    fun hentJournalpostId() = journalpostId;
+    fun hentJournalpostId() = journalpostId
 
     constructor(journalpostId: Int, endreJournalpostCommand: EndreJournalpostCommandIntern, journalpost: Journalpost) : this(
             journalpostId = journalpostId,
@@ -32,7 +32,7 @@ data class OppdaterJournalpostRequest(
         }
         bruker = Bruker(endreJournalpostCommand.hentGjelder(), endreJournalpostCommand.hentGjelderType())
         tittel = endreJournalpostCommand.endreJournalpostCommand.tittel
-        sak = if (saksnummer != null) Sak(saksnummer) else null;
+        sak = if (saksnummer != null) Sak(saksnummer) else null
         tema = if (endreJournalpostCommand.hentFagomrade() != null) endreJournalpostCommand.hentFagomrade() else journalpost.tema
         dokumenter = endreJournalpostCommand.endreJournalpostCommand.endreDokumenter
                 .map { dokument -> Dokument(dokument.dokId.toString(), dokument.tittel, dokument.brevkode) }
@@ -50,6 +50,7 @@ data class OppdaterJournalpostRequest(
     @JsonInclude(JsonInclude.Include.NON_NULL)
     data class Bruker(val id: String? = null, val idType: String? = null)
 
+    @Suppress("unused") // properties used by jackson
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     data class Sak(val fagsakId: String? = null) {
@@ -67,4 +68,4 @@ data class FerdigstillJournalpostRequest(
         @JsonIgnore
         var journalpostId: Int,
         var journalfoerendeEnhet: String
-);
+)
