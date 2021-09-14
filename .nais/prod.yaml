@@ -5,7 +5,7 @@ ingresses:
   - https://bidrag-dokument-arkiv.prod-fss.nais.io
 kafka:
   pool: nav-prod
-eenv:
+env:
   - name: ACCEPTED_AUDIENCE
     value: bisys-p,bidrag-ui-p
   - name: ISSO_ISSUER_URL
