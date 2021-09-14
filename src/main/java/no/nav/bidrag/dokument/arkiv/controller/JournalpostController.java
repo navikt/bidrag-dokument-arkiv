@@ -21,7 +21,7 @@ import no.nav.security.token.support.core.api.ProtectedWithClaims;
 import no.nav.security.token.support.core.api.Unprotected;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -62,12 +62,18 @@ public class JournalpostController {
     KildesystemIdenfikator kildesystemIdenfikator = new KildesystemIdenfikator(joarkJournalpostId);
 
     if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix() || erIkkePrefixetMedJoark(joarkJournalpostId)) {
-      return ResponseEntity.badRequest().build();
+      return ResponseEntity
+          .badRequest()
+          .header(HttpHeaders.WARNING, "Ukjent prefix på journalpostId: " + joarkJournalpostId)
+          .build();
     }
 
     var journalpostId = kildesystemIdenfikator.hentJournalpostId();
     if (journalpostId == null) {
-      return ResponseEntity.badRequest().build();
+      return ResponseEntity
+          .badRequest()
+          .header(HttpHeaders.WARNING, "Kunne ikke hente id fra prefikset journalpostId: " + joarkJournalpostId)
+          .build();
     }
 
     return journalpostService.hentJournalpost(journalpostId, saksnummer)
@@ -112,13 +118,22 @@ public class JournalpostController {
         endreJournalpostCommand == null ||
         endreJournalpostCommand.getGjelder() == null
     ) {
-      LOGGER.warn("Id har ikke riktig prefix: {} eller det mangler gjelder person {}", joarkJournalpostId, endreJournalpostCommand);
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+      var msgBadRequest = String.format(
+          "Id har ikke riktig prefix: %s eller det mangler gjelder person %s", joarkJournalpostId, endreJournalpostCommand
+      );
+
+      LOGGER.warn(msgBadRequest);
+
+      return ResponseEntity
+          .badRequest()
+          .header(HttpHeaders.WARNING, msgBadRequest)
+          .build();
     }
 
     var endreJournalpostHttpResponse = journalpostService.endre(
         kildesystemIdenfikator.hentJournalpostId(), new EndreJournalpostCommandIntern(endreJournalpostCommand, enhet)
     );
+
     return new ResponseEntity<>(endreJournalpostHttpResponse.getResponseEntity().getStatusCode());
   }
 

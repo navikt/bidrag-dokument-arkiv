@@ -4,6 +4,8 @@ ingresses:
   - https://bidrag-dokument-arkiv.nais.preprod.local/
   - https://bidrag-dokument-arkiv.dev.adeo.no/
   - https://bidrag-dokument-arkiv.dev.intern.nav.no/
+kafka:
+  pool: nav-dev
 env:
   - name: ACCEPTED_AUDIENCE
     value: bisys-q2,bidrag-ui-q2,bidrag-q-localhost,ida-q
@@ -15,5 +17,7 @@ env:
     value: https://saf-q1.nais.preprod.local/graphql
   - name: ACCESS_TOKEN_URL
     value: https://security-token-service.nais.preprod.local
+  - name: TOPIC_JOURNALPOST
+    value: bidrag.journalpost
 vault:
   kvPath: dev

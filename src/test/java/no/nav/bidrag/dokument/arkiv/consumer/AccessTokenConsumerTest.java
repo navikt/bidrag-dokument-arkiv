@@ -10,7 +10,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpMethod.POST;
 
-import no.nav.bidrag.dokument.arkiv.dto.TokenException;
+import no.nav.bidrag.dokument.arkiv.model.TokenException;
 import no.nav.bidrag.dokument.arkiv.dto.security.TokenForBasicAuthentication;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

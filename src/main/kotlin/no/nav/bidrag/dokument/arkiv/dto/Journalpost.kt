@@ -1,5 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
+import no.nav.bidrag.dokument.arkiv.model.JournalpostDataException
 import no.nav.bidrag.dokument.dto.AktorDto
 import no.nav.bidrag.dokument.dto.DokumentDto
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
@@ -74,7 +75,7 @@ data class Journalpost(
         return registrert?.somDato()
     }
 
-    fun erTilknyttetSak(saksnummer: String?) = sak?.fagsakId == saksnummer
+    private fun erTilknyttetSak(saksnummer: String?) = sak?.fagsakId == saksnummer
     fun hentAvsenderNavn() = avsenderMottaker?.navn
     fun erIkkeTilknyttetSakNarOppgitt(saksnummer: String?) = if (saksnummer == null) false else !erTilknyttetSak(saksnummer)
 }

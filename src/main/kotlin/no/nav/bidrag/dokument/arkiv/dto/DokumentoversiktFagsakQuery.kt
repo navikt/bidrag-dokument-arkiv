@@ -39,6 +39,6 @@ data class DokumentoversiktFagsakQuery(val saksnummer: String, val tema: String)
     }
 
     override fun getVariables(): HashMap<String, Any> {
-        return hashMapOf("fagsakId" to saksnummer, "tema" to tema);
+        return hashMapOf("fagsakId" to saksnummer, "tema" to tema)
     }
 }

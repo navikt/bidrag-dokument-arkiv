@@ -1,4 +1,4 @@
-package no.nav.bidrag.dokument.arkiv.dto
+package no.nav.bidrag.dokument.arkiv.model
 
 import org.springframework.http.HttpStatus
 

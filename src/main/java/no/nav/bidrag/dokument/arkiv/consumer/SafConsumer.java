@@ -8,12 +8,12 @@ import java.util.Arrays;
 import java.util.List;
 import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQuery;
 import no.nav.bidrag.dokument.arkiv.dto.GraphQuery;
-import no.nav.bidrag.dokument.arkiv.dto.JournalIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
-import no.nav.bidrag.dokument.arkiv.dto.JournalpostIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostQuery;
-import no.nav.bidrag.dokument.arkiv.dto.ReasonToHttpStatus;
-import no.nav.bidrag.dokument.arkiv.dto.SafException;
+import no.nav.bidrag.dokument.arkiv.model.JournalIkkeFunnetException;
+import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
+import no.nav.bidrag.dokument.arkiv.model.ReasonToHttpStatus;
+import no.nav.bidrag.dokument.arkiv.model.SafException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -84,6 +84,7 @@ public class SafConsumer {
 
   @FunctionalInterface
   private interface NotFoundException {
+
     RuntimeException init(String message);
   }
 }
