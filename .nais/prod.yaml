@@ -3,7 +3,9 @@ serviceuser: p
 ingresses:
   - https://bidrag-dokument-arkiv.nais.adeo.no/
   - https://bidrag-dokument-arkiv.prod-fss.nais.io
-env:
+kafka:
+  pool: nav-prod
+eenv:
   - name: ACCEPTED_AUDIENCE
     value: bisys-p,bidrag-ui-p
   - name: ISSO_ISSUER_URL
@@ -14,5 +16,7 @@ env:
     value: https://saf.adeo.no/graphql
   - name: ACCESS_TOKEN_URL
     value: https://security-token-service.adeo.no
+  - name: TOPIC_JOURNALPOST
+    value: bidrag.journalpost
 vault:
   kvPath: prod

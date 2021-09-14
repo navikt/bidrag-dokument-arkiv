@@ -10,7 +10,8 @@ metadata:
     team: bidrag
 spec:
   image: {{ image }}
-  port: 8080
+  kafka:
+    pool: {{ kafka.pool }}
   liveness:
     path: /bidrag-dokument-arkiv/actuator/health
     initialDelay: 20
