@@ -89,7 +89,7 @@ data class Bruker(
     var type: String? = null
 ) {
     fun tilAktorDto(): AktorDto {
-        return if (id != null) AktorDto(id!!) else throw JournalpostDataException("ingne id i $this")
+        return if (id != null) AktorDto(id!!, type ?: "FNR") else throw JournalpostDataException("ingen id i $this")
     }
 }
 
