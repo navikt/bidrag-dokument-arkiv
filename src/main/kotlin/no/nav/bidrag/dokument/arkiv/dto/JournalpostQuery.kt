@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
 data class JournalpostQuery(val journalpostId: Int) : GraphQuery() {
+
     private val query = """
         query journalpost(${"$"}journalpostId: String!) {
             journalpost(journalpostId: ${"$"}journalpostId) {
@@ -12,6 +13,7 @@ data class JournalpostQuery(val journalpostId: Int) : GraphQuery() {
                 type
               }
               dokumenter {
+                dokumentInfoId
                 tittel
               }
               sak {
@@ -31,7 +33,6 @@ data class JournalpostQuery(val journalpostId: Int) : GraphQuery() {
             }
         }
         """
-
     override fun getQuery(): String {
         return query
     }

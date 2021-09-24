@@ -94,11 +94,13 @@ data class Bruker(
 }
 
 data class Dokument(
-    var tittel: String? = null
+    var tittel: String? = null,
+    var dokumentInfoId: String? = null
 ) {
     fun tilDokumentDto(journalposttype: String?): DokumentDto = DokumentDto(
+        dokumentreferanse = this.dokumentInfoId,
         dokumentType = journalposttype,
-        tittel = this.tittel
+        tittel = this.tittel,
     )
 }
 
