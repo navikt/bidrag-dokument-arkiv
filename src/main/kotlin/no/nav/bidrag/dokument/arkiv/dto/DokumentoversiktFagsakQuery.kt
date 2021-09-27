@@ -13,6 +13,7 @@ data class DokumentoversiktFagsakQuery(val saksnummer: String, val tema: String)
                   type
                 }
                 dokumenter {
+                  dokumentInfoId
                   tittel
                 }
                 journalforendeEnhet

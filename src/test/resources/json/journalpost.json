@@ -8,9 +8,11 @@
   },
   "dokumenter": [
     {
+      "dokumentInfoId": "12345",
       "tittel": "ROD SNO"
     },
     {
+      "dokumentInfoId": "56789",
       "tittel": "SNOMANNEN"
     }
   ],

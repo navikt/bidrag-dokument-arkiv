@@ -89,16 +89,18 @@ data class Bruker(
     var type: String? = null
 ) {
     fun tilAktorDto(): AktorDto {
-        return if (id != null) AktorDto(id!!) else throw JournalpostDataException("ingne id i $this")
+        return if (id != null) AktorDto(id!!, type ?: "FNR") else throw JournalpostDataException("ingen id i $this")
     }
 }
 
 data class Dokument(
-    var tittel: String? = null
+    var tittel: String? = null,
+    var dokumentInfoId: String? = null
 ) {
     fun tilDokumentDto(journalposttype: String?): DokumentDto = DokumentDto(
+        dokumentreferanse = this.dokumentInfoId,
         dokumentType = journalposttype,
-        tittel = this.tittel
+        tittel = this.tittel,
     )
 }
 
