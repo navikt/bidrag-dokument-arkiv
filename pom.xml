@@ -42,6 +42,9 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
+    <apache-avro-version>1.10.2</apache-avro-version>
+    <joark-hendelse.version>0.0.3</joark-hendelse.version>
+    <kafka-avro-serializer.version>6.2.1</kafka-avro-serializer.version>
   </properties>
 
   <dependencyManagement>
@@ -66,6 +69,23 @@
   </dependencyManagement>
 
   <dependencies>
+    <!-- joark hendelser med avro avhengighet -->
+    <dependency>
+      <groupId>no.nav.dok</groupId>
+      <artifactId>dok-journalfoering-hendelse-v1</artifactId>
+      <version>${joark-hendelse.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.confluent</groupId>
+      <artifactId>kafka-avro-serializer</artifactId>
+      <version>${kafka-avro-serializer.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.avro</groupId>
+      <artifactId>avro</artifactId>
+      <version>${apache-avro-version}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-cache</artifactId>
