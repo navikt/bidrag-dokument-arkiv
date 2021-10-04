@@ -19,5 +19,13 @@ env:
     value: https://security-token-service.dev.adeo.no
   - name: TOPIC_JOURNALPOST
     value: bidrag.journalpost-feature
+  - name: JOURNALFOERINGHENDELSE_V1_TOPIC_URL
+    value: teamdokumenthandtering.aapen-dok-journalfoering-q1
+  - name: KAFKA_BOOTSTRAP_SERVERS_URL
+    value: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
+  - name: KAFKA_SCHEMA_REGISTRY_URL
+    value: https://kafka-schema-registry.nais.preprod.local
+  - name: JAVA_OPTS
+    value: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
 vault:
   kvPath: dev

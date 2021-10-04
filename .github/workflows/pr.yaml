@@ -21,7 +21,7 @@ jobs:
             ${{ runner.os }}-maven-
       - uses: navikt/bidrag-maven/setup@v7
         with:
-          repositories: maven-central=https://repo.maven.apache.org/maven2,github-packages=https://maven.pkg.github.com/navikt/maven-release
+          repositories: confluent=https://packages.confluent.io/maven/
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: mvn -B install -e

@@ -3,9 +3,6 @@ kind: "Application"
 metadata:
   name: {{ name }}
   namespace: bidrag
-  serviceuser:
-    {{ serviceuser }}:
-      - srvbdarkiv
   labels:
     team: bidrag
 spec:

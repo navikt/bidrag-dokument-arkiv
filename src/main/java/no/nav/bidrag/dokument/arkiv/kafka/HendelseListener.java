@@ -1,23 +1,23 @@
 package no.nav.bidrag.dokument.arkiv.kafka;
 
-import java.util.Optional;
 import no.nav.bidrag.commons.CorrelationId;
-import no.nav.bidrag.dokument.hendelse.HendelsesType;
-import no.nav.bidrag.dokument.hendelse.service.OppgaveService;
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
+@Profile("!test")
 public class HendelseListener {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HendelseListener.class);
-  static final String BEHANDLINGSTEMA_BIDRAG = "BID";
+  public static final String BEHANDLINGSTEMA_BIDRAG = "BID";
 
 
   public HendelseListener() {
@@ -25,13 +25,18 @@ public class HendelseListener {
   }
 
   @KafkaListener(
-      id = BidragDokumentHendelseConfig.CLIENT_ID,
       topics = "${JOURNALFOERINGHENDELSE_V1_TOPIC_URL}",
       errorHandler = "hendelseErrorHandler")
   public void listen(@Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
     CorrelationId correlationId = CorrelationId.generateTimestamped("journalfoeringshendelse");
     MDC.put("correlationId", correlationId.get());
+    Oppgavetema oppgavetema = new Oppgavetema(journalfoeringHendelseRecord);
 
+    if (oppgavetema.erOmhandlingAvBidrag()) {
+      registrerOppgaveForHendelse(journalfoeringHendelseRecord);
+    } else {
+      LOGGER.debug("Oppgavetema omhandler ikke bidrag ");
+    }
 
     MDC.clear();
   }
@@ -39,6 +44,7 @@ public class HendelseListener {
   private void registrerOppgaveForHendelse(
       @Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
     Optional<HendelsesType> muligType = HendelsesType.from(journalfoeringHendelseRecord.getHendelsesType());
+    LOGGER.info("Ny hendelse: {}", muligType);
 
     muligType.ifPresent(
         hendelsesType -> {

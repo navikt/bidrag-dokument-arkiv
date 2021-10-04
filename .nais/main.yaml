@@ -19,5 +19,11 @@ env:
     value: https://security-token-service.nais.preprod.local
   - name: TOPIC_JOURNALPOST
     value: bidrag.journalpost
+  - name: KAFKA_BOOTSTRAP_SERVERS_URL
+    value: SSL://b27apvl00045.preprod.local:8443,SSL://b27apvl00046.preprod.local:8443,SSL://b27apvl00047.preprod.local:8443
+  - name: KAFKA_SCHEMA_REGISTRY_URL
+    value: https://kafka-schema-registry.nais.preprod.local
+  - name: JOURNALFOERINGHENDELSE_V1_TOPIC_URL
+    value: teamdokumenthandtering.aapen-dok-journalfoering-q2
 vault:
   kvPath: dev
