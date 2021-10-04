@@ -25,6 +25,7 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 @EnableJwtTokenValidation(ignore = {"springfox.documentation.swagger.web.ApiResourceController"})
 @Import(TokenGeneratorConfiguration.class)
 @ComponentScan(excludeFilters = {@Filter(type = ASSIGNABLE_TYPE, value = BidragDokumentArkiv.class)})
+@EmbeddedKafka(ports=3333)
 public class BidragDokumentArkivLocal {
 
   public static void main(String[] args) {
@@ -33,20 +34,4 @@ public class BidragDokumentArkivLocal {
     app.run(args);
   }
 
-  @Configuration
-  @Profile(PROFILE_TEST)
-  @EmbeddedKafka
-  public static class NoKafkaSupportConfiguration {
-    private static final Logger LOGGER = LoggerFactory.getLogger(NoKafkaSupportConfiguration.class);
-
-    @Bean
-    HendelserProducer hendelserProducer() {
-      return new HendelserProducer(null, null, null) {
-        @Override
-        public void publish(JournalpostHendelse journalpostHendelse) {
-          LOGGER.info("Deployed application will publish {}!", journalpostHendelse);
-        }
-      };
-    }
-  }
 }

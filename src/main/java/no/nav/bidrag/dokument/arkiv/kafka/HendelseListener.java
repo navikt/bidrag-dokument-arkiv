@@ -1,37 +1,32 @@
 package no.nav.bidrag.dokument.arkiv.kafka;
 
 import no.nav.bidrag.commons.CorrelationId;
+import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
+import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelse;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
-import no.nav.bidrag.dokument.arkiv.model.Sporingsdata;
-import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
+import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
-@Profile("!test")
 public class HendelseListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HendelseListener.class);
     public static final String BEHANDLINGSTEMA_BIDRAG = "BID";
     @Autowired
-    HendelserProducer producer;
+    private HendelserProducer producer;
     @Autowired
-    JournalpostService journalpostService;
+    private ResourceByDiscriminator<SafConsumer> safConsumers;
 
-    public HendelseListener() {
-
-    }
 
     @KafkaListener(
             topics = "${JOURNALFOERINGHENDELSE_V1_TOPIC_URL}",
@@ -73,19 +68,18 @@ public class HendelseListener {
 
     private JournalpostHendelse createJournalpostHendelse(JournalfoeringHendelseRecord journalfoeringHendelseRecord){
         var journalpostId = journalfoeringHendelseRecord.getJournalpostId();
-        var journalpostOptional = journalpostService.hentJournalpost(journalpostId);
+        var journalpostOptional = Optional.ofNullable(safConsumers.get(Discriminator.SERVICE_USER).hentJournalpost(journalpostId));
         if (journalpostOptional.isEmpty()){
             throw new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId));
         }
-
         var journalpost = journalpostOptional.get();
-
         JournalpostHendelse journalpostHendelse = new JournalpostHendelse(
                 journalfoeringHendelseRecord.getJournalpostId(),
                 journalfoeringHendelseRecord.getHendelsesType()
         );
         journalpostHendelse.addDetaljer("tema", journalfoeringHendelseRecord.getTemaNytt());
-        journalpostHendelse.addDetaljer("aktoerId", Objects.requireNonNull(Objects.requireNonNull(journalpost.getBruker()).getId()));
+        journalpostHendelse.addDetaljer("aktoerId", journalpost.getBruker().getId());
+        journalpostHendelse.addDetaljer("journalforendeEnhet", journalpost.getJournalforendeEnhet());
         return journalpostHendelse;
 
     }

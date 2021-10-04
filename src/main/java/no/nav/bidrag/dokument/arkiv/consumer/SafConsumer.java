@@ -6,6 +6,8 @@ import com.netflix.graphql.dgs.client.GraphQLResponse;
 import com.netflix.graphql.dgs.client.HttpResponse;
 import java.util.Arrays;
 import java.util.List;
+
+import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQuery;
 import no.nav.bidrag.dokument.arkiv.dto.GraphQuery;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
@@ -16,10 +18,7 @@ import no.nav.bidrag.dokument.arkiv.model.ReasonToHttpStatus;
 import no.nav.bidrag.dokument.arkiv.model.SafException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
 public class SafConsumer {
@@ -86,5 +85,11 @@ public class SafConsumer {
   private interface NotFoundException {
 
     RuntimeException init(String message);
+  }
+
+  public void leggTilSikkerhet(HttpHeaderRestTemplate.ValueGenerator valueGenerator) {
+    if (restTemplate instanceof HttpHeaderRestTemplate) {
+      ((HttpHeaderRestTemplate) restTemplate).addHeaderGenerator(HttpHeaders.AUTHORIZATION, valueGenerator);
+    }
   }
 }

@@ -18,7 +18,9 @@ import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker;
 import no.nav.bidrag.dokument.arkiv.dto.Bruker;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
+import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.model.SafException;
 import no.nav.bidrag.dokument.arkiv.dto.Sak;
 import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
@@ -38,7 +40,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles(PROFILE_TEST)
-@DisplayName("GraphQueryConsumer")
+@DisplayName("SafConsumer")
 @SpringBootTest(
     classes = {BidragDokumentArkivLocal.class},
     properties = {"SAF_GRAPHQL_URL=http://localhost:8090/query"},
@@ -52,7 +54,7 @@ class SafConsumerTest {
   @MockBean
   private TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator;
   @Autowired
-  private SafConsumer safConsumer;
+  private ResourceByDiscriminator<SafConsumer> safConsumers;
 
   @BeforeEach
   void mockTokenValidation() {
@@ -72,7 +74,7 @@ class SafConsumerTest {
     stubEmptyQueryResult();
 
     // når
-    var journalposter = safConsumer.finnJournalposter("007", "BID");
+    var journalposter = safConsumers.get(Discriminator.REGULAR_USER).finnJournalposter("007", "BID");
 
     // så
     assertThat(journalposter).isEmpty();
@@ -119,7 +121,7 @@ class SafConsumerTest {
     );
 
     // når
-    var journalposter = safConsumer.finnJournalposter("007", "BID");
+    var journalposter = safConsumers.get(Discriminator.REGULAR_USER).finnJournalposter("007", "BID");
 
     // så
     assertAll(
@@ -176,7 +178,7 @@ class SafConsumerTest {
     );
 
     // når
-    var journalpost = safConsumer.hentJournalpost(23424234L);
+    var journalpost = safConsumers.get(Discriminator.REGULAR_USER).hentJournalpost(23424234L);
     assertThat(journalpost).isNotNull();
 
     assertAll(
@@ -227,7 +229,7 @@ class SafConsumerTest {
 
     // når
     try {
-      safConsumer.hentJournalpost(23424234L);
+      safConsumers.get(Discriminator.REGULAR_USER).hentJournalpost(23424234L);
       fail("Saf kallet skal feile");
     } catch (SafException e) {
       assertThat(e.getMessage()).isEqualTo(
@@ -274,7 +276,7 @@ class SafConsumerTest {
 
     // når
     try {
-      safConsumer.hentJournalpost(23424234L);
+      safConsumers.get(Discriminator.REGULAR_USER).hentJournalpost(23424234L);
       fail("Saf kallet skal feile");
     } catch (JournalpostIkkeFunnetException e) {
       assertThat(e.getMessage()).isEqualTo("Fant ikke journalpost i fagarkivet. journalpostId=910536260");
@@ -289,9 +291,22 @@ class SafConsumerTest {
     stubEmptyQueryResult();
 
     // når
-    safConsumer.finnJournalposter("101", "BID");
+    safConsumers.get(Discriminator.REGULAR_USER).finnJournalposter("101", "BID");
 
     // så
     verify(oidcTokenGenerator).fetchBearerToken();
+  }
+
+  @Test
+  @DisplayName("skal generere Nav-Consumer-Token header ved query kall")
+  void skalLeggeServiceBrukerTokenBlantHeaders() {
+    // gitt
+    stubEmptyQueryResult();
+
+    // når
+    safConsumers.get(Discriminator.SERVICE_USER).finnJournalposter("101", "BID");
+
+    // så
+    verify(tokenForBasicAuthenticationGenerator).generateToken();
   }
 }

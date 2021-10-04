@@ -4,14 +4,17 @@ server:
 
 springdoc:
   packages-to-scan: no.nav.bidrag.dokument.arkiv.controller
+---
+
+spring.profiles: live
 
 # OIDC
 no.nav.security.jwt:
-  issuers: isso
   issuer:
     isso:
       acceptedaudience: ${ACCEPTED_AUDIENCE}
       discoveryurl: ${ISSO_ISSUER_URL}/.well-known/openid-configuration
+
 
 spring.kafka:
     bootstrap-servers: ${KAFKA_BROKERS}
@@ -45,8 +48,21 @@ spring.kafka:
 
 ################## TEST #################
 
-spring:
-  profiles: test
+spring.profiles: test
+
+spring.kafka:
+  properties:
+    schema:
+      registry.url: http://unused-dummy-url
+    security.protocol: PLAINTEXT
+  producer:
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: no.nav.bidrag.dokument.arkiv.hendelser.CustomKafkaAvroSerializer
+  consumer:
+    group-id: test
+    auto-offset-reset: earliest
+    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    value-deserializer: no.nav.bidrag.dokument.arkiv.hendelser.CustomKafkaAvroDeserializer
 
 ##### OIDC #####
 no.nav.security.jwt:
