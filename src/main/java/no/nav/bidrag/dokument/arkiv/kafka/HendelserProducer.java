@@ -4,9 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelse;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 
 public class HendelserProducer {
+  private static final Logger LOGGER = LoggerFactory.getLogger(HendelserProducer.class);
 
   private final KafkaTemplate<String, String> kafkaTemplate;
   private final ObjectMapper objectMapper;
@@ -19,6 +22,7 @@ public class HendelserProducer {
   }
 
   public void publish(JournalpostHendelse journalpostHendelse) {
+    LOGGER.info("Publiserer hendelse {}", journalpostHendelse);
     try {
       kafkaTemplate.send(topic, journalpostHendelse.getJournalpostId(), objectMapper.writeValueAsString(journalpostHendelse));
     } catch (JsonProcessingException e) {

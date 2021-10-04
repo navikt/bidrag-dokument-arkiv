@@ -5,6 +5,7 @@ import java.util.Optional;
 
 public enum HendelsesType {
     MIDLERTIDIG_JOURNALFORT("MidlertidigJournalført"),
+    JOURNALPOST_MOTTAT("JournalpostMottatt"),
     TEMA_ENDRET("TemaEndret");
 
     private String hendelsesType;

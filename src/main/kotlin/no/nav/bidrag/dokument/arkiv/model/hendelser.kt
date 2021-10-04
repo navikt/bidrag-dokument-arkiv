@@ -4,11 +4,12 @@ import no.nav.bidrag.commons.CorrelationId
 import java.time.LocalDateTime
 
 data class JournalpostHendelse(
-    val journalpostId: String,
+    var journalpostId: String,
     val hendelse: String,
     val sporing: Sporingsdata = Sporingsdata(CorrelationId.fetchCorrelationIdForThread() ?: CorrelationId.generateTimestamped(hendelse).get()),
-    val detaljer: Map<String, String?> = emptyMap()
+    val detaljer: MutableMap<String, String?> = mutableMapOf()
 ) {
+    constructor(journalpostId: Long, hendelse: String) : this(journalpostId.toString(), hendelse, Sporingsdata(CorrelationId.fetchCorrelationIdForThread() ?: CorrelationId.generateTimestamped(hendelse).get()), mutableMapOf())
 
     fun leggSaksbehandlerTilSporing(saksbehandler: Saksbehandler) {
         sporing.brukerident = saksbehandler.ident
@@ -17,6 +18,10 @@ data class JournalpostHendelse(
 
     fun leggBrukeridentTilSporing(brukerident: String?) {
         sporing.brukerident = brukerident
+    }
+
+    fun addDetaljer(key: String, value: String){
+        detaljer[key] = value
     }
 }
 
