@@ -2,7 +2,9 @@ package no.nav.bidrag.dokument.arkiv.kafka;
 
 import no.nav.bidrag.commons.CorrelationId;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelse;
+import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.model.Sporingsdata;
+import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +15,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -23,6 +26,8 @@ public class HendelseListener {
     public static final String BEHANDLINGSTEMA_BIDRAG = "BID";
     @Autowired
     HendelserProducer producer;
+    @Autowired
+    JournalpostService journalpostService;
 
     public HendelseListener() {
 
@@ -35,13 +40,12 @@ public class HendelseListener {
         CorrelationId correlationId = CorrelationId.generateTimestamped("journalfoeringshendelse");
         MDC.put("correlationId", correlationId.get());
         Oppgavetema oppgavetema = new Oppgavetema(journalfoeringHendelseRecord);
-
-        if (oppgavetema.erOmhandlingAvBidrag()) {
-            registrerOppgaveForHendelse(journalfoeringHendelseRecord);
-        } else {
+        if (!oppgavetema.erOmhandlingAvBidrag()){
             LOGGER.debug("Oppgavetema omhandler ikke bidrag ");
+            return;
         }
 
+        registrerOppgaveForHendelse(journalfoeringHendelseRecord);
         MDC.clear();
     }
 
@@ -49,12 +53,7 @@ public class HendelseListener {
             @Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
         Optional<HendelsesType> muligType = HendelsesType.from(journalfoeringHendelseRecord.getHendelsesType());
         LOGGER.info("Ny hendelse: {}", muligType);
-        JournalpostHendelse journalpostHendelse = new JournalpostHendelse(
-                journalfoeringHendelseRecord.getJournalpostId(),
-                journalfoeringHendelseRecord.getHendelsesType()
-        );
-        journalpostHendelse.addDetaljer("tema", journalfoeringHendelseRecord.getTemaNytt());
-        journalpostHendelse.addDetaljer("mottaksKanal", journalfoeringHendelseRecord.getMottaksKanal());
+        JournalpostHendelse journalpostHendelse = createJournalpostHendelse(journalfoeringHendelseRecord);
         muligType.ifPresent(
                 hendelsesType -> {
                     switch (hendelsesType) {
@@ -70,5 +69,24 @@ public class HendelseListener {
         if (muligType.isEmpty()) {
             LOGGER.error("Ingen implementasjon for {}", journalfoeringHendelseRecord.getHendelsesType());
         }
+    }
+
+    private JournalpostHendelse createJournalpostHendelse(JournalfoeringHendelseRecord journalfoeringHendelseRecord){
+        var journalpostId = journalfoeringHendelseRecord.getJournalpostId();
+        var journalpostOptional = journalpostService.hentJournalpost(journalpostId);
+        if (journalpostOptional.isEmpty()){
+            throw new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId));
+        }
+
+        var journalpost = journalpostOptional.get();
+
+        JournalpostHendelse journalpostHendelse = new JournalpostHendelse(
+                journalfoeringHendelseRecord.getJournalpostId(),
+                journalfoeringHendelseRecord.getHendelsesType()
+        );
+        journalpostHendelse.addDetaljer("tema", journalfoeringHendelseRecord.getTemaNytt());
+        journalpostHendelse.addDetaljer("aktoerId", Objects.requireNonNull(Objects.requireNonNull(journalpost.getBruker()).getId()));
+        return journalpostHendelse;
+
     }
 }

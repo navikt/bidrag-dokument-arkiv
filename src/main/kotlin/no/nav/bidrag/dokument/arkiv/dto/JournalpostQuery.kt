@@ -1,6 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
-data class JournalpostQuery(val journalpostId: Int) : GraphQuery() {
+data class JournalpostQuery(val journalpostId: Long) : GraphQuery() {
 
     private val query = """
         query journalpost(${"$"}journalpostId: String!) {

@@ -76,7 +76,7 @@ public class JournalpostController {
           .build();
     }
 
-    return journalpostService.hentJournalpost(journalpostId, saksnummer)
+    return journalpostService.hentJournalpost(Long.valueOf(journalpostId), saksnummer)
         .map(journalpost -> ResponseEntity.ok(journalpost.tilJournalpostResponse()))
         .orElse(ResponseEntity.badRequest().build());
   }
@@ -131,7 +131,7 @@ public class JournalpostController {
     }
 
     var endreJournalpostHttpResponse = journalpostService.endre(
-        kildesystemIdenfikator.hentJournalpostId(), new EndreJournalpostCommandIntern(endreJournalpostCommand, enhet)
+        Long.valueOf(kildesystemIdenfikator.hentJournalpostId()), new EndreJournalpostCommandIntern(endreJournalpostCommand, enhet)
     );
 
     return new ResponseEntity<>(endreJournalpostHttpResponse.getResponseEntity().getStatusCode());

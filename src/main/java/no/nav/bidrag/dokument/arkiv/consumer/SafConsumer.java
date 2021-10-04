@@ -32,7 +32,7 @@ public class SafConsumer {
     this.restTemplate = restTemplate;
   }
 
-  public Journalpost hentJournalpost(Integer journalpostId) {
+  public Journalpost hentJournalpost(Long journalpostId) {
     return consumeEnkelJournalpostQuery(new JournalpostQuery(journalpostId));
   }
 

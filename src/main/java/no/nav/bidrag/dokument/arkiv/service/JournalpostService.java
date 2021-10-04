@@ -29,11 +29,11 @@ public class JournalpostService {
     this.dokarkivConsumer = dokarkivConsumer;
   }
 
-  public Optional<Journalpost> hentJournalpost(Integer journalpostId) {
+  public Optional<Journalpost> hentJournalpost(Long journalpostId) {
     return hentJournalpost(journalpostId, null);
   }
 
-  public Optional<Journalpost> hentJournalpost(Integer journalpostId, String saksnummer) {
+  public Optional<Journalpost> hentJournalpost(Long journalpostId, String saksnummer) {
     var journalpost = safConsumer.hentJournalpost(journalpostId);
 
     if (journalpost.erIkkeTilknyttetSakNarOppgitt(saksnummer)) {
@@ -51,7 +51,7 @@ public class JournalpostService {
 
   }
 
-  public HttpResponse<Void> endre(Integer journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand) {
+  public HttpResponse<Void> endre(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand) {
     var journalpost = hentJournalpost(journalpostId).orElseThrow(
         () -> new JournalpostIkkeFunnetException("Kunne ikke finne journalpost med id: " + journalpostId)
     );

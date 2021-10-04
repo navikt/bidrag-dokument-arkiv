@@ -176,7 +176,7 @@ class SafConsumerTest {
     );
 
     // når
-    var journalpost = safConsumer.hentJournalpost(23424234);
+    var journalpost = safConsumer.hentJournalpost(23424234L);
     assertThat(journalpost).isNotNull();
 
     assertAll(
@@ -227,7 +227,7 @@ class SafConsumerTest {
 
     // når
     try {
-      safConsumer.hentJournalpost(23424234);
+      safConsumer.hentJournalpost(23424234L);
       fail("Saf kallet skal feile");
     } catch (SafException e) {
       assertThat(e.getMessage()).isEqualTo(
@@ -274,7 +274,7 @@ class SafConsumerTest {
 
     // når
     try {
-      safConsumer.hentJournalpost(23424234);
+      safConsumer.hentJournalpost(23424234L);
       fail("Saf kallet skal feile");
     } catch (JournalpostIkkeFunnetException e) {
       assertThat(e.getMessage()).isEqualTo("Fant ikke journalpost i fagarkivet. journalpostId=910536260");
