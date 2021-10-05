@@ -22,8 +22,8 @@ public class HendelserProducer {
   }
 
   public void publish(JournalpostHendelse journalpostHendelse) {
-    LOGGER.info("Publiserer hendelse {}", journalpostHendelse);
     try {
+      LOGGER.info("Publiserer hendelse {}", objectMapper.writeValueAsString(journalpostHendelse));
       kafkaTemplate.send(topic, journalpostHendelse.getJournalpostId(), objectMapper.writeValueAsString(journalpostHendelse));
     } catch (JsonProcessingException e) {
       throw new JournalpostHendelseException(e.getMessage(), e);

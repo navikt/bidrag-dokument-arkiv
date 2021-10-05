@@ -21,7 +21,7 @@ import java.util.Optional;
 public class HendelseListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HendelseListener.class);
-    public static final String BEHANDLINGSTEMA_BIDRAG = "BID";
+    public static final String JOURNALPOST_HENDELSE_OPPRETT_OPPGAVE = "OPPRETT_OPPGAVE";
     @Autowired
     private HendelserProducer producer;
     @Autowired
@@ -29,7 +29,7 @@ public class HendelseListener {
 
 
     @KafkaListener(
-            topics = "${JOURNALFOERINGHENDELSE_V1_TOPIC_URL}",
+            topics = "${TOPIC_JOURNALFOERING}",
             errorHandler = "hendelseErrorHandler")
     public void listen(@Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
         CorrelationId correlationId = CorrelationId.generateTimestamped("journalfoeringshendelse");
@@ -72,10 +72,11 @@ public class HendelseListener {
         if (journalpostOptional.isEmpty()){
             throw new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId));
         }
+
         var journalpost = journalpostOptional.get();
         JournalpostHendelse journalpostHendelse = new JournalpostHendelse(
                 journalfoeringHendelseRecord.getJournalpostId(),
-                journalfoeringHendelseRecord.getHendelsesType()
+            JOURNALPOST_HENDELSE_OPPRETT_OPPGAVE
         );
         journalpostHendelse.addDetaljer("tema", journalfoeringHendelseRecord.getTemaNytt());
         journalpostHendelse.addDetaljer("aktoerId", journalpost.getBruker().getId());

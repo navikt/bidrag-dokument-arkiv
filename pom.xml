@@ -93,6 +93,17 @@
       <groupId>io.confluent</groupId>
       <artifactId>kafka-avro-serializer</artifactId>
       <version>${kafka-avro-serializer.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-compress</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+      <version>1.21</version>
     </dependency>
     <dependency>
       <groupId>org.apache.avro</groupId>

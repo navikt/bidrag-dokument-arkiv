@@ -55,14 +55,9 @@ spring.kafka:
     schema:
       registry.url: http://unused-dummy-url
     security.protocol: PLAINTEXT
-  producer:
-    key-serializer: org.apache.kafka.common.serialization.StringSerializer
-    value-serializer: no.nav.bidrag.dokument.arkiv.hendelser.CustomKafkaAvroSerializer
   consumer:
     group-id: test
     auto-offset-reset: earliest
-    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-    value-deserializer: no.nav.bidrag.dokument.arkiv.hendelser.CustomKafkaAvroDeserializer
 
 ##### OIDC #####
 no.nav.security.jwt:

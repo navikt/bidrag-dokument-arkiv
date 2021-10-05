@@ -25,7 +25,7 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 @EnableJwtTokenValidation(ignore = {"springfox.documentation.swagger.web.ApiResourceController"})
 @Import(TokenGeneratorConfiguration.class)
 @ComponentScan(excludeFilters = {@Filter(type = ASSIGNABLE_TYPE, value = BidragDokumentArkiv.class)})
-@EmbeddedKafka(ports=3333)
+@EmbeddedKafka
 public class BidragDokumentArkivLocal {
 
   public static void main(String[] args) {
@@ -33,5 +33,4 @@ public class BidragDokumentArkivLocal {
     app.setAdditionalProfiles(PROFILE_TEST);
     app.run(args);
   }
-
 }

@@ -3,6 +3,8 @@ package no.nav.bidrag.dokument.arkiv.kafka;
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord;
 
 public class Oppgavetema {
+    public final String BEHANDLINGSTEMA_BIDRAG = "BID";
+    public final String BEHANDLINGSTEMA_FAR = "FAR";
 
     private final String gammelt;
     private final String nytt;
@@ -13,6 +15,7 @@ public class Oppgavetema {
     }
 
     public boolean erOmhandlingAvBidrag() {
-        return HendelseListener.BEHANDLINGSTEMA_BIDRAG.equals(gammelt) || HendelseListener.BEHANDLINGSTEMA_BIDRAG.equals(nytt);
+        return BEHANDLINGSTEMA_BIDRAG.equals(gammelt) || BEHANDLINGSTEMA_BIDRAG.equals(nytt)
+            || BEHANDLINGSTEMA_FAR.equals(gammelt) || BEHANDLINGSTEMA_FAR.equals(nytt);
     }
 }

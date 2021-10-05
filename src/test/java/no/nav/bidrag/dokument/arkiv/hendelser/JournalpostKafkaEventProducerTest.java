@@ -1,14 +1,17 @@
 package no.nav.bidrag.dokument.arkiv.hendelser;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.Bruker;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelseListener;
-import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
-import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,13 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.ActiveProfiles;
-
-import static no.nav.bidrag.dokument.arkiv.kafka.HendelsesType.JOURNALPOST_MOTTAT;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
 @SpringBootTest(classes = BidragDokumentArkivLocal.class)
@@ -61,7 +58,7 @@ class JournalpostKafkaEventProducerTest {
     verify(safConsumer).hentJournalpost(eq(journalpostId1));
 
     var hendelse = """
-        "hendelse":"JournalpostMottatt"
+        "hendelse":"OPPRETT_OPPGAVE"
         """.trim();
 
     var journalpostId = String.format("""
