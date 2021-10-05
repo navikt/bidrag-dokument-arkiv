@@ -45,7 +45,7 @@ class JournalpostServiceTest {
   void skalOversetteMapFraConsumerTilJournalpostDto() throws IOException {
     var jsonResponse = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJsonResource.getFile().toURI()))));
     var dokumentoversiktFagsakQueryResponse = objectMapper.readValue(jsonResponse, DokumentoversiktFagsakQueryResponse.class);
-    Integer journalpostIdFraJson = 201028011;
+    Long journalpostIdFraJson = 201028011L;
 
     when(safConsumerMock.hentJournalpost(journalpostIdFraJson)).thenReturn(dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostIdFraJson));
 

@@ -18,3 +18,4 @@ class JournalpostIkkeFunnetException(message: String) : HttpStatusException(mess
 
 class SafException(message: String, override val status: HttpStatus) : HttpStatusException(message)
 class TokenException(message: String) : RuntimeException(message)
+class ResourceDiscriminatorException(message: String) : RuntimeException(message)

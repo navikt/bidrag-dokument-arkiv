@@ -9,8 +9,10 @@ import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,16 +26,16 @@ public class JournalpostService {
   private final SafConsumer safConsumer;
   private final DokarkivConsumer dokarkivConsumer;
 
-  public JournalpostService(SafConsumer safConsumer, DokarkivConsumer dokarkivConsumer) {
-    this.safConsumer = safConsumer;
+  public JournalpostService(ResourceByDiscriminator<SafConsumer> safConsumer, DokarkivConsumer dokarkivConsumer) {
+    this.safConsumer = safConsumer.get(Discriminator.REGULAR_USER);
     this.dokarkivConsumer = dokarkivConsumer;
   }
 
-  public Optional<Journalpost> hentJournalpost(Integer journalpostId) {
+  public Optional<Journalpost> hentJournalpost(Long journalpostId) {
     return hentJournalpost(journalpostId, null);
   }
 
-  public Optional<Journalpost> hentJournalpost(Integer journalpostId, String saksnummer) {
+  public Optional<Journalpost> hentJournalpost(Long journalpostId, String saksnummer) {
     var journalpost = safConsumer.hentJournalpost(journalpostId);
 
     if (journalpost.erIkkeTilknyttetSakNarOppgitt(saksnummer)) {
@@ -51,7 +53,7 @@ public class JournalpostService {
 
   }
 
-  public HttpResponse<Void> endre(Integer journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand) {
+  public HttpResponse<Void> endre(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand) {
     var journalpost = hentJournalpost(journalpostId).orElseThrow(
         () -> new JournalpostIkkeFunnetException("Kunne ikke finne journalpost med id: " + journalpostId)
     );

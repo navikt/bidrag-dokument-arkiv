@@ -42,7 +42,24 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
+    <apache-avro-version>1.10.2</apache-avro-version>
+    <joark-hendelse.version>67a9be4476b63b7247cfacfaf821ab656bd2a952</joark-hendelse.version>
+    <kafka-avro-serializer.version>6.2.1</kafka-avro-serializer.version>
   </properties>
+
+  <repositories>
+    <repository>
+      <id>repo.adeo.no</id>
+      <name>Maven repo i iApp-sonen</name>
+      <url>https://repo.adeo.no/repository/github-package-registry-navikt/</url>
+    </repository>
+
+    <repository>
+      <id>confluent</id>
+      <name>Confluent kafka</name>
+      <url>https://packages.confluent.io/maven/</url>
+    </repository>
+  </repositories>
 
   <dependencyManagement>
     <dependencies>
@@ -66,6 +83,34 @@
   </dependencyManagement>
 
   <dependencies>
+    <!-- joark hendelser med avro avhengighet -->
+    <dependency>
+      <groupId>no.nav.syfo.schemas</groupId>
+      <artifactId>dok-journalfoering-hendelse-v1</artifactId>
+      <version>${joark-hendelse.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.confluent</groupId>
+      <artifactId>kafka-avro-serializer</artifactId>
+      <version>${kafka-avro-serializer.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-compress</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+      <version>1.21</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.avro</groupId>
+      <artifactId>avro</artifactId>
+      <version>${apache-avro-version}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-cache</artifactId>

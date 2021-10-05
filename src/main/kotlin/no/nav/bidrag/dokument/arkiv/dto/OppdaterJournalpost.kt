@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class OppdaterJournalpostRequest(
-        private val journalpostId: Int,
+        private val journalpostId: Long,
         private val endreJournalpostCommand: EndreJournalpostCommandIntern,
 ) {
     var sak: Sak? = null
@@ -19,7 +19,7 @@ data class OppdaterJournalpostRequest(
 
     fun hentJournalpostId() = journalpostId
 
-    constructor(journalpostId: Int, endreJournalpostCommand: EndreJournalpostCommandIntern, journalpost: Journalpost) : this(
+    constructor(journalpostId: Long, endreJournalpostCommand: EndreJournalpostCommandIntern, journalpost: Journalpost) : this(
             journalpostId = journalpostId,
             endreJournalpostCommand = endreJournalpostCommand
     ) {
@@ -66,6 +66,6 @@ data class OppdaterJournalpostResponse(
 
 data class FerdigstillJournalpostRequest(
         @JsonIgnore
-        var journalpostId: Int,
+        var journalpostId: Long,
         var journalfoerendeEnhet: String
 )

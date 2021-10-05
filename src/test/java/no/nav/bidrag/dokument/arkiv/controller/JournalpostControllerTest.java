@@ -59,7 +59,7 @@ class JournalpostControllerTest {
   @LocalServerPort
   private int port;
   @MockBean
-  @Qualifier("saf")
+  @Qualifier("base")
   private HttpHeaderRestTemplate restTemplateSafMock;
   @MockBean
   @Qualifier("dokarkiv")

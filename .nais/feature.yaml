@@ -12,12 +12,16 @@ env:
   - name: ISSO_ISSUER_URL
     value: https://isso-q.adeo.no:443/isso/oauth2
   - name: DOKARKIV_URL
-    value: https://dokarkiv-q1.nais.preprod.local/
+    value: https://dokarkiv-q1.dev.adeo.no/
   - name: SAF_GRAPHQL_URL
-    value: https://saf-q1.nais.preprod.local/graphql
+    value: https://saf-q1.dev.adeo.no/graphql
   - name: ACCESS_TOKEN_URL
-    value: https://security-token-service.nais.preprod.local
+    value: https://security-token-service.dev.adeo.no
   - name: TOPIC_JOURNALPOST
     value: bidrag.journalpost-feature
+  - name: TOPIC_JOURNALFOERING
+    value: teamdokumenthandtering.aapen-dok-journalfoering-q1
+  - name: JAVA_OPTS
+    value: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
 vault:
   kvPath: dev

@@ -11,12 +11,14 @@ env:
   - name: ISSO_ISSUER_URL
     value: https://isso.adeo.no:443/isso/oauth2
   - name: DOKARKIV_URL
-    value: https://dokarkiv.adeo.no/
+    value: https://dokarkiv.nais.adeo.no/
   - name: SAF_GRAPHQL_URL
-    value: https://saf.adeo.no/graphql
+    value: https://saf.nais.adeo.no/graphql
   - name: ACCESS_TOKEN_URL
-    value: https://security-token-service.adeo.no
+    value: https://security-token-service.nais.adeo.no
   - name: TOPIC_JOURNALPOST
     value: bidrag.journalpost
+  - name: TOPIC_JOURNALFOERING
+    value: teamdokumenthandtering.aapen-dok-journalfoering
 vault:
   kvPath: prod

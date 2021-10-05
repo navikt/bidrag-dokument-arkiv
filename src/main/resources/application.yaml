@@ -4,21 +4,60 @@ server:
 
 springdoc:
   packages-to-scan: no.nav.bidrag.dokument.arkiv.controller
+---
+
+spring.profiles: live
 
 # OIDC
 no.nav.security.jwt:
-  issuers: isso
   issuer:
     isso:
       acceptedaudience: ${ACCEPTED_AUDIENCE}
       discoveryurl: ${ISSO_ISSUER_URL}/.well-known/openid-configuration
 
+
+spring.kafka:
+    bootstrap-servers: ${KAFKA_BROKERS}
+    security.protocol: SSL
+
+    properties:
+      specific.avro.reader: true
+      schema.registry.url: ${KAFKA_SCHEMA_REGISTRY}
+      basic.auth.credentials.source: USER_INFO
+      basic.auth.user.info: ${KAFKA_SCHEMA_REGISTRY_USER}:${KAFKA_SCHEMA_REGISTRY_PASSWORD}
+    consumer:
+      group-id: ${NAIS_APP_NAME}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+      max-poll-records: 1
+      properties:
+        retry.backoff.ms: 2000
+        reconnect.backoff.ms: 5000
+        enable.auto.commit: false
+    ssl:
+      trust-store-location: file:${KAFKA_TRUSTSTORE_PATH}
+      trust-store-type: JKS
+      trust-store-password: ${KAFKA_CREDSTORE_PASSWORD}
+      key-store-type: PKCS12
+      key-store-location: file:${KAFKA_KEYSTORE_PATH}
+      key-store-password: ${KAFKA_CREDSTORE_PASSWORD}
+      key-password: ${KAFKA_CREDSTORE_PASSWORD}
+
 ---
 
 ################## TEST #################
 
-spring:
-  profiles: test
+spring.profiles: test
+
+spring.kafka:
+  properties:
+    schema:
+      registry.url: http://unused-dummy-url
+    security.protocol: PLAINTEXT
+  consumer:
+    group-id: test
+    auto-offset-reset: earliest
 
 ##### OIDC #####
 no.nav.security.jwt:
