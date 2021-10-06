@@ -1,5 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.kafka;
 
+import java.util.Objects;
 import no.nav.bidrag.commons.CorrelationId;
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
@@ -78,9 +79,11 @@ public class HendelseListener {
                 journalfoeringHendelseRecord.getJournalpostId(),
             JOURNALPOST_HENDELSE_OPPRETT_OPPGAVE
         );
-        journalpostHendelse.addDetaljer("tema", journalfoeringHendelseRecord.getTemaNytt());
-        journalpostHendelse.addDetaljer("aktoerId", journalpost.getBruker().getId());
-        journalpostHendelse.addDetaljer("journalforendeEnhet", journalpost.getJournalforendeEnhet());
+        journalpostHendelse.addDetaljer("fagomrade", journalfoeringHendelseRecord.getTemaNytt());
+
+        if (Objects.nonNull(journalpost.getBruker()) && Objects.nonNull(journalpost.getBruker().getId())){
+            journalpostHendelse.addDetaljer("aktoerId", journalpost.getBruker().getId());
+        }
         return journalpostHendelse;
 
     }
