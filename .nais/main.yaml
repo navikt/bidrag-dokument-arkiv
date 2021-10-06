@@ -20,6 +20,6 @@ env:
   - name: TOPIC_JOURNALPOST
     value: bidrag.journalpost
   - name: TOPIC_JOURNALFOERING
-    value: teamdokumenthandtering.aapen-dok-journalfoering-q2
+    value: teamdokumenthandtering.aapen-dok-journalfoering
 vault:
   kvPath: dev
