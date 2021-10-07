@@ -82,7 +82,12 @@ public class HendelseListener {
         journalpostHendelse.addFagomrade(journalfoeringHendelseRecord.getTemaNytt());
 
         if (Objects.nonNull(journalpost.getBruker()) && Objects.nonNull(journalpost.getBruker().getId())){
-            journalpostHendelse.addAktoerId(journalpost.getBruker().getId());
+            var bruker = journalpost.getBruker();
+            journalpostHendelse.addAktoerId(bruker.getId());
+            if (bruker.isAktoerId()){
+                LOGGER.warn("Bruker for journalpost {} fikk FNR og ikke AKTOERID fra Saf", journalpostId);
+            }
+
         }
         return journalpostHendelse;
 

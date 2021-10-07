@@ -91,6 +91,9 @@ data class Bruker(
     fun tilAktorDto(): AktorDto {
         return if (id != null) AktorDto(id!!, type ?: "FNR") else throw JournalpostDataException("ingen id i $this")
     }
+    fun isAktoerId(): Boolean {
+        return this.type == "AKTOERID"
+    }
 }
 
 data class Dokument(
