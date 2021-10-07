@@ -11,7 +11,15 @@ data class JournalpostHendelse(
     val sporing: Sporingsdata = Sporingsdata(CorrelationId.fetchCorrelationIdForThread() ?: CorrelationId.generateTimestamped(hendelse).get())
     val detaljer: MutableMap<String, String?> =  mutableMapOf()
 
-    constructor(journalpostId: Long, hendelse: String) : this(journalpostId.toString(), hendelse)
+    constructor(journalpostId: Long, hendelse: String) : this("JOARK-$journalpostId", hendelse)
+
+    fun addAktoerId(aktoerId: String){
+        addDetaljer("aktoerId", aktoerId)
+    }
+
+    fun addFagomrade(fagomrade: String){
+        addDetaljer("fagomrade", fagomrade)
+    }
 
     fun addDetaljer(key: String, value: String){
         detaljer[key] = value

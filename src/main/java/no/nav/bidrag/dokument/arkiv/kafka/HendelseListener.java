@@ -79,10 +79,10 @@ public class HendelseListener {
                 journalfoeringHendelseRecord.getJournalpostId(),
             JOURNALPOST_HENDELSE_OPPRETT_OPPGAVE
         );
-        journalpostHendelse.addDetaljer("fagomrade", journalfoeringHendelseRecord.getTemaNytt());
+        journalpostHendelse.addFagomrade(journalfoeringHendelseRecord.getTemaNytt());
 
         if (Objects.nonNull(journalpost.getBruker()) && Objects.nonNull(journalpost.getBruker().getId())){
-            journalpostHendelse.addDetaljer("aktoerId", journalpost.getBruker().getId());
+            journalpostHendelse.addAktoerId(journalpost.getBruker().getId());
         }
         return journalpostHendelse;
 

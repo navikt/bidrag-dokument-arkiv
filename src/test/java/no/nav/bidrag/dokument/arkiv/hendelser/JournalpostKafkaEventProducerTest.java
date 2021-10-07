@@ -42,38 +42,35 @@ class JournalpostKafkaEventProducerTest {
   @Test
   @DisplayName("skal publisere journalpost hendelser")
   void skalPublisereJournalpostHendelser() {
-    var journalpostId1 = 123213L;
+    var journalpostId = 123213L;
+    var expectedJoarkJournalpostId = "JOARK-"+journalpostId;
     var brukerId = "555555";
     var jfEnhet = "4833";
-    mockSafResponse(journalpostId1, brukerId, jfEnhet);
+    mockSafResponse(journalpostId, brukerId, jfEnhet);
 
     JournalfoeringHendelseRecord record = new JournalfoeringHendelseRecord();
-    record.setJournalpostId(journalpostId1);
+    record.setJournalpostId(journalpostId);
     record.setHendelsesType("JournalpostMottatt");
     record.setTemaNytt("BID");
     hendelseListener.listen(record);
 
     var jsonCaptor = ArgumentCaptor.forClass(String.class);
-    verify(kafkaTemplateMock).send(eq(topicJournalpost), eq(String.valueOf(journalpostId1)), jsonCaptor.capture());
-    verify(safConsumer).hentJournalpost(eq(journalpostId1));
+    verify(kafkaTemplateMock).send(eq(topicJournalpost), eq(expectedJoarkJournalpostId), jsonCaptor.capture());
+    verify(safConsumer).hentJournalpost(eq(journalpostId));
 
     var hendelse = """
         "hendelse":"OPPRETT_OPPGAVE"
         """.trim();
 
-    var journalpostId = String.format("""
+    var expectedJournalpostId = String.format("""
             "journalpostId":"%s"
-            """.trim(), journalpostId1);
+            """.trim(), expectedJoarkJournalpostId);
 
     var aktoerId = String.format("""
             "aktoerId":"%s"
             """.trim(), brukerId);
 
-    var journalforendeEnhet = String.format("""
-            "journalforendeEnhet":"%s"
-            """.trim(), jfEnhet);
-
-    assertThat(jsonCaptor.getValue()).containsSequence(hendelse).containsSequence(journalpostId).containsSequence(aktoerId).containsSequence(journalforendeEnhet);
+    assertThat(jsonCaptor.getValue()).containsSequence(hendelse).containsSequence(expectedJournalpostId).containsSequence(aktoerId);
   }
 
   @Test
