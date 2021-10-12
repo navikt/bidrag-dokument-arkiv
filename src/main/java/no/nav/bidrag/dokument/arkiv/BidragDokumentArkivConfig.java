@@ -12,11 +12,13 @@ import no.nav.bidrag.dokument.arkiv.aop.AspectExceptionLogger;
 import no.nav.bidrag.dokument.arkiv.aop.HttpStatusRestControllerAdvice;
 import no.nav.bidrag.dokument.arkiv.consumer.AccessTokenConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
+import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
 import no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator;
+import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.security.token.support.core.context.TokenValidationContextHolder;
 import no.nav.security.token.support.spring.api.EnableJwtTokenValidation;
 import org.slf4j.Logger;
@@ -64,6 +66,20 @@ public class BidragDokumentArkivConfig {
     }
 
     @Bean
+    ResourceByDiscriminator<JournalpostService> journalpostServices(
+        ResourceByDiscriminator<SafConsumer> safConsumers,
+        PersonConsumer personConsumer,
+        DokarkivConsumer dokarkivConsumer
+    ) {
+        var journalpostServiceRegularUser = new JournalpostService(safConsumers.get(Discriminator.REGULAR_USER), personConsumer, dokarkivConsumer);
+        var journalpostServiceServiceUser = new JournalpostService(safConsumers.get(Discriminator.SERVICE_USER), personConsumer, dokarkivConsumer);
+        var journalpostServices = new HashMap<Discriminator, JournalpostService>();
+        journalpostServices.put(Discriminator.REGULAR_USER, journalpostServiceRegularUser);
+        journalpostServices.put(Discriminator.SERVICE_USER, journalpostServiceServiceUser);
+        return new ResourceByDiscriminator<>(journalpostServices);
+    }
+
+    @Bean
     ResourceByDiscriminator<SafConsumer> safConsumers(
             SafConsumer safConsumerRegularUser,
             SafConsumer safConsumerServiceUser,
@@ -76,6 +92,16 @@ public class BidragDokumentArkivConfig {
         safConsumers.put(Discriminator.REGULAR_USER, safConsumerRegularUser);
         safConsumers.put(Discriminator.SERVICE_USER, safConsumerServiceUser);
         return new ResourceByDiscriminator<>(safConsumers);
+    }
+
+    @Bean
+    PersonConsumer personConsumer(
+        @Qualifier("person") HttpHeaderRestTemplate httpHeaderRestTemplate,
+        EnvironmentProperties environmentProperties
+    ) {
+        httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.bdPersonUrl+"/bidrag-person"));
+
+        return new PersonConsumer(httpHeaderRestTemplate);
     }
 
     @Bean
@@ -127,12 +153,13 @@ public class BidragDokumentArkivConfig {
     @Bean
     EnvironmentProperties environmentProperties(
             @Value("${DOKARKIV_URL}") String dokarkivUrl,
+            @Value("${BD_PERSON_URL}") String bdPersonUrl,
             @Value("${SAF_GRAPHQL_URL}") String safQraphiQlUrl,
             @Value("${SRV_BD_ARKIV_AUTH}") String secretForServiceUser,
             @Value("${ACCESS_TOKEN_URL}") String securityTokenUrl,
             @Value("${NAIS_APP_NAME}") String naisAppName
     ) {
-        var environmentProperties = new EnvironmentProperties(dokarkivUrl, safQraphiQlUrl, secretForServiceUser, securityTokenUrl, naisAppName);
+        var environmentProperties = new EnvironmentProperties(dokarkivUrl, safQraphiQlUrl, secretForServiceUser, securityTokenUrl, naisAppName, bdPersonUrl);
         LOGGER.info(String.format("> Environment: %s", environmentProperties));
 
         return environmentProperties;
@@ -141,12 +168,14 @@ public class BidragDokumentArkivConfig {
     static class EnvironmentProperties {
 
         final String dokarkivUrl;
+        final String bdPersonUrl;
         final String safQraphiQlUrl;
         final String secretForServiceUser;
         final String securityTokenUrl;
         final String naisAppName;
 
-        public EnvironmentProperties(String dokarkivUrl, String safQraphiQlUrl, String secretForServiceUser, String securityTokenUrl, String naisAppName) {
+        public EnvironmentProperties(String dokarkivUrl, String safQraphiQlUrl, String secretForServiceUser, String securityTokenUrl, String naisAppName, String bdPersonUrl) {
+            this.bdPersonUrl = bdPersonUrl;
             this.dokarkivUrl = dokarkivUrl;
             this.safQraphiQlUrl = safQraphiQlUrl;
             this.secretForServiceUser = secretForServiceUser;

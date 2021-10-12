@@ -7,11 +7,13 @@ import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelse;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
+import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
+@Profile("!q1")
 public class HendelseListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HendelseListener.class);
@@ -26,7 +29,7 @@ public class HendelseListener {
     @Autowired
     private HendelserProducer producer;
     @Autowired
-    private ResourceByDiscriminator<SafConsumer> safConsumers;
+    private ResourceByDiscriminator<JournalpostService> journalpostServices;
 
 
     @KafkaListener(
@@ -69,7 +72,7 @@ public class HendelseListener {
 
     private JournalpostHendelse createJournalpostHendelse(JournalfoeringHendelseRecord journalfoeringHendelseRecord){
         var journalpostId = journalfoeringHendelseRecord.getJournalpostId();
-        var journalpostOptional = Optional.ofNullable(safConsumers.get(Discriminator.SERVICE_USER).hentJournalpost(journalpostId));
+        var journalpostOptional = journalpostServices.get(Discriminator.SERVICE_USER).hentJournalpostMedAktorId(journalpostId);
         if (journalpostOptional.isEmpty()){
             throw new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId));
         }
@@ -84,10 +87,6 @@ public class HendelseListener {
         if (Objects.nonNull(journalpost.getBruker()) && Objects.nonNull(journalpost.getBruker().getId())){
             var bruker = journalpost.getBruker();
             journalpostHendelse.addAktoerId(bruker.getId());
-            if (bruker.isAktoerId()){
-                LOGGER.warn("Bruker for journalpost {} fikk FNR og ikke AKTOERID fra Saf", journalpostId);
-            }
-
         }
         return journalpostHendelse;
 

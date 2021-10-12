@@ -4,8 +4,11 @@ import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TES
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.matches;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -25,6 +28,8 @@ import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
+import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
+import no.nav.bidrag.dokument.dto.AktorDto;
 import no.nav.bidrag.dokument.dto.EndreDokument;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
@@ -39,6 +44,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
@@ -64,6 +70,9 @@ class JournalpostControllerTest {
   @MockBean
   @Qualifier("dokarkiv")
   private HttpHeaderRestTemplate restTemplateDokarkivMock;
+  @MockBean
+  @Qualifier("person")
+  private HttpHeaderRestTemplate restTemplatePersonMock;
   @Value("classpath:json/dokumentoversiktFagsakQueryResponse.json")
   private Resource responseOversiktFagsakJsonResource;
   @Value("classpath:json/journalpostSafResponse.json")
@@ -77,6 +86,8 @@ class JournalpostControllerTest {
   @Autowired
   private ObjectMapper objectMapper;
 
+  private String PERSON_IDENT = "12345678910";
+  private String AKTOR_IDENT = "92345678910";
   @Test
   @DisplayName("should map context path with random port")
   void shouldMapToContextPath() {
@@ -163,6 +174,8 @@ class JournalpostControllerTest {
 
     when(restTemplateSafMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(String.class))).thenReturn(
         new ResponseEntity<>(jsonResponse, HttpStatus.OK));
+    when(restTemplatePersonMock.exchange(anyString(), eq(HttpMethod.GET), eq(null), eq(PersonResponse.class)))
+        .thenReturn(new ResponseEntity<>(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK));
 
     var responseEntity = httpHeaderTestRestTemplate.exchange(
         initUrl() + "/journal/JOARK-" + journalpostIdFraJson + "?saksnummer=5276661",
@@ -177,6 +190,7 @@ class JournalpostControllerTest {
         () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getInnhold).isEqualTo("Filosofens bidrag"),
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getJournalpostId).isEqualTo("JOARK-" + journalpostIdFraJson),
+        () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getGjelderAktor).extracting(AktorDto::getIdent).isEqualTo(PERSON_IDENT),
         () -> verify(restTemplateSafMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(String.class))
     ));
   }
@@ -188,6 +202,8 @@ class JournalpostControllerTest {
 
     when(restTemplateSafMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(String.class)))
         .thenReturn(new ResponseEntity<>(jsonResponse, HttpStatus.OK));
+    when(restTemplatePersonMock.exchange(anyString(), eq(HttpMethod.GET), eq(null), eq(PersonResponse.class)))
+        .thenReturn(new ResponseEntity<>(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK));
 
     var jouralposterResponseEntity = httpHeaderTestRestTemplate.exchange(
         initUrl() + "/sak/5276661/journal?fagomrade=BID", HttpMethod.GET, null, listeMedJournalposterTypeReference()
@@ -195,7 +211,9 @@ class JournalpostControllerTest {
 
     assertAll(
         () -> assertThat(jouralposterResponseEntity).extracting(ResponseEntity::getStatusCode).isEqualTo(HttpStatus.OK),
-        () -> assertThat(jouralposterResponseEntity.getBody()).hasSize(3)
+        () -> assertThat(jouralposterResponseEntity.getBody()).hasSize(3),
+        () -> verify(restTemplatePersonMock, times(3)).exchange(anyString(), eq(HttpMethod.GET), eq(null), eq(PersonResponse.class)),
+        () -> verify(restTemplateSafMock, times(1)).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(String.class))
     );
   }
 
@@ -222,6 +240,8 @@ class JournalpostControllerTest {
 
     when(restTemplateSafMock.exchange(eq("/"), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
         .thenReturn(new ResponseEntity<>(jsonResponse, HttpStatus.OK));
+    when(restTemplatePersonMock.exchange(anyString(), eq(HttpMethod.GET), eq(null), eq(PersonResponse.class)))
+        .thenReturn(new ResponseEntity<>(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK));
 
     when(restTemplateDokarkivMock.exchange(
         eq("/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson),
@@ -295,6 +315,8 @@ class JournalpostControllerTest {
 
     when(restTemplateSafMock.exchange(eq("/"), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
         .thenReturn(new ResponseEntity<>(jsonResponse, HttpStatus.OK));
+    when(restTemplatePersonMock.exchange(anyString(), eq(HttpMethod.GET), eq(null), eq(PersonResponse.class)))
+        .thenReturn(new ResponseEntity<>(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK));
 
     when(restTemplateDokarkivMock.exchange(
         eq("/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson),

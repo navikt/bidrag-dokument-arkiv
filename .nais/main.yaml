@@ -21,5 +21,7 @@ env:
     value: bidrag.journalpost
   - name: TOPIC_JOURNALFOERING
     value: teamdokumenthandtering.aapen-dok-journalfoering
+  - name: BD_PERSON_URL
+    value: https://bidrag-person.dev.adeo.no
 vault:
   kvPath: dev
