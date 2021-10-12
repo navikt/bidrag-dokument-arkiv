@@ -1,7 +1,11 @@
 server:
   servlet:
     context-path: /bidrag-dokument-arkiv
-
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "prometheus,health"
 springdoc:
   packages-to-scan: no.nav.bidrag.dokument.arkiv.controller
 ---

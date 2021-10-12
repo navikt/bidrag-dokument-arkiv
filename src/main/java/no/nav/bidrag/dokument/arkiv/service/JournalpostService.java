@@ -68,7 +68,7 @@ public class JournalpostService {
       return journalpost;
     }
 
-    var personResponse = hentPerson(journalpost);
+    var personResponse = hentPerson(bruker.getId());
     var brukerId = personResponse.getIdent();
     journalpost.setBruker(new Bruker(brukerId, "FNR"));
     return journalpost;
@@ -80,17 +80,16 @@ public class JournalpostService {
       return journalpost;
     }
 
-    var personResponse = hentPerson(journalpost);
+    var personResponse = hentPerson(bruker.getId());
     var brukerId = personResponse.getAktoerId();
     journalpost.setBruker(new Bruker(brukerId, "AKTORID"));
     return journalpost;
   }
 
-  private PersonResponse hentPerson(Journalpost journalpost) {
-    var bruker = journalpost.getBruker();
-    var personResponse = personConsumer.hentPerson(bruker.getId());
+  private PersonResponse hentPerson(String personId) {
+    var personResponse = personConsumer.hentPerson(personId);
     if (!personResponse.is2xxSuccessful()) {
-      throw new PersonException("Det skjedde en feil ved konvertering av Aktørid til fødslesnummer", HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new PersonException("Det skjedde en feil ved henting av person", HttpStatus.INTERNAL_SERVER_ERROR);
     }
     return personResponse.getResponseEntity().getBody();
   }

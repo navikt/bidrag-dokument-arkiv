@@ -3,7 +3,7 @@ ISSO_ISSUER_URL: http://localhost:8888/isso
 ACCESS_TOKEN_URL: https://security-token-service.dev.adeo.no
 AKTORREGISTER_URL: https://app-q1.adeo.no/aktoerregister
 DOKARKIV_URL: https://dokarkiv-q1.dev.adeo.no
-BD_PERSON_URL: https://bidrag-person-feature.dev.adeo.no
+BIDRAG_PERSON_URL: https://bidrag-person-feature.dev.adeo.no
 SAF_GRAPHQL_URL: https://saf-q1.dev.adeo.no/graphql
 JOURNALFOERINGHENDELSE_V1_TOPIC_URL: teamdokumenthandtering.aapen-dok-journalfoering-q1
 NAIS_APP_NAME: bidrag-dokument-arkiv-feature

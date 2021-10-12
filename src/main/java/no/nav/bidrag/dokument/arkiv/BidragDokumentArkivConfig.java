@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import java.util.HashMap;
 import no.nav.bidrag.commons.ExceptionLogger;
 import no.nav.bidrag.commons.web.CorrelationIdFilter;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
@@ -31,8 +32,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-
-import java.util.HashMap;
 
 @Configuration
 @EnableJwtTokenValidation(ignore = {"org.springdoc", "org.springframework"})
@@ -100,7 +99,7 @@ public class BidragDokumentArkivConfig {
         @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
         EnvironmentProperties environmentProperties
     ) {
-        httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.bdPersonUrl+"/bidrag-person"));
+        httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.bidragPersonUrl +"/bidrag-person"));
         return new PersonConsumer(httpHeaderRestTemplate);
     }
 
@@ -168,13 +167,13 @@ public class BidragDokumentArkivConfig {
     @Bean
     EnvironmentProperties environmentProperties(
             @Value("${DOKARKIV_URL}") String dokarkivUrl,
-            @Value("${BD_PERSON_URL}") String bdPersonUrl,
+            @Value("${BIDRAG_PERSON_URL}") String bidragPersonUrl,
             @Value("${SAF_GRAPHQL_URL}") String safQraphiQlUrl,
             @Value("${SRV_BD_ARKIV_AUTH}") String secretForServiceUser,
             @Value("${ACCESS_TOKEN_URL}") String securityTokenUrl,
             @Value("${NAIS_APP_NAME}") String naisAppName
     ) {
-        var environmentProperties = new EnvironmentProperties(dokarkivUrl, safQraphiQlUrl, secretForServiceUser, securityTokenUrl, naisAppName, bdPersonUrl);
+        var environmentProperties = new EnvironmentProperties(dokarkivUrl, safQraphiQlUrl, secretForServiceUser, securityTokenUrl, naisAppName, bidragPersonUrl);
         LOGGER.info(String.format("> Environment: %s", environmentProperties));
 
         return environmentProperties;
@@ -183,14 +182,14 @@ public class BidragDokumentArkivConfig {
     static class EnvironmentProperties {
 
         final String dokarkivUrl;
-        final String bdPersonUrl;
+        final String bidragPersonUrl;
         final String safQraphiQlUrl;
         final String secretForServiceUser;
         final String securityTokenUrl;
         final String naisAppName;
 
-        public EnvironmentProperties(String dokarkivUrl, String safQraphiQlUrl, String secretForServiceUser, String securityTokenUrl, String naisAppName, String bdPersonUrl) {
-            this.bdPersonUrl = bdPersonUrl;
+        public EnvironmentProperties(String dokarkivUrl, String safQraphiQlUrl, String secretForServiceUser, String securityTokenUrl, String naisAppName, String bidragPersonUrl) {
+            this.bidragPersonUrl = bidragPersonUrl;
             this.dokarkivUrl = dokarkivUrl;
             this.safQraphiQlUrl = safQraphiQlUrl;
             this.secretForServiceUser = secretForServiceUser;
@@ -202,6 +201,7 @@ public class BidragDokumentArkivConfig {
         public String toString() {
             return "dokarkivUrl='" + dokarkivUrl + '\'' +
                     ", safQraphiQlUrl='" + safQraphiQlUrl + '\'' +
+                    ", bidragPersonUrl='" + bidragPersonUrl + '\'' +
                     ", securityTokenUrl='" + securityTokenUrl + '\'' +
                     ", naisAppName='" + naisAppName + '\'' +
                     ", secretForServiceUser '" + notActualValue() + "'.";

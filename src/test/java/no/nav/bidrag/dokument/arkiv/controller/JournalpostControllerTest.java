@@ -4,7 +4,6 @@ import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TES
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.matches;
 import static org.mockito.Mockito.never;
@@ -44,7 +43,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
@@ -121,8 +119,9 @@ class JournalpostControllerTest {
   @DisplayName("skal ha body som er null samt header warning når journalpost ikke finnes")
   void skalHaBodySomErNullSamtHeaderWarningNarJournalpostIkkeFinnes() throws IOException {
     var jsonResponse = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJournalpostNotFoundJsonResource.getFile().toURI()))));
-    when(baseRestemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(String.class)))
-        .thenReturn(new ResponseEntity<>(jsonResponse, HttpStatus.OK));
+
+    mockSafResponse(jsonResponse, HttpStatus.OK);
+    mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
 
     var journalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
         initUrl() + "/journal/JOARK-1?saksnummer=007",
@@ -146,8 +145,8 @@ class JournalpostControllerTest {
     var jsonResponse = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJournalpostJsonResource.getFile().toURI()))));
     var journalpostIdFraJson = 201028011;
 
-    when(baseRestemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(String.class)))
-        .thenReturn(new ResponseEntity<>(jsonResponse, HttpStatus.OK));
+    mockSafResponse(jsonResponse, HttpStatus.OK);
+    mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
 
     var responseEntity = httpHeaderTestRestTemplate.exchange(
         initUrl() + "/journal/JOARK-" + journalpostIdFraJson + "?saksnummer=007",
@@ -164,15 +163,36 @@ class JournalpostControllerTest {
   }
 
   @Test
+  @DisplayName("skal få 500 INTERNAL SERVER når person api feiler")
+  void skalFaServerFeilNarPersonApietFeiler() throws IOException {
+    var jsonResponse = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJournalpostJsonResource.getFile().toURI()))));
+    var journalpostIdFraJson = 201028011;
+
+    mockSafResponse(jsonResponse, HttpStatus.OK);
+    mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.BAD_REQUEST);
+
+    var responseEntity = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/journal/JOARK-" + journalpostIdFraJson + "?saksnummer=5276661",
+        HttpMethod.GET,
+        null,
+        JournalpostResponse.class
+    );
+
+    assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
+        () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR),
+        () -> assertThat(response.getBody()).isNull(),
+        () -> verify(baseRestemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(String.class))
+    ));
+  }
+
+  @Test
   @DisplayName("skal hente Journalpost når den eksisterer")
   void skalHenteJournalpostNarDenEksisterer() throws IOException {
     var jsonResponse = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJournalpostJsonResource.getFile().toURI()))));
     var journalpostIdFraJson = 201028011;
 
-    when(baseRestemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(String.class))).thenReturn(
-        new ResponseEntity<>(jsonResponse, HttpStatus.OK));
-    when(baseRestemplateMock.exchange(matches("/informasjon/*"), eq(HttpMethod.GET), eq(null), eq(PersonResponse.class)))
-        .thenReturn(new ResponseEntity<>(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK));
+    mockSafResponse(jsonResponse, HttpStatus.OK);
+    mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
 
     var responseEntity = httpHeaderTestRestTemplate.exchange(
         initUrl() + "/journal/JOARK-" + journalpostIdFraJson + "?saksnummer=5276661",
@@ -188,7 +208,8 @@ class JournalpostControllerTest {
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getInnhold).isEqualTo("Filosofens bidrag"),
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getJournalpostId).isEqualTo("JOARK-" + journalpostIdFraJson),
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getGjelderAktor).extracting(AktorDto::getIdent).isEqualTo(PERSON_IDENT),
-        () -> verify(baseRestemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(String.class))
+        () -> verify(baseRestemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(String.class)),
+        () -> verify(baseRestemplateMock).exchange(matches("/informasjon/*"), eq(HttpMethod.GET), any(), eq(PersonResponse.class))
     ));
   }
 
@@ -197,10 +218,8 @@ class JournalpostControllerTest {
   void skalHenteJournalposterForEnBidragssak() throws IOException {
     var jsonResponse = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseOversiktFagsakJsonResource.getFile().toURI()))));
 
-    when(baseRestemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(), eq(String.class)))
-        .thenReturn(new ResponseEntity<>(jsonResponse, HttpStatus.OK));
-    when(baseRestemplateMock.exchange(matches("/informasjon/*"), eq(HttpMethod.GET), eq(null), eq(PersonResponse.class)))
-        .thenReturn(new ResponseEntity<>(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK));
+    mockSafResponse(jsonResponse, HttpStatus.OK);
+    mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
 
     var jouralposterResponseEntity = httpHeaderTestRestTemplate.exchange(
         initUrl() + "/sak/5276661/journal?fagomrade=BID", HttpMethod.GET, null, listeMedJournalposterTypeReference()
@@ -235,10 +254,8 @@ class JournalpostControllerTest {
     var endreJournalpostCommand = createEndreJournalpostCommand();
     endreJournalpostCommand.setSkalJournalfores(true);
 
-    when(baseRestemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
-        .thenReturn(new ResponseEntity<>(jsonResponse, HttpStatus.OK));
-    when(baseRestemplateMock.exchange(matches("/informasjon/*"), eq(HttpMethod.GET), eq(null), eq(PersonResponse.class)))
-        .thenReturn(new ResponseEntity<>(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK));
+    mockSafResponse(jsonResponse, HttpStatus.OK);
+    mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
 
     when(restTemplateDokarkivMock.exchange(
         eq("/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson),
@@ -310,10 +327,8 @@ class JournalpostControllerTest {
 
     var endreJournalpostCommand = createEndreJournalpostCommand();
 
-    when(baseRestemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
-        .thenReturn(new ResponseEntity<>(jsonResponse, HttpStatus.OK));
-    when(baseRestemplateMock.exchange(matches("/informasjon/*"), eq(HttpMethod.GET), eq(null), eq(PersonResponse.class)))
-        .thenReturn(new ResponseEntity<>(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK));
+    mockSafResponse(jsonResponse, HttpStatus.OK);
+    mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
 
     when(restTemplateDokarkivMock.exchange(
         eq("/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson),
@@ -369,6 +384,14 @@ class JournalpostControllerTest {
     );
   }
 
+  private void mockSafResponse(String response, HttpStatus status){
+    when(baseRestemplateMock.exchange(eq("/"), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+        .thenReturn(new ResponseEntity<>(response, status));
+  }
+  private void mockPersonResponse(PersonResponse personResponse, HttpStatus status){
+    when(baseRestemplateMock.exchange(matches("/informasjon/*"), eq(HttpMethod.GET), eq(null), eq(PersonResponse.class)))
+        .thenReturn(new ResponseEntity<>(personResponse, status));
+  }
   private String initUrl() {
     return "http://localhost:" + port + contextPath;
   }

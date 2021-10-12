@@ -6,8 +6,9 @@
 Microtjeneste som kommuniserer med et rest-api (GraphiQL): bidrag-dokument leser fra arkiv (JOARK)
 
 ## kjøring lokalt
-Verdiene i `src/test/resources/resources.properties` må settes opp som miljøvariabler når man starter
-`BidragDokumentArkiv` for kjøring lokalt.
+Verdiene i `src/test/resources/application-local.yaml` må settes opp som miljøvariabler når man starter
+`BidragDokumentArkiv` for kjøring lokalt. Start applikasjon med `spring.profiles.active=local,live`
+`SRV_BD_ARKIV_AUTH` kan hentes fra Vault
 
 Se [Sikkerhet](#Sikkerhet) for kjøring med sikkerhet lokalt.
 
