@@ -1,9 +1,8 @@
 package no.nav.bidrag.dokument.arkiv.security;
 
-import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.ISSUER;
-
 import java.util.Optional;
 import no.nav.bidrag.dokument.arkiv.model.TokenException;
+import no.nav.security.token.support.core.context.TokenValidationContext;
 import no.nav.security.token.support.core.context.TokenValidationContextHolder;
 import no.nav.security.token.support.core.jwt.JwtToken;
 
@@ -23,7 +22,7 @@ public class OidcTokenGenerator {
   private String fetchToken() {
     return Optional.ofNullable(tokenValidationContextHolder)
         .map(TokenValidationContextHolder::getTokenValidationContext)
-        .map(tokenValidationContext -> tokenValidationContext.getJwtTokenAsOptional(ISSUER))
+        .map(TokenValidationContext::getFirstValidToken)
         .map(Optional::get)
         .map(JwtToken::getTokenAsString)
         .orElseThrow(() -> new TokenException("Kunne ikke videresende Bearer token"));

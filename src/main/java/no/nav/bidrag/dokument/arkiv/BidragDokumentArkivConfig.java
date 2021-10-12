@@ -68,11 +68,11 @@ public class BidragDokumentArkivConfig {
     @Bean
     ResourceByDiscriminator<JournalpostService> journalpostServices(
         ResourceByDiscriminator<SafConsumer> safConsumers,
-        PersonConsumer personConsumer,
+        ResourceByDiscriminator<PersonConsumer> personConsumers,
         DokarkivConsumer dokarkivConsumer
     ) {
-        var journalpostServiceRegularUser = new JournalpostService(safConsumers.get(Discriminator.REGULAR_USER), personConsumer, dokarkivConsumer);
-        var journalpostServiceServiceUser = new JournalpostService(safConsumers.get(Discriminator.SERVICE_USER), personConsumer, dokarkivConsumer);
+        var journalpostServiceRegularUser = new JournalpostService(safConsumers.get(Discriminator.REGULAR_USER), personConsumers.get(Discriminator.REGULAR_USER), dokarkivConsumer);
+        var journalpostServiceServiceUser = new JournalpostService(safConsumers.get(Discriminator.SERVICE_USER), personConsumers.get(Discriminator.SERVICE_USER), dokarkivConsumer);
         var journalpostServices = new HashMap<Discriminator, JournalpostService>();
         journalpostServices.put(Discriminator.REGULAR_USER, journalpostServiceRegularUser);
         journalpostServices.put(Discriminator.SERVICE_USER, journalpostServiceServiceUser);
@@ -95,13 +95,28 @@ public class BidragDokumentArkivConfig {
     }
 
     @Bean
-    PersonConsumer personConsumer(
-        @Qualifier("person") HttpHeaderRestTemplate httpHeaderRestTemplate,
+    @Scope("prototype")
+    PersonConsumer basePersonConsumer(
+        @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
         EnvironmentProperties environmentProperties
     ) {
         httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.bdPersonUrl+"/bidrag-person"));
-
         return new PersonConsumer(httpHeaderRestTemplate);
+    }
+
+    @Bean
+    ResourceByDiscriminator<PersonConsumer> personConsumers(
+        PersonConsumer personConsumerRegularUser,
+        PersonConsumer personConsumerServiceUser,
+        OidcTokenGenerator oidcTokenGenerator,
+        TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator
+    ) {
+        personConsumerRegularUser.leggTilSikkerhet(oidcTokenGenerator::fetchBearerToken);
+        personConsumerServiceUser.leggTilSikkerhet(tokenForBasicAuthenticationGenerator::generateToken);
+        var personConsumers = new HashMap<Discriminator, PersonConsumer>();
+        personConsumers.put(Discriminator.REGULAR_USER, personConsumerRegularUser);
+        personConsumers.put(Discriminator.SERVICE_USER, personConsumerServiceUser);
+        return new ResourceByDiscriminator<>(personConsumers);
     }
 
     @Bean

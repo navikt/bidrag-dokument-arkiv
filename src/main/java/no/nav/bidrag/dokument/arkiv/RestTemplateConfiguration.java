@@ -35,19 +35,6 @@ public class RestTemplateConfiguration {
   }
 
   @Bean
-  @Qualifier("person")
-  @Scope("prototype")
-  public HttpHeaderRestTemplate bdPersonRestTemplate(
-      OidcTokenGenerator oidcTokenGenerator,
-      @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate
-  ) {
-    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.AUTHORIZATION, oidcTokenGenerator::fetchBearerToken);
-    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
-    return httpHeaderRestTemplate;
-  }
-
-
-  @Bean
   @Qualifier("dokarkiv")
   @Scope("prototype")
   public HttpHeaderRestTemplate dokarkivRestTemplate(
@@ -62,15 +49,4 @@ public class RestTemplateConfiguration {
     return httpHeaderRestTemplate;
   }
 
-  @Bean
-  @Qualifier("saf")
-  @Scope("prototype")
-  public HttpHeaderRestTemplate safRestTemplate(
-      OidcTokenGenerator oidcTokenGenerator,
-      @Qualifier("dokarkiv") HttpHeaderRestTemplate httpHeaderRestTemplate
-  ) {
-    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.AUTHORIZATION, oidcTokenGenerator::fetchBearerToken);
-
-    return httpHeaderRestTemplate;
-  }
 }
