@@ -82,7 +82,7 @@ public class JournalpostService {
 
     var personResponse = hentPerson(bruker.getId());
     var brukerId = personResponse.getAktoerId();
-    journalpost.setBruker(new Bruker(brukerId, "AKTORID"));
+    journalpost.setBruker(new Bruker(brukerId, "AKTOERID"));
     return journalpost;
   }
 
