@@ -55,30 +55,29 @@ public class HendelseListener {
   private void registrerOppgaveForHendelse(
       @Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
     Optional<HendelsesType> muligType = HendelsesType.from(journalfoeringHendelseRecord.getHendelsesType());
-    Optional<MottaksKanal> muligMottaksKanal = MottaksKanal.from(journalfoeringHendelseRecord.getMottaksKanal());
     muligType.ifPresent(
-        hendelsesType -> muligMottaksKanal.ifPresent(mottaksKanal -> {
+        hendelsesType -> {
           LOGGER.info("Ny hendelse: {}", hendelsesType);
-          if (hendelsesType == HendelsesType.JOURNALPOST_MOTTAT && mottaksKanal == MottaksKanal.NAV_NO) {
-            this.meterRegistry.counter(HENDELSE_COUNTER_NAME,
-                "hendelse_type", hendelsesType.name(),
-                "tema", journalfoeringHendelseRecord.getTemaNytt(),
-                "kanal", mottaksKanal.name()).count();
+          if (hendelsesType == HendelsesType.JOURNALPOST_MOTTAT) {
             LOGGER.info("Journalpost hendelse {} med data {}", hendelsesType, journalfoeringHendelseRecord);
-            producer.publish(createJournalpostHendelse(journalfoeringHendelseRecord));
+            behandleHendelse(hendelsesType, journalfoeringHendelseRecord);
           } else {
             LOGGER.info("Ignorer hendelse: {}", hendelsesType);
           }
-        })
+        }
     );
-
-    if (muligMottaksKanal.isEmpty()) {
-      LOGGER.warn("Ingen implementasjon for mottakskanal {}", journalfoeringHendelseRecord.getMottaksKanal());
-    }
 
     if (muligType.isEmpty()) {
       LOGGER.warn("Ingen implementasjon for hendelse {}", journalfoeringHendelseRecord.getHendelsesType());
     }
+  }
+
+  private void behandleHendelse(HendelsesType hendelsesType, JournalfoeringHendelseRecord journalfoeringHendelseRecord){
+    this.meterRegistry.counter(HENDELSE_COUNTER_NAME,
+        "hendelse_type", hendelsesType.name(),
+        "tema", journalfoeringHendelseRecord.getTemaNytt(),
+        "kanal", journalfoeringHendelseRecord.getMottaksKanal()).increment();
+    producer.publish(createJournalpostHendelse(journalfoeringHendelseRecord));
   }
 
   private JournalpostHendelse createJournalpostHendelse(JournalfoeringHendelseRecord journalfoeringHendelseRecord) {

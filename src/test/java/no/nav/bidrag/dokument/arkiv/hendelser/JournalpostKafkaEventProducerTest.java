@@ -146,20 +146,6 @@ class JournalpostKafkaEventProducerTest {
     verify(kafkaTemplateMock, never()).send(any(), any(), any());
   }
 
-  @Test
-  @DisplayName("skal ignorere hendelse hvis mottakskanal ikke er NAV_NO")
-  void shouldIgnoreWhenMottakskanalIsNotNavNo() {
-    var journalpostId1 = 123213L;
-    JournalfoeringHendelseRecord record = new JournalfoeringHendelseRecord();
-    record.setJournalpostId(journalpostId1);
-    record.setHendelsesType(HendelsesType.JOURNALPOST_MOTTAT.getHendelsesType());
-    record.setTemaNytt("BID");
-    record.setMottaksKanal("NAV_NO_CHAT");
-    hendelseListener.listen(record);
-
-    verify(kafkaTemplateMock, never()).send(any(), any(), any());
-  }
-
   private void mockSafResponse(Long journalpostId, String brukerId, String brukerType, String jfEnhet){
     var safJournalpostResponse = new Journalpost();
     safJournalpostResponse.setBruker(new Bruker(brukerId, brukerType));
