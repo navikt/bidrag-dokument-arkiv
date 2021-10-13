@@ -55,23 +55,23 @@ public class HendelseListener {
     private void registrerOppgaveForHendelse(
             @Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
         Optional<HendelsesType> muligType = HendelsesType.from(journalfoeringHendelseRecord.getHendelsesType());
-        LOGGER.info("Ny hendelse: {}", muligType);
-        JournalpostHendelse journalpostHendelse = createJournalpostHendelse(journalfoeringHendelseRecord);
         muligType.ifPresent(
                 hendelsesType -> {
-                    switch (hendelsesType) {
-                        case JOURNALPOST_MOTTAT, TEMA_ENDRET, MIDLERTIDIG_JOURNALFORT -> {
-                            this.meterRegistry.counter(HENDELSE_COUNTER_NAME, "hendelse_type", hendelsesType.name(), "tema", journalfoeringHendelseRecord.getTemaNytt()).count();
-                            LOGGER.info("Journalpost hendelse {} med data {}", hendelsesType, journalfoeringHendelseRecord);
-                            producer.publish(journalpostHendelse);
-                        }
+                    LOGGER.info("Ny hendelse: {}", hendelsesType);
+                    if (hendelsesType == HendelsesType.JOURNALPOST_MOTTAT) {
+                        this.meterRegistry.counter(HENDELSE_COUNTER_NAME, "hendelse_type", hendelsesType.name(), "tema",
+                            journalfoeringHendelseRecord.getTemaNytt()).count();
+                        LOGGER.info("Journalpost hendelse {} med data {}", hendelsesType, journalfoeringHendelseRecord);
+                        JournalpostHendelse journalpostHendelse = createJournalpostHendelse(journalfoeringHendelseRecord);
+                        producer.publish(journalpostHendelse);
+                    } else {
+                        LOGGER.info("Ignorer hendelse: {}", hendelsesType);
                     }
-
                 }
         );
 
         if (muligType.isEmpty()) {
-            LOGGER.error("Ingen implementasjon for {}", journalfoeringHendelseRecord.getHendelsesType());
+            LOGGER.warn("Ingen implementasjon for hendelse {}", journalfoeringHendelseRecord.getHendelsesType());
         }
     }
 
