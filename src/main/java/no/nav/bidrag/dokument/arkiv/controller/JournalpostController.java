@@ -13,6 +13,8 @@ import java.util.List;
 import no.nav.bidrag.commons.KildesystemIdenfikator;
 import no.nav.bidrag.commons.web.EnhetFilter;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
+import no.nav.bidrag.dokument.arkiv.model.Discriminator;
+import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
@@ -39,8 +41,8 @@ public class JournalpostController {
 
   private final JournalpostService journalpostService;
 
-  public JournalpostController(JournalpostService journalpostService) {
-    this.journalpostService = journalpostService;
+  public JournalpostController(ResourceByDiscriminator<JournalpostService> journalpostService) {
+    this.journalpostService = journalpostService.get(Discriminator.REGULAR_USER);
   }
 
   @GetMapping("/journal/{joarkJournalpostId}")

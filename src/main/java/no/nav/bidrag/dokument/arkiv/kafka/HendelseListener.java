@@ -1,33 +1,40 @@
 package no.nav.bidrag.dokument.arkiv.kafka;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import java.util.Objects;
+import java.util.Optional;
 import no.nav.bidrag.commons.CorrelationId;
-import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelse;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
+import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
+@Profile("!local")
 public class HendelseListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HendelseListener.class);
     public static final String JOURNALPOST_HENDELSE_OPPRETT_OPPGAVE = "OPPRETT_OPPGAVE";
-    @Autowired
-    private HendelserProducer producer;
-    @Autowired
-    private ResourceByDiscriminator<SafConsumer> safConsumers;
+    private static final String HENDELSE_COUNTER_NAME="joark_hendelse";
 
+    private final MeterRegistry meterRegistry;
+    private final HendelserProducer producer;
+    private final ResourceByDiscriminator<JournalpostService> journalpostServices;
+
+    public HendelseListener(HendelserProducer producer, ResourceByDiscriminator<JournalpostService> journalpostServices, MeterRegistry registry) {
+        this.producer = producer;
+        this.journalpostServices = journalpostServices;
+        this.meterRegistry = registry;
+    }
 
     @KafkaListener(
             topics = "${TOPIC_JOURNALFOERING}",
@@ -37,7 +44,7 @@ public class HendelseListener {
         MDC.put("correlationId", correlationId.get());
         Oppgavetema oppgavetema = new Oppgavetema(journalfoeringHendelseRecord);
         if (!oppgavetema.erOmhandlingAvBidrag()){
-            LOGGER.debug("Oppgavetema omhandler ikke bidrag ");
+            LOGGER.debug("Oppgavetema omhandler ikke bidrag");
             return;
         }
 
@@ -54,6 +61,7 @@ public class HendelseListener {
                 hendelsesType -> {
                     switch (hendelsesType) {
                         case JOURNALPOST_MOTTAT, TEMA_ENDRET, MIDLERTIDIG_JOURNALFORT -> {
+                            this.meterRegistry.counter(HENDELSE_COUNTER_NAME, "hendelse_type", hendelsesType.name(), "tema", journalfoeringHendelseRecord.getTemaNytt()).count();
                             LOGGER.info("Journalpost hendelse {} med data {}", hendelsesType, journalfoeringHendelseRecord);
                             producer.publish(journalpostHendelse);
                         }
@@ -69,7 +77,7 @@ public class HendelseListener {
 
     private JournalpostHendelse createJournalpostHendelse(JournalfoeringHendelseRecord journalfoeringHendelseRecord){
         var journalpostId = journalfoeringHendelseRecord.getJournalpostId();
-        var journalpostOptional = Optional.ofNullable(safConsumers.get(Discriminator.SERVICE_USER).hentJournalpost(journalpostId));
+        var journalpostOptional = journalpostServices.get(Discriminator.SERVICE_USER).hentJournalpostMedAktorId(journalpostId);
         if (journalpostOptional.isEmpty()){
             throw new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId));
         }
@@ -84,10 +92,6 @@ public class HendelseListener {
         if (Objects.nonNull(journalpost.getBruker()) && Objects.nonNull(journalpost.getBruker().getId())){
             var bruker = journalpost.getBruker();
             journalpostHendelse.addAktoerId(bruker.getId());
-            if (bruker.isAktoerId()){
-                LOGGER.warn("Bruker for journalpost {} fikk FNR og ikke AKTOERID fra Saf", journalpostId);
-            }
-
         }
         return journalpostHendelse;
 

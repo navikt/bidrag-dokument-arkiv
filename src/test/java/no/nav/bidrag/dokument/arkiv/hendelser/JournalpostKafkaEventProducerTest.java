@@ -7,10 +7,13 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
+import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.Bruker;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelseListener;
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -32,7 +36,8 @@ class JournalpostKafkaEventProducerTest {
 
   @MockBean
   private SafConsumer safConsumer;
-
+  @MockBean
+  private PersonConsumer personConsumer;
   @Autowired
   private HendelseListener hendelseListener;
 
@@ -46,7 +51,7 @@ class JournalpostKafkaEventProducerTest {
     var expectedJoarkJournalpostId = "JOARK-"+journalpostId;
     var brukerId = "555555";
     var jfEnhet = "4833";
-    mockSafResponse(journalpostId, brukerId, jfEnhet);
+    mockSafResponse(journalpostId, brukerId,"AKTOERID", jfEnhet);
 
     JournalfoeringHendelseRecord record = new JournalfoeringHendelseRecord();
     record.setJournalpostId(journalpostId);
@@ -74,6 +79,42 @@ class JournalpostKafkaEventProducerTest {
   }
 
   @Test
+  @DisplayName("skal publisere journalpost hendelser med aktørid når saf returnerer FNR")
+  void skalPublisereJournalpostHendelserWhenSafReturnFNR() {
+    var journalpostId = 123213L;
+    var expectedJoarkJournalpostId = "JOARK-"+journalpostId;
+    var brukerIdFnr = "555555";
+    var brukerIdAktorId = "213213323";
+    var jfEnhet = "4833";
+    mockSafResponse(journalpostId, brukerIdFnr, "FNR", jfEnhet);
+    when(personConsumer.hentPerson(any())).thenReturn(HttpResponse.from(HttpStatus.OK, new PersonResponse(brukerIdFnr, brukerIdAktorId)));
+
+    JournalfoeringHendelseRecord record = new JournalfoeringHendelseRecord();
+    record.setJournalpostId(journalpostId);
+    record.setHendelsesType("JournalpostMottatt");
+    record.setTemaNytt("BID");
+    hendelseListener.listen(record);
+
+    var jsonCaptor = ArgumentCaptor.forClass(String.class);
+    verify(kafkaTemplateMock).send(eq(topicJournalpost), eq(expectedJoarkJournalpostId), jsonCaptor.capture());
+    verify(safConsumer).hentJournalpost(eq(journalpostId));
+
+    var hendelse = """
+        "hendelse":"OPPRETT_OPPGAVE"
+        """.trim();
+
+    var expectedJournalpostId = String.format("""
+            "journalpostId":"%s"
+            """.trim(), expectedJoarkJournalpostId);
+
+    var aktoerId = String.format("""
+            "aktoerId":"%s"
+            """.trim(), brukerIdAktorId);
+
+    assertThat(jsonCaptor.getValue()).containsSequence(hendelse).containsSequence(expectedJournalpostId).containsSequence(aktoerId);
+  }
+
+  @Test
   @DisplayName("skal ignorere hendelse hvis tema ikke er BID")
   void shouldIgnoreWhenHendelseIsNotBID() {
     var journalpostId1 = 123213L;
@@ -86,9 +127,9 @@ class JournalpostKafkaEventProducerTest {
     verify(kafkaTemplateMock, never()).send(any(), any(), any());
   }
 
-  private void mockSafResponse(Long journalpostId, String brukerId, String jfEnhet){
+  private void mockSafResponse(Long journalpostId, String brukerId, String brukerType, String jfEnhet){
     var safJournalpostResponse = new Journalpost();
-    safJournalpostResponse.setBruker(new Bruker(brukerId, "AKTOERID"));
+    safJournalpostResponse.setBruker(new Bruker(brukerId, brukerType));
     safJournalpostResponse.setJournalforendeEnhet(jfEnhet);
     when(safConsumer.hentJournalpost(journalpostId)).thenReturn(safJournalpostResponse);
   }

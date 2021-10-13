@@ -124,7 +124,10 @@
       <artifactId>graphql-dgs-client</artifactId>
       <version>${graphq-dgs-client.version}</version>
     </dependency>
-
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-prometheus</artifactId>
+    </dependency>
     <dependency>
       <groupId>no.nav.bidrag.dokument</groupId>
       <artifactId>bidrag-dokument-dto</artifactId>

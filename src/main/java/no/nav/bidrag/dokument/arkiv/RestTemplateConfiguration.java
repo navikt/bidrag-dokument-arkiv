@@ -49,15 +49,4 @@ public class RestTemplateConfiguration {
     return httpHeaderRestTemplate;
   }
 
-  @Bean
-  @Qualifier("saf")
-  @Scope("prototype")
-  public HttpHeaderRestTemplate safRestTemplate(
-      OidcTokenGenerator oidcTokenGenerator,
-      @Qualifier("dokarkiv") HttpHeaderRestTemplate httpHeaderRestTemplate
-  ) {
-    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.AUTHORIZATION, oidcTokenGenerator::fetchBearerToken);
-
-    return httpHeaderRestTemplate;
-  }
 }

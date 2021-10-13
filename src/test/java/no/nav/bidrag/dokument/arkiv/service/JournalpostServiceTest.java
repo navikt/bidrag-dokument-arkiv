@@ -11,12 +11,17 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Objects;
+import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
+import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker;
 import no.nav.bidrag.dokument.arkiv.dto.Bruker;
 import no.nav.bidrag.dokument.arkiv.dto.Dokument;
 import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQueryResponse;
+import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
+import no.nav.bidrag.dokument.arkiv.model.Discriminator;
+import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +29,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles(PROFILE_TEST)
@@ -34,9 +40,11 @@ class JournalpostServiceTest {
   @Autowired
   private ObjectMapper objectMapper;
   @Autowired
-  private JournalpostService journalpostService;
+  private ResourceByDiscriminator<JournalpostService> journalpostService;
   @MockBean
   private SafConsumer safConsumerMock;
+  @MockBean
+  private PersonConsumer personConsumerMock;
   @Value("classpath:json/dokumentoversiktFagsakQueryResponse.json")
   private Resource responseJsonResource;
 
@@ -47,9 +55,13 @@ class JournalpostServiceTest {
     var dokumentoversiktFagsakQueryResponse = objectMapper.readValue(jsonResponse, DokumentoversiktFagsakQueryResponse.class);
     Long journalpostIdFraJson = 201028011L;
 
-    when(safConsumerMock.hentJournalpost(journalpostIdFraJson)).thenReturn(dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostIdFraJson));
+    var journalpostDokOversikt = dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostIdFraJson);
 
-    var muligJournalpost = journalpostService.hentJournalpost(journalpostIdFraJson);
+    when(safConsumerMock.hentJournalpost(journalpostIdFraJson)).thenReturn(journalpostDokOversikt);
+    when(personConsumerMock.hentPerson(journalpostDokOversikt.getBruker().getId())).thenReturn(HttpResponse.from(
+        HttpStatus.OK, new PersonResponse("123123", "555555")));
+
+    var muligJournalpost = journalpostService.get(Discriminator.REGULAR_USER).hentJournalpost(journalpostIdFraJson);
 
     assertAll(
         () -> {
@@ -61,7 +73,8 @@ class JournalpostServiceTest {
           var dokumenter = journalpost.getDokumenter();
 
           assertAll(
-              () -> assertThat(bruker).extracting(Bruker::getId).as("aktor.ident").isEqualTo("1000024690889"),
+              () -> assertThat(bruker).extracting(Bruker::getId).as("aktor.ident").isEqualTo("123123"),
+              () -> assertThat(bruker).extracting(Bruker::getType).as("aktor.tyoe").isEqualTo("FNR"),
               () -> assertThat(avsenderMottaker).extracting(AvsenderMottaker::getNavn).as("avsenders navn").isEqualTo("Draugen, Do"),
               () -> assertThat(journalpost.getJournalposttype()).as("journalposttype").isEqualTo("N"),
               () -> assertThat(journalpost.getTema()).as("tema").isEqualTo("BID"),
