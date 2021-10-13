@@ -22,78 +22,83 @@ import org.springframework.stereotype.Service;
 @Profile("!local")
 public class HendelseListener {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HendelseListener.class);
-    public static final String JOURNALPOST_HENDELSE_OPPRETT_OPPGAVE = "OPPRETT_OPPGAVE";
-    private static final String HENDELSE_COUNTER_NAME="joark_hendelse";
+  private static final Logger LOGGER = LoggerFactory.getLogger(HendelseListener.class);
+  public static final String JOURNALPOST_HENDELSE_OPPRETT_OPPGAVE = "OPPRETT_OPPGAVE";
+  private static final String HENDELSE_COUNTER_NAME = "joark_hendelse";
 
-    private final MeterRegistry meterRegistry;
-    private final HendelserProducer producer;
-    private final ResourceByDiscriminator<JournalpostService> journalpostServices;
+  private final MeterRegistry meterRegistry;
+  private final HendelserProducer producer;
+  private final ResourceByDiscriminator<JournalpostService> journalpostServices;
 
-    public HendelseListener(HendelserProducer producer, ResourceByDiscriminator<JournalpostService> journalpostServices, MeterRegistry registry) {
-        this.producer = producer;
-        this.journalpostServices = journalpostServices;
-        this.meterRegistry = registry;
+  public HendelseListener(HendelserProducer producer, ResourceByDiscriminator<JournalpostService> journalpostServices, MeterRegistry registry) {
+    this.producer = producer;
+    this.journalpostServices = journalpostServices;
+    this.meterRegistry = registry;
+  }
+
+  @KafkaListener(
+      topics = "${TOPIC_JOURNALFOERING}",
+      errorHandler = "hendelseErrorHandler")
+  public void listen(@Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
+    CorrelationId correlationId = CorrelationId.generateTimestamped("journalfoeringshendelse");
+    MDC.put("correlationId", correlationId.get());
+    Oppgavetema oppgavetema = new Oppgavetema(journalfoeringHendelseRecord);
+    if (!oppgavetema.erOmhandlingAvBidrag()) {
+      LOGGER.debug("Oppgavetema omhandler ikke bidrag");
+      return;
     }
 
-    @KafkaListener(
-            topics = "${TOPIC_JOURNALFOERING}",
-            errorHandler = "hendelseErrorHandler")
-    public void listen(@Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
-        CorrelationId correlationId = CorrelationId.generateTimestamped("journalfoeringshendelse");
-        MDC.put("correlationId", correlationId.get());
-        Oppgavetema oppgavetema = new Oppgavetema(journalfoeringHendelseRecord);
-        if (!oppgavetema.erOmhandlingAvBidrag()){
-            LOGGER.debug("Oppgavetema omhandler ikke bidrag");
-            return;
-        }
+    registrerOppgaveForHendelse(journalfoeringHendelseRecord);
+    MDC.clear();
+  }
 
-        registrerOppgaveForHendelse(journalfoeringHendelseRecord);
-        MDC.clear();
+  private void registrerOppgaveForHendelse(
+      @Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
+    Optional<HendelsesType> muligType = HendelsesType.from(journalfoeringHendelseRecord.getHendelsesType());
+    muligType.ifPresent(
+        hendelsesType -> {
+          LOGGER.info("Ny hendelse: {}", hendelsesType);
+          if (hendelsesType == HendelsesType.JOURNALPOST_MOTTAT) {
+            LOGGER.info("Journalpost hendelse {} med data {}", hendelsesType, journalfoeringHendelseRecord);
+            behandleHendelse(hendelsesType, journalfoeringHendelseRecord);
+          } else {
+            LOGGER.info("Ignorer hendelse: {}", hendelsesType);
+          }
+        }
+    );
+
+    if (muligType.isEmpty()) {
+      LOGGER.warn("Ingen implementasjon for hendelse {}", journalfoeringHendelseRecord.getHendelsesType());
+    }
+  }
+
+  private void behandleHendelse(HendelsesType hendelsesType, JournalfoeringHendelseRecord journalfoeringHendelseRecord){
+    this.meterRegistry.counter(HENDELSE_COUNTER_NAME,
+        "hendelse_type", hendelsesType.name(),
+        "tema", journalfoeringHendelseRecord.getTemaNytt(),
+        "kanal", journalfoeringHendelseRecord.getMottaksKanal()).increment();
+    producer.publish(createJournalpostHendelse(journalfoeringHendelseRecord));
+  }
+
+  private JournalpostHendelse createJournalpostHendelse(JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
+    var journalpostId = journalfoeringHendelseRecord.getJournalpostId();
+    var journalpostOptional = journalpostServices.get(Discriminator.SERVICE_USER).hentJournalpostMedAktorId(journalpostId);
+    if (journalpostOptional.isEmpty()) {
+      throw new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId));
     }
 
-    private void registrerOppgaveForHendelse(
-            @Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
-        Optional<HendelsesType> muligType = HendelsesType.from(journalfoeringHendelseRecord.getHendelsesType());
-        LOGGER.info("Ny hendelse: {}", muligType);
-        JournalpostHendelse journalpostHendelse = createJournalpostHendelse(journalfoeringHendelseRecord);
-        muligType.ifPresent(
-                hendelsesType -> {
-                    switch (hendelsesType) {
-                        case JOURNALPOST_MOTTAT, TEMA_ENDRET, MIDLERTIDIG_JOURNALFORT -> {
-                            this.meterRegistry.counter(HENDELSE_COUNTER_NAME, "hendelse_type", hendelsesType.name(), "tema", journalfoeringHendelseRecord.getTemaNytt()).count();
-                            LOGGER.info("Journalpost hendelse {} med data {}", hendelsesType, journalfoeringHendelseRecord);
-                            producer.publish(journalpostHendelse);
-                        }
-                    }
+    var journalpost = journalpostOptional.get();
+    JournalpostHendelse journalpostHendelse = new JournalpostHendelse(
+        journalfoeringHendelseRecord.getJournalpostId(),
+        JOURNALPOST_HENDELSE_OPPRETT_OPPGAVE
+    );
+    journalpostHendelse.addFagomrade(journalfoeringHendelseRecord.getTemaNytt());
 
-                }
-        );
-
-        if (muligType.isEmpty()) {
-            LOGGER.error("Ingen implementasjon for {}", journalfoeringHendelseRecord.getHendelsesType());
-        }
+    if (Objects.nonNull(journalpost.getBruker()) && Objects.nonNull(journalpost.getBruker().getId())) {
+      var bruker = journalpost.getBruker();
+      journalpostHendelse.addAktoerId(bruker.getId());
     }
+    return journalpostHendelse;
 
-    private JournalpostHendelse createJournalpostHendelse(JournalfoeringHendelseRecord journalfoeringHendelseRecord){
-        var journalpostId = journalfoeringHendelseRecord.getJournalpostId();
-        var journalpostOptional = journalpostServices.get(Discriminator.SERVICE_USER).hentJournalpostMedAktorId(journalpostId);
-        if (journalpostOptional.isEmpty()){
-            throw new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId));
-        }
-
-        var journalpost = journalpostOptional.get();
-        JournalpostHendelse journalpostHendelse = new JournalpostHendelse(
-                journalfoeringHendelseRecord.getJournalpostId(),
-            JOURNALPOST_HENDELSE_OPPRETT_OPPGAVE
-        );
-        journalpostHendelse.addFagomrade(journalfoeringHendelseRecord.getTemaNytt());
-
-        if (Objects.nonNull(journalpost.getBruker()) && Objects.nonNull(journalpost.getBruker().getId())){
-            var bruker = journalpost.getBruker();
-            journalpostHendelse.addAktoerId(bruker.getId());
-        }
-        return journalpostHendelse;
-
-    }
+  }
 }

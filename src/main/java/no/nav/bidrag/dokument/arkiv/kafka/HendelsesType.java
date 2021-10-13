@@ -6,12 +6,17 @@ import java.util.Optional;
 public enum HendelsesType {
     MIDLERTIDIG_JOURNALFORT("MidlertidigJournalført"),
     JOURNALPOST_MOTTAT("JournalpostMottatt"),
-    TEMA_ENDRET("TemaEndret");
+    TEMA_ENDRET("TemaEndret"),
+    ENDELIG_JOURNALFOERT("EndeligJournalført");
 
-    private String hendelsesType;
+    private final String hendelsesType;
 
     HendelsesType(String hendelsesType) {
         this.hendelsesType = hendelsesType;
+    }
+
+    public String getHendelsesType(){
+        return hendelsesType;
     }
 
     private boolean erAv(CharSequence hendelsesType) {

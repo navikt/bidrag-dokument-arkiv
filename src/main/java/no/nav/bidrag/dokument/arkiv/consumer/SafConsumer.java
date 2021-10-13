@@ -6,7 +6,6 @@ import com.netflix.graphql.dgs.client.GraphQLResponse;
 import com.netflix.graphql.dgs.client.HttpResponse;
 import java.util.Arrays;
 import java.util.List;
-
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQuery;
 import no.nav.bidrag.dokument.arkiv.dto.GraphQuery;
@@ -16,8 +15,6 @@ import no.nav.bidrag.dokument.arkiv.model.JournalIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.model.ReasonToHttpStatus;
 import no.nav.bidrag.dokument.arkiv.model.SafException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -26,8 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 public class SafConsumer {
-
-  private final static Logger LOGGER = LoggerFactory.getLogger(SafConsumer.class);
 
   private final RestTemplate restTemplate;
 
@@ -59,7 +54,6 @@ public class SafConsumer {
 
   private GraphQLResponse consumeQuery(GraphQuery query, NotFoundException notFoundException) {
     var queryString = query.getQuery();
-    LOGGER.info(queryString);
     var graphQLClient = new DefaultGraphQLClient("");
     var response = graphQLClient.executeQuery(queryString, query.getVariables(), (url, headers, body) -> {
       ResponseEntity<String> exchange = restTemplate.exchange("/", HttpMethod.POST, new HttpEntity<>(body), String.class);
