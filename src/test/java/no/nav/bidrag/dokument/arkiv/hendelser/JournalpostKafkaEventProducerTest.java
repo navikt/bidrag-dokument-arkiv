@@ -15,6 +15,8 @@ import no.nav.bidrag.dokument.arkiv.dto.Bruker;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelseListener;
+import no.nav.bidrag.dokument.arkiv.kafka.HendelsesType;
+import no.nav.bidrag.dokument.arkiv.kafka.MottaksKanal;
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -55,8 +57,9 @@ class JournalpostKafkaEventProducerTest {
 
     JournalfoeringHendelseRecord record = new JournalfoeringHendelseRecord();
     record.setJournalpostId(journalpostId);
-    record.setHendelsesType("JournalpostMottatt");
+    record.setHendelsesType(HendelsesType.JOURNALPOST_MOTTAT.getHendelsesType());
     record.setTemaNytt("BID");
+    record.setMottaksKanal(MottaksKanal.NAV_NO.name());
     hendelseListener.listen(record);
 
     var jsonCaptor = ArgumentCaptor.forClass(String.class);
@@ -91,8 +94,9 @@ class JournalpostKafkaEventProducerTest {
 
     JournalfoeringHendelseRecord record = new JournalfoeringHendelseRecord();
     record.setJournalpostId(journalpostId);
-    record.setHendelsesType("JournalpostMottatt");
+    record.setHendelsesType(HendelsesType.JOURNALPOST_MOTTAT.getHendelsesType());
     record.setTemaNytt("BID");
+    record.setMottaksKanal(MottaksKanal.NAV_NO.name());
     hendelseListener.listen(record);
 
     var jsonCaptor = ArgumentCaptor.forClass(String.class);
@@ -120,21 +124,37 @@ class JournalpostKafkaEventProducerTest {
     var journalpostId1 = 123213L;
     JournalfoeringHendelseRecord record = new JournalfoeringHendelseRecord();
     record.setJournalpostId(journalpostId1);
-    record.setHendelsesType("JournalpostMottatt");
+    record.setHendelsesType(HendelsesType.JOURNALPOST_MOTTAT.getHendelsesType());
     record.setTemaNytt("NOT BID");
+    record.setMottaksKanal(MottaksKanal.NAV_NO.name());
     hendelseListener.listen(record);
 
     verify(kafkaTemplateMock, never()).send(any(), any(), any());
   }
 
   @Test
-  @DisplayName("skal ignorere hendelse hvis hendelse is not mottatt")
+  @DisplayName("skal ignorere hendelse hvis hendelse ikke er mottatt")
   void shouldIgnoreWhenHendelseIsNotMottatt() {
     var journalpostId1 = 123213L;
     JournalfoeringHendelseRecord record = new JournalfoeringHendelseRecord();
     record.setJournalpostId(journalpostId1);
     record.setHendelsesType("MidlertidigJournalført");
     record.setTemaNytt("BID");
+    record.setMottaksKanal(MottaksKanal.NAV_NO.name());
+    hendelseListener.listen(record);
+
+    verify(kafkaTemplateMock, never()).send(any(), any(), any());
+  }
+
+  @Test
+  @DisplayName("skal ignorere hendelse hvis mottakskanal ikke er NAV_NO")
+  void shouldIgnoreWhenMottakskanalIsNotNavNo() {
+    var journalpostId1 = 123213L;
+    JournalfoeringHendelseRecord record = new JournalfoeringHendelseRecord();
+    record.setJournalpostId(journalpostId1);
+    record.setHendelsesType(HendelsesType.JOURNALPOST_MOTTAT.getHendelsesType());
+    record.setTemaNytt("BID");
+    record.setMottaksKanal("NAV_NO_CHAT");
     hendelseListener.listen(record);
 
     verify(kafkaTemplateMock, never()).send(any(), any(), any());
