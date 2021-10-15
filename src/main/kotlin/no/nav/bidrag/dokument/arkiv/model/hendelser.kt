@@ -21,6 +21,10 @@ data class JournalpostHendelse(
         addDetaljer("fagomrade", fagomrade)
     }
 
+    fun addEnhet(enhet: String){
+        addDetaljer("enhetsnummer", enhet)
+    }
+
     fun addDetaljer(key: String, value: String){
         detaljer[key] = value
     }

@@ -93,6 +93,7 @@ public class HendelseListener {
         JOURNALPOST_HENDELSE_OPPRETT_OPPGAVE
     );
     journalpostHendelse.addFagomrade(journalfoeringHendelseRecord.getTemaNytt());
+    journalpostHendelse.addEnhet(Objects.requireNonNull(journalpost.getJournalforendeEnhet()));
 
     if (Objects.nonNull(journalpost.getBruker()) && Objects.nonNull(journalpost.getBruker().getId())) {
       var bruker = journalpost.getBruker();
