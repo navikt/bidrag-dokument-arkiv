@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.hendelser;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.never;
@@ -17,6 +18,7 @@ import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelseListener;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelsesType;
 import no.nav.bidrag.dokument.arkiv.kafka.MottaksKanal;
+import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -57,7 +59,7 @@ class JournalpostKafkaEventProducerTest {
 
     JournalfoeringHendelseRecord record = new JournalfoeringHendelseRecord();
     record.setJournalpostId(journalpostId);
-    record.setHendelsesType(HendelsesType.JOURNALPOST_MOTTAT.getHendelsesType());
+    record.setHendelsesType(HendelsesType.JOURNALPOST_MOTTATT.getHendelsesType());
     record.setTemaNytt("BID");
     record.setMottaksKanal(MottaksKanal.NAV_NO.name());
     hendelseListener.listen(record);
@@ -66,19 +68,15 @@ class JournalpostKafkaEventProducerTest {
     verify(kafkaTemplateMock).send(eq(topicJournalpost), eq(expectedJoarkJournalpostId), jsonCaptor.capture());
     verify(safConsumer).hentJournalpost(eq(journalpostId));
 
-    var hendelse = """
-        "hendelse":"OPPRETT_OPPGAVE"
-        """.trim();
-
     var expectedJournalpostId = String.format("""
             "journalpostId":"%s"
             """.trim(), expectedJoarkJournalpostId);
 
     var aktoerId = String.format("""
-            "aktoerId":"%s"
+            "aktorId":"%s"
             """.trim(), brukerId);
 
-    assertThat(jsonCaptor.getValue()).containsSequence(hendelse).containsSequence(expectedJournalpostId).containsSequence(aktoerId);
+    assertThat(jsonCaptor.getValue()).containsSequence(expectedJournalpostId).containsSequence(aktoerId);
   }
 
   @Test
@@ -94,7 +92,7 @@ class JournalpostKafkaEventProducerTest {
 
     JournalfoeringHendelseRecord record = new JournalfoeringHendelseRecord();
     record.setJournalpostId(journalpostId);
-    record.setHendelsesType(HendelsesType.JOURNALPOST_MOTTAT.getHendelsesType());
+    record.setHendelsesType(HendelsesType.JOURNALPOST_MOTTATT.getHendelsesType());
     record.setTemaNytt("BID");
     record.setMottaksKanal(MottaksKanal.NAV_NO.name());
     hendelseListener.listen(record);
@@ -103,19 +101,16 @@ class JournalpostKafkaEventProducerTest {
     verify(kafkaTemplateMock).send(eq(topicJournalpost), eq(expectedJoarkJournalpostId), jsonCaptor.capture());
     verify(safConsumer).hentJournalpost(eq(journalpostId));
 
-    var hendelse = """
-        "hendelse":"OPPRETT_OPPGAVE"
-        """.trim();
 
     var expectedJournalpostId = String.format("""
             "journalpostId":"%s"
             """.trim(), expectedJoarkJournalpostId);
 
     var aktoerId = String.format("""
-            "aktoerId":"%s"
+            "aktorId":"%s"
             """.trim(), brukerIdAktorId);
 
-    assertThat(jsonCaptor.getValue()).containsSequence(hendelse).containsSequence(expectedJournalpostId).containsSequence(aktoerId);
+    assertThat(jsonCaptor.getValue()).containsSequence(expectedJournalpostId).containsSequence(aktoerId);
   }
 
   @Test
@@ -124,7 +119,7 @@ class JournalpostKafkaEventProducerTest {
     var journalpostId1 = 123213L;
     JournalfoeringHendelseRecord record = new JournalfoeringHendelseRecord();
     record.setJournalpostId(journalpostId1);
-    record.setHendelsesType(HendelsesType.JOURNALPOST_MOTTAT.getHendelsesType());
+    record.setHendelsesType(HendelsesType.JOURNALPOST_MOTTATT.getHendelsesType());
     record.setTemaNytt("NOT BID");
     record.setMottaksKanal(MottaksKanal.NAV_NO.name());
     hendelseListener.listen(record);
@@ -133,21 +128,28 @@ class JournalpostKafkaEventProducerTest {
   }
 
   @Test
-  @DisplayName("skal ignorere hendelse hvis hendelse ikke er mottatt")
-  void shouldIgnoreWhenHendelseIsNotMottatt() {
+  @DisplayName("skal feile hvis saf feiler")
+  void shouldThrowWhenSafFails() {
     var journalpostId1 = 123213L;
     JournalfoeringHendelseRecord record = new JournalfoeringHendelseRecord();
     record.setJournalpostId(journalpostId1);
-    record.setHendelsesType("MidlertidigJournalført");
+    record.setHendelsesType("JournalpostMottatt");
     record.setTemaNytt("BID");
     record.setMottaksKanal(MottaksKanal.NAV_NO.name());
-    hendelseListener.listen(record);
-
-    verify(kafkaTemplateMock, never()).send(any(), any(), any());
+    try {
+      hendelseListener.listen(record);
+      fail("Should throw JournalpostIkkeFunnetException");
+    } catch (JournalpostIkkeFunnetException e){
+      assertThat(e.getMessage()).isEqualTo("Fant ikke journalpost med id %s".formatted(journalpostId1));
+      verify(kafkaTemplateMock, never()).send(any(), any(), any());
+    } catch (Exception e){
+      fail("Should throw JournalpostIkkeFunnetException");
+    }
   }
 
   private void mockSafResponse(Long journalpostId, String brukerId, String brukerType, String jfEnhet){
     var safJournalpostResponse = new Journalpost();
+    safJournalpostResponse.setJournalpostId(journalpostId.toString());
     safJournalpostResponse.setBruker(new Bruker(brukerId, brukerType));
     safJournalpostResponse.setJournalforendeEnhet(jfEnhet);
     when(safConsumer.hentJournalpost(journalpostId)).thenReturn(safJournalpostResponse);

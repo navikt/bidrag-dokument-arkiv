@@ -11,6 +11,7 @@ import org.springframework.web.client.RestTemplate;
 public class DokarkivConsumer {
 
   private static final String URL_JOURNALPOSTAPI_V1 = "/rest/journalpostapi/v1/journalpost";
+  private static final String URL_JOURNALPOSTAPI_V1_FEILREGISTRER = "/rest/journalpostapi/v1/journalpost/%s/feilregistrer";
 
   private final RestTemplate restTemplate;
 
@@ -30,5 +31,15 @@ public class DokarkivConsumer {
   public void ferdigstill(FerdigstillJournalpostRequest ferdigstillJournalpostRequest) {
     var oppdaterJoarnalpostApiUrl = URL_JOURNALPOSTAPI_V1 + '/' + ferdigstillJournalpostRequest.getJournalpostId() + "/ferdigstill";
     restTemplate.exchange(oppdaterJoarnalpostApiUrl, HttpMethod.PATCH, new HttpEntity<>(ferdigstillJournalpostRequest), Void.class);
+  }
+
+  public void settStatusUtgaar(Long journalpostId) {
+    var oppdaterJoarnalpostApiUrl = String.format(URL_JOURNALPOSTAPI_V1_FEILREGISTRER + "/settStatusUtgår", journalpostId);
+    restTemplate.exchange(oppdaterJoarnalpostApiUrl, HttpMethod.PATCH, null, Void.class);
+  }
+
+  public void feilregistrerSakstilknytning(Long journalpostId) {
+    var oppdaterJoarnalpostApiUrl = String.format(URL_JOURNALPOSTAPI_V1_FEILREGISTRER + "/feilregistrerSakstilknytning", journalpostId);
+    restTemplate.exchange(oppdaterJoarnalpostApiUrl, HttpMethod.PATCH, null, Void.class);
   }
 }

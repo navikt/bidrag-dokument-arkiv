@@ -2,6 +2,7 @@ package no.nav.bidrag.dokument.arkiv.dto
 
 import no.nav.bidrag.dokument.arkiv.model.JournalpostDataException
 import no.nav.bidrag.dokument.dto.AktorDto
+import no.nav.bidrag.dokument.dto.AvvikType
 import no.nav.bidrag.dokument.dto.DokumentDto
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
 import no.nav.bidrag.dokument.dto.JournalpostDto
@@ -27,6 +28,8 @@ data class Journalpost(
     var tema: String? = null,
     var tittel: String? = null
 ) {
+
+    fun hentJournalpostIdMedPrefix() = "JOARK-"+journalpostId
     fun hentDatoJournalfort(): LocalDate? {
         val journalfort = relevanteDatoer
             .find { it.datotype == DATO_JOURNALFORT }
@@ -60,6 +63,21 @@ data class Journalpost(
             mottattDato = hentDatoRegistrert()
         )
     }
+
+    fun tilAvvik(): List<AvvikType> {
+        val avvikTypeList = mutableListOf<AvvikType>()
+        if (isStatusMottatt() && isInngaaendeDokument()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
+        if (isInngaaendeDokument()) avvikTypeList.add(AvvikType.INNG_TIL_UTG_DOKUMENT)
+        if (isStatusMottatt()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
+        if (!isStatusMottatt() && hasSak() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.FEILFORE_SAK)
+        avvikTypeList.add(AvvikType.ENDRE_FAGOMRADE)
+        return avvikTypeList;
+    }
+
+    fun hasSak(): Boolean = sak != null
+    fun isStatusFeilregistrert(): Boolean = journalstatus == "FEILREGISTRERT"
+    fun isStatusMottatt(): Boolean = journalstatus == "MOTTATT"
+    fun isInngaaendeDokument(): Boolean = journalposttype == "I"
 
     fun tilJournalpostResponse(): JournalpostResponse {
         val journalpost = tilJournalpostDto()

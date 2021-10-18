@@ -5,10 +5,10 @@ import java.util.Objects;
 import java.util.Optional;
 import no.nav.bidrag.commons.CorrelationId;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
-import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelse;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
+import no.nav.bidrag.dokument.dto.JournalpostHendelse;
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,26 +55,14 @@ public class HendelseListener {
   private void registrerOppgaveForHendelse(
       @Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
     Optional<HendelsesType> muligType = HendelsesType.from(journalfoeringHendelseRecord.getHendelsesType());
-    muligType.ifPresent(
-        hendelsesType -> {
-          LOGGER.info("Ny hendelse: {}", hendelsesType);
-          if (hendelsesType == HendelsesType.JOURNALPOST_MOTTAT) {
-            LOGGER.info("Journalpost hendelse {} med data {}", hendelsesType, journalfoeringHendelseRecord);
-            behandleHendelse(hendelsesType, journalfoeringHendelseRecord);
-          } else {
-            LOGGER.info("Ignorer hendelse: {}", hendelsesType);
-          }
-        }
-    );
-
-    if (muligType.isEmpty()) {
-      LOGGER.warn("Ingen implementasjon for hendelse {}", journalfoeringHendelseRecord.getHendelsesType());
-    }
+    var hendelsesType = muligType.orElse(HendelsesType.ENDRING);
+    LOGGER.info("Journalpost hendelse {} med data {}", hendelsesType, journalfoeringHendelseRecord);
+    behandleHendelse(hendelsesType, journalfoeringHendelseRecord);
   }
 
   private void behandleHendelse(HendelsesType hendelsesType, JournalfoeringHendelseRecord journalfoeringHendelseRecord){
     this.meterRegistry.counter(HENDELSE_COUNTER_NAME,
-        "hendelse_type", hendelsesType.name(),
+        "hendelse_type", hendelsesType.toString(),
         "tema", journalfoeringHendelseRecord.getTemaNytt(),
         "kanal", journalfoeringHendelseRecord.getMottaksKanal()).increment();
     producer.publish(createJournalpostHendelse(journalfoeringHendelseRecord));
@@ -88,16 +76,15 @@ public class HendelseListener {
     }
 
     var journalpost = journalpostOptional.get();
-    JournalpostHendelse journalpostHendelse = new JournalpostHendelse(
-        journalfoeringHendelseRecord.getJournalpostId(),
-        JOURNALPOST_HENDELSE_OPPRETT_OPPGAVE
-    );
-    journalpostHendelse.addFagomrade(journalfoeringHendelseRecord.getTemaNytt());
-    journalpostHendelse.addEnhet(Objects.requireNonNull(journalpost.getJournalforendeEnhet()));
+    JournalpostHendelse journalpostHendelse = new JournalpostHendelse();
+    journalpostHendelse.setJournalpostId(journalpost.hentJournalpostIdMedPrefix());
+    journalpostHendelse.setJournalstatus(journalpost.getJournalstatus());
+    journalpostHendelse.setEnhet(journalpost.getJournalforendeEnhet());
+    journalpostHendelse.setFagomrade(journalpost.getTema());
 
     if (Objects.nonNull(journalpost.getBruker()) && Objects.nonNull(journalpost.getBruker().getId())) {
       var bruker = journalpost.getBruker();
-      journalpostHendelse.addAktoerId(bruker.getId());
+      journalpostHendelse.setAktorId(bruker.getId());
     }
     return journalpostHendelse;
 

@@ -12,7 +12,7 @@ import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQuery;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostQuery;
-import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelse;
 import no.nav.bidrag.dokument.dto.EndreDokument;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
@@ -50,7 +50,7 @@ class JsonMapperTest {
     endreJournalpostCommand.setTilknyttSaker(List.of("sakIdent"));
 
     var endreJournalpostIntern = new EndreJournalpostCommandIntern(endreJournalpostCommand, "4805");
-    var oppdaterJp = new OppdaterJournalpostRequest(12345, endreJournalpostIntern, journalpost);
+    var oppdaterJp = new LagreJournalpostRequest(12345, endreJournalpostIntern, journalpost);
 
     @SuppressWarnings("unchecked") var jsonMap = (Map<String, Object>) objectMapper.convertValue(oppdaterJp, Map.class);
     var jsonObjects = new JsonObjects(jsonMap);

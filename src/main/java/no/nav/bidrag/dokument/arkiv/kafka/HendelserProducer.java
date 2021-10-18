@@ -2,8 +2,8 @@ package no.nav.bidrag.dokument.arkiv.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelse;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelseException;
+import no.nav.bidrag.dokument.dto.JournalpostHendelse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;

@@ -25,7 +25,7 @@ import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
-import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.dto.AktorDto;
@@ -274,7 +274,7 @@ class JournalpostControllerTest {
     // when
     var oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
         initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
-        HttpMethod.PUT,
+        HttpMethod.PATCH,
         new HttpEntity<>(endreJournalpostCommand, headersMedEnhet),
         JournalpostDto.class
     );
@@ -287,7 +287,7 @@ class JournalpostControllerTest {
             .isEqualTo(HttpStatus.ACCEPTED),
         () -> {
           var forventetUrlForOppdateringAvJournalpost = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson;
-          var oppdaterJournalpostRequest = new OppdaterJournalpostRequest(
+          var oppdaterJournalpostRequest = new LagreJournalpostRequest(
               journalpostIdFraJson,
               new EndreJournalpostCommandIntern(endreJournalpostCommand, xEnhet),
               journalpostSafResponse
@@ -345,7 +345,7 @@ class JournalpostControllerTest {
     // when
     var oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
         initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
-        HttpMethod.PUT,
+        HttpMethod.PATCH,
         new HttpEntity<>(endreJournalpostCommand, headersMedEnhet),
         JournalpostDto.class
     );
@@ -358,7 +358,7 @@ class JournalpostControllerTest {
             .isEqualTo(HttpStatus.ACCEPTED),
         () -> {
           var forventetUrlForOppdateringAvJournalpost = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson;
-          var oppdaterJournalpostRequest = new OppdaterJournalpostRequest(
+          var oppdaterJournalpostRequest = new LagreJournalpostRequest(
               journalpostIdFraJson,
               new EndreJournalpostCommandIntern(endreJournalpostCommand, xEnhet),
               journalpostSafResponse

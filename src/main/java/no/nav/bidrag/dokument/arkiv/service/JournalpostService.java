@@ -12,6 +12,7 @@ import no.nav.bidrag.dokument.arkiv.dto.Bruker;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
@@ -42,16 +43,21 @@ public class JournalpostService {
   public Optional<Journalpost> hentJournalpost(Long journalpostId, String saksnummer) {
     var journalpost = safConsumer.hentJournalpost(journalpostId);
 
-    if (journalpost.erIkkeTilknyttetSakNarOppgitt(saksnummer)) {
+    if (Objects.isNull(journalpost) || journalpost.erIkkeTilknyttetSakNarOppgitt(saksnummer)) {
       return Optional.empty();
     }
 
-    return Optional.of(this.convertAktoerIdToFnr(journalpost));
+    return Optional.of(journalpost);
+  }
+
+  public Optional<Journalpost> hentJournalpostMedFnr(Long journalpostId, String saksummer) {
+    var journalpost = hentJournalpost(journalpostId, saksummer);
+    return journalpost.map(this::convertAktoerIdToFnr);
   }
 
   public Optional<Journalpost> hentJournalpostMedAktorId(Long journalpostId) {
-    var journalpost = safConsumer.hentJournalpost(journalpostId);
-    return Optional.of(this.convertFnrToAktorId(journalpost));
+    var journalpost = hentJournalpost(journalpostId);
+    return journalpost.map(this::convertFnrToAktorId);
   }
 
   public List<JournalpostDto> finnJournalposter(String saksnummer, String fagomrade) {
@@ -94,13 +100,34 @@ public class JournalpostService {
     return personResponse.getResponseEntity().getBody();
   }
 
+  public HttpResponse<Void> oppdater(OppdaterJournalpostRequest oppdaterJournalpostRequest) {
+    var oppdatertJournalpostResponse = dokarkivConsumer.endre(oppdaterJournalpostRequest);
+
+    oppdatertJournalpostResponse.fetchBody().ifPresent(response -> LOGGER.info("endret: {}", response));
+
+    return HttpResponse.from(
+        oppdatertJournalpostResponse.fetchHeaders(),
+        oppdatertJournalpostResponse.getResponseEntity().getStatusCode()
+    );
+  }
+
+  public HttpResponse<Void> trekkJournalpost(Long journalpostId){
+    dokarkivConsumer.settStatusUtgaar(journalpostId);
+    return HttpResponse.from(HttpStatus.OK);
+  }
+
+  public HttpResponse<Void> feilforSak(Long journalpostId){
+    dokarkivConsumer.feilregistrerSakstilknytning(journalpostId);
+    return HttpResponse.from(HttpStatus.OK);
+  }
+
   public HttpResponse<Void> endre(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand) {
     var journalpost = hentJournalpost(journalpostId).orElseThrow(
         () -> new JournalpostIkkeFunnetException("Kunne ikke finne journalpost med id: " + journalpostId)
     );
 
-    var oppdaterJournalpostRequest = new OppdaterJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost);
-    var oppdatertJournalpostResponse = dokarkivConsumer.endre(oppdaterJournalpostRequest);
+    var oppdaterJournalpostRequest = new LagreJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost);
+    var oppdatertJournalpostResponse = oppdater(oppdaterJournalpostRequest);
 
     if (oppdatertJournalpostResponse.is2xxSuccessful() && endreJournalpostCommand.skalJournalfores()) {
       var journalforRequest = new FerdigstillJournalpostRequest(journalpostId, endreJournalpostCommand.getEnhet());

@@ -4,10 +4,11 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public enum HendelsesType {
-    MIDLERTIDIG_JOURNALFORT("MidlertidigJournalført"),
-    JOURNALPOST_MOTTAT("JournalpostMottatt"),
+    JOURNALPOST_MOTTATT("JournalpostMottatt"),
     TEMA_ENDRET("TemaEndret"),
-    ENDELIG_JOURNALFOERT("EndeligJournalført");
+    ENDELIG_JOURNALFORT("EndeligJournalført"),
+    JOURNALPOST_UTGATT("JournalpostUtgått"),
+    ENDRING("Endring");
 
     private final String hendelsesType;
 
