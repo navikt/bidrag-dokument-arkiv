@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 
-data class LagreJournalpostRequest(var journalpostId: Long, var endreJournalpostCommand: EndreJournalpostCommandIntern, var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId) {
+data class LagreJournalpostRequest(private var journalpostId: Long, private var endreJournalpostCommand: EndreJournalpostCommandIntern, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId) {
     init {
         avsenderMottaker = AvsenderMottaker(endreJournalpostCommand.hentAvsenderNavn(journalpost))
         val saksnummer = if (endreJournalpostCommand.harEnTilknyttetSak()) {
