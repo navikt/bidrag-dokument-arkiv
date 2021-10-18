@@ -24,3 +24,6 @@ class AvvikDetaljException(detalj: String) : RuntimeException("Manglende detalj 
 class AvvikNotSupportedException(message: String) : HttpStatusException(message) {
     override val status: HttpStatus = HttpStatus.BAD_REQUEST
 }
+class UgyldigAvvikException(message: String) : HttpStatusException(message) {
+    override val status: HttpStatus = HttpStatus.BAD_REQUEST
+}

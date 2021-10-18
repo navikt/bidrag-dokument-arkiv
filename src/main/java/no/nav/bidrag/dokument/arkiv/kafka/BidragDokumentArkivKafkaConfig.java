@@ -3,11 +3,13 @@ package no.nav.bidrag.dokument.arkiv.kafka;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.bidrag.commons.ExceptionLogger;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv;
+import no.nav.bidrag.dokument.arkiv.model.Discriminator;
+import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
+import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerContainerFactory;
@@ -25,9 +27,11 @@ public class BidragDokumentArkivKafkaConfig {
   public HendelserProducer hendelserProducer(
       KafkaTemplate<String, String> kafkaTemplate,
       ObjectMapper objectMapper,
-      @Value("${TOPIC_JOURNALPOST}") String topic
+      @Value("${TOPIC_JOURNALPOST}") String topic,
+      @Value("${ENABLE_HENDELSE_PRODUCER}") Boolean enableProducer,
+      ResourceByDiscriminator<JournalpostService> journalpostServices
   ) {
-    return new HendelserProducer(kafkaTemplate, objectMapper, topic);
+    return new HendelserProducer(journalpostServices.get(Discriminator.SERVICE_USER), kafkaTemplate, objectMapper, topic, enableProducer);
   }
 
   @Bean

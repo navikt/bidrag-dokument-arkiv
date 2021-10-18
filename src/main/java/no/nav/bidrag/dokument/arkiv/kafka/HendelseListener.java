@@ -1,14 +1,8 @@
 package no.nav.bidrag.dokument.arkiv.kafka;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import java.util.Objects;
 import java.util.Optional;
 import no.nav.bidrag.commons.CorrelationId;
-import no.nav.bidrag.dokument.arkiv.model.Discriminator;
-import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
-import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
-import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
-import no.nav.bidrag.dokument.dto.JournalpostHendelse;
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,16 +17,13 @@ import org.springframework.stereotype.Service;
 public class HendelseListener {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HendelseListener.class);
-  public static final String JOURNALPOST_HENDELSE_OPPRETT_OPPGAVE = "OPPRETT_OPPGAVE";
   private static final String HENDELSE_COUNTER_NAME = "joark_hendelse";
 
   private final MeterRegistry meterRegistry;
   private final HendelserProducer producer;
-  private final ResourceByDiscriminator<JournalpostService> journalpostServices;
 
-  public HendelseListener(HendelserProducer producer, ResourceByDiscriminator<JournalpostService> journalpostServices, MeterRegistry registry) {
+  public HendelseListener(HendelserProducer producer, MeterRegistry registry) {
     this.producer = producer;
-    this.journalpostServices = journalpostServices;
     this.meterRegistry = registry;
   }
 
@@ -56,8 +47,12 @@ public class HendelseListener {
       @Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
     Optional<HendelsesType> muligType = HendelsesType.from(journalfoeringHendelseRecord.getHendelsesType());
     var hendelsesType = muligType.orElse(HendelsesType.ENDRING);
-    LOGGER.info("Journalpost hendelse {} med data {}", hendelsesType, journalfoeringHendelseRecord);
-    behandleHendelse(hendelsesType, journalfoeringHendelseRecord);
+    if (hendelsesType == HendelsesType.JOURNALPOST_MOTTATT) {
+      LOGGER.info("Journalpost hendelse {} med data {}", hendelsesType, journalfoeringHendelseRecord);
+      behandleHendelse(hendelsesType, journalfoeringHendelseRecord);
+    } else {
+      LOGGER.info("Ignorer hendelse {} med data {}", hendelsesType, journalfoeringHendelseRecord);
+    }
   }
 
   private void behandleHendelse(HendelsesType hendelsesType, JournalfoeringHendelseRecord journalfoeringHendelseRecord){
@@ -65,28 +60,6 @@ public class HendelseListener {
         "hendelse_type", hendelsesType.toString(),
         "tema", journalfoeringHendelseRecord.getTemaNytt(),
         "kanal", journalfoeringHendelseRecord.getMottaksKanal()).increment();
-    producer.publish(createJournalpostHendelse(journalfoeringHendelseRecord));
-  }
-
-  private JournalpostHendelse createJournalpostHendelse(JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
-    var journalpostId = journalfoeringHendelseRecord.getJournalpostId();
-    var journalpostOptional = journalpostServices.get(Discriminator.SERVICE_USER).hentJournalpostMedAktorId(journalpostId);
-    if (journalpostOptional.isEmpty()) {
-      throw new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId));
-    }
-
-    var journalpost = journalpostOptional.get();
-    JournalpostHendelse journalpostHendelse = new JournalpostHendelse();
-    journalpostHendelse.setJournalpostId(journalpost.hentJournalpostIdMedPrefix());
-    journalpostHendelse.setJournalstatus(journalpost.getJournalstatus());
-    journalpostHendelse.setEnhet(journalpost.getJournalforendeEnhet());
-    journalpostHendelse.setFagomrade(journalpost.getTema());
-
-    if (Objects.nonNull(journalpost.getBruker()) && Objects.nonNull(journalpost.getBruker().getId())) {
-      var bruker = journalpost.getBruker();
-      journalpostHendelse.setAktorId(bruker.getId());
-    }
-    return journalpostHendelse;
-
+    producer.publishJournalpostUpdated(journalfoeringHendelseRecord.getJournalpostId());
   }
 }

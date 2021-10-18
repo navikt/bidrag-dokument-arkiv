@@ -29,6 +29,7 @@ data class Journalpost(
     var tittel: String? = null
 ) {
 
+    fun hentJournalpostIdLong() = journalpostId?.toLong()
     fun hentJournalpostIdMedPrefix() = "JOARK-"+journalpostId
     fun hentDatoJournalfort(): LocalDate? {
         val journalfort = relevanteDatoer
@@ -67,8 +68,8 @@ data class Journalpost(
     fun tilAvvik(): List<AvvikType> {
         val avvikTypeList = mutableListOf<AvvikType>()
         if (isStatusMottatt() && isInngaaendeDokument()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
-        if (isInngaaendeDokument()) avvikTypeList.add(AvvikType.INNG_TIL_UTG_DOKUMENT)
-        if (isStatusMottatt()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
+//        if (isInngaaendeDokument()) avvikTypeList.add(AvvikType.INNG_TIL_UTG_DOKUMENT)
+//        if (isStatusMottatt()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
         if (!isStatusMottatt() && hasSak() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.FEILFORE_SAK)
         avvikTypeList.add(AvvikType.ENDRE_FAGOMRADE)
         return avvikTypeList;

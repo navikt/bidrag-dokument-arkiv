@@ -23,6 +23,8 @@ env:
     value: teamdokumenthandtering.aapen-dok-journalfoering-q1
   - name: BIDRAG_PERSON_URL
     value: https://bidrag-person-feature.dev.adeo.no
+  - name: ENABLE_HENDELSE_PRODUCER
+    value: true
   - name: JAVA_OPTS
     value: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
 vault:

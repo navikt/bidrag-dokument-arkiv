@@ -25,6 +25,7 @@ import no.nav.bidrag.dokument.arkiv.service.AvvikService;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.bidrag.dokument.dto.AvvikType;
 import no.nav.bidrag.dokument.dto.Avvikshendelse;
+import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
 import no.nav.bidrag.dokument.dto.JournalpostResponse;
@@ -114,7 +115,7 @@ public class JournalpostController {
       @ApiResponse(responseCode = "404", description = "Fant ikke journalpost som det skal lages avvik på eller feil prefix/id på journalposten"),
       @ApiResponse(responseCode = "503", description = "Oppretting av oppgave for avviket feilet")
   })
-  public ResponseEntity<Void> behandleAvvik(
+  public ResponseEntity<BehandleAvvikshendelseResponse> behandleAvvik(
       @PathVariable String journalpostId,
       @RequestBody Avvikshendelse avvikshendelse,
       @RequestHeader(EnhetFilter.X_ENHET_HEADER) String enhet
@@ -138,8 +139,8 @@ public class JournalpostController {
 
       return new ResponseEntity<>(initHttpHeadersWith(HttpHeaders.WARNING, message), HttpStatus.BAD_REQUEST);
     }
-    avvikService.behandleAvvik(new AvvikshendelseIntern(avvikshendelse, enhet, Long.valueOf(kildesystemIdenfikator.hentJournalpostId())));
-    return ResponseEntity.ok().build();
+    var behandleAvvikResponse = avvikService.behandleAvvik(new AvvikshendelseIntern(avvikshendelse, enhet, Long.valueOf(kildesystemIdenfikator.hentJournalpostId())));
+    return behandleAvvikResponse.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.badRequest().build());
   }
 
   @GetMapping(ROOT_JOURNAL+"/{joarkJournalpostId}")
