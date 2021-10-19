@@ -42,7 +42,7 @@ public class RestTemplateConfiguration {
       TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator,
       @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate
   ) {
-    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.AUTHORIZATION, oidcTokenGenerator::fetchBearerToken);
+    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.AUTHORIZATION, oidcTokenGenerator::getBearerToken);
     httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
     httpHeaderRestTemplate.addHeaderGenerator(HEADER_NAV_CONSUMER_TOKEN, tokenForBasicAuthenticationGenerator::generateToken);
 

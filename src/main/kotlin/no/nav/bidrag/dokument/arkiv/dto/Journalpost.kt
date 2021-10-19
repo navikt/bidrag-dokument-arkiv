@@ -109,15 +109,19 @@ data class AvsenderMottaker(
     var navn: String? = null
 )
 
+enum class BrukerType {
+    AKTOERID,
+    FNR
+}
 data class Bruker(
     var id: String? = null,
     var type: String? = null
 ) {
     fun tilAktorDto(): AktorDto {
-        return if (id != null) AktorDto(id!!, type ?: "FNR") else throw JournalpostDataException("ingen id i $this")
+        return if (id != null) AktorDto(id!!, type ?: BrukerType.FNR.name) else throw JournalpostDataException("ingen id i $this")
     }
     fun isAktoerId(): Boolean {
-        return this.type == "AKTOERID"
+        return this.type == BrukerType.AKTOERID.name
     }
 }
 

@@ -2,8 +2,10 @@ package no.nav.bidrag.dokument.arkiv.service;
 
 import java.util.List;
 import java.util.Optional;
+import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.AvvikshendelseIntern;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
 import no.nav.bidrag.dokument.arkiv.model.AvvikNotSupportedException;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
@@ -12,17 +14,22 @@ import no.nav.bidrag.dokument.arkiv.model.UgyldigAvvikException;
 import no.nav.bidrag.dokument.dto.AvvikType;
 import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse;
 import no.nav.bidrag.dokument.dto.JournalpostIkkeFunnetException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AvvikService {
+  private static final Logger LOGGER = LoggerFactory.getLogger(AvvikService.class);
 
   public final JournalpostService journalpostService;
   public final HendelserProducer hendelserProducer;
+  private final DokarkivConsumer dokarkivConsumer;
 
-  public AvvikService(ResourceByDiscriminator<JournalpostService> journalpostService, HendelserProducer hendelserProducer) {
+  public AvvikService(ResourceByDiscriminator<JournalpostService> journalpostService, HendelserProducer hendelserProducer, DokarkivConsumer dokarkivConsumer) {
     this.journalpostService = journalpostService.get(Discriminator.REGULAR_USER);
     this.hendelserProducer = hendelserProducer;
+    this.dokarkivConsumer = dokarkivConsumer;
   }
 
   public List<AvvikType> hentAvvik(Long jpid){
@@ -41,16 +48,21 @@ public class AvvikService {
     }
 
     switch (avvikshendelseIntern.getAvvikstype()){
-      case OVERFOR_TIL_ANNEN_ENHET -> journalpostService.oppdater(avvikshendelseIntern.toOverforEnhetRequest());
-      case ENDRE_FAGOMRADE -> journalpostService.oppdater(avvikshendelseIntern.toEndreFagomradeRequest());
-      case TREKK_JOURNALPOST -> journalpostService.trekkJournalpost(avvikshendelseIntern.getJournalpostId());
-      case FEILFORE_SAK -> journalpostService.feilforSak(avvikshendelseIntern.getJournalpostId());
+      case OVERFOR_TIL_ANNEN_ENHET -> oppdater(avvikshendelseIntern.toOverforEnhetRequest());
+      case ENDRE_FAGOMRADE -> oppdater(avvikshendelseIntern.toEndreFagomradeRequest());
+      case TREKK_JOURNALPOST -> dokarkivConsumer.settStatusUtgaar(avvikshendelseIntern.getJournalpostId());
+      case FEILFORE_SAK -> dokarkivConsumer.feilregistrerSakstilknytning(avvikshendelseIntern.getJournalpostId());
       default -> throw new AvvikNotSupportedException("Avvik %s ikke støttet".formatted(avvikshendelseIntern.getAvvikstype()));
     }
 
     hendelserProducer.publishJournalpostUpdated(journalpost.hentJournalpostIdLong());
 
     return Optional.of(new BehandleAvvikshendelseResponse(avvikshendelseIntern.getAvvikstype()));
+  }
+
+  public void oppdater(OppdaterJournalpostRequest oppdaterJournalpostRequest) {
+    var oppdatertJournalpostResponse = dokarkivConsumer.endre(oppdaterJournalpostRequest);
+    oppdatertJournalpostResponse.fetchBody().ifPresent(response -> LOGGER.info("endret: {}", response));
   }
 
   public Boolean erGyldigAvviksBehandling(Journalpost journalpost, AvvikType avvikType){

@@ -11,7 +11,7 @@ import org.springframework.web.client.RestTemplate;
 public class DokarkivConsumer {
 
   private static final String URL_JOURNALPOSTAPI_V1 = "/rest/journalpostapi/v1/journalpost";
-  private static final String URL_JOURNALPOSTAPI_V1_FEILREGISTRER = "/rest/journalpostapi/v1/journalpost/%s/feilregistrer";
+  public static final String URL_JOURNALPOSTAPI_V1_FEILREGISTRER = "/rest/journalpostapi/v1/journalpost/%s/feilregistrer";
 
   private final RestTemplate restTemplate;
 

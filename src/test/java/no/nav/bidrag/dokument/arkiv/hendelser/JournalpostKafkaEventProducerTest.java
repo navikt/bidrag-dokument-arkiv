@@ -58,6 +58,7 @@ class JournalpostKafkaEventProducerTest {
     mockSafResponse(journalpostId, brukerId,"AKTOERID", jfEnhet);
 
     JournalfoeringHendelseRecord record = new JournalfoeringHendelseRecord();
+    record.setHendelsesId("TEST_HENDELSE_ID");
     record.setJournalpostId(journalpostId);
     record.setHendelsesType(HendelsesType.JOURNALPOST_MOTTATT.getHendelsesType());
     record.setTemaNytt("BID");
@@ -76,7 +77,11 @@ class JournalpostKafkaEventProducerTest {
             "aktorId":"%s"
             """.trim(), brukerId);
 
-    assertThat(jsonCaptor.getValue()).containsSequence(expectedJournalpostId).containsSequence(aktoerId);
+    var correlationId = String.format("""
+            "correlationId":"%s"
+            """.trim(), "journalfoeringshendelse_TEST_HENDELSE_ID");
+
+    assertThat(jsonCaptor.getValue()).containsSequence(expectedJournalpostId).containsSequence(aktoerId).containsSequence(correlationId);
   }
 
   @Test

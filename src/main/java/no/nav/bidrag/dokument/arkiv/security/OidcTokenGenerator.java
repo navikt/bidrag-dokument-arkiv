@@ -15,16 +15,23 @@ public class OidcTokenGenerator {
   }
 
   @SuppressWarnings("unused") // metode-referanse sendes fra RestTemplateConfiguration
-  public String fetchBearerToken() {
+  public String getBearerToken() {
     return "Bearer " + fetchToken();
   }
 
+  public Optional<String> getToken() {
+    return fetchTokenOptional();
+  }
+
   private String fetchToken() {
+    return fetchTokenOptional().orElseThrow(() -> new TokenException("Fant ingen Bearer token i kontekst"));
+  }
+
+  private Optional<String> fetchTokenOptional() {
     return Optional.ofNullable(tokenValidationContextHolder)
         .map(TokenValidationContextHolder::getTokenValidationContext)
         .map(TokenValidationContext::getFirstValidToken)
-        .map(Optional::get)
-        .map(JwtToken::getTokenAsString)
-        .orElseThrow(() -> new TokenException("Kunne ikke videresende Bearer token"));
+        .flatMap(token -> token.map(JwtToken::getTokenAsString));
+
   }
 }

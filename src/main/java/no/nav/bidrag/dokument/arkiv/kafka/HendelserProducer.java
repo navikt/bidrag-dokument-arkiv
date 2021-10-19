@@ -38,9 +38,9 @@ public class HendelserProducer {
     if (journalpostOptional.isEmpty()) {
       throw new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId));
     }
-
+    var journalpost = journalpostOptional.get();
     var saksbehandler = saksbehandlerOidcTokenManager.hentSaksbehandler();
-    return new JournalpostHendelseIntern(journalpostOptional.get(), saksbehandler).hentJournalpostHendelse();
+    return new JournalpostHendelseIntern(journalpost, saksbehandler).hentJournalpostHendelse();
   }
 
   public void publishJournalpostUpdated(Long journalpostId){

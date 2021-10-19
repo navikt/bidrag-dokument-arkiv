@@ -55,7 +55,7 @@ sealed class OppdaterJournalpostRequest(private var journalpostId: Long? = -1) {
 }
 
 data class OppdaterJournalpostResponse(
-        var journalpostId: Int? = null,
+        var journalpostId: Long? = null,
         var saksnummer: String? = null
 )
 

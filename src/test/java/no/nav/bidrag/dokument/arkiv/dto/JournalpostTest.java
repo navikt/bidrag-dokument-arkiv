@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
+import no.nav.bidrag.dokument.dto.AvvikType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -79,5 +80,43 @@ class JournalpostTest {
     var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
 
     assertThat(journalpost.hentDatoRegistrert()).isEqualTo(LocalDate.of(2010, 12, 15));
+  }
+
+  @Test
+  @DisplayName("skal hente avvik hvis status mottatt og inngående")
+  void skalHenteAvvikForMottattOgInngaaende() {
+    var journalpost = new Journalpost();
+    journalpost.setJournalstatus("MOTTATT");
+    journalpost.setJournalposttype("I");
+    var avvikListe = journalpost.tilAvvik();
+    assertThat(avvikListe).hasSize(3);
+    assertThat(avvikListe).contains(AvvikType.OVERFOR_TIL_ANNEN_ENHET);
+    assertThat(avvikListe).contains(AvvikType.TREKK_JOURNALPOST);
+    assertThat(avvikListe).contains(AvvikType.ENDRE_FAGOMRADE);
+  }
+
+  @Test
+  @DisplayName("skal tillate avvik FEILFORE_SAK hvis har sak og ikke feilfort og status ikke mottatt")
+  void skalHenteAvvikFeilfort() {
+    var journalpost = new Journalpost();
+    journalpost.setJournalstatus("JOURNALFOERT");
+    journalpost.setJournalposttype("I");
+    journalpost.setSak(new Sak(""));
+    var avvikListe = journalpost.tilAvvik();
+    assertThat(avvikListe).hasSize(2);
+    assertThat(avvikListe).contains(AvvikType.FEILFORE_SAK);
+    assertThat(avvikListe).contains(AvvikType.ENDRE_FAGOMRADE);
+  }
+
+  @Test
+  @DisplayName("skal ikke tillate avvik FEILFORE_SAK hvis status feilregistrert")
+  void skalHenteAvvikHvisStatusFeilregistrert() {
+    var journalpost = new Journalpost();
+    journalpost.setJournalstatus("FEILREGISTRERT");
+    journalpost.setJournalposttype("I");
+    journalpost.setSak(new Sak(""));
+    var avvikListe = journalpost.tilAvvik();
+    assertThat(avvikListe).hasSize(1);
+    assertThat(avvikListe).contains(AvvikType.ENDRE_FAGOMRADE);
   }
 }

@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import java.util.HashMap;
-import java.util.Optional;
 import no.nav.bidrag.commons.ExceptionLogger;
 import no.nav.bidrag.commons.web.CorrelationIdFilter;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
@@ -23,9 +22,7 @@ import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
 import no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.bidrag.tilgangskontroll.SecurityUtils;
-import no.nav.security.token.support.core.context.TokenValidationContext;
 import no.nav.security.token.support.core.context.TokenValidationContextHolder;
-import no.nav.security.token.support.core.jwt.JwtToken;
 import no.nav.security.token.support.spring.api.EnableJwtTokenValidation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,7 +87,7 @@ public class BidragDokumentArkivConfig {
             OidcTokenGenerator oidcTokenGenerator,
             TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator
     ) {
-        safConsumerRegularUser.leggTilSikkerhet(oidcTokenGenerator::fetchBearerToken);
+        safConsumerRegularUser.leggTilSikkerhet(oidcTokenGenerator::getBearerToken);
         safConsumerServiceUser.leggTilSikkerhet(tokenForBasicAuthenticationGenerator::generateToken);
         var safConsumers = new HashMap<Discriminator, SafConsumer>();
         safConsumers.put(Discriminator.REGULAR_USER, safConsumerRegularUser);
@@ -115,7 +112,7 @@ public class BidragDokumentArkivConfig {
         OidcTokenGenerator oidcTokenGenerator,
         TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator
     ) {
-        personConsumerRegularUser.leggTilSikkerhet(oidcTokenGenerator::fetchBearerToken);
+        personConsumerRegularUser.leggTilSikkerhet(oidcTokenGenerator::getBearerToken);
         personConsumerServiceUser.leggTilSikkerhet(tokenForBasicAuthenticationGenerator::generateToken);
         var personConsumers = new HashMap<Discriminator, PersonConsumer>();
         personConsumers.put(Discriminator.REGULAR_USER, personConsumerRegularUser);
@@ -185,15 +182,8 @@ public class BidragDokumentArkivConfig {
     }
 
     @Bean
-    public OidcTokenManager oidcTokenManager(TokenValidationContextHolder tokenValidationContextHolder) {
-        return () -> Optional.ofNullable(tokenValidationContextHolder)
-            .map(TokenValidationContextHolder::getTokenValidationContext)
-            .map(TokenValidationContext::getFirstValidToken).flatMap(token -> token.map(JwtToken::getTokenAsString));
-    }
-
-    @Bean
-    SaksbehandlerOidcTokenManager saksbehandlerOidcTokenManager(OidcTokenManager oidcTokenManager) {
-        return () -> oidcTokenManager.hentIdToken().map(SecurityUtils::henteSubject).map((subject)-> new Saksbehandler(subject, "")).orElse(null);
+    SaksbehandlerOidcTokenManager saksbehandlerOidcTokenManager(OidcTokenGenerator oidcTokenGenerator) {
+        return () -> oidcTokenGenerator.getToken().map(SecurityUtils::henteSubject).map((subject)-> new Saksbehandler(subject, "")).orElse(null);
     }
 
     static class EnvironmentProperties {
@@ -227,12 +217,6 @@ public class BidragDokumentArkivConfig {
         private String notActualValue() {
             return "No authentication available".equals(secretForServiceUser) ? "is not initialized" : "seems to be initialized by init_srvbdarkiv.sh";
         }
-    }
-
-    @FunctionalInterface
-    public interface OidcTokenManager {
-
-        Optional<String> hentIdToken();
     }
 
     @FunctionalInterface
