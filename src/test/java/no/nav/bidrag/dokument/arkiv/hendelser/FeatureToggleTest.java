@@ -23,7 +23,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest(
-    properties = { "ENABLE_HENDELSE_PRODUCER=false" },
+    properties = { "FEATURE_ENABLED=asdasd" },
     classes = BidragDokumentArkivLocal.class
 )
 @ActiveProfiles("test")

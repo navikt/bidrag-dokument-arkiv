@@ -3,6 +3,8 @@ package no.nav.bidrag.dokument.arkiv.kafka;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.SaksbehandlerOidcTokenManager;
+import no.nav.bidrag.dokument.arkiv.FeatureToggle;
+import no.nav.bidrag.dokument.arkiv.FeatureToggle.Feature;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelseException;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelseIntern;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
@@ -19,17 +21,17 @@ public class HendelserProducer {
   private final ObjectMapper objectMapper;
   private final JournalpostService journalpostService;
   private final String topic;
-  private final Boolean enableProducer;
+  private final FeatureToggle featureToggle;
   private final SaksbehandlerOidcTokenManager saksbehandlerOidcTokenManager;
 
   public HendelserProducer(JournalpostService journalpostService, KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper,
-      String topic, Boolean enableProducer,
-      SaksbehandlerOidcTokenManager saksbehandlerOidcTokenManager) {
+      String topic,
+      FeatureToggle featureToggle, SaksbehandlerOidcTokenManager saksbehandlerOidcTokenManager) {
     this.kafkaTemplate = kafkaTemplate;
     this.objectMapper = objectMapper;
     this.journalpostService = journalpostService;
     this.topic = topic;
-    this.enableProducer = enableProducer;
+    this.featureToggle = featureToggle;
     this.saksbehandlerOidcTokenManager = saksbehandlerOidcTokenManager;
   }
 
@@ -51,7 +53,7 @@ public class HendelserProducer {
   public void publish(JournalpostHendelse journalpostHendelse){
     try {
       LOGGER.info("Publiserer hendelse {}", objectMapper.writeValueAsString(journalpostHendelse));
-      if (!enableProducer) {
+      if (!featureToggle.isFeatureEnabled(Feature.KAFKA_ARBEIDSFLYT)) {
         LOGGER.info("Sender ikke hendelse da ENABLE_HENDELSE_PRODUCER er satt til false");
         return;
       }

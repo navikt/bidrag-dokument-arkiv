@@ -22,7 +22,7 @@ env:
     value: teamdokumenthandtering.aapen-dok-journalfoering
   - name: BIDRAG_PERSON_URL
     value: https://bidrag-person.nais.adeo.no
-  - name: ENABLE_HENDELSE_PRODUCER
-    value: false
+  - name: FEATURE_ENABLED
+    value: NONE
 vault:
   kvPath: prod

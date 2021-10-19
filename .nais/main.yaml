@@ -23,7 +23,7 @@ env:
     value: teamdokumenthandtering.aapen-dok-journalfoering
   - name: BIDRAG_PERSON_URL
     value: https://bidrag-person.dev.adeo.no
-  - name: ENABLE_HENDELSE_PRODUCER
-    value: true
+  - name: FEATURE_ENABLED
+    value: KAFKA_ARBEIDSFLYT
 vault:
   kvPath: dev

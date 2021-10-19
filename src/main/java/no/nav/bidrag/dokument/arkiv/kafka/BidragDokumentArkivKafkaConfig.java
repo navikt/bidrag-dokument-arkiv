@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.bidrag.commons.ExceptionLogger;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.SaksbehandlerOidcTokenManager;
+import no.nav.bidrag.dokument.arkiv.FeatureToggle;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
@@ -30,7 +31,7 @@ public class BidragDokumentArkivKafkaConfig {
       ObjectMapper objectMapper,
       SaksbehandlerOidcTokenManager saksbehandlerOidcTokenManager,
       @Value("${TOPIC_JOURNALPOST}") String topic,
-      @Value("${ENABLE_HENDELSE_PRODUCER}") Boolean enableProducer,
+      FeatureToggle featureToggle,
       ResourceByDiscriminator<JournalpostService> journalpostServices
   ) {
     return new HendelserProducer(
@@ -38,8 +39,7 @@ public class BidragDokumentArkivKafkaConfig {
         kafkaTemplate,
         objectMapper,
         topic,
-        enableProducer,
-        saksbehandlerOidcTokenManager
+        featureToggle, saksbehandlerOidcTokenManager
     );
   }
 
