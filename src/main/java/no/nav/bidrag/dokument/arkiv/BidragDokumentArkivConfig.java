@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import java.util.HashMap;
+import java.util.Optional;
 import no.nav.bidrag.commons.ExceptionLogger;
 import no.nav.bidrag.commons.web.CorrelationIdFilter;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
@@ -15,12 +16,16 @@ import no.nav.bidrag.dokument.arkiv.consumer.AccessTokenConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
+import no.nav.bidrag.dokument.arkiv.dto.Saksbehandler;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
 import no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
+import no.nav.bidrag.tilgangskontroll.SecurityUtils;
+import no.nav.security.token.support.core.context.TokenValidationContext;
 import no.nav.security.token.support.core.context.TokenValidationContextHolder;
+import no.nav.security.token.support.core.jwt.JwtToken;
 import no.nav.security.token.support.spring.api.EnableJwtTokenValidation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -179,6 +184,18 @@ public class BidragDokumentArkivConfig {
         return environmentProperties;
     }
 
+    @Bean
+    public OidcTokenManager oidcTokenManager(TokenValidationContextHolder tokenValidationContextHolder) {
+        return () -> Optional.ofNullable(tokenValidationContextHolder)
+            .map(TokenValidationContextHolder::getTokenValidationContext)
+            .map(TokenValidationContext::getFirstValidToken).flatMap(token -> token.map(JwtToken::getTokenAsString));
+    }
+
+    @Bean
+    SaksbehandlerOidcTokenManager saksbehandlerOidcTokenManager(OidcTokenManager oidcTokenManager) {
+        return () -> oidcTokenManager.hentIdToken().map(SecurityUtils::henteSubject).map((subject)-> new Saksbehandler(subject, "")).orElse(null);
+    }
+
     static class EnvironmentProperties {
 
         final String dokarkivUrl;
@@ -210,5 +227,17 @@ public class BidragDokumentArkivConfig {
         private String notActualValue() {
             return "No authentication available".equals(secretForServiceUser) ? "is not initialized" : "seems to be initialized by init_srvbdarkiv.sh";
         }
+    }
+
+    @FunctionalInterface
+    public interface OidcTokenManager {
+
+        Optional<String> hentIdToken();
+    }
+
+    @FunctionalInterface
+    public interface SaksbehandlerOidcTokenManager {
+
+        Saksbehandler hentSaksbehandler();
     }
 }

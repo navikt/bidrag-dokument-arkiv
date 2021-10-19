@@ -2,8 +2,9 @@ package no.nav.bidrag.dokument.arkiv.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Objects;
+import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.SaksbehandlerOidcTokenManager;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelseException;
+import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelseIntern;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.bidrag.dokument.dto.JournalpostHendelse;
@@ -19,14 +20,17 @@ public class HendelserProducer {
   private final JournalpostService journalpostService;
   private final String topic;
   private final Boolean enableProducer;
+  private final SaksbehandlerOidcTokenManager saksbehandlerOidcTokenManager;
 
   public HendelserProducer(JournalpostService journalpostService, KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper,
-      String topic, Boolean enableProducer) {
+      String topic, Boolean enableProducer,
+      SaksbehandlerOidcTokenManager saksbehandlerOidcTokenManager) {
     this.kafkaTemplate = kafkaTemplate;
     this.objectMapper = objectMapper;
     this.journalpostService = journalpostService;
     this.topic = topic;
     this.enableProducer = enableProducer;
+    this.saksbehandlerOidcTokenManager = saksbehandlerOidcTokenManager;
   }
 
   private JournalpostHendelse createJournalpostHendelse(Long journalpostId) {
@@ -35,19 +39,8 @@ public class HendelserProducer {
       throw new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId));
     }
 
-    var journalpost = journalpostOptional.get();
-    JournalpostHendelse journalpostHendelse = new JournalpostHendelse();
-    journalpostHendelse.setJournalpostId(journalpost.hentJournalpostIdMedPrefix());
-    journalpostHendelse.setJournalstatus(journalpost.getJournalstatus());
-    journalpostHendelse.setEnhet(journalpost.getJournalforendeEnhet());
-    journalpostHendelse.setFagomrade(journalpost.getTema());
-
-    if (Objects.nonNull(journalpost.getBruker()) && Objects.nonNull(journalpost.getBruker().getId())) {
-      var bruker = journalpost.getBruker();
-      journalpostHendelse.setAktorId(bruker.getId());
-    }
-    return journalpostHendelse;
-
+    var saksbehandler = saksbehandlerOidcTokenManager.hentSaksbehandler();
+    return new JournalpostHendelseIntern(journalpostOptional.get(), saksbehandler).hentJournalpostHendelse();
   }
 
   public void publishJournalpostUpdated(Long journalpostId){

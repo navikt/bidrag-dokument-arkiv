@@ -7,8 +7,7 @@ public enum HendelsesType {
     JOURNALPOST_MOTTATT("JournalpostMottatt"),
     TEMA_ENDRET("TemaEndret"),
     ENDELIG_JOURNALFORT("EndeligJournalført"),
-    JOURNALPOST_UTGATT("JournalpostUtgått"),
-    ENDRING("Endring");
+    JOURNALPOST_UTGATT("JournalpostUtgått");
 
     private final String hendelsesType;
 

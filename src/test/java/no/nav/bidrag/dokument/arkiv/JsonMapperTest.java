@@ -13,7 +13,6 @@ import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostQuery;
 import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest;
-import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelse;
 import no.nav.bidrag.dokument.dto.EndreDokument;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import org.junit.jupiter.api.DisplayName;
@@ -129,23 +128,6 @@ class JsonMapperTest {
             .contains("journalpostId: $journalpostId"),
         () -> assertThat(safQuery.getVariables()).as("Variables")
             .containsEntry("journalpostId", 1235L)
-    );
-  }
-
-  @Test
-  @DisplayName("skal mappe saf journalpost query til java.util.Map")
-  void skalMappeJournalpostHendelse() throws JsonProcessingException {
-    var journalpostHendelse = new JournalpostHendelse("jpid", "hendelse");
-    journalpostHendelse.addDetaljer("detalj1", "verdi1");
-    journalpostHendelse.addDetaljer("detalj2", "verdi2");
-
-    var journalpostHendelseParsed = objectMapper.writeValueAsString(journalpostHendelse);
-    System.out.println(journalpostHendelseParsed);
-    assertAll(
-            () -> assertThat(journalpostHendelseParsed).as("querystring")
-                    .contains("detaljer\":{\"detalj1\":\"verdi1\",\"detalj2\":\"verdi2\"}"),
-            () -> assertThat(journalpostHendelseParsed).as("Variables")
-                    .contains("journalpostId", "jpid")
     );
   }
 

@@ -1,12 +1,9 @@
 package no.nav.bidrag.dokument.arkiv.kafka;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import java.util.Optional;
-import no.nav.bidrag.commons.CorrelationId;
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -31,8 +28,6 @@ public class HendelseListener {
       topics = "${TOPIC_JOURNALFOERING}",
       errorHandler = "hendelseErrorHandler")
   public void listen(@Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
-    CorrelationId correlationId = CorrelationId.generateTimestamped("journalfoeringshendelse");
-    MDC.put("correlationId", correlationId.get());
     Oppgavetema oppgavetema = new Oppgavetema(journalfoeringHendelseRecord);
     if (!oppgavetema.erOmhandlingAvBidrag()) {
       LOGGER.debug("Oppgavetema omhandler ikke bidrag");
@@ -40,15 +35,13 @@ public class HendelseListener {
     }
 
     registrerOppgaveForHendelse(journalfoeringHendelseRecord);
-    MDC.clear();
   }
 
   private void registrerOppgaveForHendelse(
       @Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
-    Optional<HendelsesType> muligType = HendelsesType.from(journalfoeringHendelseRecord.getHendelsesType());
-    var hendelsesType = muligType.orElse(HendelsesType.ENDRING);
+    var hendelsesType = HendelsesType.from(journalfoeringHendelseRecord.getHendelsesType()).orElse(null);
     if (hendelsesType == HendelsesType.JOURNALPOST_MOTTATT) {
-      LOGGER.info("Journalpost hendelse {} med data {}", hendelsesType, journalfoeringHendelseRecord);
+      LOGGER.info("Behandler journalpost hendelse {} med data {}", hendelsesType, journalfoeringHendelseRecord);
       behandleHendelse(hendelsesType, journalfoeringHendelseRecord);
     } else {
       LOGGER.info("Ignorer hendelse {} med data {}", hendelsesType, journalfoeringHendelseRecord);

@@ -29,6 +29,12 @@ data class Journalpost(
     var tittel: String? = null
 ) {
 
+    fun hentStatus(): String? {
+        return when(journalstatus){
+            "MOTTATT"->"M"
+            else -> journalstatus
+        }
+    }
     fun hentJournalpostIdLong() = journalpostId?.toLong()
     fun hentJournalpostIdMedPrefix() = "JOARK-"+journalpostId
     fun hentDatoJournalfort(): LocalDate? {
