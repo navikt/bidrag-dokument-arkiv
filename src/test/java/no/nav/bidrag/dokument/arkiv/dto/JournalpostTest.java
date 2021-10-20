@@ -83,7 +83,7 @@ class JournalpostTest {
   }
 
   @Test
-  @DisplayName("skal hente avvik hvis status mottatt og inngående")
+  @DisplayName("skal hente avvik hvis Journalpost med status mottatt og inngående")
   void skalHenteAvvikForMottattOgInngaaende() {
     var journalpost = new Journalpost();
     journalpost.setJournalstatus("MOTTATT");
@@ -96,8 +96,8 @@ class JournalpostTest {
   }
 
   @Test
-  @DisplayName("skal tillate avvik FEILFORE_SAK hvis har sak og ikke feilfort og status ikke mottatt")
-  void skalHenteAvvikFeilfort() {
+  @DisplayName("skal returnere avvik FEILFORE_SAK hvis status ikke er feilfort")
+  void skalHenteAvvikFEILFORE_SAKHvisIkkeFeilfort() {
     var journalpost = new Journalpost();
     journalpost.setJournalstatus("JOURNALFOERT");
     journalpost.setJournalposttype("I");
@@ -105,7 +105,6 @@ class JournalpostTest {
     var avvikListe = journalpost.tilAvvik();
     assertThat(avvikListe).hasSize(2);
     assertThat(avvikListe).contains(AvvikType.FEILFORE_SAK);
-    assertThat(avvikListe).contains(AvvikType.ENDRE_FAGOMRADE);
   }
 
   @Test
@@ -117,6 +116,6 @@ class JournalpostTest {
     journalpost.setSak(new Sak(""));
     var avvikListe = journalpost.tilAvvik();
     assertThat(avvikListe).hasSize(1);
-    assertThat(avvikListe).contains(AvvikType.ENDRE_FAGOMRADE);
+    assertThat(avvikListe).doesNotContain(AvvikType.FEILFORE_SAK);
   }
 }

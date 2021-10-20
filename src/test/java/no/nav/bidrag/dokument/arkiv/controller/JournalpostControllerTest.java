@@ -222,7 +222,7 @@ class JournalpostControllerTest extends AbstractControllerTest  {
         () -> assertThat(oppdaterJournalpostResponseEntity)
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
-            .isEqualTo(HttpStatus.ACCEPTED),
+            .isEqualTo(HttpStatus.OK),
         () -> {
           var forventetUrlForOppdateringAvJournalpost = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson;
           var oppdaterJournalpostRequest = new LagreJournalpostRequest(
@@ -282,7 +282,7 @@ class JournalpostControllerTest extends AbstractControllerTest  {
         () -> assertThat(oppdaterJournalpostResponseEntity)
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
-            .isEqualTo(HttpStatus.ACCEPTED),
+            .isEqualTo(HttpStatus.OK),
         () -> {
           var forventetUrlForOppdateringAvJournalpost = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson;
           var oppdaterJournalpostRequest = new LagreJournalpostRequest(

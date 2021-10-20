@@ -23,7 +23,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest(
-    properties = { "FEATURE_ENABLED=asdasd" },
+    properties = { "FEATURE_ENABLED=NONE" },
     classes = BidragDokumentArkivLocal.class
 )
 @ActiveProfiles("test")

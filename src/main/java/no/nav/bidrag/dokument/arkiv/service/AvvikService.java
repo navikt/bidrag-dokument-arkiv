@@ -9,7 +9,10 @@ import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
 import no.nav.bidrag.dokument.arkiv.model.AvvikNotSupportedException;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
+import no.nav.bidrag.dokument.arkiv.model.FeilforSakFeiletException;
+import no.nav.bidrag.dokument.arkiv.model.OppdaterJournalpostFeiletException;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
+import no.nav.bidrag.dokument.arkiv.model.TrekkJournalpostFeiletException;
 import no.nav.bidrag.dokument.arkiv.model.UgyldigAvvikException;
 import no.nav.bidrag.dokument.dto.AvvikType;
 import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse;
@@ -50,8 +53,8 @@ public class AvvikService {
     switch (avvikshendelseIntern.getAvvikstype()){
       case OVERFOR_TIL_ANNEN_ENHET -> oppdater(avvikshendelseIntern.toOverforEnhetRequest());
       case ENDRE_FAGOMRADE -> oppdater(avvikshendelseIntern.toEndreFagomradeRequest());
-      case TREKK_JOURNALPOST -> dokarkivConsumer.settStatusUtgaar(avvikshendelseIntern.getJournalpostId());
-      case FEILFORE_SAK -> dokarkivConsumer.feilregistrerSakstilknytning(avvikshendelseIntern.getJournalpostId());
+      case TREKK_JOURNALPOST -> trekkJournalpost(avvikshendelseIntern);
+      case FEILFORE_SAK -> feilforSak(avvikshendelseIntern);
       default -> throw new AvvikNotSupportedException("Avvik %s ikke støttet".formatted(avvikshendelseIntern.getAvvikstype()));
     }
 
@@ -60,8 +63,26 @@ public class AvvikService {
     return Optional.of(new BehandleAvvikshendelseResponse(avvikshendelseIntern.getAvvikstype()));
   }
 
+  public void trekkJournalpost(AvvikshendelseIntern avvikshendelseIntern){
+    var httpResponse = dokarkivConsumer.settStatusUtgaar(avvikshendelseIntern.getJournalpostId());
+    if (!httpResponse.is2xxSuccessful()){
+      throw new TrekkJournalpostFeiletException(String.format("Sett status utgår feilet for journalpostId %s", avvikshendelseIntern.getJournalpostId()));
+    }
+  }
+
+  public void feilforSak(AvvikshendelseIntern avvikshendelseIntern){
+    var httpResponse = dokarkivConsumer.feilregistrerSakstilknytning(avvikshendelseIntern.getJournalpostId());
+    if (!httpResponse.is2xxSuccessful()){
+      throw new FeilforSakFeiletException(String.format("Feilregistrer sakstilknytning feilet for journalpostId %s", avvikshendelseIntern.getJournalpostId()));
+    }
+  }
+
   public void oppdater(OppdaterJournalpostRequest oppdaterJournalpostRequest) {
     var oppdatertJournalpostResponse = dokarkivConsumer.endre(oppdaterJournalpostRequest);
+    if (!oppdatertJournalpostResponse.is2xxSuccessful()){
+      throw new OppdaterJournalpostFeiletException(String.format("Oppdater journalpost feilet for journapostId %s", oppdaterJournalpostRequest.hentJournalpostId()));
+    }
+
     oppdatertJournalpostResponse.fetchBody().ifPresent(response -> LOGGER.info("endret: {}", response));
   }
 

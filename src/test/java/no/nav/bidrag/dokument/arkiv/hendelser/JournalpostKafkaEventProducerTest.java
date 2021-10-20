@@ -1,7 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.hendelser;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.never;
@@ -133,7 +133,7 @@ class JournalpostKafkaEventProducerTest {
   }
 
   @Test
-  @DisplayName("skal feile hvis saf feiler")
+  @DisplayName("skal feile med JournalpostIkkeFunnetException hvis SAF feiler")
   void shouldThrowWhenSafFails() {
     var journalpostId1 = 123213L;
     JournalfoeringHendelseRecord record = new JournalfoeringHendelseRecord();
@@ -141,15 +141,10 @@ class JournalpostKafkaEventProducerTest {
     record.setHendelsesType("JournalpostMottatt");
     record.setTemaNytt("BID");
     record.setMottaksKanal(MottaksKanal.NAV_NO.name());
-    try {
-      hendelseListener.listen(record);
-      fail("Should throw JournalpostIkkeFunnetException");
-    } catch (JournalpostIkkeFunnetException e){
-      assertThat(e.getMessage()).isEqualTo("Fant ikke journalpost med id %s".formatted(journalpostId1));
-      verify(kafkaTemplateMock, never()).send(any(), any(), any());
-    } catch (Exception e){
-      fail("Should throw JournalpostIkkeFunnetException");
-    }
+    assertThatExceptionOfType(JournalpostIkkeFunnetException.class)
+        .isThrownBy(()->hendelseListener.listen(record))
+        .withMessage("Fant ikke journalpost med id %s".formatted(journalpostId1));
+
   }
 
   private void mockSafResponse(Long journalpostId, String brukerId, String brukerType, String jfEnhet){

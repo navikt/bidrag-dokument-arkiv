@@ -1,6 +1,8 @@
 package no.nav.bidrag.dokument.arkiv.controller;
 
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TEST;
+import static no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer.URL_JOURNALPOSTAPI_V1;
+import static no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer.URL_JOURNALPOSTAPI_V1_FEILREGISTRER;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.matches;
@@ -14,7 +16,6 @@ import java.util.Objects;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.bidrag.commons.web.test.HttpHeaderTestRestTemplate;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
-import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import org.junit.jupiter.api.DisplayName;
@@ -68,21 +69,34 @@ public abstract class AbstractControllerTest {
   protected String AKTOR_IDENT = "92345678910";
 
   protected void mockDokarkivOppdaterRequest(Long journalpostId){
+     mockDokarkivOppdaterRequest(journalpostId, HttpStatus.OK);
+  }
+
+  protected void mockDokarkivOppdaterRequest(Long journalpostId, HttpStatus status){
     when(restTemplateDokarkivMock.exchange(
-        eq("/rest/journalpostapi/v1/journalpost/" + journalpostId),
+        eq(URL_JOURNALPOSTAPI_V1 + '/' + journalpostId),
         eq(HttpMethod.PUT),
         any(HttpEntity.class),
         eq(OppdaterJournalpostResponse.class)
-    )).thenReturn(new ResponseEntity<>(new OppdaterJournalpostResponse(journalpostId, null), HttpStatus.ACCEPTED));
+    )).thenReturn(new ResponseEntity<>(new OppdaterJournalpostResponse(journalpostId, null), status));
+  }
+
+  protected void mockDokarkivFeilregistrerRequest(String path, Long journalpostId){
+    when(restTemplateDokarkivMock.exchange(
+        eq(String.format(URL_JOURNALPOSTAPI_V1_FEILREGISTRER, journalpostId)+"/"+path),
+        eq(HttpMethod.PATCH),
+        eq(null),
+        eq(Void.class)
+    )).thenReturn(new ResponseEntity<>(HttpStatus.OK));
   }
 
   protected void mockDokarkivFerdigstillRequest(Long journalpostId){
     when(restTemplateDokarkivMock.exchange(
-        eq("/rest/journalpostapi/v1/journalpost/" + journalpostId + "/ferdigstill"),
+        eq(URL_JOURNALPOSTAPI_V1 + '/' + journalpostId + "/ferdigstill"),
         eq(HttpMethod.PATCH),
         any(HttpEntity.class),
-        eq(FerdigstillJournalpostRequest.class)
-    )).thenReturn(new ResponseEntity<>(HttpStatus.ACCEPTED));
+        eq(Void.class)
+    )).thenReturn(new ResponseEntity<>(HttpStatus.OK));
   }
 
   protected void mockSafResponse(Resource resource, HttpStatus status) throws IOException {

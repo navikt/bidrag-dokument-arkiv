@@ -14,8 +14,11 @@ import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
+import no.nav.bidrag.dokument.arkiv.model.FerdigstillFeiletException;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
+import no.nav.bidrag.dokument.arkiv.model.LagreJournalpostFeiletException;
 import no.nav.bidrag.dokument.arkiv.model.PersonException;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
 import org.slf4j.Logger;
@@ -101,24 +104,40 @@ public class JournalpostService {
   }
 
   public HttpResponse<Void> endre(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand) {
-    var journalpost = hentJournalpost(journalpostId).orElseThrow(
-        () -> new JournalpostIkkeFunnetException("Kunne ikke finne journalpost med id: " + journalpostId)
-    );
+    var oppdatertJournalpostResponse = lagreJournalpost(journalpostId, endreJournalpostCommand);
 
-    var oppdaterJournalpostRequest = new LagreJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost);
-    var oppdatertJournalpostResponse = dokarkivConsumer.endre(oppdaterJournalpostRequest);
-
-    if (oppdatertJournalpostResponse.is2xxSuccessful() && endreJournalpostCommand.skalJournalfores()) {
-      var journalforRequest = new FerdigstillJournalpostRequest(journalpostId, endreJournalpostCommand.getEnhet());
-      dokarkivConsumer.ferdigstill(journalforRequest);
-      LOGGER.info("Journalpost med id {} er ferdigstillt", journalpostId);
+    if (endreJournalpostCommand.skalJournalfores()) {
+      journalfoerJournalpost(journalpostId, endreJournalpostCommand);
     }
-
-    oppdatertJournalpostResponse.fetchBody().ifPresent(response -> LOGGER.info("endret: {}", response));
 
     return HttpResponse.from(
         oppdatertJournalpostResponse.fetchHeaders(),
         oppdatertJournalpostResponse.getResponseEntity().getStatusCode()
     );
+  }
+
+  private HttpResponse<OppdaterJournalpostResponse> lagreJournalpost(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand){
+    var journalpost = hentJournalpost(journalpostId).orElseThrow(
+        () -> new JournalpostIkkeFunnetException("Kunne ikke finne journalpost med id: " + journalpostId)
+    );
+    var oppdaterJournalpostRequest = new LagreJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost);
+    var oppdatertJournalpostResponse = dokarkivConsumer.endre(oppdaterJournalpostRequest);
+
+    oppdatertJournalpostResponse.fetchBody().ifPresent(response -> LOGGER.info("endret: {}", response));
+
+    if (!oppdatertJournalpostResponse.is2xxSuccessful()){
+      throw new LagreJournalpostFeiletException(String.format("Lagre journalpost feilet for journalpostid %s", journalpostId));
+    }
+
+    return oppdatertJournalpostResponse;
+  }
+
+  private void journalfoerJournalpost(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand){
+    var journalforRequest = new FerdigstillJournalpostRequest(journalpostId, endreJournalpostCommand.getEnhet());
+    var ferdigstillResponse = dokarkivConsumer.ferdigstill(journalforRequest);
+    if (!ferdigstillResponse.is2xxSuccessful()){
+      throw new FerdigstillFeiletException(String.format("Ferdigstill journalpost feilet for journalpostId %s", journalpostId));
+    }
+    LOGGER.info("Journalpost med id {} er ferdigstillt", journalpostId);
   }
 }

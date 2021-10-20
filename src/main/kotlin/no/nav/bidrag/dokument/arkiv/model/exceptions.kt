@@ -27,3 +27,17 @@ class AvvikNotSupportedException(message: String) : HttpStatusException(message)
 class UgyldigAvvikException(message: String) : HttpStatusException(message) {
     override val status: HttpStatus = HttpStatus.BAD_REQUEST
 }
+abstract class AvvikFeiletException(message: String) : HttpStatusException(message) {
+    override val status: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR
+}
+
+abstract class EndreJournalpostFeiletException(message: String) : HttpStatusException(message) {
+    override val status: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR
+}
+
+class LagreJournalpostFeiletException(message: String) : EndreJournalpostFeiletException(message)
+class FerdigstillFeiletException(message: String) : EndreJournalpostFeiletException(message)
+
+class OppdaterJournalpostFeiletException(message: String) : AvvikFeiletException(message)
+class TrekkJournalpostFeiletException(message: String) : AvvikFeiletException(message)
+class FeilforSakFeiletException(message: String) : AvvikFeiletException(message)

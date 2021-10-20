@@ -2,12 +2,12 @@ package no.nav.bidrag.dokument.arkiv.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.SaksbehandlerOidcTokenManager;
 import no.nav.bidrag.dokument.arkiv.FeatureToggle;
 import no.nav.bidrag.dokument.arkiv.FeatureToggle.Feature;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelseException;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelseIntern;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
+import no.nav.bidrag.dokument.arkiv.security.SecurityConfig.SaksbehandlerOidcTokenManager;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.bidrag.dokument.dto.JournalpostHendelse;
 import org.slf4j.Logger;
@@ -52,12 +52,13 @@ public class HendelserProducer {
 
   public void publish(JournalpostHendelse journalpostHendelse){
     try {
-      LOGGER.info("Publiserer hendelse {}", objectMapper.writeValueAsString(journalpostHendelse));
+      var message = objectMapper.writeValueAsString(journalpostHendelse);
       if (!featureToggle.isFeatureEnabled(Feature.KAFKA_ARBEIDSFLYT)) {
-        LOGGER.info("Sender ikke hendelse da ENABLE_HENDELSE_PRODUCER er satt til false");
+        LOGGER.info("Sender ikke hendelse {} da feature toggle KAFKA_ARBEIDSFLYT ikke er skrudd på", message);
         return;
       }
-      kafkaTemplate.send(topic, journalpostHendelse.getJournalpostId(), objectMapper.writeValueAsString(journalpostHendelse));
+      LOGGER.info("Publiserer hendelse {}", message);
+      kafkaTemplate.send(topic, journalpostHendelse.getJournalpostId(), message);
     } catch (JsonProcessingException e) {
       throw new JournalpostHendelseException(e.getMessage(), e);
     }

@@ -24,9 +24,7 @@ public class HendelseListener {
     this.meterRegistry = registry;
   }
 
-  @KafkaListener(
-      topics = "${TOPIC_JOURNALFOERING}",
-      errorHandler = "hendelseErrorHandler")
+  @KafkaListener(topics = "${TOPIC_JOURNALFOERING}", errorHandler = "hendelseErrorHandler")
   public void listen(@Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
     Oppgavetema oppgavetema = new Oppgavetema(journalfoeringHendelseRecord);
     if (!oppgavetema.erOmhandlingAvBidrag()) {
@@ -37,8 +35,7 @@ public class HendelseListener {
     registrerOppgaveForHendelse(journalfoeringHendelseRecord);
   }
 
-  private void registrerOppgaveForHendelse(
-      @Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
+  private void registrerOppgaveForHendelse(@Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
     var hendelsesType = HendelsesType.from(journalfoeringHendelseRecord.getHendelsesType()).orElse(null);
     if (hendelsesType == HendelsesType.JOURNALPOST_MOTTATT) {
       LOGGER.info("Behandler journalpost hendelse {} med data {}", hendelsesType, journalfoeringHendelseRecord);
