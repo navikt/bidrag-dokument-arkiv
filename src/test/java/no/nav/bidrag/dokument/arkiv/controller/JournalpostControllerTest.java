@@ -95,7 +95,7 @@ class JournalpostControllerTest extends AbstractControllerTest  {
   }
 
   @Test
-  @DisplayName("skal få 400 BAD REQUEST når eksisterende journalpost er knyttet til annen sak")
+  @DisplayName("skal få 404 NOT FOUND når eksisterende journalpost er knyttet til annen sak")
   void skalFaBadRequestNarEksisterendeJournalpostErKnyttetTilAnnenSak() throws IOException {
     var journalpostIdFraJson = 201028011;
 
@@ -110,7 +110,7 @@ class JournalpostControllerTest extends AbstractControllerTest  {
     );
 
     assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
-        () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST),
+        () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND),
         () -> assertThat(response.getBody()).isNull(),
         () -> verify(baseRestemplateMock).exchange(eq("/"), eq(HttpMethod.POST), any(), eq(String.class))
     ));
