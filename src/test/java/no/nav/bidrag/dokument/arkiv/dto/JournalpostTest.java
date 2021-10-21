@@ -56,7 +56,7 @@ class JournalpostTest {
         () -> assertThat(journalpost.getJournalfortAvNavn()).as("journalfortAvNavn").isEqualTo("Terkelsen, Karin"),
         () -> assertThat(journalpost.getJournalpostId()).as("journalpostId").isEqualTo("203915975"),
         () -> assertThat(journalpost.getJournalposttype()).as("journalposttype").isEqualTo("I"),
-        () -> assertThat(journalpost.getJournalstatus()).as("journalstatus").isEqualTo("JOURNALFOERT"),
+        () -> assertThat(journalpost.getJournalstatus()).as("journalstatus").isEqualTo(JournalStatus.JOURNALFOERT),
         () -> assertThat(journalpost.getRelevanteDatoer()).as("relevanteDater").isEqualTo(List.of(
             new DatoType("2010-12-16T00:00", "DATO_JOURNALFOERT"),
             new DatoType("2010-12-15T00:00", "DATO_REGISTRERT")
@@ -86,7 +86,7 @@ class JournalpostTest {
   @DisplayName("skal hente avvik hvis Journalpost med status mottatt og inngående")
   void skalHenteAvvikForMottattOgInngaaende() {
     var journalpost = new Journalpost();
-    journalpost.setJournalstatus("MOTTATT");
+    journalpost.setJournalstatus(JournalStatus.MOTTATT);
     journalpost.setJournalposttype("I");
     var avvikListe = journalpost.tilAvvik();
     assertThat(avvikListe).hasSize(3);
@@ -99,7 +99,7 @@ class JournalpostTest {
   @DisplayName("skal returnere avvik FEILFORE_SAK hvis status ikke er feilfort")
   void skalHenteAvvikFEILFORE_SAKHvisIkkeFeilfort() {
     var journalpost = new Journalpost();
-    journalpost.setJournalstatus("JOURNALFOERT");
+    journalpost.setJournalstatus(JournalStatus.JOURNALFOERT);
     journalpost.setJournalposttype("I");
     journalpost.setSak(new Sak(""));
     var avvikListe = journalpost.tilAvvik();
@@ -111,7 +111,7 @@ class JournalpostTest {
   @DisplayName("skal ikke tillate avvik FEILFORE_SAK hvis status feilregistrert")
   void skalHenteAvvikHvisStatusFeilregistrert() {
     var journalpost = new Journalpost();
-    journalpost.setJournalstatus("FEILREGISTRERT");
+    journalpost.setJournalstatus(JournalStatus.FEILREGISTRERT);
     journalpost.setJournalposttype("I");
     journalpost.setSak(new Sak(""));
     var avvikListe = journalpost.tilAvvik();

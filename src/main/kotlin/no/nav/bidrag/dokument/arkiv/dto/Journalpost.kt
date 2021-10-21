@@ -22,17 +22,21 @@ data class Journalpost(
     var journalfortAvNavn: String? = null,
     var journalpostId: String? = null,
     var journalposttype: String? = null,
-    var journalstatus: String? = null,
+    var journalstatus: JournalStatus? = null,
     var relevanteDatoer: List<DatoType> = emptyList(),
     var sak: Sak? = null,
     var tema: String? = null,
     var tittel: String? = null
 ) {
-
-    fun hentStatus(): String? {
+    fun hentJournalStatus(): String? {
         return when(journalstatus){
-            "MOTTATT"->"M"
-            else -> journalstatus
+            JournalStatus.MOTTATT->"M"
+            JournalStatus.JOURNALFOERT->"J"
+            JournalStatus.FERDIGSTILT->"FS"
+            JournalStatus.RESERVERT->"R"
+            JournalStatus.UTGAAR->"U"
+            JournalStatus.AVBRUTT->"A"
+            else -> journalstatus?.name
         }
     }
     fun hentJournalpostIdLong() = journalpostId?.toLong()
@@ -66,7 +70,7 @@ data class Journalpost(
             journalforendeEnhet = journalforendeEnhet,
             journalfortAv = journalfortAvNavn,
             journalpostId = "JOARK-$journalpostId",
-            journalstatus = journalstatus,
+            journalstatus = hentJournalStatus(),
             mottattDato = hentDatoRegistrert()
         )
     }
@@ -74,16 +78,15 @@ data class Journalpost(
     fun tilAvvik(): List<AvvikType> {
         val avvikTypeList = mutableListOf<AvvikType>()
         if (isStatusMottatt() && isInngaaendeDokument()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
-//        if (isInngaaendeDokument()) avvikTypeList.add(AvvikType.INNG_TIL_UTG_DOKUMENT)
-//        if (isStatusMottatt()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
+        if (isStatusMottatt()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
         if (!isStatusMottatt() && hasSak() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.FEILFORE_SAK)
         avvikTypeList.add(AvvikType.ENDRE_FAGOMRADE)
         return avvikTypeList;
     }
 
     fun hasSak(): Boolean = sak != null
-    fun isStatusFeilregistrert(): Boolean = journalstatus == "FEILREGISTRERT"
-    fun isStatusMottatt(): Boolean = journalstatus == "MOTTATT"
+    fun isStatusFeilregistrert(): Boolean = journalstatus == JournalStatus.FEILREGISTRERT
+    fun isStatusMottatt(): Boolean = journalstatus == JournalStatus.MOTTATT
     fun isInngaaendeDokument(): Boolean = journalposttype == "I"
 
     fun tilJournalpostResponse(): JournalpostResponse {
@@ -150,6 +153,21 @@ data class DatoType(
 data class Sak(
     var fagsakId: String? = null
 )
+
+enum class JournalStatus {
+    MOTTATT,
+    JOURNALFOERT,
+    FERDIGSTILT,
+    EKSPEDERT,
+    UNDER_ARBEID,
+    FEILREGISTRERT,
+    UTGAAR,
+    AVBRUTT,
+    UKJENT_BRUKER,
+    RESERVERT,
+    OPPLASTING_DOKUMENT,
+    UKJENT
+}
 
 data class EndreJournalpostCommandIntern(
     val endreJournalpostCommand: EndreJournalpostCommand,

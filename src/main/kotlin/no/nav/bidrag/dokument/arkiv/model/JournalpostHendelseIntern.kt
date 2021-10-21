@@ -11,7 +11,7 @@ class JournalpostHendelseIntern(var journalpost: Journalpost, var saksbehandler:
     var journalpostHendelse: JournalpostHendelse = JournalpostHendelse()
     init {
         journalpostHendelse.journalpostId = journalpost.hentJournalpostIdMedPrefix()
-        journalpostHendelse.journalstatus = journalpost.hentStatus()
+        journalpostHendelse.journalstatus = journalpost.hentJournalStatus()
         journalpostHendelse.enhet = journalpost.journalforendeEnhet
         journalpostHendelse.fagomrade = journalpost.tema
         val bruker = journalpost.bruker
