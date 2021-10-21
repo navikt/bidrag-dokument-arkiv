@@ -19,6 +19,7 @@ import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker;
 import no.nav.bidrag.dokument.arkiv.dto.Bruker;
 import no.nav.bidrag.dokument.arkiv.dto.Dokument;
 import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQueryResponse;
+import no.nav.bidrag.dokument.arkiv.dto.JournalStatus;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
@@ -61,7 +62,7 @@ class JournalpostServiceTest {
     when(personConsumerMock.hentPerson(journalpostDokOversikt.getBruker().getId())).thenReturn(HttpResponse.from(
         HttpStatus.OK, new PersonResponse("123123", "555555")));
 
-    var muligJournalpost = journalpostService.get(Discriminator.REGULAR_USER).hentJournalpost(journalpostIdFraJson);
+    var muligJournalpost = journalpostService.get(Discriminator.REGULAR_USER).hentJournalpostMedFnr(journalpostIdFraJson, null);
 
     assertAll(
         () -> {
@@ -83,7 +84,7 @@ class JournalpostServiceTest {
               () -> assertThat(journalpost.getJournalfortAvNavn()).as("journalført av navn").isEqualTo("Bånn, Jaims"),
               () -> assertThat(journalpost.hentDatoJournalfort()).as("journalført dato").isEqualTo(LocalDate.of(2010, 3, 8)),
               () -> assertThat(journalpost.getJournalpostId()).as("journalpostId").isEqualTo(String.valueOf(journalpostIdFraJson)),
-              () -> assertThat(journalpost.getJournalstatus()).as("journalstatus").isEqualTo("JOURNALFOERT"),
+              () -> assertThat(journalpost.getJournalstatus()).as("journalstatus").isEqualTo(JournalStatus.JOURNALFOERT),
               () -> assertThat(journalpost.hentDatoRegistrert()).as("registrert dato").isEqualTo(LocalDate.of(2010, 3, 12)),
               () -> {
                 assertThat(dokumenter).as("dokumenter").hasSize(1);

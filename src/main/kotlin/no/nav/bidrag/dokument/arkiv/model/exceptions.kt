@@ -20,3 +20,24 @@ class SafException(message: String, override val status: HttpStatus) : HttpStatu
 class PersonException(message: String, override val status: HttpStatus) : HttpStatusException(message)
 class TokenException(message: String) : RuntimeException(message)
 class ResourceDiscriminatorException(message: String) : RuntimeException(message)
+class AvvikDetaljException(detalj: String) : RuntimeException("Manglende detalj i avvik: $detalj")
+class AvvikNotSupportedException(message: String) : HttpStatusException(message) {
+    override val status: HttpStatus = HttpStatus.BAD_REQUEST
+}
+class UgyldigAvvikException(message: String) : HttpStatusException(message) {
+    override val status: HttpStatus = HttpStatus.BAD_REQUEST
+}
+abstract class AvvikFeiletException(message: String) : HttpStatusException(message) {
+    override val status: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR
+}
+
+abstract class EndreJournalpostFeiletException(message: String) : HttpStatusException(message) {
+    override val status: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR
+}
+
+class LagreJournalpostFeiletException(message: String) : EndreJournalpostFeiletException(message)
+class FerdigstillFeiletException(message: String) : EndreJournalpostFeiletException(message)
+
+class OppdaterJournalpostFeiletException(message: String) : AvvikFeiletException(message)
+class TrekkJournalpostFeiletException(message: String) : AvvikFeiletException(message)
+class FeilforSakFeiletException(message: String) : AvvikFeiletException(message)

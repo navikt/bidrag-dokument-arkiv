@@ -4,27 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-data class OppdaterJournalpostRequest(
-        private val journalpostId: Long,
-        private val endreJournalpostCommand: EndreJournalpostCommandIntern,
-) {
-    var sak: Sak? = null
-    var tittel: String? = null
-    var tema: String? = null
-    var bruker: Bruker? = null
-    var dokumenter = emptyList<Dokument>()
-    var avsenderMottaker: AvsenderMottaker? = null
-
-    fun hentJournalpostId() = journalpostId
-
-    constructor(journalpostId: Long, endreJournalpostCommand: EndreJournalpostCommandIntern, journalpost: Journalpost) : this(
-            journalpostId = journalpostId,
-            endreJournalpostCommand = endreJournalpostCommand
-    ) {
+data class LagreJournalpostRequest(private var journalpostId: Long, private var endreJournalpostCommand: EndreJournalpostCommandIntern, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId) {
+    init {
         avsenderMottaker = AvsenderMottaker(endreJournalpostCommand.hentAvsenderNavn(journalpost))
-
         val saksnummer = if (endreJournalpostCommand.harEnTilknyttetSak()) {
             endreJournalpostCommand.hentTilknyttetSak()
         } else {
@@ -35,9 +17,22 @@ data class OppdaterJournalpostRequest(
         sak = if (saksnummer != null) Sak(saksnummer) else null
         tema = if (endreJournalpostCommand.hentFagomrade() != null) endreJournalpostCommand.hentFagomrade() else journalpost.tema
         dokumenter = endreJournalpostCommand.endreJournalpostCommand.endreDokumenter
-                .map { dokument -> Dokument(dokument.dokId.toString(), dokument.tittel, dokument.brevkode) }
+            .map { dokument -> Dokument(dokument.dokId.toString(), dokument.tittel, dokument.brevkode) }
     }
+}
 
+@JsonIgnoreProperties(ignoreUnknown = true, value = [ "journalpostId" ])
+@JsonInclude(JsonInclude.Include.NON_NULL)
+sealed class OppdaterJournalpostRequest(private var journalpostId: Long? = -1) {
+    open var sak: Sak? = null
+    open var tittel: String? = null
+    open var journalfoerendeEnhet: String? = null
+    open var tema: String? = null
+    open var bruker: Bruker? = null
+    open var dokumenter = emptyList<Dokument>()
+    open var avsenderMottaker: AvsenderMottaker? = null
+
+    fun hentJournalpostId() = journalpostId
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     data class AvsenderMottaker(val navn: String? = null)
@@ -60,7 +55,7 @@ data class OppdaterJournalpostRequest(
 }
 
 data class OppdaterJournalpostResponse(
-        var journalpostId: Int? = null,
+        var journalpostId: Long? = null,
         var saksnummer: String? = null
 )
 

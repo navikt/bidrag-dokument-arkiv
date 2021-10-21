@@ -18,11 +18,11 @@ import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker;
 import no.nav.bidrag.dokument.arkiv.dto.Bruker;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.Sak;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.model.SafException;
-import no.nav.bidrag.dokument.arkiv.dto.Sak;
 import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
 import no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator;
 import no.nav.security.token.support.core.context.TokenValidationContext;
@@ -61,7 +61,7 @@ class SafConsumerTest {
     var tokenValidationContextMock = mock(TokenValidationContext.class);
     var jwtTokenMock = mock(JwtToken.class);
 
-    when(oidcTokenGenerator.fetchBearerToken()).thenReturn("token");
+    when(oidcTokenGenerator.getBearerToken()).thenReturn("token");
     when(tokenForBasicAuthenticationGenerator.generateToken()).thenReturn("token");
     when(tokenValidationContextMock.getJwtTokenAsOptional(BidragDokumentArkivConfig.ISSUER)).thenReturn(Optional.of(jwtTokenMock));
     when(jwtTokenMock.getTokenAsString()).thenReturn("A very secure token");
@@ -294,7 +294,7 @@ class SafConsumerTest {
     safConsumers.get(Discriminator.REGULAR_USER).finnJournalposter("101", "BID");
 
     // så
-    verify(oidcTokenGenerator).fetchBearerToken();
+    verify(oidcTokenGenerator).getBearerToken();
   }
 
   @Test

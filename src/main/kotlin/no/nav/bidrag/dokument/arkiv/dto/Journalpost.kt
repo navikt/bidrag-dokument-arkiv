@@ -2,6 +2,7 @@ package no.nav.bidrag.dokument.arkiv.dto
 
 import no.nav.bidrag.dokument.arkiv.model.JournalpostDataException
 import no.nav.bidrag.dokument.dto.AktorDto
+import no.nav.bidrag.dokument.dto.AvvikType
 import no.nav.bidrag.dokument.dto.DokumentDto
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
 import no.nav.bidrag.dokument.dto.JournalpostDto
@@ -21,12 +22,25 @@ data class Journalpost(
     var journalfortAvNavn: String? = null,
     var journalpostId: String? = null,
     var journalposttype: String? = null,
-    var journalstatus: String? = null,
+    var journalstatus: JournalStatus? = null,
     var relevanteDatoer: List<DatoType> = emptyList(),
     var sak: Sak? = null,
     var tema: String? = null,
     var tittel: String? = null
 ) {
+    fun hentJournalStatus(): String? {
+        return when(journalstatus){
+            JournalStatus.MOTTATT->"M"
+            JournalStatus.JOURNALFOERT->"J"
+            JournalStatus.FERDIGSTILT->"FS"
+            JournalStatus.RESERVERT->"R"
+            JournalStatus.UTGAAR->"U"
+            JournalStatus.AVBRUTT->"A"
+            else -> journalstatus?.name
+        }
+    }
+    fun hentJournalpostIdLong() = journalpostId?.toLong()
+    fun hentJournalpostIdMedPrefix() = "JOARK-"+journalpostId
     fun hentDatoJournalfort(): LocalDate? {
         val journalfort = relevanteDatoer
             .find { it.datotype == DATO_JOURNALFORT }
@@ -56,10 +70,24 @@ data class Journalpost(
             journalforendeEnhet = journalforendeEnhet,
             journalfortAv = journalfortAvNavn,
             journalpostId = "JOARK-$journalpostId",
-            journalstatus = journalstatus,
+            journalstatus = hentJournalStatus(),
             mottattDato = hentDatoRegistrert()
         )
     }
+
+    fun tilAvvik(): List<AvvikType> {
+        val avvikTypeList = mutableListOf<AvvikType>()
+        if (isStatusMottatt() && isInngaaendeDokument()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
+        if (isStatusMottatt()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
+        if (!isStatusMottatt() && hasSak() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.FEILFORE_SAK)
+        avvikTypeList.add(AvvikType.ENDRE_FAGOMRADE)
+        return avvikTypeList;
+    }
+
+    fun hasSak(): Boolean = sak != null
+    fun isStatusFeilregistrert(): Boolean = journalstatus == JournalStatus.FEILREGISTRERT
+    fun isStatusMottatt(): Boolean = journalstatus == JournalStatus.MOTTATT
+    fun isInngaaendeDokument(): Boolean = journalposttype == "I"
 
     fun tilJournalpostResponse(): JournalpostResponse {
         val journalpost = tilJournalpostDto()
@@ -84,15 +112,19 @@ data class AvsenderMottaker(
     var navn: String? = null
 )
 
+enum class BrukerType {
+    AKTOERID,
+    FNR
+}
 data class Bruker(
     var id: String? = null,
     var type: String? = null
 ) {
     fun tilAktorDto(): AktorDto {
-        return if (id != null) AktorDto(id!!, type ?: "FNR") else throw JournalpostDataException("ingen id i $this")
+        return if (id != null) AktorDto(id!!, type ?: BrukerType.FNR.name) else throw JournalpostDataException("ingen id i $this")
     }
     fun isAktoerId(): Boolean {
-        return this.type == "AKTOERID"
+        return this.type == BrukerType.AKTOERID.name
     }
 }
 
@@ -121,6 +153,21 @@ data class DatoType(
 data class Sak(
     var fagsakId: String? = null
 )
+
+enum class JournalStatus {
+    MOTTATT,
+    JOURNALFOERT,
+    FERDIGSTILT,
+    EKSPEDERT,
+    UNDER_ARBEID,
+    FEILREGISTRERT,
+    UTGAAR,
+    AVBRUTT,
+    UKJENT_BRUKER,
+    RESERVERT,
+    OPPLASTING_DOKUMENT,
+    UKJENT
+}
 
 data class EndreJournalpostCommandIntern(
     val endreJournalpostCommand: EndreJournalpostCommand,

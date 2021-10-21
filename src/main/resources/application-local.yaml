@@ -11,3 +11,4 @@ TOPIC_JOURNALPOST: bidrag.journalpost-feature
 TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering-q1
 
 SRV_BD_ARKIV_AUTH: changme
+FEATURE_ENABLED: NONE
