@@ -20,7 +20,7 @@
   <properties>
 
     <!-- language -->
-    <java.version>15</java.version>
+    <java.version>17</java.version>
     <kotlin.version>1.5.31</kotlin.version>
 
     <!-- dependent versions other than from spring-boot -->
