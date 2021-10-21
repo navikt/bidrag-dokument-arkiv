@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import java.io.IOException;
 import java.util.Map;
 import no.nav.bidrag.commons.web.EnhetFilter;
+import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
@@ -177,8 +178,65 @@ public class AvvikControllerTest extends AbstractControllerTest {
         },
         ()-> verify(kafkaTemplateMock).send(eq(topicJournalpost), eq("JOARK-" + journalpostIdFraJson), any())
     );
+  }
 
+  @Test
+  @DisplayName("skal ferdigstille hvis avvik ENDRE_FAGOMRADE kalles med fagomrade ulik BID eller FAR")
+  void skalFerdigstilleHvisENDRE_FAGOMRADEIkkeErBidEllerFar() throws IOException, JSONException {
+    // given
+    var xEnhet = "1234";
+    var nyttFagomrade = "BIL";
+    var journalpostIdFraJson = 201028011L;
+    var avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, Map.of("fagomrade", nyttFagomrade));
 
+    mockSafResponse(responseJournalpostJsonResource, HttpStatus.OK);
+    mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
+    mockDokarkivOppdaterRequest(journalpostIdFraJson);
+    mockDokarkivFerdigstillRequest(journalpostIdFraJson);
+
+    // when
+    var headersMedEnhet = new HttpHeaders();
+    headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
+    var overforEnhetResponse = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/journal/JOARK-" + journalpostIdFraJson+"/avvik",
+        HttpMethod.POST,
+        new HttpEntity<>(avvikHendelse, headersMedEnhet),
+        BehandleAvvikshendelseResponse.class
+    );
+
+    // then
+    assertAll(
+        () -> assertThat(overforEnhetResponse)
+            .extracting(ResponseEntity::getStatusCode)
+            .as("statusCode")
+            .isEqualTo(HttpStatus.OK),
+        () -> {
+          var forventetUrlForOppdateringAvJournalpost = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson;
+          ArgumentCaptor<HttpEntity<OppdaterJournalpostRequest>> jsonCaptor = ArgumentCaptor.forClass(HttpEntity.class);
+
+          verify(restTemplateDokarkivMock).exchange(
+              eq(forventetUrlForOppdateringAvJournalpost),
+              eq(HttpMethod.PUT),
+              jsonCaptor.capture(),
+              eq(OppdaterJournalpostResponse.class)
+          );
+          var oppdaterJournalpostRequest = jsonCaptor.getValue().getBody();
+          assertThat(oppdaterJournalpostRequest).isNotNull();
+          assertThat(oppdaterJournalpostRequest.getTema()).isEqualTo(nyttFagomrade);
+          assertThat(oppdaterJournalpostRequest.hentJournalpostId()).isEqualTo(journalpostIdFraJson);
+        },
+        ()->{
+          var ferdigstillJournalpostUrl = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson + "/ferdigstill";
+          var ferdigstillJournalpostRequest = new FerdigstillJournalpostRequest(journalpostIdFraJson, xEnhet);
+          verify(restTemplateDokarkivMock).exchange(
+              eq(ferdigstillJournalpostUrl),
+              eq(HttpMethod.PATCH),
+              eq(new HttpEntity<>(ferdigstillJournalpostRequest)),
+              eq(Void.class)
+          );
+        },
+        ()-> verify(kafkaTemplateMock).send(eq(topicJournalpost), eq("JOARK-" + journalpostIdFraJson), any())
+    );
   }
 
   @Test

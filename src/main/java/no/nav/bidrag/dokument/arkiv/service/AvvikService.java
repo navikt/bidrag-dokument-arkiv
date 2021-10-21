@@ -52,7 +52,7 @@ public class AvvikService {
 
     switch (avvikshendelseIntern.getAvvikstype()){
       case OVERFOR_TIL_ANNEN_ENHET -> oppdater(avvikshendelseIntern.toOverforEnhetRequest());
-      case ENDRE_FAGOMRADE -> oppdater(avvikshendelseIntern.toEndreFagomradeRequest());
+      case ENDRE_FAGOMRADE -> endreFagomrade(journalpost.hentJournalpostIdLong(), avvikshendelseIntern);
       case TREKK_JOURNALPOST -> trekkJournalpost(avvikshendelseIntern);
       case FEILFORE_SAK -> feilforSak(avvikshendelseIntern);
       default -> throw new AvvikNotSupportedException("Avvik %s ikke støttet".formatted(avvikshendelseIntern.getAvvikstype()));
@@ -61,6 +61,13 @@ public class AvvikService {
     hendelserProducer.publishJournalpostUpdated(journalpost.hentJournalpostIdLong());
 
     return Optional.of(new BehandleAvvikshendelseResponse(avvikshendelseIntern.getAvvikstype()));
+  }
+
+  public void endreFagomrade(Long journalpostId, AvvikshendelseIntern avvikshendelseIntern){
+      oppdater(avvikshendelseIntern.toEndreFagomradeRequest());
+      if (avvikshendelseIntern.isNyttFagomradeAnnetEnnBIDellerFAR()){
+        journalpostService.journalfoerJournalpost(journalpostId, avvikshendelseIntern.getSaksbehandlersEnhet());
+      }
   }
 
   public void trekkJournalpost(AvvikshendelseIntern avvikshendelseIntern){

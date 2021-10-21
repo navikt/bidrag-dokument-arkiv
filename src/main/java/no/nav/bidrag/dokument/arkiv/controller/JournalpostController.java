@@ -178,7 +178,7 @@ public class JournalpostController {
 
     return journalpostService.hentJournalpostMedFnr(Long.valueOf(journalpostId), saksnummer)
         .map(journalpost -> ResponseEntity.ok(journalpost.tilJournalpostResponse()))
-        .orElse(ResponseEntity.badRequest().build());
+        .orElse(ResponseEntity.notFound().build());
   }
 
   private boolean erIkkePrefixetMedJoark(String joarkJournalpostId) {

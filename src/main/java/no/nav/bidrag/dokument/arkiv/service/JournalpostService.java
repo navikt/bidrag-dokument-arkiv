@@ -107,7 +107,7 @@ public class JournalpostService {
     var oppdatertJournalpostResponse = lagreJournalpost(journalpostId, endreJournalpostCommand);
 
     if (endreJournalpostCommand.skalJournalfores()) {
-      journalfoerJournalpost(journalpostId, endreJournalpostCommand);
+      journalfoerJournalpost(journalpostId, endreJournalpostCommand.getEnhet());
     }
 
     return HttpResponse.from(
@@ -132,8 +132,8 @@ public class JournalpostService {
     return oppdatertJournalpostResponse;
   }
 
-  private void journalfoerJournalpost(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand){
-    var journalforRequest = new FerdigstillJournalpostRequest(journalpostId, endreJournalpostCommand.getEnhet());
+  public void journalfoerJournalpost(Long journalpostId, String enhet){
+    var journalforRequest = new FerdigstillJournalpostRequest(journalpostId, enhet);
     var ferdigstillResponse = dokarkivConsumer.ferdigstill(journalforRequest);
     if (!ferdigstillResponse.is2xxSuccessful()){
       throw new FerdigstillFeiletException(String.format("Ferdigstill journalpost feilet for journalpostId %s", journalpostId));
