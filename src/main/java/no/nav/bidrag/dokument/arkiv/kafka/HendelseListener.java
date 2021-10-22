@@ -107,10 +107,13 @@ public class HendelseListener {
     var journalpost = hentJournalpost(journalpostId);
     var brukerId = hentBrukerId(journalpost);
     var geografiskEnhet = hentGeografiskEnhet(brukerId);
-    var response = dokarkivConsumer.endre(new OverforEnhetRequest(journalpostId, geografiskEnhet));
-    if (response.is2xxSuccessful()) {
-      journalpost.setJournalforendeEnhet(geografiskEnhet);
+    if (!Objects.equals(geografiskEnhet, journalpost.getJournalforendeEnhet())){
+      var response = dokarkivConsumer.endre(new OverforEnhetRequest(journalpostId, geografiskEnhet));
+      if (response.is2xxSuccessful()) {
+        journalpost.setJournalforendeEnhet(geografiskEnhet);
+      }
     }
+
     return journalpost;
   }
 }
