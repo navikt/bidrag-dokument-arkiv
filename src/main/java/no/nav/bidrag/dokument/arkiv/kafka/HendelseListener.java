@@ -89,7 +89,7 @@ public class HendelseListener {
   }
 
   private Journalpost hentJournalpost(Long journalpostId){
-    var journalpostOptional = journalpostService.hentJournalpost(journalpostId);
+    var journalpostOptional = journalpostService.hentJournalpostMedAktorId(journalpostId);
     if (journalpostOptional.isEmpty()) {
       throw new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId));
     }
