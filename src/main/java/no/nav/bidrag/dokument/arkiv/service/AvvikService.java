@@ -29,10 +29,10 @@ public class AvvikService {
   public final HendelserProducer hendelserProducer;
   private final DokarkivConsumer dokarkivConsumer;
 
-  public AvvikService(ResourceByDiscriminator<JournalpostService> journalpostService, HendelserProducer hendelserProducer, DokarkivConsumer dokarkivConsumer) {
+  public AvvikService(ResourceByDiscriminator<JournalpostService> journalpostService, HendelserProducer hendelserProducer, ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers) {
     this.journalpostService = journalpostService.get(Discriminator.REGULAR_USER);
     this.hendelserProducer = hendelserProducer;
-    this.dokarkivConsumer = dokarkivConsumer;
+    this.dokarkivConsumer = dokarkivConsumers.get(Discriminator.REGULAR_USER);
   }
 
   public List<AvvikType> hentAvvik(Long jpid){
