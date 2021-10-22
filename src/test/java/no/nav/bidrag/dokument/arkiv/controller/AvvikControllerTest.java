@@ -68,7 +68,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
           var forventetUrlForOppdateringAvJournalpost = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson;
           ArgumentCaptor<HttpEntity<OppdaterJournalpostRequest>> jsonCaptor = ArgumentCaptor.forClass(HttpEntity.class);
 
-          verify(restTemplateDokarkivMock).exchange(
+          verify(baseRestemplateMock).exchange(
               eq(forventetUrlForOppdateringAvJournalpost),
               eq(HttpMethod.PUT),
               jsonCaptor.capture(),
@@ -117,7 +117,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
           var forventetUrlForOppdateringAvJournalpost = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson;
           ArgumentCaptor<HttpEntity<OppdaterJournalpostRequest>> jsonCaptor = ArgumentCaptor.forClass(HttpEntity.class);
 
-          verify(restTemplateDokarkivMock).exchange(
+          verify(baseRestemplateMock).exchange(
               eq(forventetUrlForOppdateringAvJournalpost),
               eq(HttpMethod.PUT),
               jsonCaptor.capture(),
@@ -167,7 +167,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
           var forventetUrlForOppdateringAvJournalpost = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson;
           ArgumentCaptor<HttpEntity<OppdaterJournalpostRequest>> jsonCaptor = ArgumentCaptor.forClass(HttpEntity.class);
 
-          verify(restTemplateDokarkivMock).exchange(
+          verify(baseRestemplateMock).exchange(
               eq(forventetUrlForOppdateringAvJournalpost),
               eq(HttpMethod.PUT),
               jsonCaptor.capture(),
@@ -215,7 +215,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
             .isEqualTo(HttpStatus.OK),
         () -> {
           var forventetUrlForOppdateringAvJournalpost = String.format(URL_JOURNALPOSTAPI_V1_FEILREGISTRER, journalpostIdFraJson)+"/feilregistrerSakstilknytning";
-          verify(restTemplateDokarkivMock).exchange(
+          verify(baseRestemplateMock).exchange(
               eq(forventetUrlForOppdateringAvJournalpost),
               eq(HttpMethod.PATCH),
               any(),
@@ -256,7 +256,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
             .isEqualTo(HttpStatus.OK),
         () -> {
           var forventetUrlForOppdateringAvJournalpost = String.format(URL_JOURNALPOSTAPI_V1_FEILREGISTRER, journalpostIdFraJson)+"/settStatusUtgår";
-          verify(restTemplateDokarkivMock).exchange(
+          verify(baseRestemplateMock).exchange(
               eq(forventetUrlForOppdateringAvJournalpost),
               eq(HttpMethod.PATCH),
               any(),

@@ -45,19 +45,4 @@ public class RestTemplateConfiguration {
     return restTemplate;
   }
 
-  @Bean
-  @Qualifier("dokarkiv")
-  @Scope("prototype")
-  public HttpHeaderRestTemplate dokarkivRestTemplate(
-      OidcTokenGenerator oidcTokenGenerator,
-      TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator,
-      @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate
-  ) {
-    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.AUTHORIZATION, oidcTokenGenerator::getBearerToken);
-    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
-    httpHeaderRestTemplate.addHeaderGenerator(HEADER_NAV_CONSUMER_TOKEN, tokenForBasicAuthenticationGenerator::generateToken);
-
-    return httpHeaderRestTemplate;
-  }
-
 }

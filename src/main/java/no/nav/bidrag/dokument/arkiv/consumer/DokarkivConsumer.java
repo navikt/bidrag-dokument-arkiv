@@ -1,10 +1,14 @@
 package no.nav.bidrag.dokument.arkiv.consumer;
 
+import static no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator.HEADER_NAV_CONSUMER_TOKEN;
+
+import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
@@ -45,5 +49,17 @@ public class DokarkivConsumer {
     var oppdaterJoarnalpostApiUrl = String.format(URL_JOURNALPOSTAPI_V1_FEILREGISTRER + "/feilregistrerSakstilknytning", journalpostId);
     var response = restTemplate.exchange(oppdaterJoarnalpostApiUrl, HttpMethod.PATCH, null, Void.class);
     return new HttpResponse<>(response);
+  }
+
+  public void leggTilAuthorizationToken(HttpHeaderRestTemplate.ValueGenerator valueGenerator) {
+    if (restTemplate instanceof HttpHeaderRestTemplate) {
+      ((HttpHeaderRestTemplate) restTemplate).addHeaderGenerator(HttpHeaders.AUTHORIZATION, valueGenerator);
+    }
+  }
+
+  public void leggTilNavConsumerToken(HttpHeaderRestTemplate.ValueGenerator valueGenerator) {
+    if (restTemplate instanceof HttpHeaderRestTemplate) {
+      ((HttpHeaderRestTemplate) restTemplate).addHeaderGenerator(HEADER_NAV_CONSUMER_TOKEN, valueGenerator);
+    }
   }
 }

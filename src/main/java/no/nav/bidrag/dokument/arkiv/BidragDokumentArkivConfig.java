@@ -50,10 +50,10 @@ public class BidragDokumentArkivConfig {
     ResourceByDiscriminator<JournalpostService> journalpostServices(
         ResourceByDiscriminator<SafConsumer> safConsumers,
         ResourceByDiscriminator<PersonConsumer> personConsumers,
-        DokarkivConsumer dokarkivConsumer
+        ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers
     ) {
-        var journalpostServiceRegularUser = new JournalpostService(safConsumers.get(Discriminator.REGULAR_USER), personConsumers.get(Discriminator.REGULAR_USER), dokarkivConsumer);
-        var journalpostServiceServiceUser = new JournalpostService(safConsumers.get(Discriminator.SERVICE_USER), personConsumers.get(Discriminator.SERVICE_USER), dokarkivConsumer);
+        var journalpostServiceRegularUser = new JournalpostService(safConsumers.get(Discriminator.REGULAR_USER), personConsumers.get(Discriminator.REGULAR_USER), dokarkivConsumers.get(Discriminator.REGULAR_USER));
+        var journalpostServiceServiceUser = new JournalpostService(safConsumers.get(Discriminator.SERVICE_USER), personConsumers.get(Discriminator.SERVICE_USER), dokarkivConsumers.get(Discriminator.SERVICE_USER));
         var journalpostServices = new HashMap<Discriminator, JournalpostService>();
         journalpostServices.put(Discriminator.REGULAR_USER, journalpostServiceRegularUser);
         journalpostServices.put(Discriminator.SERVICE_USER, journalpostServiceServiceUser);
@@ -101,12 +101,30 @@ public class BidragDokumentArkivConfig {
     }
 
     @Bean
-    DokarkivConsumer dokarkivConsumer(
-            @Qualifier("dokarkiv") HttpHeaderRestTemplate httpHeaderRestTemplate,
+    ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers(
+        DokarkivConsumer dokarkivConsumerRegularUser,
+        DokarkivConsumer dokarkivConsumerServiceUser,
+        OidcTokenGenerator oidcTokenGenerator,
+        TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator
+    ){
+        dokarkivConsumerRegularUser.leggTilAuthorizationToken(oidcTokenGenerator::getBearerToken);
+        dokarkivConsumerRegularUser.leggTilNavConsumerToken(tokenForBasicAuthenticationGenerator::generateToken);
+
+        dokarkivConsumerServiceUser.leggTilAuthorizationToken(tokenForBasicAuthenticationGenerator::generateToken);
+        var dokarkivConsumers = new HashMap<Discriminator, DokarkivConsumer>();
+        dokarkivConsumers.put(Discriminator.REGULAR_USER, dokarkivConsumerRegularUser);
+        dokarkivConsumers.put(Discriminator.SERVICE_USER, dokarkivConsumerServiceUser);
+        return new ResourceByDiscriminator<>(dokarkivConsumers);
+    }
+
+    @Bean
+    @Scope("prototype")
+    DokarkivConsumer baseDokarkivConsumer(
+            @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
             EnvironmentProperties environmentProperties
     ) {
         httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.dokarkivUrl));
-
+        httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
         return new DokarkivConsumer(httpHeaderRestTemplate);
     }
 

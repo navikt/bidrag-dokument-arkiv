@@ -35,12 +35,12 @@ public class HendelseListener {
   private static final String DEFAULT_ENHET = "4833";
 
   public HendelseListener(HendelserProducer producer, MeterRegistry registry,
-      BidragOrganisasjonConsumer bidragOrganisasjonConsumer, DokarkivConsumer dokarkivConsumer,
+      BidragOrganisasjonConsumer bidragOrganisasjonConsumer, ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers,
       ResourceByDiscriminator<JournalpostService> journalpostServices) {
     this.producer = producer;
     this.meterRegistry = registry;
     this.bidragOrganisasjonConsumer = bidragOrganisasjonConsumer;
-    this.dokarkivConsumer = dokarkivConsumer;
+    this.dokarkivConsumer = dokarkivConsumers.get(Discriminator.SERVICE_USER);
     this.journalpostService = journalpostServices.get(Discriminator.SERVICE_USER);
   }
 

@@ -52,9 +52,6 @@ public abstract class AbstractControllerTest {
   @MockBean
   @Qualifier("serviceuser")
   protected HttpHeaderRestTemplate serviceUserResttemapletMock;
-  @MockBean
-  @Qualifier("dokarkiv")
-  protected HttpHeaderRestTemplate restTemplateDokarkivMock;
   @Value("classpath:json/dokumentoversiktFagsakQueryResponse.json")
   protected Resource responseOversiktFagsakJsonResource;
   @Value("classpath:json/journalpostSafResponse.json")
@@ -98,7 +95,7 @@ public abstract class AbstractControllerTest {
   }
 
   protected void mockDokarkivOppdaterRequest(Long journalpostId, HttpStatus status){
-    when(restTemplateDokarkivMock.exchange(
+    when(baseRestemplateMock.exchange(
         eq(URL_JOURNALPOSTAPI_V1 + '/' + journalpostId),
         eq(HttpMethod.PUT),
         any(HttpEntity.class),
@@ -107,7 +104,7 @@ public abstract class AbstractControllerTest {
   }
 
   protected void mockDokarkivFeilregistrerRequest(String path, Long journalpostId){
-    when(restTemplateDokarkivMock.exchange(
+    when(baseRestemplateMock.exchange(
         eq(String.format(URL_JOURNALPOSTAPI_V1_FEILREGISTRER, journalpostId)+"/"+path),
         eq(HttpMethod.PATCH),
         eq(null),
@@ -116,7 +113,7 @@ public abstract class AbstractControllerTest {
   }
 
   protected void mockDokarkivFerdigstillRequest(Long journalpostId){
-    when(restTemplateDokarkivMock.exchange(
+    when(baseRestemplateMock.exchange(
         eq(URL_JOURNALPOSTAPI_V1 + '/' + journalpostId + "/ferdigstill"),
         eq(HttpMethod.PATCH),
         any(HttpEntity.class),
