@@ -86,7 +86,7 @@ public abstract class AbstractControllerTest {
         eq(String.format(URL_JOURNALPOSTAPI_V1_FEILREGISTRER, journalpostId)+"/"+path),
         eq(HttpMethod.PATCH),
         eq(null),
-        eq(Void.class)
+        eq(String.class)
     )).thenReturn(new ResponseEntity<>(HttpStatus.OK));
   }
 
@@ -95,7 +95,7 @@ public abstract class AbstractControllerTest {
         eq(URL_JOURNALPOSTAPI_V1 + '/' + journalpostId + "/ferdigstill"),
         eq(HttpMethod.PATCH),
         any(HttpEntity.class),
-        eq(Void.class)
+        eq(String.class)
     )).thenReturn(new ResponseEntity<>(HttpStatus.OK));
   }
 

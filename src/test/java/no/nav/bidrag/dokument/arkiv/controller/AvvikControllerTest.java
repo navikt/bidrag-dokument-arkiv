@@ -232,7 +232,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
               eq(ferdigstillJournalpostUrl),
               eq(HttpMethod.PATCH),
               eq(new HttpEntity<>(ferdigstillJournalpostRequest)),
-              eq(Void.class)
+              eq(String.class)
           );
         },
         ()-> verify(kafkaTemplateMock).send(eq(topicJournalpost), eq("JOARK-" + journalpostIdFraJson), any())
@@ -275,7 +275,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
               eq(forventetUrlForOppdateringAvJournalpost),
               eq(HttpMethod.PATCH),
               any(),
-              eq(Void.class)
+              eq(String.class)
           );
         },
         ()-> verify(kafkaTemplateMock).send(eq(topicJournalpost), eq("JOARK-" + journalpostIdFraJson), any())
@@ -315,7 +315,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
               eq(forventetUrlForOppdateringAvJournalpost),
               eq(HttpMethod.PATCH),
               any(),
-              eq(Void.class)
+              eq(String.class)
           );
         },
         ()-> verify(kafkaTemplateMock).send(eq(topicJournalpost), eq("JOARK-" + journalpostIdFraJson), any())

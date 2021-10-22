@@ -245,7 +245,7 @@ class JournalpostControllerTest extends AbstractControllerTest  {
               eq(ferdigstillJournalpostUrl),
               eq(HttpMethod.PATCH),
               eq(new HttpEntity<>(ferdigstillJournalpostRequest)),
-              eq(Void.class)
+              eq(String.class)
           );
         }
     );
@@ -305,7 +305,7 @@ class JournalpostControllerTest extends AbstractControllerTest  {
               eq(ferdigstillJournalpostUrl),
               eq(HttpMethod.PATCH),
               eq(new HttpEntity<>(ferdigstillJournalpostRequest)),
-              eq(Void.class)
+              eq(String.class)
           );
         }
     );

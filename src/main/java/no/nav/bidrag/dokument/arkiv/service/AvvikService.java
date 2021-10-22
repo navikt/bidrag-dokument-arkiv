@@ -73,14 +73,14 @@ public class AvvikService {
   public void trekkJournalpost(AvvikshendelseIntern avvikshendelseIntern){
     var httpResponse = dokarkivConsumer.settStatusUtgaar(avvikshendelseIntern.getJournalpostId());
     if (!httpResponse.is2xxSuccessful()){
-      throw new TrekkJournalpostFeiletException(String.format("Sett status utgår feilet for journalpostId %s", avvikshendelseIntern.getJournalpostId()));
+      throw new TrekkJournalpostFeiletException(String.format("Sett status utgår feilet med feilmelding %s", httpResponse.fetchBody().orElse("")));
     }
   }
 
   public void feilforSak(AvvikshendelseIntern avvikshendelseIntern){
     var httpResponse = dokarkivConsumer.feilregistrerSakstilknytning(avvikshendelseIntern.getJournalpostId());
     if (!httpResponse.is2xxSuccessful()){
-      throw new FeilforSakFeiletException(String.format("Feilregistrer sakstilknytning feilet for journalpostId %s", avvikshendelseIntern.getJournalpostId()));
+      throw new FeilforSakFeiletException(String.format("Feilregistrer sakstilknytning feilet med feilmelding %s", httpResponse.fetchBody().orElse("")));
     }
   }
 

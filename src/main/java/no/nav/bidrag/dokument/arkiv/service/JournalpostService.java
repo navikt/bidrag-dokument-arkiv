@@ -23,7 +23,6 @@ import no.nav.bidrag.dokument.arkiv.model.PersonException;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 
 public class JournalpostService {
 
@@ -98,7 +97,7 @@ public class JournalpostService {
   private PersonResponse hentPerson(String personId) {
     var personResponse = personConsumer.hentPerson(personId);
     if (!personResponse.is2xxSuccessful()) {
-      throw new PersonException("Det skjedde en feil ved henting av person", HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new PersonException("Det skjedde en feil ved henting av person");
     }
     return personResponse.getResponseEntity().getBody();
   }
@@ -136,7 +135,7 @@ public class JournalpostService {
     var journalforRequest = new FerdigstillJournalpostRequest(journalpostId, enhet);
     var ferdigstillResponse = dokarkivConsumer.ferdigstill(journalforRequest);
     if (!ferdigstillResponse.is2xxSuccessful()){
-      throw new FerdigstillFeiletException(String.format("Ferdigstill journalpost feilet for journalpostId %s", journalpostId));
+      throw new FerdigstillFeiletException(String.format("Ferdigstill journalpost feilet med feilmelding %s", ferdigstillResponse.fetchBody().orElse("")));
     }
     LOGGER.info("Journalpost med id {} er ferdigstillt", journalpostId);
   }

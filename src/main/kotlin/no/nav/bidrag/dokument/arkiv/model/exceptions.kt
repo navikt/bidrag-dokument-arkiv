@@ -17,7 +17,10 @@ class JournalpostIkkeFunnetException(message: String) : HttpStatusException(mess
 }
 
 class SafException(message: String, override val status: HttpStatus) : HttpStatusException(message)
-class PersonException(message: String, override val status: HttpStatus) : HttpStatusException(message)
+class PersonException(message: String) : HttpStatusException(message) {
+    override val status: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR
+}
+
 class TokenException(message: String) : RuntimeException(message)
 class ResourceDiscriminatorException(message: String) : RuntimeException(message)
 class AvvikDetaljException(detalj: String) : RuntimeException("Manglende detalj i avvik: $detalj")
