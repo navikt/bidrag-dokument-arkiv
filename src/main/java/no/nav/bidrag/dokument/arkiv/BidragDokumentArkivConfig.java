@@ -6,6 +6,7 @@ import no.nav.bidrag.commons.web.CorrelationIdFilter;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.bidrag.dokument.arkiv.aop.AspectExceptionLogger;
 import no.nav.bidrag.dokument.arkiv.aop.HttpStatusRestControllerAdvice;
+import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
@@ -110,6 +111,15 @@ public class BidragDokumentArkivConfig {
     }
 
     @Bean
+    BidragOrganisasjonConsumer bidragOrganisasjonConsumer(
+        @Qualifier("serviceuser") HttpHeaderRestTemplate httpHeaderRestTemplate,
+        EnvironmentProperties environmentProperties
+    ) {
+        httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.bidragOrganisasjonUrl + "/bidrag-organisasjon"));
+        return new BidragOrganisasjonConsumer(httpHeaderRestTemplate);
+    }
+
+    @Bean
     CorrelationIdFilter correlationIdFilter() {
         return new CorrelationIdFilter();
     }
@@ -128,9 +138,10 @@ public class BidragDokumentArkivConfig {
             @Value("${SAF_GRAPHQL_URL}") String safQraphiQlUrl,
             @Value("${SRV_BD_ARKIV_AUTH}") String secretForServiceUser,
             @Value("${ACCESS_TOKEN_URL}") String securityTokenUrl,
+            @Value("${BIDRAG_ORGANISASJON_URL}") String bidragOrganisasjonUrl,
             @Value("${NAIS_APP_NAME}") String naisAppName
     ) {
-        var environmentProperties = new EnvironmentProperties(dokarkivUrl, safQraphiQlUrl, secretForServiceUser, securityTokenUrl, naisAppName, bidragPersonUrl);
+        var environmentProperties = new EnvironmentProperties(dokarkivUrl, safQraphiQlUrl, secretForServiceUser, securityTokenUrl, naisAppName, bidragPersonUrl, bidragOrganisasjonUrl);
         LOGGER.info(String.format("> Environment: %s", environmentProperties));
 
         return environmentProperties;
@@ -143,15 +154,18 @@ public class BidragDokumentArkivConfig {
         public final String safQraphiQlUrl;
         public final String secretForServiceUser;
         public final String securityTokenUrl;
+        public final String bidragOrganisasjonUrl;
         public final String naisAppName;
 
-        public EnvironmentProperties(String dokarkivUrl, String safQraphiQlUrl, String secretForServiceUser, String securityTokenUrl, String naisAppName, String bidragPersonUrl) {
+        public EnvironmentProperties(String dokarkivUrl, String safQraphiQlUrl, String secretForServiceUser, String securityTokenUrl,
+            String naisAppName, String bidragPersonUrl, String bidragOrganisasjonUrl) {
             this.bidragPersonUrl = bidragPersonUrl;
             this.dokarkivUrl = dokarkivUrl;
             this.safQraphiQlUrl = safQraphiQlUrl;
             this.secretForServiceUser = secretForServiceUser;
             this.securityTokenUrl = securityTokenUrl;
             this.naisAppName = naisAppName;
+            this.bidragOrganisasjonUrl = bidragOrganisasjonUrl;
         }
 
         @Override
@@ -160,6 +174,7 @@ public class BidragDokumentArkivConfig {
                     ", safQraphiQlUrl='" + safQraphiQlUrl + '\'' +
                     ", bidragPersonUrl='" + bidragPersonUrl + '\'' +
                     ", securityTokenUrl='" + securityTokenUrl + '\'' +
+                    ", bidragOrganisasjonUrl='" + bidragOrganisasjonUrl + '\'' +
                     ", naisAppName='" + naisAppName + '\'' +
                     ", secretForServiceUser '" + notActualValue() + "'.";
         }

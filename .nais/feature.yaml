@@ -25,6 +25,8 @@ env:
     value: https://bidrag-person-feature.dev.adeo.no
   - name: FEATURE_ENABLED
     value: KAFKA_ARBEIDSFLYT
+  - name: BIDRAG_ORGANISASJON_URL
+    value: https://bidrag-organisasjon-feature.dev.adeo.no
   - name: JAVA_OPTS
     value: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
 vault:

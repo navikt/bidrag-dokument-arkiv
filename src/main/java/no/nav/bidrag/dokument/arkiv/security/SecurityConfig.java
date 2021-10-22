@@ -45,11 +45,6 @@ public class SecurityConfig {
   }
 
   @Bean
-  SaksbehandlerOidcTokenManager saksbehandlerOidcTokenManager(OidcTokenGenerator oidcTokenGenerator) {
-    return () -> oidcTokenGenerator.getToken().map(SecurityUtils::henteSubject).map((subject)-> new Saksbehandler(subject, "")).orElse(null);
-  }
-
-  @Bean
   TokenForBasicAuthenticationGenerator basicAuthenticationTokenGenerator(
       AccessTokenConsumer accessTokenConsumer,
       EnvironmentProperties environmentProperties
@@ -60,11 +55,5 @@ public class SecurityConfig {
   @Bean
   OidcTokenGenerator oidcTokenGenerator(TokenValidationContextHolder tokenValidationContextHolder) {
     return new OidcTokenGenerator(tokenValidationContextHolder);
-  }
-
-  @FunctionalInterface
-  public interface SaksbehandlerOidcTokenManager {
-
-    Saksbehandler hentSaksbehandler();
   }
 }

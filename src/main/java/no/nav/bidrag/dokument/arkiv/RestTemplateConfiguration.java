@@ -35,6 +35,17 @@ public class RestTemplateConfiguration {
   }
 
   @Bean
+  @Qualifier("serviceuser")
+  @Scope("prototype")
+  public HttpHeaderRestTemplate serviceUserRestTemplate(
+      @Qualifier("base") HttpHeaderRestTemplate restTemplate,
+      TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator
+  ) {
+    restTemplate.addHeaderGenerator(HttpHeaders.AUTHORIZATION, tokenForBasicAuthenticationGenerator::generateToken);
+    return restTemplate;
+  }
+
+  @Bean
   @Qualifier("dokarkiv")
   @Scope("prototype")
   public HttpHeaderRestTemplate dokarkivRestTemplate(

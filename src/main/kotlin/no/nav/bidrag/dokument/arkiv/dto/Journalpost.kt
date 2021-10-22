@@ -39,6 +39,7 @@ data class Journalpost(
             else -> journalstatus?.name
         }
     }
+    fun hasJournalforendeEnhet() = journalforendeEnhet != null;
     fun hentJournalpostIdLong() = journalpostId?.toLong()
     fun hentJournalpostIdMedPrefix() = "JOARK-"+journalpostId
     fun hentDatoJournalfort(): LocalDate? {

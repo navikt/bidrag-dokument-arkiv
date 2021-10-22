@@ -23,6 +23,8 @@ env:
     value: teamdokumenthandtering.aapen-dok-journalfoering
   - name: BIDRAG_PERSON_URL
     value: https://bidrag-person.dev.adeo.no
+  - name: BIDRAG_ORGANISASJON_URL
+    value: https://bidrag-organisasjon.dev.adeo.no
   - name: FEATURE_ENABLED
     value: KAFKA_ARBEIDSFLYT
 vault:

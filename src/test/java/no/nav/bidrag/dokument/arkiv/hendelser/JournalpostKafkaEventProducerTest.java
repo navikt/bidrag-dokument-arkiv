@@ -5,17 +5,23 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import no.nav.bidrag.commons.CorrelationId;
 import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
+import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
+import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.Bruker;
+import no.nav.bidrag.dokument.arkiv.dto.GeografiskTilknytningResponse;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
+import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerInfoResponse;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelseListener;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelsesType;
 import no.nav.bidrag.dokument.arkiv.kafka.MottaksKanal;
@@ -43,6 +49,10 @@ class JournalpostKafkaEventProducerTest {
   private SafConsumer safConsumer;
   @MockBean
   private PersonConsumer personConsumer;
+  @MockBean
+  private DokarkivConsumer dokarkivConsumer;
+  @MockBean
+  private BidragOrganisasjonConsumer organisasjonConsumer;
   @Autowired
   private HendelseListener hendelseListener;
 
@@ -57,6 +67,9 @@ class JournalpostKafkaEventProducerTest {
     var brukerId = "555555";
     var jfEnhet = "4833";
     mockSafResponse(journalpostId, brukerId, "AKTOERID", jfEnhet);
+    when(dokarkivConsumer.endre(any())).thenReturn(HttpResponse.from(HttpStatus.OK, new OppdaterJournalpostResponse(journalpostId)));
+    when(organisasjonConsumer.hentGeografiskEnhet(any())).thenReturn(HttpResponse.from(HttpStatus.OK, new GeografiskTilknytningResponse("4806", "navn")));
+    when(organisasjonConsumer.hentSaksbehandlerInfo(any())).thenReturn(HttpResponse.from(HttpStatus.OK, new SaksbehandlerInfoResponse("123213", "navn")));
 
     JournalfoeringHendelseRecord record = new JournalfoeringHendelseRecord();
     record.setHendelsesId("TEST_HENDELSE_ID");
@@ -95,8 +108,10 @@ class JournalpostKafkaEventProducerTest {
     var brukerIdAktorId = "213213323";
     var jfEnhet = "4833";
     mockSafResponse(journalpostId, brukerIdFnr, "FNR", jfEnhet);
+    when(dokarkivConsumer.endre(any())).thenReturn(HttpResponse.from(HttpStatus.OK, new OppdaterJournalpostResponse(journalpostId)));
     when(personConsumer.hentPerson(any())).thenReturn(HttpResponse.from(HttpStatus.OK, new PersonResponse(brukerIdFnr, brukerIdAktorId)));
-
+    when(organisasjonConsumer.hentGeografiskEnhet(any())).thenReturn(HttpResponse.from(HttpStatus.OK, new GeografiskTilknytningResponse("4806", "navn")));
+    when(organisasjonConsumer.hentSaksbehandlerInfo(any())).thenReturn(HttpResponse.from(HttpStatus.OK, new SaksbehandlerInfoResponse("123213", "navn")));
     JournalfoeringHendelseRecord record = new JournalfoeringHendelseRecord();
     record.setJournalpostId(journalpostId);
     record.setHendelsesType(HendelsesType.JOURNALPOST_MOTTATT.getHendelsesType());

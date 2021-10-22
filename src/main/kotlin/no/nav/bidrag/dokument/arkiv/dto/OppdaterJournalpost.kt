@@ -54,10 +54,7 @@ sealed class OppdaterJournalpostRequest(private var journalpostId: Long? = -1) {
     }
 }
 
-data class OppdaterJournalpostResponse(
-        var journalpostId: Long? = null,
-        var saksnummer: String? = null
-)
+data class OppdaterJournalpostResponse(var journalpostId: Long? = null)
 
 data class FerdigstillJournalpostRequest(
         @JsonIgnore

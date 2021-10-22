@@ -17,6 +17,8 @@ public class CacheConfig {
 
   public static final String STS_SERVICE_USER_TOKEN_CACHE = "STS_SERVICE_USER_TOKEN_CACHE";
   public static final String PERSON_CACHE = "PERSON_CACHE";
+  public static final String GEOGRAFISK_ENHET_CACHE = "GEOGRAFISK_ENHET_CACHE";
+  public static final String SAKSBEHANDLERINFO_CACHE = "SAKSBEHANDLERINFO_CACHE";
 
   @Bean
   public CacheManager cacheManager() {
@@ -28,6 +30,18 @@ public class CacheConfig {
             .build()
     );
     caffeineCacheManager.registerCustomCache(PERSON_CACHE,
+        Caffeine.newBuilder()
+            .expireAfterWrite(24, TimeUnit.HOURS)
+            .recordStats()
+            .build()
+    );
+    caffeineCacheManager.registerCustomCache(GEOGRAFISK_ENHET_CACHE,
+        Caffeine.newBuilder()
+            .expireAfterWrite(24, TimeUnit.HOURS)
+            .recordStats()
+            .build()
+    );
+    caffeineCacheManager.registerCustomCache(SAKSBEHANDLERINFO_CACHE,
         Caffeine.newBuilder()
             .expireAfterWrite(24, TimeUnit.HOURS)
             .recordStats()

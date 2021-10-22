@@ -4,10 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.bidrag.dokument.arkiv.FeatureToggle;
 import no.nav.bidrag.dokument.arkiv.FeatureToggle.Feature;
+import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelseException;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelseIntern;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
-import no.nav.bidrag.dokument.arkiv.security.SecurityConfig.SaksbehandlerOidcTokenManager;
+import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.bidrag.dokument.dto.JournalpostHendelse;
 import org.slf4j.Logger;
@@ -16,23 +17,32 @@ import org.springframework.kafka.core.KafkaTemplate;
 
 public class HendelserProducer {
   private static final Logger LOGGER = LoggerFactory.getLogger(HendelserProducer.class);
-
   private final KafkaTemplate<String, String> kafkaTemplate;
   private final ObjectMapper objectMapper;
   private final JournalpostService journalpostService;
   private final String topic;
   private final FeatureToggle featureToggle;
-  private final SaksbehandlerOidcTokenManager saksbehandlerOidcTokenManager;
+  private final SaksbehandlerInfoManager saksbehandlerInfoManager;
 
   public HendelserProducer(JournalpostService journalpostService, KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper,
       String topic,
-      FeatureToggle featureToggle, SaksbehandlerOidcTokenManager saksbehandlerOidcTokenManager) {
+      FeatureToggle featureToggle, SaksbehandlerInfoManager saksbehandlerInfoManager) {
     this.kafkaTemplate = kafkaTemplate;
     this.objectMapper = objectMapper;
     this.journalpostService = journalpostService;
     this.topic = topic;
     this.featureToggle = featureToggle;
-    this.saksbehandlerOidcTokenManager = saksbehandlerOidcTokenManager;
+    this.saksbehandlerInfoManager = saksbehandlerInfoManager;
+  }
+
+  public void publishJournalpostUpdated(Long journalpostId){
+    var journalpostHendelse = createJournalpostHendelse(journalpostId);
+    publish(journalpostHendelse);
+  }
+
+  public void publishJournalpostUpdated(Journalpost journalpost){
+    var journalpostHendelse = createJournalpostHendelse(journalpost);
+    publish(journalpostHendelse);
   }
 
   private JournalpostHendelse createJournalpostHendelse(Long journalpostId) {
@@ -41,16 +51,15 @@ public class HendelserProducer {
       throw new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId));
     }
     var journalpost = journalpostOptional.get();
-    var saksbehandler = saksbehandlerOidcTokenManager.hentSaksbehandler();
+    return createJournalpostHendelse(journalpost);
+  }
+
+  private JournalpostHendelse createJournalpostHendelse(Journalpost journalpost) {
+    var saksbehandler = saksbehandlerInfoManager.hentSaksbehandler();
     return new JournalpostHendelseIntern(journalpost, saksbehandler).hentJournalpostHendelse();
   }
 
-  public void publishJournalpostUpdated(Long journalpostId){
-      var journalpostHendelse = createJournalpostHendelse(journalpostId);
-      publish(journalpostHendelse);
-  }
-
-  public void publish(JournalpostHendelse journalpostHendelse){
+  private void publish(JournalpostHendelse journalpostHendelse){
     try {
       var message = objectMapper.writeValueAsString(journalpostHendelse);
       if (!featureToggle.isFeatureEnabled(Feature.KAFKA_ARBEIDSFLYT)) {
