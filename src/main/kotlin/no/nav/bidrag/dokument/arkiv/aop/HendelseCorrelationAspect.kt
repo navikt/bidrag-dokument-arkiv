@@ -20,8 +20,8 @@ class HendelseCorrelationAspect {
 
     @Before(value = "execution(* no.nav.bidrag.dokument.arkiv.kafka.HendelseListener.listen(..)) && args(hendelse)")
     fun addCorrelationIdToThread(joinPoint: JoinPoint, hendelse: JournalfoeringHendelseRecord) {
-        CorrelationId.existing("journalfoeringshendelse_"+hendelse.hendelsesId)
-        MDC.put(CORRELATION_ID, hendelse.hendelsesId)
+        val correlationId = CorrelationId.generateTimestamped("journalfoeringshendelse_"+hendelse.hendelsesId)
+        MDC.put(CORRELATION_ID, correlationId.get())
         RequestContextHolder.setRequestAttributes(KafkaRequestScopeAttributes())
     }
 

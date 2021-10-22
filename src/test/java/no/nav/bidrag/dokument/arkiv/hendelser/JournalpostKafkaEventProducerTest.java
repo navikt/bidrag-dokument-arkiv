@@ -8,6 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import no.nav.bidrag.commons.CorrelationId;
 import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
@@ -52,10 +53,10 @@ class JournalpostKafkaEventProducerTest {
   @DisplayName("skal publisere journalpost hendelser")
   void skalPublisereJournalpostHendelser() {
     var journalpostId = 123213L;
-    var expectedJoarkJournalpostId = "JOARK-"+journalpostId;
+    var expectedJoarkJournalpostId = "JOARK-" + journalpostId;
     var brukerId = "555555";
     var jfEnhet = "4833";
-    mockSafResponse(journalpostId, brukerId,"AKTOERID", jfEnhet);
+    mockSafResponse(journalpostId, brukerId, "AKTOERID", jfEnhet);
 
     JournalfoeringHendelseRecord record = new JournalfoeringHendelseRecord();
     record.setHendelsesId("TEST_HENDELSE_ID");
@@ -69,17 +70,18 @@ class JournalpostKafkaEventProducerTest {
     verify(kafkaTemplateMock).send(eq(topicJournalpost), eq(expectedJoarkJournalpostId), jsonCaptor.capture());
     verify(safConsumer).hentJournalpost(eq(journalpostId));
 
-    var expectedJournalpostId = String.format("""
-            "journalpostId":"%s"
-            """.trim(), expectedJoarkJournalpostId);
+    var expectedJournalpostId = """
+        "journalpostId":"%s"
+        """.formatted(expectedJoarkJournalpostId).trim();
 
-    var aktoerId = String.format("""
-            "aktorId":"%s"
-            """.trim(), brukerId);
+    var aktoerId = """
+        "aktorId":"%s"
+        """.formatted(brukerId).trim();
 
-    var correlationId = String.format("""
-            "correlationId":"%s"
-            """.trim(), "journalfoeringshendelse_TEST_HENDELSE_ID");
+    var correlationIdString = CorrelationId.fetchCorrelationIdForThread();
+    var correlationId = """
+        "correlationId":"%s"
+        """.formatted(correlationIdString).trim();
 
     assertThat(jsonCaptor.getValue()).containsSequence(expectedJournalpostId).containsSequence(aktoerId).containsSequence(correlationId);
   }
@@ -88,7 +90,7 @@ class JournalpostKafkaEventProducerTest {
   @DisplayName("skal publisere journalpost hendelser med aktørid når saf returnerer FNR")
   void skalPublisereJournalpostHendelserWhenSafReturnFNR() {
     var journalpostId = 123213L;
-    var expectedJoarkJournalpostId = "JOARK-"+journalpostId;
+    var expectedJoarkJournalpostId = "JOARK-" + journalpostId;
     var brukerIdFnr = "555555";
     var brukerIdAktorId = "213213323";
     var jfEnhet = "4833";
@@ -106,14 +108,13 @@ class JournalpostKafkaEventProducerTest {
     verify(kafkaTemplateMock).send(eq(topicJournalpost), eq(expectedJoarkJournalpostId), jsonCaptor.capture());
     verify(safConsumer).hentJournalpost(eq(journalpostId));
 
-
     var expectedJournalpostId = String.format("""
-            "journalpostId":"%s"
-            """.trim(), expectedJoarkJournalpostId);
+        "journalpostId":"%s"
+        """.trim(), expectedJoarkJournalpostId);
 
     var aktoerId = String.format("""
-            "aktorId":"%s"
-            """.trim(), brukerIdAktorId);
+        "aktorId":"%s"
+        """.trim(), brukerIdAktorId);
 
     assertThat(jsonCaptor.getValue()).containsSequence(expectedJournalpostId).containsSequence(aktoerId);
   }
@@ -142,12 +143,12 @@ class JournalpostKafkaEventProducerTest {
     record.setTemaNytt("BID");
     record.setMottaksKanal(MottaksKanal.NAV_NO.name());
     assertThatExceptionOfType(JournalpostIkkeFunnetException.class)
-        .isThrownBy(()->hendelseListener.listen(record))
+        .isThrownBy(() -> hendelseListener.listen(record))
         .withMessage("Fant ikke journalpost med id %s".formatted(journalpostId1));
 
   }
 
-  private void mockSafResponse(Long journalpostId, String brukerId, String brukerType, String jfEnhet){
+  private void mockSafResponse(Long journalpostId, String brukerId, String brukerType, String jfEnhet) {
     var safJournalpostResponse = new Journalpost();
     safJournalpostResponse.setJournalpostId(journalpostId.toString());
     safJournalpostResponse.setBruker(new Bruker(brukerId, brukerType));
