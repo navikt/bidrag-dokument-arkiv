@@ -1,6 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.consumer;
 
-import com.netflix.graphql.dgs.client.DefaultGraphQLClient;
+import com.netflix.graphql.dgs.client.CustomGraphQLClient;
 import com.netflix.graphql.dgs.client.GraphQLError;
 import com.netflix.graphql.dgs.client.GraphQLResponse;
 import com.netflix.graphql.dgs.client.HttpResponse;
@@ -54,11 +54,12 @@ public class SafConsumer {
 
   private GraphQLResponse consumeQuery(GraphQuery query, NotFoundException notFoundException) {
     var queryString = query.getQuery();
-    var graphQLClient = new DefaultGraphQLClient("");
-    var response = graphQLClient.executeQuery(queryString, query.getVariables(), (url, headers, body) -> {
+    var graphQLClient = new CustomGraphQLClient("", (url, headers, body) -> {
       ResponseEntity<String> exchange = restTemplate.exchange("/", HttpMethod.POST, new HttpEntity<>(body), String.class);
       return new HttpResponse(exchange.getStatusCodeValue(), exchange.getBody());
     });
+
+    var response = graphQLClient.executeQuery(queryString, query.getVariables());
 
     if (response.hasErrors()) {
       var message = response.getErrors().stream()

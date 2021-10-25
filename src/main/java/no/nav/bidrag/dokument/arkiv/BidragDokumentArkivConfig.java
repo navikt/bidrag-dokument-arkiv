@@ -47,6 +47,27 @@ public class BidragDokumentArkivConfig {
     }
 
     @Bean
+    @Scope("prototype")
+    DokarkivConsumer baseDokarkivConsumer(
+        @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
+        EnvironmentProperties environmentProperties
+    ) {
+        httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.dokarkivUrl));
+        httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
+        return new DokarkivConsumer(httpHeaderRestTemplate);
+    }
+
+    @Bean
+    @Scope("prototype")
+    PersonConsumer basePersonConsumer(
+        @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
+        EnvironmentProperties environmentProperties
+    ) {
+        httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.bidragPersonUrl +"/bidrag-person"));
+        return new PersonConsumer(httpHeaderRestTemplate);
+    }
+
+    @Bean
     ResourceByDiscriminator<JournalpostService> journalpostServices(
         ResourceByDiscriminator<SafConsumer> safConsumers,
         ResourceByDiscriminator<PersonConsumer> personConsumers,
@@ -73,16 +94,6 @@ public class BidragDokumentArkivConfig {
         safConsumers.put(Discriminator.REGULAR_USER, safConsumerRegularUser);
         safConsumers.put(Discriminator.SERVICE_USER, safConsumerServiceUser);
         return new ResourceByDiscriminator<>(safConsumers);
-    }
-
-    @Bean
-    @Scope("prototype")
-    PersonConsumer basePersonConsumer(
-        @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
-        EnvironmentProperties environmentProperties
-    ) {
-        httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.bidragPersonUrl +"/bidrag-person"));
-        return new PersonConsumer(httpHeaderRestTemplate);
     }
 
     @Bean
@@ -115,17 +126,6 @@ public class BidragDokumentArkivConfig {
         dokarkivConsumers.put(Discriminator.REGULAR_USER, dokarkivConsumerRegularUser);
         dokarkivConsumers.put(Discriminator.SERVICE_USER, dokarkivConsumerServiceUser);
         return new ResourceByDiscriminator<>(dokarkivConsumers);
-    }
-
-    @Bean
-    @Scope("prototype")
-    DokarkivConsumer baseDokarkivConsumer(
-            @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
-            EnvironmentProperties environmentProperties
-    ) {
-        httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.dokarkivUrl));
-        httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
-        return new DokarkivConsumer(httpHeaderRestTemplate);
     }
 
     @Bean
