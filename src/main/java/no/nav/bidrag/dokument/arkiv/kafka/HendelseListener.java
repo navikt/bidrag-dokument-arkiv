@@ -107,7 +107,7 @@ public class HendelseListener {
     var journalpost = hentJournalpost(journalpostId);
     var brukerId = hentBrukerId(journalpost);
     var geografiskEnhet = hentGeografiskEnhet(brukerId);
-    if (!Objects.equals(geografiskEnhet, journalpost.getJournalforendeEnhet())){
+    if (!journalpost.hasJournalforendeEnhet(geografiskEnhet)){
       var response = dokarkivConsumer.endre(new OverforEnhetRequest(journalpostId, geografiskEnhet));
       if (response.is2xxSuccessful()) {
         journalpost.setJournalforendeEnhet(geografiskEnhet);
