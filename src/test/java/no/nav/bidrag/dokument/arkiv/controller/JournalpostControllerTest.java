@@ -231,7 +231,7 @@ class JournalpostControllerTest extends AbstractControllerTest  {
               journalpostSafResponse
           );
 
-          verify(restTemplateDokarkivMock).exchange(
+          verify(baseRestemplateMock).exchange(
               eq(forventetUrlForOppdateringAvJournalpost),
               eq(HttpMethod.PUT),
               eq(new HttpEntity<>(oppdaterJournalpostRequest)),
@@ -241,7 +241,7 @@ class JournalpostControllerTest extends AbstractControllerTest  {
         ()->{
           var ferdigstillJournalpostUrl = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson + "/ferdigstill";
           var ferdigstillJournalpostRequest = new FerdigstillJournalpostRequest(journalpostIdFraJson, xEnhet);
-          verify(restTemplateDokarkivMock).exchange(
+          verify(baseRestemplateMock).exchange(
               eq(ferdigstillJournalpostUrl),
               eq(HttpMethod.PATCH),
               eq(new HttpEntity<>(ferdigstillJournalpostRequest)),
@@ -291,7 +291,7 @@ class JournalpostControllerTest extends AbstractControllerTest  {
               journalpostSafResponse
           );
 
-          verify(restTemplateDokarkivMock).exchange(
+          verify(baseRestemplateMock).exchange(
               eq(forventetUrlForOppdateringAvJournalpost),
               eq(HttpMethod.PUT),
               eq(new HttpEntity<>(oppdaterJournalpostRequest)),
@@ -301,7 +301,7 @@ class JournalpostControllerTest extends AbstractControllerTest  {
         ()->{
           var ferdigstillJournalpostUrl = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson + "/ferdigstill";
           var ferdigstillJournalpostRequest = new FerdigstillJournalpostRequest(journalpostIdFraJson, xEnhet);
-          verify(restTemplateDokarkivMock, never()).exchange(
+          verify(baseRestemplateMock, never()).exchange(
               eq(ferdigstillJournalpostUrl),
               eq(HttpMethod.PATCH),
               eq(new HttpEntity<>(ferdigstillJournalpostRequest)),

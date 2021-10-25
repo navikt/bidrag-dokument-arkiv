@@ -6,7 +6,7 @@ import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv;
 import no.nav.bidrag.dokument.arkiv.FeatureToggle;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
-import no.nav.bidrag.dokument.arkiv.security.SecurityConfig.SaksbehandlerOidcTokenManager;
+import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
@@ -29,7 +29,7 @@ public class BidragDokumentArkivKafkaConfig {
   public HendelserProducer hendelserProducer(
       KafkaTemplate<String, String> kafkaTemplate,
       ObjectMapper objectMapper,
-      SaksbehandlerOidcTokenManager saksbehandlerOidcTokenManager,
+      SaksbehandlerInfoManager saksbehandlerInfoManager,
       @Value("${TOPIC_JOURNALPOST}") String topic,
       FeatureToggle featureToggle,
       ResourceByDiscriminator<JournalpostService> journalpostServices
@@ -39,7 +39,7 @@ public class BidragDokumentArkivKafkaConfig {
         kafkaTemplate,
         objectMapper,
         topic,
-        featureToggle, saksbehandlerOidcTokenManager
+        featureToggle, saksbehandlerInfoManager
     );
   }
 

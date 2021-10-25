@@ -42,6 +42,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
     var journalpostIdFraJson = 201028011L;
     var avvikHendelse = createAvvikHendelse(AvvikType.OVERFOR_TIL_ANNEN_ENHET, Map.of("nyttEnhetsnummer", overforTilEnhet));
 
+    mockBidragOrganisasjonSaksbehandler();
     mockSafResponse(responseJournalpostJsonResource, HttpStatus.OK);
     mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
     mockDokarkivOppdaterRequest(journalpostIdFraJson);
@@ -67,7 +68,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
           var forventetUrlForOppdateringAvJournalpost = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson;
           ArgumentCaptor<HttpEntity<OppdaterJournalpostRequest>> jsonCaptor = ArgumentCaptor.forClass(HttpEntity.class);
 
-          verify(restTemplateDokarkivMock).exchange(
+          verify(baseRestemplateMock).exchange(
               eq(forventetUrlForOppdateringAvJournalpost),
               eq(HttpMethod.PUT),
               jsonCaptor.capture(),
@@ -91,6 +92,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
     var journalpostIdFraJson = 201028011L;
     var avvikHendelse = createAvvikHendelse(AvvikType.OVERFOR_TIL_ANNEN_ENHET, Map.of("nyttEnhetsnummer", overforTilEnhet));
 
+    mockBidragOrganisasjonSaksbehandler();
     mockSafResponse(responseJournalpostJsonResource, HttpStatus.OK);
     mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
     mockDokarkivOppdaterRequest(journalpostIdFraJson, HttpStatus.BAD_REQUEST);
@@ -115,7 +117,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
           var forventetUrlForOppdateringAvJournalpost = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson;
           ArgumentCaptor<HttpEntity<OppdaterJournalpostRequest>> jsonCaptor = ArgumentCaptor.forClass(HttpEntity.class);
 
-          verify(restTemplateDokarkivMock).exchange(
+          verify(baseRestemplateMock).exchange(
               eq(forventetUrlForOppdateringAvJournalpost),
               eq(HttpMethod.PUT),
               jsonCaptor.capture(),
@@ -139,6 +141,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
     var journalpostIdFraJson = 201028011L;
     var avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, Map.of("fagomrade", nyttFagomrade));
 
+    mockBidragOrganisasjonSaksbehandler();
     mockSafResponse(responseJournalpostJsonResource, HttpStatus.OK);
     mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
     mockDokarkivOppdaterRequest(journalpostIdFraJson);
@@ -164,7 +167,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
           var forventetUrlForOppdateringAvJournalpost = "/rest/journalpostapi/v1/journalpost/" + journalpostIdFraJson;
           ArgumentCaptor<HttpEntity<OppdaterJournalpostRequest>> jsonCaptor = ArgumentCaptor.forClass(HttpEntity.class);
 
-          verify(restTemplateDokarkivMock).exchange(
+          verify(baseRestemplateMock).exchange(
               eq(forventetUrlForOppdateringAvJournalpost),
               eq(HttpMethod.PUT),
               jsonCaptor.capture(),
@@ -177,8 +180,6 @@ public class AvvikControllerTest extends AbstractControllerTest {
         },
         ()-> verify(kafkaTemplateMock).send(eq(topicJournalpost), eq("JOARK-" + journalpostIdFraJson), any())
     );
-
-
   }
 
   @Test
@@ -189,6 +190,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
     var journalpostIdFraJson = 201028011L;
     var avvikHendelse = createAvvikHendelse(AvvikType.FEILFORE_SAK, Map.of());
 
+    mockBidragOrganisasjonSaksbehandler();
     mockSafResponse(responseSafJournalfoertJsonResource, HttpStatus.OK);
     mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
     mockDokarkivOppdaterRequest(journalpostIdFraJson);
@@ -213,7 +215,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
             .isEqualTo(HttpStatus.OK),
         () -> {
           var forventetUrlForOppdateringAvJournalpost = String.format(URL_JOURNALPOSTAPI_V1_FEILREGISTRER, journalpostIdFraJson)+"/feilregistrerSakstilknytning";
-          verify(restTemplateDokarkivMock).exchange(
+          verify(baseRestemplateMock).exchange(
               eq(forventetUrlForOppdateringAvJournalpost),
               eq(HttpMethod.PATCH),
               any(),
@@ -232,6 +234,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
     var journalpostIdFraJson = 201028011L;
     var avvikHendelse = createAvvikHendelse(AvvikType.TREKK_JOURNALPOST, Map.of());
 
+    mockBidragOrganisasjonSaksbehandler();
     mockSafResponse(responseJournalpostJsonResource, HttpStatus.OK);
     mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
     mockDokarkivFeilregistrerRequest("settStatusUtgår", journalpostIdFraJson);
@@ -253,7 +256,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
             .isEqualTo(HttpStatus.OK),
         () -> {
           var forventetUrlForOppdateringAvJournalpost = String.format(URL_JOURNALPOSTAPI_V1_FEILREGISTRER, journalpostIdFraJson)+"/settStatusUtgår";
-          verify(restTemplateDokarkivMock).exchange(
+          verify(baseRestemplateMock).exchange(
               eq(forventetUrlForOppdateringAvJournalpost),
               eq(HttpMethod.PATCH),
               any(),

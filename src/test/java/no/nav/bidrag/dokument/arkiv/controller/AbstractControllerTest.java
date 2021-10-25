@@ -1,6 +1,8 @@
 package no.nav.bidrag.dokument.arkiv.controller;
 
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TEST;
+import static no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer.ARBEIDSFORDELING_URL;
+import static no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer.SAKSBEHANDLER_INFO;
 import static no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer.URL_JOURNALPOSTAPI_V1;
 import static no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer.URL_JOURNALPOSTAPI_V1_FEILREGISTRER;
 import static org.mockito.ArgumentMatchers.any;
@@ -16,8 +18,10 @@ import java.util.Objects;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.bidrag.commons.web.test.HttpHeaderTestRestTemplate;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
+import no.nav.bidrag.dokument.arkiv.dto.GeografiskTilknytningResponse;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
+import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerInfoResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -46,8 +50,8 @@ public abstract class AbstractControllerTest {
   @Qualifier("base")
   protected HttpHeaderRestTemplate baseRestemplateMock;
   @MockBean
-  @Qualifier("dokarkiv")
-  protected HttpHeaderRestTemplate restTemplateDokarkivMock;
+  @Qualifier("serviceuser")
+  protected HttpHeaderRestTemplate serviceUserResttemapletMock;
   @Value("classpath:json/dokumentoversiktFagsakQueryResponse.json")
   protected Resource responseOversiktFagsakJsonResource;
   @Value("classpath:json/journalpostSafResponse.json")
@@ -68,21 +72,39 @@ public abstract class AbstractControllerTest {
   protected String PERSON_IDENT = "12345678910";
   protected String AKTOR_IDENT = "92345678910";
 
+  protected void mockBidragOrganisasjonSaksbehandler(){
+    when(serviceUserResttemapletMock.exchange(
+        matches("saksbehandler/info/*"),
+        eq(HttpMethod.GET),
+        eq(null),
+        eq(SaksbehandlerInfoResponse.class)
+    )).thenReturn(new ResponseEntity<>(new SaksbehandlerInfoResponse("ident", "navn"), HttpStatus.OK));
+  }
+
+  protected void mockBidragOrganisasjonGeografisk(String enhet){
+    when(serviceUserResttemapletMock.exchange(
+        matches("/arbeidsfordeling/enhetsliste/geografisktilknytning/*"),
+        eq(HttpMethod.GET),
+        eq(null),
+        eq(GeografiskTilknytningResponse.class)
+    )).thenReturn(new ResponseEntity<>(new GeografiskTilknytningResponse(enhet, "navn"), HttpStatus.OK));
+  }
+
   protected void mockDokarkivOppdaterRequest(Long journalpostId){
      mockDokarkivOppdaterRequest(journalpostId, HttpStatus.OK);
   }
 
   protected void mockDokarkivOppdaterRequest(Long journalpostId, HttpStatus status){
-    when(restTemplateDokarkivMock.exchange(
+    when(baseRestemplateMock.exchange(
         eq(URL_JOURNALPOSTAPI_V1 + '/' + journalpostId),
         eq(HttpMethod.PUT),
         any(HttpEntity.class),
         eq(OppdaterJournalpostResponse.class)
-    )).thenReturn(new ResponseEntity<>(new OppdaterJournalpostResponse(journalpostId, null), status));
+    )).thenReturn(new ResponseEntity<>(new OppdaterJournalpostResponse(journalpostId), status));
   }
 
   protected void mockDokarkivFeilregistrerRequest(String path, Long journalpostId){
-    when(restTemplateDokarkivMock.exchange(
+    when(baseRestemplateMock.exchange(
         eq(String.format(URL_JOURNALPOSTAPI_V1_FEILREGISTRER, journalpostId)+"/"+path),
         eq(HttpMethod.PATCH),
         eq(null),
@@ -91,7 +113,7 @@ public abstract class AbstractControllerTest {
   }
 
   protected void mockDokarkivFerdigstillRequest(Long journalpostId){
-    when(restTemplateDokarkivMock.exchange(
+    when(baseRestemplateMock.exchange(
         eq(URL_JOURNALPOSTAPI_V1 + '/' + journalpostId + "/ferdigstill"),
         eq(HttpMethod.PATCH),
         any(HttpEntity.class),

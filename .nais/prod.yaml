@@ -22,6 +22,8 @@ env:
     value: teamdokumenthandtering.aapen-dok-journalfoering
   - name: BIDRAG_PERSON_URL
     value: https://bidrag-person.nais.adeo.no
+  - name: BIDRAG_ORGANISASJON_URL
+    value: https://bidrag-organisasjon.nais.adeo.no
   - name: FEATURE_ENABLED
     value: NONE
 vault:
