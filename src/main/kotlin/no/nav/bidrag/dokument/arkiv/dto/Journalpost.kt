@@ -1,5 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import no.nav.bidrag.dokument.arkiv.model.JournalpostDataException
 import no.nav.bidrag.dokument.dto.AktorDto
 import no.nav.bidrag.dokument.dto.AvvikType
@@ -7,6 +8,7 @@ import no.nav.bidrag.dokument.dto.DokumentDto
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
 import no.nav.bidrag.dokument.dto.JournalpostDto
 import no.nav.bidrag.dokument.dto.JournalpostResponse
+import no.nav.bidrag.dokument.dto.Kanal
 import java.time.LocalDate
 import java.util.stream.Collectors.toList
 
@@ -14,6 +16,7 @@ private const val DATO_DOKUMENT = "DATO_DOKUMENT"
 private const val DATO_JOURNALFORT = "DATO_JOURNALFOERT"
 private const val DATO_REGISTRERT = "DATO_REGISTRERT"
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class Journalpost(
     var avsenderMottaker: AvsenderMottaker? = null,
     var bruker: Bruker? = null,
@@ -22,6 +25,7 @@ data class Journalpost(
     var journalfortAvNavn: String? = null,
     var journalpostId: String? = null,
     var journalposttype: String? = null,
+    var kanal: String? = null,
     var journalstatus: JournalStatus? = null,
     var relevanteDatoer: List<DatoType> = emptyList(),
     var sak: Sak? = null,
@@ -37,6 +41,13 @@ data class Journalpost(
             JournalStatus.UTGAAR->"U"
             JournalStatus.AVBRUTT->"A"
             else -> journalstatus?.name
+        }
+    }
+    fun hentKilde(): Kanal? {
+        return when(kanal){
+            "NAV_NO"->Kanal.NAV_NO
+            "SKAN_NETS"->Kanal.SKAN_NETS
+            else -> null
         }
     }
     fun hasJournalforendeEnhet(enhet: String) = journalforendeEnhet == enhet
@@ -65,6 +76,7 @@ data class Journalpost(
             dokumentDato = hentDokumentDato(),
             dokumentType = journalposttype,
             fagomrade = tema,
+            kilde = hentKilde(),
             gjelderAktor = bruker?.tilAktorDto(),
             innhold = tittel,
             journalfortDato = hentDatoJournalfort(),
