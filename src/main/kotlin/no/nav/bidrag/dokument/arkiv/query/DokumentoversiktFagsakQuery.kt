@@ -1,4 +1,7 @@
-package no.nav.bidrag.dokument.arkiv.dto
+package no.nav.bidrag.dokument.arkiv.query
+
+import no.nav.bidrag.dokument.arkiv.dto.Journalpost
+import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException
 
 data class DokumentoversiktFagsakQuery(val saksnummer: String, val tema: String) : GraphQuery() {
     private val query = """

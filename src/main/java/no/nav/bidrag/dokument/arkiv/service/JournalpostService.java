@@ -16,6 +16,7 @@ import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
+import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost;
 import no.nav.bidrag.dokument.arkiv.model.FerdigstillFeiletException;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.model.LagreJournalpostFeiletException;
@@ -45,12 +46,26 @@ public class JournalpostService {
 
   public Optional<Journalpost> hentJournalpost(Long journalpostId, String saksnummer) {
     var journalpost = safConsumer.hentJournalpost(journalpostId);
+    populateWithTilknyttedeSaker(journalpost);
 
-    if (Objects.isNull(journalpost) || journalpost.erIkkeTilknyttetSakNarOppgitt(saksnummer)) {
+    if (journalpost.erIkkeTilknyttetSakNarOppgitt(saksnummer)) {
       return Optional.empty();
     }
 
     return Optional.of(journalpost);
+  }
+
+  public void populateWithTilknyttedeSaker(Journalpost journalpost){
+    if (!journalpost.getDokumenter().isEmpty() && journalpost.getSak() != null){
+      var dokumentInfoId = journalpost.getDokumenter().get(0).getDokumentInfoId();
+      var tilknytteteJournalposter = safConsumer.finnTilknyttedeJournalposter(dokumentInfoId);
+      var saker = tilknytteteJournalposter.stream()
+          .map(TilknyttetJournalpost::getSak)
+          .filter(Objects::nonNull)
+          .filter(sak -> !Objects.equals(sak.getFagsakId(), journalpost.getSak().getFagsakId()))
+          .collect(Collectors.toList());
+      journalpost.setTilknyttetSaker(saker);
+    }
   }
 
   public Optional<Journalpost> hentJournalpostMedFnr(Long journalpostId, String saksummer) {

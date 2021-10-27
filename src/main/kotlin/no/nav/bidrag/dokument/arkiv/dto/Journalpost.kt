@@ -10,6 +10,8 @@ import no.nav.bidrag.dokument.dto.JournalpostDto
 import no.nav.bidrag.dokument.dto.JournalpostResponse
 import no.nav.bidrag.dokument.dto.Kanal
 import java.time.LocalDate
+import java.util.stream.Collector
+import java.util.stream.Collectors
 import java.util.stream.Collectors.toList
 
 private const val DATO_DOKUMENT = "DATO_DOKUMENT"
@@ -30,7 +32,8 @@ data class Journalpost(
     var relevanteDatoer: List<DatoType> = emptyList(),
     var sak: Sak? = null,
     var tema: String? = null,
-    var tittel: String? = null
+    var tittel: String? = null,
+    var tilknyttetSaker: List<Sak> = emptyList()
 ) {
     fun hentJournalStatus(): String? {
         return when(journalstatus){
@@ -105,8 +108,11 @@ data class Journalpost(
     fun tilJournalpostResponse(): JournalpostResponse {
         val journalpost = tilJournalpostDto()
         val saksnummer = sak?.fagsakId
-
-        return JournalpostResponse(journalpost, if (saksnummer != null) listOf(saksnummer) else emptyList())
+        val saksnummerList = if (saksnummer != null) mutableListOf(saksnummer) else mutableListOf()
+        val tilknyttetSaksnummer: MutableList<String> =
+            tilknyttetSaker.stream().filter { sak -> sak?.fagsakId != null }.map { sak -> sak.fagsakId }.collect(toList())
+        saksnummerList.addAll(tilknyttetSaksnummer)
+        return JournalpostResponse(journalpost, saksnummerList)
     }
 
     private fun hentDokumentDato(): LocalDate? {
@@ -163,9 +169,15 @@ data class DatoType(
     }
 }
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class Sak(
-    var fagsakId: String? = null
-)
+    var fagsakId: String? = null,
+    var fagsakSystem: String? = null,
+    var sakstype: String? = null,
+    var tema: String? = null
+) {
+    constructor(fagsakId: String?): this(fagsakId, null, null, null)
+}
 
 enum class JournalStatus {
     MOTTATT,
@@ -200,3 +212,8 @@ data class EndreJournalpostCommandIntern(
     fun hentGjelder() = endreJournalpostCommand.gjelder
     fun hentGjelderType() = if (endreJournalpostCommand.gjelderType != null) endreJournalpostCommand.gjelderType!! else "FNR"
 }
+
+data class TilknyttetJournalpost(
+    var journalpostId: Long,
+    var sak: Sak?
+)
