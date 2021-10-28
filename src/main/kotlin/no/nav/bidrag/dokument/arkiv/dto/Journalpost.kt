@@ -31,7 +31,7 @@ data class Journalpost(
     var sak: Sak? = null,
     var tema: String? = null,
     var tittel: String? = null,
-    var tilknyttetSaker: List<Sak> = emptyList()
+    var tilknyttedeSaker: List<String> = emptyList()
 ) {
     fun hentJournalStatus(): String? {
         return when(journalstatus){
@@ -107,9 +107,7 @@ data class Journalpost(
         val journalpost = tilJournalpostDto()
         val saksnummer = sak?.fagsakId
         val saksnummerList = if (saksnummer != null) mutableListOf(saksnummer) else mutableListOf()
-        val tilknyttetSaksnummer: MutableList<String> =
-            tilknyttetSaker.stream().filter { sak -> sak?.fagsakId != null }.map { sak -> sak.fagsakId }.collect(toList())
-        saksnummerList.addAll(tilknyttetSaksnummer)
+        saksnummerList.addAll(tilknyttedeSaker)
         return JournalpostResponse(journalpost, saksnummerList)
     }
 

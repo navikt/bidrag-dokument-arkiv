@@ -16,6 +16,7 @@ import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
+import no.nav.bidrag.dokument.arkiv.dto.Sak;
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost;
 import no.nav.bidrag.dokument.arkiv.model.FerdigstillFeiletException;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
@@ -64,9 +65,11 @@ public class JournalpostService {
       var saker = tilknytteteJournalposter.stream()
           .map(TilknyttetJournalpost::getSak)
           .filter(Objects::nonNull)
-          .filter(sak -> !Objects.equals(sak.getFagsakId(), journalpost.getSak().getFagsakId()))
+          .map(Sak::getFagsakId)
+          .filter(Objects::nonNull)
+          .filter(fagsakId -> !Objects.equals(fagsakId, journalpost.getSak().getFagsakId()))
           .collect(Collectors.toList());
-      journalpost.setTilknyttetSaker(saker);
+      journalpost.setTilknyttedeSaker(saker);
     }
     return journalpost;
   }
