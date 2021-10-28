@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Base64;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
+import no.nav.security.token.support.spring.test.EnableMockOAuth2Server;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +28,11 @@ import org.springframework.test.context.ActiveProfiles;
 @DisplayName("TokenForBasicAuthenticationGenerator")
 @SpringBootTest(
     classes = {BidragDokumentArkivLocal.class},
-    properties = {"ACCESS_TOKEN_URL=http://localhost:8090", "SRV_BD_ARKIV_AUTH=secured"},
+    properties = {"ACCESS_TOKEN_URL=http://localhost:12345", "SRV_BD_ARKIV_AUTH=secured"},
     webEnvironment = WebEnvironment.DEFINED_PORT
 )
-@AutoConfigureWireMock(port = 8090)
+@AutoConfigureWireMock(port = 12345)
+@EnableMockOAuth2Server
 class TokenForBasicAuthenticationGeneratorTest {
 
   @Autowired

@@ -1,6 +1,5 @@
 package no.nav.bidrag.dokument.arkiv.dto;
 
-import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TEST;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,29 +8,20 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
-import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.test.context.ActiveProfiles;
 
-@ActiveProfiles(PROFILE_TEST)
-@SpringBootTest(classes = BidragDokumentArkivLocal.class)
 @DisplayName("DokumentoversiktFagsakQueryResponse")
 class DokumentoversiktFagsakQueryResponseTest {
 
-  @Value("classpath:json/dokumentoversiktFagsakQueryResponse.json")
-  private Resource responseJsonResource;
-
-  @Autowired
-  private ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Test
   @DisplayName("skal mappe query resultat til kotlin data klasse")
   void skalMappeQueryResultatTilKotlinDataKlasse() throws IOException {
+    Resource responseJsonResource = new ClassPathResource("__files/json/dokumentoversiktFagsakQueryResponse.json");
     var jsonResponse = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJsonResource.getFile().toURI()))));
     var dokumentoversiktFagsakQueryResponse = objectMapper.readValue(jsonResponse, DokumentoversiktFagsakQueryResponse.class);
 

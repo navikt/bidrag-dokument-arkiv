@@ -10,8 +10,6 @@ import no.nav.bidrag.dokument.dto.JournalpostDto
 import no.nav.bidrag.dokument.dto.JournalpostResponse
 import no.nav.bidrag.dokument.dto.Kanal
 import java.time.LocalDate
-import java.util.stream.Collector
-import java.util.stream.Collectors
 import java.util.stream.Collectors.toList
 
 private const val DATO_DOKUMENT = "DATO_DOKUMENT"
@@ -213,6 +211,7 @@ data class EndreJournalpostCommandIntern(
     fun hentGjelderType() = if (endreJournalpostCommand.gjelderType != null) endreJournalpostCommand.gjelderType!! else "FNR"
 }
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class TilknyttetJournalpost(
     var journalpostId: Long,
     var sak: Sak?

@@ -1,9 +1,9 @@
 package no.nav.bidrag.dokument.arkiv.hendelser;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TEST;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -16,7 +16,6 @@ import no.nav.bidrag.dokument.arkiv.dto.Bruker;
 import no.nav.bidrag.dokument.arkiv.dto.GeografiskTilknytningResponse;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
-import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerInfoResponse;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelseListener;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelsesType;
@@ -35,7 +34,7 @@ import org.springframework.test.context.ActiveProfiles;
     properties = { "FEATURE_ENABLED=NONE" },
     classes = BidragDokumentArkivLocal.class
 )
-@ActiveProfiles("test")
+@ActiveProfiles(PROFILE_TEST)
 public class FeatureToggleTest {
   @MockBean
   private KafkaTemplate<String, String> kafkaTemplateMock;

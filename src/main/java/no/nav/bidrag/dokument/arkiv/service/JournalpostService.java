@@ -46,18 +46,20 @@ public class JournalpostService {
 
   public Optional<Journalpost> hentJournalpost(Long journalpostId, String saksnummer) {
     var journalpost = safConsumer.hentJournalpost(journalpostId);
-    populateWithTilknyttedeSaker(journalpost);
 
-    if (journalpost.erIkkeTilknyttetSakNarOppgitt(saksnummer)) {
+    if (Objects.isNull(journalpost) || journalpost.erIkkeTilknyttetSakNarOppgitt(saksnummer)) {
       return Optional.empty();
     }
 
     return Optional.of(journalpost);
   }
 
-  public void populateWithTilknyttedeSaker(Journalpost journalpost){
-    if (!journalpost.getDokumenter().isEmpty() && journalpost.getSak() != null){
-      var dokumentInfoId = journalpost.getDokumenter().get(0).getDokumentInfoId();
+  public Journalpost populateWithTilknyttedeSaker(Journalpost journalpost){
+    if (journalpost.getDokumenter().isEmpty() || journalpost.getSak() == null){
+      return journalpost;
+    }
+    var dokumentInfoId = journalpost.getDokumenter().get(0).getDokumentInfoId();
+    if (dokumentInfoId != null){
       var tilknytteteJournalposter = safConsumer.finnTilknyttedeJournalposter(dokumentInfoId);
       var saker = tilknytteteJournalposter.stream()
           .map(TilknyttetJournalpost::getSak)
@@ -66,6 +68,7 @@ public class JournalpostService {
           .collect(Collectors.toList());
       journalpost.setTilknyttetSaker(saker);
     }
+    return journalpost;
   }
 
   public Optional<Journalpost> hentJournalpostMedFnr(Long journalpostId, String saksummer) {

@@ -24,7 +24,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles(PROFILE_TEST)
 @DisplayName("Mapping av json verdier")
-@PropertySource("classpath:resources.properties")
+@PropertySource("classpath:application.yaml")
 @SpringBootTest(classes = BidragDokumentArkivLocal.class)
 class JsonMapperTest {
 
