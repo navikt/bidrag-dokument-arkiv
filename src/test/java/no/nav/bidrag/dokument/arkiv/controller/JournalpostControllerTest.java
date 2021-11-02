@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Optional;
 import no.nav.bidrag.commons.web.EnhetFilter;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
-import no.nav.bidrag.dokument.arkiv.stubs.Stubs;
 import no.nav.bidrag.dokument.dto.AktorDto;
 import no.nav.bidrag.dokument.dto.EndreDokument;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
@@ -299,7 +298,7 @@ class JournalpostControllerTest extends AbstractControllerTest  {
   @DisplayName("skal oppdatere journalført journalpost med flere saker")
   void skalOppdatereJournalfortJournalpostMedFlereSaker() throws IOException, JSONException {
     var xEnhet = "1234";
-    var existingSaksnummer = Stubs.Companion.getSAKSNUMMER_JOURNALPOST();
+    var existingSaksnummer = stubs.getSAKSNUMMER_JOURNALPOST();
     var newSaksnummer = "200000";
     var journalpostIdFraJson = 201028011L;
     var headersMedEnhet = new HttpHeaders();

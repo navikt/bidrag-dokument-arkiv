@@ -17,11 +17,9 @@ import org.springframework.http.HttpStatus
 import java.io.IOException
 
 class Stubs {
-    companion object {
-        var SAKSNUMMER_JOURNALPOST = "5276661"
-        var SAKSNUMMER_TILKNYTTET_1 = "2106585"
-        var SAKSNUMMER_TILKNYTTET_2 = "9999999"
-    }
+    var SAKSNUMMER_JOURNALPOST = "5276661"
+    var SAKSNUMMER_TILKNYTTET_1 = "2106585"
+    var SAKSNUMMER_TILKNYTTET_2 = "9999999"
     var objectMapper: ObjectMapper = ObjectMapper();
 
     fun mockBidragOrganisasjonSaksbehandler() {
