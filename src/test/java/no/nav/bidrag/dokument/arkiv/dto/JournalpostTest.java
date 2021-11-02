@@ -1,6 +1,5 @@
 package no.nav.bidrag.dokument.arkiv.dto;
 
-import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
@@ -11,33 +10,24 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
-import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
 import no.nav.bidrag.dokument.dto.AvvikType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.test.context.ActiveProfiles;
 
-@ActiveProfiles(PROFILE_TEST)
-@SpringBootTest(classes = BidragDokumentArkivLocal.class)
 @DisplayName("Journalpost")
 class JournalpostTest {
 
-  @Value("classpath:json/journalpost.json")
-  private Resource journalpostJsonResource;
-
-  @Autowired
-  private ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   private String journalpostJsonText;
 
   @BeforeEach
   void lesJsonResourceTilStreng() throws IOException {
-    journalpostJsonText = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(journalpostJsonResource.getFile().toURI()))));
+    Resource responseJsonResource = new ClassPathResource("__files/json/journalpost.json");
+    journalpostJsonText = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJsonResource.getFile().toURI()))));
   }
 
   @Test

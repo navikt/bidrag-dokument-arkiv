@@ -177,6 +177,7 @@ public class JournalpostController {
     }
 
     return journalpostService.hentJournalpostMedFnr(Long.valueOf(journalpostId), saksnummer)
+        .map(journalpostService::populateWithTilknyttedeSaker)
         .map(journalpost -> ResponseEntity.ok(journalpost.tilJournalpostResponse()))
         .orElse(ResponseEntity.badRequest().build());
   }
@@ -215,8 +216,7 @@ public class JournalpostController {
     KildesystemIdenfikator kildesystemIdenfikator = new KildesystemIdenfikator(joarkJournalpostId);
 
     if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix() ||
-        endreJournalpostCommand == null ||
-        endreJournalpostCommand.getGjelder() == null
+        endreJournalpostCommand == null
     ) {
       var msgBadRequest = String.format(
           "Id har ikke riktig prefix: %s eller det mangler gjelder person %s", joarkJournalpostId, endreJournalpostCommand

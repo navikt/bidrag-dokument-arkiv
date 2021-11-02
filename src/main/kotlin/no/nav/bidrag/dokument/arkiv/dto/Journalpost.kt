@@ -30,7 +30,8 @@ data class Journalpost(
     var relevanteDatoer: List<DatoType> = emptyList(),
     var sak: Sak? = null,
     var tema: String? = null,
-    var tittel: String? = null
+    var tittel: String? = null,
+    var tilknyttedeSaker: List<String> = emptyList()
 ) {
     fun hentJournalStatus(): String? {
         return when(journalstatus){
@@ -67,6 +68,13 @@ data class Journalpost(
         return registrert?.somDato()
     }
 
+    fun hentTilknyttetSaker(): List<String> {
+        val saksnummer = sak?.fagsakId
+        val saksnummerList = if (saksnummer != null) mutableListOf(saksnummer) else mutableListOf()
+        saksnummerList.addAll(tilknyttedeSaker)
+        return saksnummerList
+    }
+
     fun tilJournalpostDto(): JournalpostDto {
 
         @Suppress("UNCHECKED_CAST")
@@ -100,13 +108,15 @@ data class Journalpost(
     fun hasSak(): Boolean = sak != null
     fun isStatusFeilregistrert(): Boolean = journalstatus == JournalStatus.FEILREGISTRERT
     fun isStatusMottatt(): Boolean = journalstatus == JournalStatus.MOTTATT
+    fun isStatusJournalfort(): Boolean = journalstatus == JournalStatus.JOURNALFOERT
     fun isInngaaendeDokument(): Boolean = journalposttype == "I"
 
     fun tilJournalpostResponse(): JournalpostResponse {
         val journalpost = tilJournalpostDto()
         val saksnummer = sak?.fagsakId
-
-        return JournalpostResponse(journalpost, if (saksnummer != null) listOf(saksnummer) else emptyList())
+        val saksnummerList = if (saksnummer != null) mutableListOf(saksnummer) else mutableListOf()
+        saksnummerList.addAll(tilknyttedeSaker)
+        return JournalpostResponse(journalpost, saksnummerList)
     }
 
     private fun hentDokumentDato(): LocalDate? {
@@ -163,9 +173,15 @@ data class DatoType(
     }
 }
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class Sak(
-    var fagsakId: String? = null
-)
+    var fagsakId: String? = null,
+    var fagsakSystem: String? = null,
+    var sakstype: String? = null,
+    var tema: String? = null
+) {
+    constructor(fagsakId: String?): this(fagsakId, null, null, null)
+}
 
 enum class JournalStatus {
     MOTTATT,
@@ -188,15 +204,17 @@ data class EndreJournalpostCommandIntern(
 ) {
     fun skalJournalfores() = endreJournalpostCommand.skalJournalfores
     fun hentAvsenderNavn(journalpost: Journalpost) = endreJournalpostCommand.avsenderNavn ?: journalpost.hentAvsenderNavn()
-    fun harEnTilknyttetSak(): Boolean {
-        if (endreJournalpostCommand.tilknyttSaker.size > 1)
-            throw JournalpostDataException("joark støtter bare en sak per journalpost")
-
-        return endreJournalpostCommand.tilknyttSaker.size == 1
-    }
+    fun harEnTilknyttetSak(): Boolean = endreJournalpostCommand.tilknyttSaker.isNotEmpty()
 
     fun hentTilknyttetSak() = endreJournalpostCommand.tilknyttSaker.first()
+    fun hentTilknyttetSaker() = endreJournalpostCommand.tilknyttSaker
     fun hentFagomrade() = endreJournalpostCommand.fagomrade
     fun hentGjelder() = endreJournalpostCommand.gjelder
     fun hentGjelderType() = if (endreJournalpostCommand.gjelderType != null) endreJournalpostCommand.gjelderType!! else "FNR"
 }
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class TilknyttetJournalpost(
+    var journalpostId: Long,
+    var sak: Sak?
+)

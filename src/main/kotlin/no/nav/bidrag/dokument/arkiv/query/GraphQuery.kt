@@ -1,4 +1,4 @@
-package no.nav.bidrag.dokument.arkiv.dto
+package no.nav.bidrag.dokument.arkiv.query
 
 abstract class GraphQuery {
 

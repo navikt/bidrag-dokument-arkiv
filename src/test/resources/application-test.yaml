@@ -1,0 +1,24 @@
+SAF_GRAPHQL_URL: http://saf
+DOKARKIV_URL: http://dokarkiv
+DOKARKIV_PROXY_URL: http://dokarkivproxy
+ACCESS_TOKEN_URL: http://sts
+BIDRAG_PERSON_URL: http://person
+BIDRAG_ORGANISASJON_URL: http://organisasjon
+SRV_BD_ARKIV_AUTH: secret
+NAIS_APP_NAME: test
+TOPIC_JOURNALPOST: topic.journalpost
+TOPIC_JOURNALFOERING: jfhendelse.topic
+FEATURE_ENABLED: KAFKA_ARBEIDSFLYT
+
+spring.kafka:
+  properties:
+    schema:
+      registry.url: http://unused-dummy-url
+    security.protocol: PLAINTEXT
+  consumer:
+    group-id: test
+    auto-offset-reset: earliest
+
+logging.level.root: INFO
+logging.level.wiremock.org: INFO
+logging.level: INFO
