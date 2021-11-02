@@ -24,6 +24,8 @@ env:
     value: https://bidrag-person.nais.adeo.no
   - name: BIDRAG_ORGANISASJON_URL
     value: https://bidrag-organisasjon.nais.adeo.no
+  - name: DOKARKIV_PROXY_URL
+    value: https://dokarkivproxy.intern.nav.no
   - name: FEATURE_ENABLED
     value: NONE
 vault:

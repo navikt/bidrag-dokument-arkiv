@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
+import no.nav.bidrag.dokument.arkiv.consumer.DokarkivProxyConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.Bruker;
@@ -14,6 +15,7 @@ import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.KnyttTilAnnenSakRequest;
 import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
@@ -35,11 +37,14 @@ public class JournalpostService {
   private final SafConsumer safConsumer;
   private final PersonConsumer personConsumer;
   private final DokarkivConsumer dokarkivConsumer;
+  private final DokarkivProxyConsumer dokarkivProxyConsumer;
 
-  public JournalpostService(SafConsumer safConsumer, PersonConsumer personConsumer, DokarkivConsumer dokarkivConsumer) {
+  public JournalpostService(SafConsumer safConsumer, PersonConsumer personConsumer, DokarkivConsumer dokarkivConsumer,
+      DokarkivProxyConsumer dokarkivProxyConsumer) {
     this.safConsumer = safConsumer;
     this.personConsumer = personConsumer;
     this.dokarkivConsumer = dokarkivConsumer;
+    this.dokarkivProxyConsumer = dokarkivProxyConsumer;
   }
 
   public Optional<Journalpost> hentJournalpost(Long journalpostId) {
@@ -136,6 +141,8 @@ public class JournalpostService {
       journalpost.setJournalstatus(JournalStatus.JOURNALFOERT);
     }
 
+    tilknyttSaker(endreJournalpostCommand, journalpost);
+
     return HttpResponse.from(
         oppdatertJournalpostResponse.fetchHeaders(),
         oppdatertJournalpostResponse.getResponseEntity().getStatusCode()
@@ -155,6 +162,20 @@ public class JournalpostService {
     return oppdatertJournalpostResponse;
   }
 
+  private void tilknyttSaker(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
+    if (journalpost.isStatusJournalfort()) {
+      populateWithTilknyttedeSaker(journalpost);
+      endreJournalpostCommand.hentTilknyttetSaker().stream()
+          .filter(sak -> !journalpost.hentTilknyttetSaker().contains(sak))
+          .collect(Collectors.toSet())
+          .forEach(saksnummer -> tilknyttTilSak(saksnummer, journalpost));
+    }
+  }
+
+  private void tilknyttTilSak(String saksnummer, Journalpost journalpost){
+    KnyttTilAnnenSakRequest knyttTilAnnenSakRequest = new KnyttTilAnnenSakRequest(saksnummer, journalpost);
+    dokarkivProxyConsumer.knyttTilSak(journalpost.hentJournalpostIdLong(), knyttTilAnnenSakRequest);
+  }
 
   private void journalfoerJournalpost(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand){
     var journalforRequest = new FerdigstillJournalpostRequest(journalpostId, endreJournalpostCommand.getEnhet());

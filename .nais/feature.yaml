@@ -27,6 +27,8 @@ env:
     value: KAFKA_ARBEIDSFLYT
   - name: BIDRAG_ORGANISASJON_URL
     value: https://bidrag-organisasjon-feature.dev.adeo.no
+  - name: DOKARKIV_PROXY_URL
+    value: https://dokarkivproxy-q1.dev.intern.nav.no
   - name: JAVA_OPTS
     value: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
 vault:

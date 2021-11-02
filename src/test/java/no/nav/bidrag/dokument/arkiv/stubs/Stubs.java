@@ -19,7 +19,9 @@ import static org.junit.Assert.fail;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.matching.ContainsPattern;
+import java.util.Arrays;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
+import no.nav.bidrag.dokument.arkiv.consumer.DokarkivProxyConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerInfoResponse;
@@ -86,6 +88,26 @@ public class Stubs {
             "/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" + journalpostId + "/ferdigstill"
         )
     ));
+  }
+
+  public void verifyDokarkivProxyTilknyttSakerRequested(Long journalpostId, String ...contains){
+    var verify = putRequestedFor(
+        urlMatching(
+            "/dokarkivproxy" + String.format(DokarkivProxyConsumer.URL_KNYTT_TIL_ANNEN_SAK, journalpostId)
+        )
+    );
+    Arrays.stream(contains).forEach(contain -> verify.withRequestBody(new ContainsPattern(contain)));
+    verify(verify);
+  }
+
+  public void verifyDokarkivProxyTilknyttSakerNotRequested(Long journalpostId, String ...contains){
+    var verify = putRequestedFor(
+        urlMatching(
+            "/dokarkivproxy" + String.format(DokarkivProxyConsumer.URL_KNYTT_TIL_ANNEN_SAK, journalpostId)
+        )
+    );
+    Arrays.stream(contains).forEach(contain -> verify.withRequestBody(new ContainsPattern(contain)));
+    verify(0, verify);
   }
 
   public void verifyDokarkivFerdigstillNotRequested(Long journalpostId){
@@ -166,6 +188,21 @@ public class Stubs {
         patch(
             urlMatching(
                 "/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" + journalpostId + "/ferdigstill"
+            )
+        ).willReturn(
+            aResponse()
+                .withHeader(HttpHeaders.CONNECTION, "close")
+                .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                .withStatus(HttpStatus.OK.value())
+        )
+    );
+  }
+
+  public void mockDokarkivProxyTilknyttRequest(Long journalpostId) {
+    stubFor(
+        put(
+            urlMatching(
+                "/dokarkivproxy" + String.format(DokarkivProxyConsumer.URL_KNYTT_TIL_ANNEN_SAK, journalpostId)
             )
         ).willReturn(
             aResponse()

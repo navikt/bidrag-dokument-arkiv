@@ -25,6 +25,8 @@ env:
     value: https://bidrag-person.dev.adeo.no
   - name: BIDRAG_ORGANISASJON_URL
     value: https://bidrag-organisasjon.dev.adeo.no
+  - name: DOKARKIV_PROXY_URL
+    value: https://dokarkivproxy.dev.intern.nav.no
   - name: FEATURE_ENABLED
     value: KAFKA_ARBEIDSFLYT
 vault:
