@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
+import no.nav.bidrag.dokument.arkiv.dto.JournalStatus;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.query.DokumentoversiktFagsakQuery;
@@ -35,6 +36,7 @@ class JsonMapperTest {
   @DisplayName("skal mappe OppdaterJournalpost til json")
   void skalMappeOppdaterJournalpostTilJson() {
     var journalpost = new Journalpost();
+    journalpost.setJournalstatus(JournalStatus.MOTTATT);
     var endreDokument = new EndreDokument();
     endreDokument.setTittel("Tittelen på dokument");
     endreDokument.setDokId(55555);

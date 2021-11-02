@@ -68,6 +68,13 @@ data class Journalpost(
         return registrert?.somDato()
     }
 
+    fun hentTilknyttetSaker(): List<String> {
+        val saksnummer = sak?.fagsakId
+        val saksnummerList = if (saksnummer != null) mutableListOf(saksnummer) else mutableListOf()
+        saksnummerList.addAll(tilknyttedeSaker)
+        return saksnummerList
+    }
+
     fun tilJournalpostDto(): JournalpostDto {
 
         @Suppress("UNCHECKED_CAST")
@@ -101,6 +108,7 @@ data class Journalpost(
     fun hasSak(): Boolean = sak != null
     fun isStatusFeilregistrert(): Boolean = journalstatus == JournalStatus.FEILREGISTRERT
     fun isStatusMottatt(): Boolean = journalstatus == JournalStatus.MOTTATT
+    fun isStatusJournalfort(): Boolean = journalstatus == JournalStatus.JOURNALFOERT
     fun isInngaaendeDokument(): Boolean = journalposttype == "I"
 
     fun tilJournalpostResponse(): JournalpostResponse {
@@ -196,14 +204,10 @@ data class EndreJournalpostCommandIntern(
 ) {
     fun skalJournalfores() = endreJournalpostCommand.skalJournalfores
     fun hentAvsenderNavn(journalpost: Journalpost) = endreJournalpostCommand.avsenderNavn ?: journalpost.hentAvsenderNavn()
-    fun harEnTilknyttetSak(): Boolean {
-        if (endreJournalpostCommand.tilknyttSaker.size > 1)
-            throw JournalpostDataException("joark støtter bare en sak per journalpost")
-
-        return endreJournalpostCommand.tilknyttSaker.size == 1
-    }
+    fun harEnTilknyttetSak(): Boolean = endreJournalpostCommand.tilknyttSaker.isNotEmpty()
 
     fun hentTilknyttetSak() = endreJournalpostCommand.tilknyttSaker.first()
+    fun hentTilknyttetSaker() = endreJournalpostCommand.tilknyttSaker
     fun hentFagomrade() = endreJournalpostCommand.fagomrade
     fun hentGjelder() = endreJournalpostCommand.gjelder
     fun hentGjelderType() = if (endreJournalpostCommand.gjelderType != null) endreJournalpostCommand.gjelderType!! else "FNR"

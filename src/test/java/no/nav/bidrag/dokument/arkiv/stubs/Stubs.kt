@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.verification.LoggedRequest
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer
+import no.nav.bidrag.dokument.arkiv.consumer.DokarkivProxyConsumer
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerInfoResponse
@@ -16,7 +17,14 @@ import org.springframework.http.HttpStatus
 import java.io.IOException
 
 class Stubs {
-
+    companion object {
+        @kotlin.jvm.JvmField
+        var SAKSNUMMER_JOURNALPOST = "5276661"
+        @kotlin.jvm.JvmField
+        var SAKSNUMMER_TILKNYTTET_1 = "2106585"
+        @kotlin.jvm.JvmField
+        var SAKSNUMMER_TILKNYTTET_2 = "9999999"
+    }
     var objectMapper: ObjectMapper = ObjectMapper();
 
     fun mockBidragOrganisasjonSaksbehandler() {
@@ -71,6 +79,26 @@ class Stubs {
                 "/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" + journalpostId + "/ferdigstill"
             )
         ))
+    }
+
+    fun verifyDokarkivProxyTilknyttSakerRequested(journalpostId: Long, vararg contains: String){
+        val verify = WireMock.putRequestedFor(
+            WireMock.urlMatching(
+                "/dokarkivproxy" + DokarkivProxyConsumer.URL_KNYTT_TIL_ANNEN_SAK.format(journalpostId)
+            )
+        )
+        contains.forEach { contain -> verify.withRequestBody(ContainsPattern(contain))}
+        WireMock.verify(verify)
+    }
+
+    fun verifyDokarkivProxyTilknyttSakerNotRequested(journalpostId: Long, vararg contains: String){
+        val verify = WireMock.putRequestedFor(
+            WireMock.urlMatching(
+                "/dokarkivproxy" + DokarkivProxyConsumer.URL_KNYTT_TIL_ANNEN_SAK.format(journalpostId)
+            )
+        )
+        contains.forEach { contain -> verify.withRequestBody(ContainsPattern(contain))}
+        WireMock.verify(0, verify)
     }
 
     fun verifyDokarkivFerdigstillNotRequested(journalpostId: Long){
@@ -152,6 +180,20 @@ class Stubs {
             WireMock.patch(
                 WireMock.urlMatching(
                     "/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" + journalpostId + "/ferdigstill"
+                )
+            ).willReturn(
+                WireMock.aResponse()
+                    .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                    .withStatus(HttpStatus.OK.value())
+            )
+        )
+    }
+
+    fun mockDokarkivProxyTilknyttRequest(journalpostId: Long?) {
+        WireMock.stubFor(
+            WireMock.put(
+                WireMock.urlMatching(
+                    "/dokarkivproxy" + DokarkivProxyConsumer.URL_KNYTT_TIL_ANNEN_SAK.format(journalpostId)
                 )
             ).willReturn(
                 WireMock.aResponse()

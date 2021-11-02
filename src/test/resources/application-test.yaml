@@ -1,5 +1,6 @@
 SAF_GRAPHQL_URL: http://saf
 DOKARKIV_URL: http://dokarkiv
+DOKARKIV_PROXY_URL: http://dokarkivproxy
 ACCESS_TOKEN_URL: http://sts
 BIDRAG_PERSON_URL: http://person
 BIDRAG_ORGANISASJON_URL: http://organisasjon
