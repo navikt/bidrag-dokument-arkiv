@@ -299,7 +299,7 @@ class JournalpostControllerTest extends AbstractControllerTest  {
   @DisplayName("skal oppdatere journalført journalpost med flere saker")
   void skalOppdatereJournalfortJournalpostMedFlereSaker() throws IOException, JSONException {
     var xEnhet = "1234";
-    var existingSaksnummer = Stubs.SAKSNUMMER_JOURNALPOST;
+    var existingSaksnummer = Stubs.Companion.getSAKSNUMMER_JOURNALPOST();
     var newSaksnummer = "200000";
     var journalpostIdFraJson = 201028011L;
     var headersMedEnhet = new HttpHeaders();

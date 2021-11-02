@@ -18,11 +18,8 @@ import java.io.IOException
 
 class Stubs {
     companion object {
-        @kotlin.jvm.JvmField
         var SAKSNUMMER_JOURNALPOST = "5276661"
-        @kotlin.jvm.JvmField
         var SAKSNUMMER_TILKNYTTET_1 = "2106585"
-        @kotlin.jvm.JvmField
         var SAKSNUMMER_TILKNYTTET_2 = "9999999"
     }
     var objectMapper: ObjectMapper = ObjectMapper();
