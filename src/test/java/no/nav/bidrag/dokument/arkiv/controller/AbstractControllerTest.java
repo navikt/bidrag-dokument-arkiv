@@ -8,6 +8,7 @@ import no.nav.bidrag.commons.web.test.HttpHeaderTestRestTemplate;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
 import no.nav.bidrag.dokument.arkiv.stubs.Stubs;
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,9 +51,14 @@ public abstract class AbstractControllerTest {
 
   @BeforeEach
   public void initMocks(){
-    WireMock.reset();
     stubs.mockSts();
     stubs.mockBidragOrganisasjonSaksbehandler();
+  }
+
+  @AfterEach
+  public void resetMocks(){
+    WireMock.reset();
+    WireMock.resetToDefault();
   }
 
   protected String initUrl() {

@@ -1,10 +1,23 @@
 package no.nav.bidrag.dokument.arkiv.stubs;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.patch;
+import static com.github.tomakehurst.wiremock.client.WireMock.patchRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.put;
+import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.junit.Assert.fail;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.ContainsPattern;
 import java.util.Arrays;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
@@ -24,9 +37,10 @@ public class Stubs {
 
   public void mockBidragOrganisasjonSaksbehandler() {
     try {
-      WireMock.stubFor(
-          WireMock.get(WireMock.urlPathMatching("/organisasjon/bidrag-organisasjon/saksbehandler/info/.*")).willReturn(
-              WireMock.aResponse()
+      stubFor(
+          get(urlPathMatching("/organisasjon/bidrag-organisasjon/saksbehandler/info/.*")).willReturn(
+              aResponse()
+                  .withHeader(HttpHeaders.CONNECTION, "close")
                   .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                   .withStatus(HttpStatus.OK.value())
                   .withBody(objectMapper.writeValueAsString(new SaksbehandlerInfoResponse("ident", "navn")))
@@ -38,10 +52,11 @@ public class Stubs {
   }
 
   public void mockSts() {
-    WireMock.stubFor(
-        WireMock.post(WireMock.urlPathMatching("/sts/.*")).willReturn(
-            WireMock.aResponse()
+    stubFor(
+        post(urlPathMatching("/sts/.*")).willReturn(
+            aResponse()
                 .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                .withHeader(HttpHeaders.CONNECTION, "close")
                 .withStatus(HttpStatus.OK.value())
                 .withBody(
                     "{\n"
@@ -61,51 +76,51 @@ public class Stubs {
   }
 
   public void verifyDokarkivOppdaterRequest(Long journalpostId, String contains) {
-    WireMock.verify(
-        WireMock.putRequestedFor(WireMock.urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + '/' + journalpostId))
+    verify(
+        putRequestedFor(urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + '/' + journalpostId))
             .withRequestBody(new ContainsPattern(contains))
     );
   }
 
   public void verifyDokarkivFerdigstillRequested(Long journalpostId){
-    WireMock.verify(WireMock.patchRequestedFor(
-        WireMock.urlMatching(
+    verify(patchRequestedFor(
+        urlMatching(
             "/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" + journalpostId + "/ferdigstill"
         )
     ));
   }
 
   public void verifyDokarkivProxyTilknyttSakerRequested(Long journalpostId, String ...contains){
-    var verify = WireMock.putRequestedFor(
-        WireMock.urlMatching(
+    var verify = putRequestedFor(
+        urlMatching(
             "/dokarkivproxy" + String.format(DokarkivProxyConsumer.URL_KNYTT_TIL_ANNEN_SAK, journalpostId)
         )
     );
     Arrays.stream(contains).forEach(contain -> verify.withRequestBody(new ContainsPattern(contain)));
-    WireMock.verify(verify);
+    verify(verify);
   }
 
   public void verifyDokarkivProxyTilknyttSakerNotRequested(Long journalpostId, String ...contains){
-    var verify = WireMock.putRequestedFor(
-        WireMock.urlMatching(
+    var verify = putRequestedFor(
+        urlMatching(
             "/dokarkivproxy" + String.format(DokarkivProxyConsumer.URL_KNYTT_TIL_ANNEN_SAK, journalpostId)
         )
     );
     Arrays.stream(contains).forEach(contain -> verify.withRequestBody(new ContainsPattern(contain)));
-    WireMock.verify(0, verify);
+    verify(0, verify);
   }
 
   public void verifyDokarkivFerdigstillNotRequested(Long journalpostId){
-    WireMock.verify(0, WireMock.patchRequestedFor(
-        WireMock.urlMatching(
+    verify(0, patchRequestedFor(
+        urlMatching(
             "/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" + journalpostId + "/ferdigstill"
         )
     ));
   }
 
   public void verifyDokarkivFeilregistrerRequest(String path, Long journalpostId) {
-    WireMock.verify(
-        WireMock.patchRequestedFor(WireMock.urlMatching("/dokarkiv" + String.format(
+    verify(
+        patchRequestedFor(urlMatching("/dokarkiv" + String.format(
             DokarkivConsumer.URL_JOURNALPOSTAPI_V1_FEILREGISTRER,
             journalpostId
         ) + "/" + path))
@@ -113,35 +128,36 @@ public class Stubs {
   }
 
   public void verifySafHentJournalpostRequested(){
-    WireMock.verify(
-        WireMock.postRequestedFor(WireMock.urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query journalpost"))
+    verify(
+        postRequestedFor(urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query journalpost"))
     );
   }
 
   public void verifySafDokumentOversiktFagsakRequested(){
-    WireMock.verify(
-        WireMock.postRequestedFor(WireMock.urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query dokumentoversiktFagsak"))
+    verify(
+        postRequestedFor(urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query dokumentoversiktFagsak"))
     );
   }
 
   public void verifySafTilknyttedeJournalpostedRequested(){
-    WireMock.verify(
-        WireMock.postRequestedFor(WireMock.urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query tilknyttedeJournalposter"))
+    verify(
+        postRequestedFor(urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query tilknyttedeJournalposter"))
     );
   }
 
   public void verifySafTilknyttedeJournalpostedNotRequested(){
-    WireMock.verify(0,
-        WireMock.postRequestedFor(WireMock.urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query tilknyttedeJournalposter"))
+    verify(0,
+        postRequestedFor(urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query tilknyttedeJournalposter"))
     );
   }
 
 
 
   public void mockDokarkivOppdaterRequest(Long journalpostId, HttpStatus status) throws JsonProcessingException {
-    WireMock.stubFor(
-        WireMock.put(WireMock.urlMatching("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + '/' + journalpostId)).willReturn(
-            WireMock.aResponse()
+    stubFor(
+        put(urlMatching("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + '/' + journalpostId)).willReturn(
+            aResponse()
+                .withHeader(HttpHeaders.CONNECTION, "close")
                 .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                 .withStatus(status.value())
                 .withBody(objectMapper.writeValueAsString(new OppdaterJournalpostResponse(journalpostId)))
@@ -150,16 +166,17 @@ public class Stubs {
   }
 
   public void mockDokarkivFeilregistrerRequest(String path, Long journalpostId) {
-    WireMock.stubFor(
-        WireMock.patch(
-            WireMock.urlMatching(
+    stubFor(
+        patch(
+            urlMatching(
                 "/dokarkiv" + String.format(
                     DokarkivConsumer.URL_JOURNALPOSTAPI_V1_FEILREGISTRER,
                     journalpostId
                 ) + "/" + path
             )
         ).willReturn(
-            WireMock.aResponse()
+            aResponse()
+                .withHeader(HttpHeaders.CONNECTION, "close")
                 .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                 .withStatus(HttpStatus.OK.value())
         )
@@ -167,13 +184,14 @@ public class Stubs {
   }
 
   public void mockDokarkivFerdigstillRequest(Long journalpostId) {
-    WireMock.stubFor(
-        WireMock.patch(
-            WireMock.urlMatching(
+    stubFor(
+        patch(
+            urlMatching(
                 "/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" + journalpostId + "/ferdigstill"
             )
         ).willReturn(
-            WireMock.aResponse()
+            aResponse()
+                .withHeader(HttpHeaders.CONNECTION, "close")
                 .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                 .withStatus(HttpStatus.OK.value())
         )
@@ -181,13 +199,14 @@ public class Stubs {
   }
 
   public void mockDokarkivProxyTilknyttRequest(Long journalpostId) {
-    WireMock.stubFor(
-        WireMock.put(
-            WireMock.urlMatching(
+    stubFor(
+        put(
+            urlMatching(
                 "/dokarkivproxy" + String.format(DokarkivProxyConsumer.URL_KNYTT_TIL_ANNEN_SAK, journalpostId)
             )
         ).willReturn(
-            WireMock.aResponse()
+            aResponse()
+                .withHeader(HttpHeaders.CONNECTION, "close")
                 .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                 .withStatus(HttpStatus.OK.value())
         )
@@ -199,9 +218,10 @@ public class Stubs {
   }
 
   public void mockSafResponseHentJournalpost(String filename, HttpStatus status) {
-    WireMock.stubFor(
-        WireMock.post(WireMock.urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query journalpost")).willReturn(
-            WireMock.aResponse()
+    stubFor(
+        post(urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query journalpost")).willReturn(
+            aResponse()
+                .withHeader(HttpHeaders.CONNECTION, "close")
                 .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                 .withStatus(status.value())
                 .withBodyFile("json/"+filename)
@@ -210,10 +230,11 @@ public class Stubs {
   }
 
   public void mockSafResponseTilknyttedeJournalposter(HttpStatus httpStatus) {
-    WireMock.stubFor(
-        WireMock.post(WireMock.urlEqualTo("/saf/"))
+    stubFor(
+        post(urlEqualTo("/saf/"))
             .withRequestBody(new ContainsPattern("query tilknyttedeJournalposter")).willReturn(
-                WireMock.aResponse()
+                aResponse()
+                    .withHeader(HttpHeaders.CONNECTION, "close")
                     .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                     .withStatus(httpStatus.value())
                     .withBodyFile("json/tilknyttedeJournalposter.json")
@@ -222,10 +243,11 @@ public class Stubs {
   }
 
   public void mockSafResponseDokumentOversiktFagsak(HttpStatus status) {
-    WireMock.stubFor(
-        WireMock.post(WireMock.urlEqualTo("/saf/"))
+    stubFor(
+        post(urlEqualTo("/saf/"))
             .withRequestBody(new ContainsPattern("query dokumentoversiktFagsak")).willReturn(
-                WireMock.aResponse()
+                aResponse()
+                    .withHeader(HttpHeaders.CONNECTION, "close")
                     .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                     .withStatus(status.value())
                     .withBodyFile("json/dokumentoversiktFagsakQueryResponse.json")
@@ -234,16 +256,17 @@ public class Stubs {
   }
 
   public void verifyPersonRequested() {
-    WireMock.verify(
-        WireMock.getRequestedFor(WireMock.urlMatching("/person/.*"))
+    verify(
+        getRequestedFor(urlMatching("/person/.*"))
     );
   }
 
   public void mockPersonResponse(PersonResponse personResponse, HttpStatus status) {
     try {
-      WireMock.stubFor(
-          WireMock.get(WireMock.urlMatching("/person/.*")).willReturn(
-              WireMock.aResponse()
+      stubFor(
+          get(urlMatching("/person/.*")).willReturn(
+              aResponse()
+                  .withHeader(HttpHeaders.CONNECTION, "close")
                   .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                   .withStatus(status.value())
                   .withBody(new ObjectMapper().writeValueAsString(personResponse))
