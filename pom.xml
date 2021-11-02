@@ -325,21 +325,6 @@
               </sourceDirs>
             </configuration>
           </execution>
-          <execution>
-            <id>test-compile</id>
-            <phase>process-sources</phase>
-            <goals>
-              <goal>test-compile</goal>
-            </goals>
-            <configuration>
-              <sourceDirs>
-                <source>src/main/java</source>
-                <source>src/main/kotlin</source>
-                <source>src/test/java</source>
-                <source>src/test/kotlin</source>
-              </sourceDirs>
-            </configuration>
-          </execution>
         </executions>
         <configuration>
           <jvmTarget>1.8</jvmTarget>

@@ -1,5 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.controller;
 
+import static no.nav.bidrag.dokument.arkiv.stubs.Stubs.SAKSNUMMER_JOURNALPOST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
@@ -298,7 +299,7 @@ class JournalpostControllerTest extends AbstractControllerTest  {
   @DisplayName("skal oppdatere journalført journalpost med flere saker")
   void skalOppdatereJournalfortJournalpostMedFlereSaker() throws IOException, JSONException {
     var xEnhet = "1234";
-    var existingSaksnummer = stubs.getSAKSNUMMER_JOURNALPOST();
+    var existingSaksnummer = SAKSNUMMER_JOURNALPOST;
     var newSaksnummer = "200000";
     var journalpostIdFraJson = 201028011L;
     var headersMedEnhet = new HttpHeaders();
