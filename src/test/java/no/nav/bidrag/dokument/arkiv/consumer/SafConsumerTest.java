@@ -27,6 +27,7 @@ import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
 import no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator;
 import no.nav.security.token.support.core.context.TokenValidationContext;
 import no.nav.security.token.support.core.jwt.JwtToken;
+import no.nav.security.token.support.spring.test.EnableMockOAuth2Server;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,10 +44,11 @@ import org.springframework.test.context.ActiveProfiles;
 @DisplayName("SafConsumer")
 @SpringBootTest(
     classes = {BidragDokumentArkivLocal.class},
-    properties = {"SAF_GRAPHQL_URL=http://localhost:8090/query"},
+    properties = {"SAF_GRAPHQL_URL=http://localhost:12345/query"},
     webEnvironment = WebEnvironment.DEFINED_PORT
 )
-@AutoConfigureWireMock(port = 8090)
+@AutoConfigureWireMock(port = 12345)
+@EnableMockOAuth2Server
 class SafConsumerTest {
 
   @MockBean

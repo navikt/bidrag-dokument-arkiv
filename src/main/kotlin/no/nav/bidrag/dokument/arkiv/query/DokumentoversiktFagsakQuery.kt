@@ -1,4 +1,4 @@
-package no.nav.bidrag.dokument.arkiv.dto
+package no.nav.bidrag.dokument.arkiv.query
 
 data class DokumentoversiktFagsakQuery(val saksnummer: String, val tema: String) : GraphQuery() {
     private val query = """

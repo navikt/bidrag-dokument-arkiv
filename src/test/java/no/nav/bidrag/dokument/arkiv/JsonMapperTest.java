@@ -8,23 +8,22 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
-import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQuery;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
+import no.nav.bidrag.dokument.arkiv.dto.JournalStatus;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
-import no.nav.bidrag.dokument.arkiv.dto.JournalpostQuery;
 import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.query.DokumentoversiktFagsakQuery;
+import no.nav.bidrag.dokument.arkiv.query.JournalpostQuery;
 import no.nav.bidrag.dokument.dto.EndreDokument;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles(PROFILE_TEST)
 @DisplayName("Mapping av json verdier")
-@PropertySource("classpath:resources.properties")
 @SpringBootTest(classes = BidragDokumentArkivLocal.class)
 class JsonMapperTest {
 
@@ -35,6 +34,7 @@ class JsonMapperTest {
   @DisplayName("skal mappe OppdaterJournalpost til json")
   void skalMappeOppdaterJournalpostTilJson() {
     var journalpost = new Journalpost();
+    journalpost.setJournalstatus(JournalStatus.MOTTATT);
     var endreDokument = new EndreDokument();
     endreDokument.setTittel("Tittelen på dokument");
     endreDokument.setDokId(55555);

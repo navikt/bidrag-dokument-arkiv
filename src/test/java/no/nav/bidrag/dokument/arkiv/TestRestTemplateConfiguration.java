@@ -1,16 +1,23 @@
 package no.nav.bidrag.dokument.arkiv;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.ISSUER;
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal.PROFILE_INTEGRATION;
+
 import no.nav.bidrag.commons.web.test.HttpHeaderTestRestTemplate;
-import no.nav.security.token.support.test.jersey.TestTokenGeneratorResource;
+import no.nav.security.mock.oauth2.MockOAuth2Server;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 
 @Configuration
+@Profile(PROFILE_INTEGRATION)
 public class TestRestTemplateConfiguration {
-
+  @Autowired
+  private MockOAuth2Server mockOAuth2Server;
   @Bean
   HttpHeaderTestRestTemplate httpHeaderTestRestTemplate() {
     TestRestTemplate testRestTemplate = new TestRestTemplate(new RestTemplateBuilder());
@@ -21,7 +28,7 @@ public class TestRestTemplateConfiguration {
   }
 
   private String generateBearerToken() {
-    TestTokenGeneratorResource testTokenGeneratorResource = new TestTokenGeneratorResource();
-    return "Bearer " + testTokenGeneratorResource.issueToken("localhost-idtoken");
+    var token = mockOAuth2Server.issueToken(ISSUER, "aud-localhost", "aud-localhost");
+    return "Bearer " + token.serialize();
   }
 }

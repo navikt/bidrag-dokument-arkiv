@@ -47,26 +47,3 @@ spring.kafka:
       key-store-location: file:${KAFKA_KEYSTORE_PATH}
       key-store-password: ${KAFKA_CREDSTORE_PASSWORD}
       key-password: ${KAFKA_CREDSTORE_PASSWORD}
-
----
-
-################## TEST #################
-
-spring.profiles: test
-
-spring.kafka:
-  properties:
-    schema:
-      registry.url: http://unused-dummy-url
-    security.protocol: PLAINTEXT
-  consumer:
-    group-id: test
-    auto-offset-reset: earliest
-
-##### OIDC #####
-no.nav.security.jwt:
-  issuers: isso
-  issuer.isso:
-    discoveryurl: http://metadata
-    acceptedaudience: aud-localhost
-    cookie_name: localhost-idtoken

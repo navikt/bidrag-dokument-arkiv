@@ -7,14 +7,16 @@ import com.netflix.graphql.dgs.client.HttpResponse;
 import java.util.Arrays;
 import java.util.List;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
-import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQuery;
-import no.nav.bidrag.dokument.arkiv.dto.GraphQuery;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
-import no.nav.bidrag.dokument.arkiv.dto.JournalpostQuery;
+import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost;
 import no.nav.bidrag.dokument.arkiv.model.JournalIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.model.ReasonToHttpStatus;
 import no.nav.bidrag.dokument.arkiv.model.SafException;
+import no.nav.bidrag.dokument.arkiv.query.DokumentoversiktFagsakQuery;
+import no.nav.bidrag.dokument.arkiv.query.GraphQuery;
+import no.nav.bidrag.dokument.arkiv.query.JournalpostQuery;
+import no.nav.bidrag.dokument.arkiv.query.TilknyttedeJournalposterQuery;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -37,6 +39,11 @@ public class SafConsumer {
   public List<Journalpost> finnJournalposter(String saksnummer, String fagomrade) {
     var response = consumeQuery(new DokumentoversiktFagsakQuery(saksnummer, fagomrade), this::journalIkkeFunnetException);
     return Arrays.asList(response.extractValueAsObject("dokumentoversiktFagsak.journalposter", Journalpost[].class));
+  }
+
+  public List<TilknyttetJournalpost> finnTilknyttedeJournalposter(String dokumentInfoId){
+    var response = consumeQuery(new TilknyttedeJournalposterQuery(dokumentInfoId), this::journalIkkeFunnetException);
+    return Arrays.asList(response.extractValueAsObject("tilknyttedeJournalposter", TilknyttetJournalpost[].class));
   }
 
   private RuntimeException journalIkkeFunnetException(String message) {

@@ -46,7 +46,7 @@ class JournalpostServiceTest {
   private SafConsumer safConsumerMock;
   @MockBean
   private PersonConsumer personConsumerMock;
-  @Value("classpath:json/dokumentoversiktFagsakQueryResponse.json")
+  @Value("classpath:__files/json/dokumentoversiktFagsakQueryResponse.json")
   private Resource responseJsonResource;
 
   @Test
