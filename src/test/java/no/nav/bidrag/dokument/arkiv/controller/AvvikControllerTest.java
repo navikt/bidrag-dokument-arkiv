@@ -54,7 +54,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
-        () -> stubs.verifyDokarkivOppdaterRequest(journalpostIdFraJson, String.format("\"journalfoerendeEnhet\":\"%s\"", overforTilEnhet)),
+        () -> stubs.verifyStub.verifyDokarkivOppdaterRequest(journalpostIdFraJson, String.format("\"journalfoerendeEnhet\":\"%s\"", overforTilEnhet)),
         ()-> verify(kafkaTemplateMock).send(eq(topicJournalpost), eq("JOARK-" + journalpostIdFraJson), any())
     );
   }
@@ -88,7 +88,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.BAD_REQUEST),
-        () -> stubs.verifyDokarkivOppdaterRequest(journalpostIdFraJson, String.format("\"journalfoerendeEnhet\":\"%s\"", overforTilEnhet)),
+        () -> stubs.verifyStub.verifyDokarkivOppdaterRequest(journalpostIdFraJson, String.format("\"journalfoerendeEnhet\":\"%s\"", overforTilEnhet)),
         ()-> verify(kafkaTemplateMock, never()).send(any(), any(), any())
     );
   }
@@ -122,7 +122,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
-        () -> stubs.verifyDokarkivOppdaterRequest(journalpostIdFraJson, String.format("\"tema\":\"%s\"", nyttFagomrade)),
+        () -> stubs.verifyStub.verifyDokarkivOppdaterRequest(journalpostIdFraJson, String.format("\"tema\":\"%s\"", nyttFagomrade)),
         ()-> verify(kafkaTemplateMock).send(eq(topicJournalpost), eq("JOARK-" + journalpostIdFraJson), any())
     );
   }
@@ -157,7 +157,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
-        () -> stubs.verifyDokarkivFeilregistrerRequest("feilregistrerSakstilknytning", journalpostIdFraJson),
+        () -> stubs.verifyStub.verifyDokarkivFeilregistrerRequest("feilregistrerSakstilknytning", journalpostIdFraJson),
         ()-> verify(kafkaTemplateMock).send(eq(topicJournalpost), eq("JOARK-" + journalpostIdFraJson), any())
     );
   }
@@ -189,7 +189,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
-        () -> stubs.verifyDokarkivFeilregistrerRequest("settStatusUtg(.*)r", journalpostIdFraJson),
+        () -> stubs.verifyStub.verifyDokarkivFeilregistrerRequest("settStatusUtg(.*)r", journalpostIdFraJson),
         ()-> verify(kafkaTemplateMock).send(eq(topicJournalpost), eq("JOARK-" + journalpostIdFraJson), any())
     );
   }

@@ -1,5 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -67,6 +68,7 @@ public class JournalpostService {
     }
     var dokumentInfoId = journalpost.getDokumenter().get(0).getDokumentInfoId();
     if (dokumentInfoId != null){
+      LOGGER.info(String.format("Henter tilknyttede saker for journalpost %s med dokumentinfoId %s", journalpost.getJournalpostId(), dokumentInfoId));
       var tilknytteteJournalposter = safConsumer.finnTilknyttedeJournalposter(dokumentInfoId);
       var saker = tilknytteteJournalposter.stream()
           .map(TilknyttetJournalpost::getSak)
@@ -75,7 +77,9 @@ public class JournalpostService {
           .filter(Objects::nonNull)
           .filter(fagsakId -> !Objects.equals(fagsakId, journalpost.getSak().getFagsakId()))
           .collect(Collectors.toList());
-      journalpost.setTilknyttedeSaker(saker);
+      var sakerNoDuplicates = new HashSet<>(saker).stream().toList();
+      LOGGER.info("Fant {} saker for journalpost {}. Journalposten har {} saker etter fjerning av duplikater", saker.size() + 1, journalpost.getJournalpostId(), sakerNoDuplicates.size() + 1);
+      journalpost.setTilknyttedeSaker(sakerNoDuplicates);
     }
     return journalpost;
   }
@@ -136,12 +140,8 @@ public class JournalpostService {
     );
     var oppdatertJournalpostResponse = lagreJournalpost(journalpostId, endreJournalpostCommand, journalpost);
 
-    if (endreJournalpostCommand.skalJournalfores()) {
-      journalfoerJournalpost(journalpostId, endreJournalpostCommand);
-      journalpost.setJournalstatus(JournalStatus.JOURNALFOERT);
-    }
-
-    tilknyttSaker(endreJournalpostCommand, journalpost);
+    maybeJournalfoerJournalpost(endreJournalpostCommand, journalpost);
+    maybeTilknyttSakerTilJournalpost(endreJournalpostCommand, journalpost);
 
     return HttpResponse.from(
         oppdatertJournalpostResponse.fetchHeaders(),
@@ -162,7 +162,15 @@ public class JournalpostService {
     return oppdatertJournalpostResponse;
   }
 
-  private void tilknyttSaker(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
+  private void maybeJournalfoerJournalpost(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
+    if (endreJournalpostCommand.skalJournalfores() && journalpost.isStatusMottatt()) {
+      var journalpostId = journalpost.hentJournalpostIdLong();
+      journalfoerJournalpost(journalpostId, endreJournalpostCommand);
+      journalpost.setJournalstatus(JournalStatus.JOURNALFOERT);
+    }
+
+  }
+  private void maybeTilknyttSakerTilJournalpost(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
     if (journalpost.isStatusJournalfort()) {
       populateWithTilknyttedeSaker(journalpost);
       endreJournalpostCommand.hentTilknyttetSaker().stream()

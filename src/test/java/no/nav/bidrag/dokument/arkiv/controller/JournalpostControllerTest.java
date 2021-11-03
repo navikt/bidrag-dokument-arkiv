@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -77,7 +78,7 @@ class JournalpostControllerTest extends AbstractControllerTest  {
         () -> assertThat(response.getHeaders().get(HttpHeaders.WARNING)).as("header warning").first()
             .isEqualTo("Fant ikke journalpost i fagarkivet. journalpostId=910536260"),
         () -> assertThat(response.getStatusCode()).as("status").isEqualTo(HttpStatus.NOT_FOUND),
-        () -> stubs.verifySafHentJournalpostRequested()
+        () -> stubs.verifyStub.verifySafHentJournalpostRequested()
     ));
   }
 
@@ -98,7 +99,7 @@ class JournalpostControllerTest extends AbstractControllerTest  {
     assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
         () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST),
         () -> assertThat(response.getBody()).isNull(),
-        () -> stubs.verifySafHentJournalpostRequested()
+        () -> stubs.verifyStub.verifySafHentJournalpostRequested()
     ));
   }
 
@@ -120,8 +121,8 @@ class JournalpostControllerTest extends AbstractControllerTest  {
     assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
         () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST),
         () -> assertThat(response.getBody()).isNull(),
-        () -> stubs.verifySafHentJournalpostRequested(),
-        () -> stubs.verifyPersonRequested()
+        () -> stubs.verifyStub.verifySafHentJournalpostRequested(),
+        () -> stubs.verifyStub.verifyPersonRequested()
     ));
   }
 
@@ -151,9 +152,9 @@ class JournalpostControllerTest extends AbstractControllerTest  {
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getJournalpostId).isEqualTo("JOARK-" + journalpostIdFraJson),
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getGjelderAktor).extracting(AktorDto::getIdent).isEqualTo(PERSON_IDENT),
         () -> assertThat(saker).isNotNull().hasSize(0),
-        () -> stubs.verifySafHentJournalpostRequested(),
-        () -> stubs.verifySafTilknyttedeJournalpostedNotRequested(),
-        () -> stubs.verifyPersonRequested()
+        () -> stubs.verifyStub.verifySafHentJournalpostRequested(),
+        () -> stubs.verifyStub.verifySafTilknyttedeJournalpostedRequested(0),
+        () -> stubs.verifyStub.verifyPersonRequested()
     ));
   }
 
@@ -182,9 +183,9 @@ class JournalpostControllerTest extends AbstractControllerTest  {
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getJournalpostId).isEqualTo("JOARK-" + journalpostIdFraJson),
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getGjelderAktor).extracting(AktorDto::getIdent).isEqualTo(PERSON_IDENT),
         () -> assertThat(saker).isNotNull().hasSize(3).contains("2106585").contains("5276661"),
-        () -> stubs.verifySafHentJournalpostRequested(),
-        () -> stubs.verifySafTilknyttedeJournalpostedRequested(),
-        () -> stubs.verifyPersonRequested()
+        () -> stubs.verifyStub.verifySafHentJournalpostRequested(),
+        () -> stubs.verifyStub.verifySafTilknyttedeJournalpostedRequested(),
+        () -> stubs.verifyStub.verifyPersonRequested()
     ));
   }
 
@@ -201,8 +202,8 @@ class JournalpostControllerTest extends AbstractControllerTest  {
     assertAll(
         () -> assertThat(jouralposterResponseEntity).extracting(ResponseEntity::getStatusCode).isEqualTo(HttpStatus.OK),
         () -> assertThat(jouralposterResponseEntity.getBody()).hasSize(3),
-        () -> stubs.verifyPersonRequested(),
-        () -> stubs.verifySafDokumentOversiktFagsakRequested()
+        () -> stubs.verifyStub.verifyPersonRequested(),
+        () -> stubs.verifyStub.verifySafDokumentOversiktFagsakRequested()
     );
   }
 
@@ -244,13 +245,13 @@ class JournalpostControllerTest extends AbstractControllerTest  {
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
-        ()->stubs.verifyDokarkivOppdaterRequest(journalpostIdFraJson, String.format("\"fagsakId\":\"%s\"", "5276661")),
-        ()->stubs.verifyDokarkivOppdaterRequest(journalpostIdFraJson, "\"fagsaksystem\":\"BISYS\""),
-        ()->stubs.verifyDokarkivOppdaterRequest(journalpostIdFraJson, "\"sakstype\":\"FAGSAK\""),
-        ()->stubs.verifyDokarkivOppdaterRequest(journalpostIdFraJson, "\"bruker\":{\"id\":\"06127412345\",\"idType\":\"FNR\"}"),
-        ()->stubs.verifyDokarkivOppdaterRequest(journalpostIdFraJson, "\"dokumenter\":[{\"dokumentInfoId\":\"1\",\"tittel\":\"In a galazy far far away\",\"brevkode\":\"BLABLA\"}]"),
-        ()->stubs.verifyDokarkivOppdaterRequest(journalpostIdFraJson, "\"avsenderMottaker\":{\"navn\":\"Dauden, Svarte\"}"),
-        ()->stubs.verifyDokarkivFerdigstillRequested(journalpostIdFraJson)
+        ()->stubs.verifyStub.verifyDokarkivOppdaterRequest(journalpostIdFraJson, String.format("\"fagsakId\":\"%s\"", "5276661")),
+        ()->stubs.verifyStub.verifyDokarkivOppdaterRequest(journalpostIdFraJson, "\"fagsaksystem\":\"BISYS\""),
+        ()->stubs.verifyStub.verifyDokarkivOppdaterRequest(journalpostIdFraJson, "\"sakstype\":\"FAGSAK\""),
+        ()->stubs.verifyStub.verifyDokarkivOppdaterRequest(journalpostIdFraJson, "\"bruker\":{\"id\":\"06127412345\",\"idType\":\"FNR\"}"),
+        ()->stubs.verifyStub.verifyDokarkivOppdaterRequest(journalpostIdFraJson, "\"dokumenter\":[{\"dokumentInfoId\":\"1\",\"tittel\":\"In a galazy far far away\",\"brevkode\":\"BLABLA\"}]"),
+        ()->stubs.verifyStub.verifyDokarkivOppdaterRequest(journalpostIdFraJson, "\"avsenderMottaker\":{\"navn\":\"Dauden, Svarte\"}"),
+        ()->stubs.verifyStub.verifyDokarkivFerdigstillRequested(journalpostIdFraJson)
     );
   }
 
@@ -289,15 +290,15 @@ class JournalpostControllerTest extends AbstractControllerTest  {
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
-        ()->stubs.verifyDokarkivFerdigstillRequested(journalpostIdFraJson),
-        ()->stubs.verifyDokarkivProxyTilknyttSakerRequested(journalpostIdFraJson, saksnummer1, "\"journalfoerendeEnhet\":\"4806\""),
-        ()->stubs.verifyDokarkivProxyTilknyttSakerRequested(journalpostIdFraJson, saksnummer2, "\"journalfoerendeEnhet\":\"4806\"")
+        ()->stubs.verifyStub.verifyDokarkivFerdigstillRequested(journalpostIdFraJson),
+        ()->stubs.verifyStub.verifyDokarkivProxyTilknyttSakerRequested(journalpostIdFraJson, saksnummer1, "\"journalfoerendeEnhet\":\"4806\""),
+        ()->stubs.verifyStub.verifyDokarkivProxyTilknyttSakerRequested(journalpostIdFraJson, saksnummer2, "\"journalfoerendeEnhet\":\"4806\"")
     );
   }
 
   @Test
-  @DisplayName("skal oppdatere journalført journalpost med flere saker")
-  void skalOppdatereJournalfortJournalpostMedFlereSaker() throws IOException, JSONException {
+  @DisplayName("skal endre journalført journalpost med flere saker")
+  void skalEndreJournalfortJournalpostMedFlereSaker() throws IOException, JSONException {
     var xEnhet = "1234";
     var existingSaksnummer = SAKSNUMMER_JOURNALPOST;
     var newSaksnummer = "200000";
@@ -308,6 +309,7 @@ class JournalpostControllerTest extends AbstractControllerTest  {
     var endreJournalpostCommand = createEndreJournalpostCommand();
     endreJournalpostCommand.setSkalJournalfores(false);
     endreJournalpostCommand.setTilknyttSaker(Arrays.asList(existingSaksnummer, newSaksnummer));
+    endreJournalpostCommand.setDokumentDato(LocalDate.of(2020, 2, 3));
 
     stubs.mockSafResponseHentJournalpost("journalpostJournalfortSafResponse.json", HttpStatus.OK);
     stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK);
@@ -330,14 +332,15 @@ class JournalpostControllerTest extends AbstractControllerTest  {
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
-        ()->stubs.verifyDokarkivProxyTilknyttSakerRequested(journalpostIdFraJson, newSaksnummer, "\"journalfoerendeEnhet\":\"4806\""),
-        ()->stubs.verifyDokarkivProxyTilknyttSakerNotRequested(journalpostIdFraJson, existingSaksnummer, "\"journalfoerendeEnhet\":\"4806\"")
+        ()->stubs.verifyStub.verifyDokarkivOppdaterRequest(journalpostIdFraJson, "\"tittel\":\"So Tired\"","\"avsenderMottaker\":{\"navn\":\"Dauden, Svarte\"}","\"datoMottatt\":\"2020-02-03\"", "\"dokumenter\":[{\"dokumentInfoId\":\"1\",\"tittel\":\"In a galazy far far away\",\"brevkode\":\"BLABLA\"}]"),
+        ()->stubs.verifyStub.verifyDokarkivProxyTilknyttSakerRequested(journalpostIdFraJson, newSaksnummer, "\"journalfoerendeEnhet\":\"4806\""),
+        ()->stubs.verifyStub.verifyDokarkivProxyTilknyttSakerRequested(0, journalpostIdFraJson, existingSaksnummer, "\"journalfoerendeEnhet\":\"4806\"")
     );
   }
 
   @Test
-  @DisplayName("skal endre journalpost")
-  void skalEndreJournalpost() throws IOException, JSONException {
+  @DisplayName("skal endre journalpost uten journalføring")
+  void skalEndreJournalpostUtenJournalforing() throws IOException, JSONException {
     // given
     var xEnhet = "1234";
     var journalpostIdFraJson = 201028011L;
@@ -364,8 +367,8 @@ class JournalpostControllerTest extends AbstractControllerTest  {
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
-        ()->stubs.verifyDokarkivOppdaterRequest(journalpostIdFraJson, ""),
-        ()->stubs.verifyDokarkivFerdigstillNotRequested(journalpostIdFraJson)
+        ()->stubs.verifyStub.verifyDokarkivOppdaterRequest(journalpostIdFraJson, ""),
+        ()->stubs.verifyStub.verifyDokarkivFerdigstillRequested(0, journalpostIdFraJson)
     );
   }
 
