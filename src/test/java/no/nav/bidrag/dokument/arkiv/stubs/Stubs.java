@@ -32,13 +32,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 
 public class Stubs {
+
   public static String SAKSNUMMER_JOURNALPOST = "5276661";
   public static String SAKSNUMMER_TILKNYTTET_1 = "2106585";
   public static String SAKSNUMMER_TILKNYTTET_2 = "9999999";
   private final ObjectMapper objectMapper = new ObjectMapper();
   public final VerifyStub verifyStub = new VerifyStub();
 
-  private ResponseDefinitionBuilder baseResponse(){
+  private ResponseDefinitionBuilder aClosedJsonResponse() {
     return aResponse()
         .withHeader(HttpHeaders.CONNECTION, "close")
         .withHeader(HttpHeaders.CONTENT_TYPE, "application/json");
@@ -48,7 +49,7 @@ public class Stubs {
     try {
       stubFor(
           get(urlPathMatching("/organisasjon/bidrag-organisasjon/saksbehandler/info/.*")).willReturn(
-              baseResponse()
+              aClosedJsonResponse()
                   .withStatus(HttpStatus.OK.value())
                   .withBody(objectMapper.writeValueAsString(new SaksbehandlerInfoResponse("ident", "navn")))
           )
@@ -61,7 +62,7 @@ public class Stubs {
   public void mockSts() {
     stubFor(
         post(urlPathMatching("/sts/.*")).willReturn(
-            baseResponse()
+            aClosedJsonResponse()
                 .withStatus(HttpStatus.OK.value())
                 .withBody(
                     "{\n"
@@ -83,7 +84,7 @@ public class Stubs {
   public void mockDokarkivOppdaterRequest(Long journalpostId, HttpStatus status) throws JsonProcessingException {
     stubFor(
         put(urlMatching("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + '/' + journalpostId)).willReturn(
-            baseResponse()
+            aClosedJsonResponse()
                 .withStatus(status.value())
                 .withBody(objectMapper.writeValueAsString(new OppdaterJournalpostResponse(journalpostId)))
         )
@@ -100,7 +101,7 @@ public class Stubs {
                 ) + "/" + path
             )
         ).willReturn(
-            baseResponse()
+            aClosedJsonResponse()
                 .withStatus(HttpStatus.OK.value())
         )
     );
@@ -113,7 +114,7 @@ public class Stubs {
                 "/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" + journalpostId + "/ferdigstill"
             )
         ).willReturn(
-            baseResponse()
+            aClosedJsonResponse()
                 .withStatus(HttpStatus.OK.value())
         )
     );
@@ -126,7 +127,7 @@ public class Stubs {
                 "/dokarkivproxy" + String.format(DokarkivProxyConsumer.URL_KNYTT_TIL_ANNEN_SAK, journalpostId)
             )
         ).willReturn(
-            baseResponse()
+            aClosedJsonResponse()
                 .withStatus(HttpStatus.OK.value())
         )
     );
@@ -139,10 +140,10 @@ public class Stubs {
   public void mockSafResponseHentJournalpost(String filename, HttpStatus status) {
     stubFor(
         post(urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query journalpost")).willReturn(
-            baseResponse()
+            aClosedJsonResponse()
                 .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                 .withStatus(status.value())
-                .withBodyFile("json/"+filename)
+                .withBodyFile("json/" + filename)
         )
     );
   }
@@ -151,7 +152,7 @@ public class Stubs {
     stubFor(
         post(urlEqualTo("/saf/"))
             .withRequestBody(new ContainsPattern("query tilknyttedeJournalposter")).willReturn(
-                baseResponse()
+                aClosedJsonResponse()
                     .withStatus(httpStatus.value())
                     .withBodyFile("json/tilknyttedeJournalposter.json")
             )
@@ -162,7 +163,7 @@ public class Stubs {
     stubFor(
         post(urlEqualTo("/saf/"))
             .withRequestBody(new ContainsPattern("query dokumentoversiktFagsak")).willReturn(
-                baseResponse()
+                aClosedJsonResponse()
                     .withStatus(status.value())
                     .withBodyFile("json/dokumentoversiktFagsakQueryResponse.json")
             )
@@ -173,7 +174,7 @@ public class Stubs {
     try {
       stubFor(
           get(urlMatching("/person/.*")).willReturn(
-              baseResponse()
+              aClosedJsonResponse()
                   .withStatus(status.value())
                   .withBody(new ObjectMapper().writeValueAsString(personResponse))
           )
@@ -185,19 +186,20 @@ public class Stubs {
 
   public static class VerifyStub {
 
-    public void verifyDokarkivOppdaterRequest(Long journalpostId, String ...contains) {
-      var requestPattern =    putRequestedFor(urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + '/' + journalpostId));
+    public void dokarkivOppdaterKalt(Long journalpostId, String... contains) {
+      var requestPattern = putRequestedFor(urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + '/' + journalpostId));
       Arrays.stream(contains).forEach(contain -> requestPattern.withRequestBody(new ContainsPattern(contain)));
       verify(requestPattern);
     }
 
-    public void verifyPersonRequested() {
+    public void bidragPersonKalt() {
       verify(
           getRequestedFor(urlMatching("/person/.*"))
       );
     }
 
-    public void verifyDokarkivProxyTilknyttSakerRequested(Integer times, Long journalpostId, String ...contains){
+
+    private void dokarkivProxyTilknyttSakerKalt(Integer times, Long journalpostId, String... contains) {
       var verify = putRequestedFor(
           urlMatching(
               "/dokarkivproxy" + String.format(DokarkivProxyConsumer.URL_KNYTT_TIL_ANNEN_SAK, journalpostId)
@@ -207,11 +209,15 @@ public class Stubs {
       verify(exactly(times), verify);
     }
 
-    public void verifyDokarkivProxyTilknyttSakerRequested(Long journalpostId, String ...contains){
-      verifyDokarkivProxyTilknyttSakerRequested(1, journalpostId, contains);
+    public void dokarkivProxyTilknyttSakerIkkeKalt(Long journalpostId, String... contains) {
+      dokarkivProxyTilknyttSakerKalt(0, journalpostId, contains);
     }
 
-    public void verifyDokarkivFerdigstillRequested(Integer times, Long journalpostId){
+    public void dokarkivProxyTilknyttSakerKalt(Long journalpostId, String... contains) {
+      dokarkivProxyTilknyttSakerKalt(1, journalpostId, contains);
+    }
+
+    private void dokarkivFerdigstillKalt(Integer times, Long journalpostId) {
       verify(exactly(times), patchRequestedFor(
           urlMatching(
               "/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" + journalpostId + "/ferdigstill"
@@ -219,11 +225,15 @@ public class Stubs {
       ));
     }
 
-    public void verifyDokarkivFerdigstillRequested(Long journalpostId){
-      verifyDokarkivFerdigstillRequested(1, journalpostId);
+    public void dokarkivFerdigstillIkkeKalt(Long journalpostId) {
+      dokarkivFerdigstillKalt(0, journalpostId);
     }
 
-    public void verifyDokarkivFeilregistrerRequest(String path, Long journalpostId) {
+    public void dokarkivFerdigstillKalt(Long journalpostId) {
+      dokarkivFerdigstillKalt(1, journalpostId);
+    }
+
+    public void dokarkivFeilregistrerKalt(String path, Long journalpostId) {
       verify(
           patchRequestedFor(urlMatching("/dokarkiv" + String.format(
               DokarkivConsumer.URL_JOURNALPOSTAPI_V1_FEILREGISTRER,
@@ -232,23 +242,27 @@ public class Stubs {
       );
     }
 
-    public void verifySafHentJournalpostRequested(){
+    public void harEnSafKallEtterHentJournalpost() {
       verify(
           postRequestedFor(urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query journalpost"))
       );
     }
 
-    public void verifySafDokumentOversiktFagsakRequested(){
+    public void harSafEnKallEtterDokumentOversiktFagsak() {
       verify(
           postRequestedFor(urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query dokumentoversiktFagsak"))
       );
     }
 
-    public void verifySafTilknyttedeJournalpostedRequested(){
-      verifySafTilknyttedeJournalpostedRequested(1);
+    public void harEnSafKallEtterTilknyttedeJournalposter() {
+      harEnSafKallEtterTilknyttedeJournalposter(1);
     }
 
-    public void verifySafTilknyttedeJournalpostedRequested(Integer times){
+    public void harIkkeEnSafKallEtterTilknyttedeJournalposter() {
+      harEnSafKallEtterTilknyttedeJournalposter(0);
+    }
+
+    private void harEnSafKallEtterTilknyttedeJournalposter(Integer times) {
       verify(exactly(times),
           postRequestedFor(urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query tilknyttedeJournalposter"))
       );

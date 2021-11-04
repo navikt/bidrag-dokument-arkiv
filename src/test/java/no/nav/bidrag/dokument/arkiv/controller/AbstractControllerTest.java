@@ -29,6 +29,7 @@ import org.springframework.test.context.ActiveProfiles;
 @AutoConfigureWireMock(port = 0)
 @EnableMockOAuth2Server
 public abstract class AbstractControllerTest {
+
   protected String PERSON_IDENT = "12345678910";
   protected String AKTOR_IDENT = "92345678910";
   protected String responseJournalpostJson = "journalpostSafResponse.json";
@@ -50,13 +51,13 @@ public abstract class AbstractControllerTest {
 
 
   @BeforeEach
-  public void initMocks(){
+  public void initMocks() {
     stubs.mockSts();
     stubs.mockBidragOrganisasjonSaksbehandler();
   }
 
   @AfterEach
-  public void resetMocks(){
+  public void resetMocks() {
     WireMock.reset();
     WireMock.resetToDefault();
   }

@@ -75,7 +75,7 @@ public class JournalpostService {
     return Optional.ofNullable(dokumentInfoId).map(safConsumer::finnTilknyttedeJournalposter).orElse(new ArrayList<>());
   }
 
-  public Journalpost populateWithTilknyttedeSaker(Journalpost journalpost){
+  public Journalpost populerMedTilknyttedeSaker(Journalpost journalpost){
       var journalpostFagsakId = journalpost.getSak() != null ? journalpost.getSak().getFagsakId() : "";
       var tilknytteteJournalposter = hentTilknyttedeJournalposter(journalpost);
       var saker = tilknytteteJournalposter.stream()
@@ -93,12 +93,12 @@ public class JournalpostService {
 
   public Optional<Journalpost> hentJournalpostMedFnr(Long journalpostId, String saksummer) {
     var journalpost = hentJournalpost(journalpostId, saksummer);
-    return journalpost.map(this::convertAktoerIdToFnr);
+    return journalpost.map(this::konverterAktoerIdTilFnr);
   }
 
   public Optional<Journalpost> hentJournalpostMedAktorId(Long journalpostId) {
     var journalpost = hentJournalpost(journalpostId);
-    return journalpost.map(this::convertFnrToAktorId);
+    return journalpost.map(this::konverterFnrTilAktorId);
   }
 
   public List<Journalpost> finnJournalposterForSaksnummer(String saksnummer, String fagomrade) {
@@ -107,7 +107,7 @@ public class JournalpostService {
 
   public List<JournalpostDto> finnJournalposter(String saksnummer, String fagomrade) {
     return finnJournalposterForSaksnummer(saksnummer, fagomrade).stream()
-        .map((this::convertAktoerIdToFnr))
+        .map((this::konverterAktoerIdTilFnr))
         .map(Journalpost::tilJournalpostDto)
         .collect(Collectors.toList());
   }
@@ -118,8 +118,8 @@ public class JournalpostService {
     );
     var oppdatertJournalpostResponse = lagreJournalpost(journalpostId, endreJournalpostCommand, journalpost);
 
-    maybeJournalfoerJournalpost(endreJournalpostCommand, journalpost);
-    maybeTilknyttSakerTilJournalpost(endreJournalpostCommand, journalpost);
+    journalfoerJournalpostNarMottaksregistrert(endreJournalpostCommand, journalpost);
+    tilknyttSakerTilJournalfoertJournalpost(endreJournalpostCommand, journalpost);
 
     return HttpResponse.from(
         oppdatertJournalpostResponse.fetchHeaders(),
@@ -127,7 +127,7 @@ public class JournalpostService {
     );
   }
 
-  private Journalpost convertAktoerIdToFnr(Journalpost journalpost) {
+  private Journalpost konverterAktoerIdTilFnr(Journalpost journalpost) {
     var bruker = journalpost.getBruker();
     if (Objects.isNull(bruker) || !journalpost.getBruker().isAktoerId()) {
       return journalpost;
@@ -139,7 +139,7 @@ public class JournalpostService {
     return journalpost;
   }
 
-  private Journalpost convertFnrToAktorId(Journalpost journalpost) {
+  private Journalpost konverterFnrTilAktorId(Journalpost journalpost) {
     var bruker = journalpost.getBruker();
     if (Objects.isNull(bruker) || journalpost.getBruker().isAktoerId()) {
       return journalpost;
@@ -173,22 +173,24 @@ public class JournalpostService {
       journalpost.setSak(new Sak(oppdaterJournalpostRequest.getSak().getFagsakId()));
     }
 
-    hendelserProducer.publishJournalpostUpdated(journalpostId);
+    if (endreJournalpostCommand.harGjelder()){
+      hendelserProducer.publishJournalpostUpdated(journalpostId);
+    }
 
     return oppdatertJournalpostResponse;
   }
 
-  private void maybeJournalfoerJournalpost(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
+  private void journalfoerJournalpostNarMottaksregistrert(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
     if (endreJournalpostCommand.skalJournalfores() && journalpost.isStatusMottatt()) {
       var journalpostId = journalpost.hentJournalpostIdLong();
       journalfoerJournalpost(journalpostId, endreJournalpostCommand);
       journalpost.setJournalstatus(JournalStatus.JOURNALFOERT);
     }
-
   }
-  private void maybeTilknyttSakerTilJournalpost(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
+
+  private void tilknyttSakerTilJournalfoertJournalpost(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
     if (journalpost.isStatusJournalfort()) {
-      populateWithTilknyttedeSaker(journalpost);
+      populerMedTilknyttedeSaker(journalpost);
       endreJournalpostCommand.hentTilknyttetSaker().stream()
           .filter(sak -> !journalpost.hentTilknyttetSaker().contains(sak))
           .collect(Collectors.toSet())

@@ -51,7 +51,7 @@ data class Journalpost(
             else -> null
         }
     }
-    fun hasJournalforendeEnhet(enhet: String) = journalforendeEnhet == enhet
+    fun harJournalforendeEnhetLik(enhet: String) = journalforendeEnhet == enhet
     fun hentJournalpostIdLong() = journalpostId?.toLong()
     fun hentJournalpostIdMedPrefix() = "JOARK-"+journalpostId
     fun hentDatoJournalfort(): LocalDate? {
@@ -205,7 +205,7 @@ data class EndreJournalpostCommandIntern(
     fun skalJournalfores() = endreJournalpostCommand.skalJournalfores
     fun hentAvsenderNavn(journalpost: Journalpost) = endreJournalpostCommand.avsenderNavn ?: journalpost.hentAvsenderNavn()
     fun harEnTilknyttetSak(): Boolean = endreJournalpostCommand.tilknyttSaker.isNotEmpty()
-
+    fun harGjelder(): Boolean = endreJournalpostCommand.gjelder != null
     fun hentTilknyttetSak() = endreJournalpostCommand.tilknyttSaker.first()
     fun hentTilknyttetSaker() = endreJournalpostCommand.tilknyttSaker
     fun hentFagomrade() = endreJournalpostCommand.fagomrade
