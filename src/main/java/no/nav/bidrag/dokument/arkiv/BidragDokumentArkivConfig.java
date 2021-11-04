@@ -11,6 +11,7 @@ import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivProxyConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
+import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
@@ -23,6 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RootUriTemplateHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -73,20 +75,21 @@ public class BidragDokumentArkivConfig {
         ResourceByDiscriminator<SafConsumer> safConsumers,
         ResourceByDiscriminator<PersonConsumer> personConsumers,
         ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers,
-        DokarkivProxyConsumer dokarkivProxyConsumer
+        DokarkivProxyConsumer dokarkivProxyConsumer,
+        @Lazy HendelserProducer hendelserProducer
     ) {
         var journalpostServiceRegularUser = new JournalpostService(
             safConsumers.get(Discriminator.REGULAR_USER),
             personConsumers.get(Discriminator.REGULAR_USER),
             dokarkivConsumers.get(Discriminator.REGULAR_USER),
-            dokarkivProxyConsumer
-        );
+            dokarkivProxyConsumer,
+            hendelserProducer);
         var journalpostServiceServiceUser = new JournalpostService(
             safConsumers.get(Discriminator.SERVICE_USER),
             personConsumers.get(Discriminator.SERVICE_USER),
             dokarkivConsumers.get(Discriminator.SERVICE_USER),
-            dokarkivProxyConsumer
-        );
+            dokarkivProxyConsumer,
+            hendelserProducer);
         var journalpostServices = new HashMap<Discriminator, JournalpostService>();
         journalpostServices.put(Discriminator.REGULAR_USER, journalpostServiceRegularUser);
         journalpostServices.put(Discriminator.SERVICE_USER, journalpostServiceServiceUser);

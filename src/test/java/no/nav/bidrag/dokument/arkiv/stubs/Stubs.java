@@ -1,9 +1,9 @@
 package no.nav.bidrag.dokument.arkiv.stubs;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.exactly;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly;
 import static com.github.tomakehurst.wiremock.client.WireMock.patch;
 import static com.github.tomakehurst.wiremock.client.WireMock.patchRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
@@ -204,7 +204,7 @@ public class Stubs {
           )
       );
       Arrays.stream(contains).forEach(contain -> verify.withRequestBody(new ContainsPattern(contain)));
-      verify(moreThanOrExactly(times), verify);
+      verify(exactly(times), verify);
     }
 
     public void verifyDokarkivProxyTilknyttSakerRequested(Long journalpostId, String ...contains){
@@ -212,7 +212,7 @@ public class Stubs {
     }
 
     public void verifyDokarkivFerdigstillRequested(Integer times, Long journalpostId){
-      verify(moreThanOrExactly(times), patchRequestedFor(
+      verify(exactly(times), patchRequestedFor(
           urlMatching(
               "/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" + journalpostId + "/ferdigstill"
           )
@@ -249,7 +249,7 @@ public class Stubs {
     }
 
     public void verifySafTilknyttedeJournalpostedRequested(Integer times){
-      verify(moreThanOrExactly(times),
+      verify(exactly(times),
           postRequestedFor(urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query tilknyttedeJournalposter"))
       );
     }

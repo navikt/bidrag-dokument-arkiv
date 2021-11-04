@@ -112,7 +112,7 @@ class JournalpostControllerTest extends AbstractControllerTest  {
     stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.BAD_REQUEST);
 
     var responseEntity = httpHeaderTestRestTemplate.exchange(
-        initUrl() + "/journal/JOARK-" + journalpostIdFraJson + "?saksnummer=5276661",
+        initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
         HttpMethod.GET,
         null,
         JournalpostResponse.class
@@ -163,7 +163,7 @@ class JournalpostControllerTest extends AbstractControllerTest  {
   void skalHenteJournalpostNarDenEksisterer() throws IOException {
     var journalpostIdFraJson = 201028011;
 
-    stubs.mockSafResponseHentJournalpost(responseJournalpostJson, HttpStatus.OK);
+    stubs.mockSafResponseHentJournalpost(journalpostJournalfortSafResponse, HttpStatus.OK);
     stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK);
     stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
 
@@ -224,6 +224,7 @@ class JournalpostControllerTest extends AbstractControllerTest  {
 
     var endreJournalpostCommand = createEndreJournalpostCommand();
     endreJournalpostCommand.setSkalJournalfores(true);
+    endreJournalpostCommand.setTilknyttSaker(Arrays.asList("5276661"));
 
     stubs.mockSafResponseHentJournalpost(HttpStatus.OK);
     stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK);
@@ -291,7 +292,7 @@ class JournalpostControllerTest extends AbstractControllerTest  {
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
         ()->stubs.verifyStub.verifyDokarkivFerdigstillRequested(journalpostIdFraJson),
-        ()->stubs.verifyStub.verifyDokarkivProxyTilknyttSakerRequested(journalpostIdFraJson, saksnummer1, "\"journalfoerendeEnhet\":\"4806\""),
+        ()->stubs.verifyStub.verifyDokarkivProxyTilknyttSakerRequested(0, journalpostIdFraJson, saksnummer1),
         ()->stubs.verifyStub.verifyDokarkivProxyTilknyttSakerRequested(journalpostIdFraJson, saksnummer2, "\"journalfoerendeEnhet\":\"4806\"")
     );
   }

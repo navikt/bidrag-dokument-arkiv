@@ -1,5 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -22,6 +23,7 @@ import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.arkiv.dto.Sak;
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost;
+import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
 import no.nav.bidrag.dokument.arkiv.model.FerdigstillFeiletException;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.model.LagreJournalpostFeiletException;
@@ -39,13 +41,15 @@ public class JournalpostService {
   private final PersonConsumer personConsumer;
   private final DokarkivConsumer dokarkivConsumer;
   private final DokarkivProxyConsumer dokarkivProxyConsumer;
+  private final HendelserProducer hendelserProducer;
 
   public JournalpostService(SafConsumer safConsumer, PersonConsumer personConsumer, DokarkivConsumer dokarkivConsumer,
-      DokarkivProxyConsumer dokarkivProxyConsumer) {
+      DokarkivProxyConsumer dokarkivProxyConsumer, HendelserProducer hendelserProducer) {
     this.safConsumer = safConsumer;
     this.personConsumer = personConsumer;
     this.dokarkivConsumer = dokarkivConsumer;
     this.dokarkivProxyConsumer = dokarkivProxyConsumer;
+    this.hendelserProducer = hendelserProducer;
   }
 
   public Optional<Journalpost> hentJournalpost(Long journalpostId) {
@@ -62,26 +66,29 @@ public class JournalpostService {
     return Optional.of(journalpost);
   }
 
-  public Journalpost populateWithTilknyttedeSaker(Journalpost journalpost){
+  public List<TilknyttetJournalpost> hentTilknyttedeJournalposter(Journalpost journalpost){
     if (journalpost.getDokumenter().isEmpty() || journalpost.getSak() == null){
-      return journalpost;
+      return List.of();
     }
     var dokumentInfoId = journalpost.getDokumenter().get(0).getDokumentInfoId();
-    if (dokumentInfoId != null){
-      LOGGER.info(String.format("Henter tilknyttede saker for journalpost %s med dokumentinfoId %s", journalpost.getJournalpostId(), dokumentInfoId));
-      var tilknytteteJournalposter = safConsumer.finnTilknyttedeJournalposter(dokumentInfoId);
+    LOGGER.info(String.format("Henter tilknyttede journalposter for journalpost %s med dokumentinfoId %s", journalpost.getJournalpostId(), dokumentInfoId));
+    return Optional.ofNullable(dokumentInfoId).map(safConsumer::finnTilknyttedeJournalposter).orElse(new ArrayList<>());
+  }
+
+  public Journalpost populateWithTilknyttedeSaker(Journalpost journalpost){
+      var journalpostFagsakId = journalpost.getSak() != null ? journalpost.getSak().getFagsakId() : "";
+      var tilknytteteJournalposter = hentTilknyttedeJournalposter(journalpost);
       var saker = tilknytteteJournalposter.stream()
           .map(TilknyttetJournalpost::getSak)
           .filter(Objects::nonNull)
           .map(Sak::getFagsakId)
           .filter(Objects::nonNull)
-          .filter(fagsakId -> !Objects.equals(fagsakId, journalpost.getSak().getFagsakId()))
+          .filter(fagsakId -> !Objects.equals(fagsakId, journalpostFagsakId))
           .collect(Collectors.toList());
       var sakerNoDuplicates = new HashSet<>(saker).stream().toList();
       LOGGER.info("Fant {} saker for journalpost {}. Journalposten har {} saker etter fjerning av duplikater", saker.size() + 1, journalpost.getJournalpostId(), sakerNoDuplicates.size() + 1);
       journalpost.setTilknyttedeSaker(sakerNoDuplicates);
-    }
-    return journalpost;
+      return journalpost;
   }
 
   public Optional<Journalpost> hentJournalpostMedFnr(Long journalpostId, String saksummer) {
@@ -94,12 +101,30 @@ public class JournalpostService {
     return journalpost.map(this::convertFnrToAktorId);
   }
 
+  public List<Journalpost> finnJournalposterForSaksnummer(String saksnummer, String fagomrade) {
+    return safConsumer.finnJournalposter(saksnummer, fagomrade);
+  }
+
   public List<JournalpostDto> finnJournalposter(String saksnummer, String fagomrade) {
-    var journalposterResponse = safConsumer.finnJournalposter(saksnummer, fagomrade);
-    return journalposterResponse.stream()
+    return finnJournalposterForSaksnummer(saksnummer, fagomrade).stream()
         .map((this::convertAktoerIdToFnr))
         .map(Journalpost::tilJournalpostDto)
         .collect(Collectors.toList());
+  }
+
+  public HttpResponse<Void> endre(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand) {
+    var journalpost = hentJournalpost(journalpostId).orElseThrow(
+        () -> new JournalpostIkkeFunnetException("Kunne ikke finne journalpost med id: " + journalpostId)
+    );
+    var oppdatertJournalpostResponse = lagreJournalpost(journalpostId, endreJournalpostCommand, journalpost);
+
+    maybeJournalfoerJournalpost(endreJournalpostCommand, journalpost);
+    maybeTilknyttSakerTilJournalpost(endreJournalpostCommand, journalpost);
+
+    return HttpResponse.from(
+        oppdatertJournalpostResponse.fetchHeaders(),
+        oppdatertJournalpostResponse.getResponseEntity().getStatusCode()
+    );
   }
 
   private Journalpost convertAktoerIdToFnr(Journalpost journalpost) {
@@ -134,21 +159,6 @@ public class JournalpostService {
     return personResponse.getResponseEntity().getBody();
   }
 
-  public HttpResponse<Void> endre(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand) {
-    var journalpost = hentJournalpost(journalpostId).orElseThrow(
-        () -> new JournalpostIkkeFunnetException("Kunne ikke finne journalpost med id: " + journalpostId)
-    );
-    var oppdatertJournalpostResponse = lagreJournalpost(journalpostId, endreJournalpostCommand, journalpost);
-
-    maybeJournalfoerJournalpost(endreJournalpostCommand, journalpost);
-    maybeTilknyttSakerTilJournalpost(endreJournalpostCommand, journalpost);
-
-    return HttpResponse.from(
-        oppdatertJournalpostResponse.fetchHeaders(),
-        oppdatertJournalpostResponse.getResponseEntity().getStatusCode()
-    );
-  }
-
   private HttpResponse<OppdaterJournalpostResponse> lagreJournalpost(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
     var oppdaterJournalpostRequest = new LagreJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost);
     var oppdatertJournalpostResponse = dokarkivConsumer.endre(oppdaterJournalpostRequest);
@@ -158,6 +168,12 @@ public class JournalpostService {
     if (!oppdatertJournalpostResponse.is2xxSuccessful()){
       throw new LagreJournalpostFeiletException(String.format("Lagre journalpost feilet for journalpostid %s", journalpostId));
     }
+
+    if (Objects.nonNull(oppdaterJournalpostRequest.getSak())){
+      journalpost.setSak(new Sak(oppdaterJournalpostRequest.getSak().getFagsakId()));
+    }
+
+    hendelserProducer.publishJournalpostUpdated(journalpostId);
 
     return oppdatertJournalpostResponse;
   }
