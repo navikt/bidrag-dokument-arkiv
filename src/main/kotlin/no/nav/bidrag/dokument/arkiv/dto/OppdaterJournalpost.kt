@@ -3,21 +3,30 @@ package no.nav.bidrag.dokument.arkiv.dto
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
+import java.time.format.DateTimeFormatter
 
 data class LagreJournalpostRequest(private var journalpostId: Long, private var endreJournalpostCommand: EndreJournalpostCommandIntern, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId) {
     init {
         avsenderMottaker = AvsenderMottaker(endreJournalpostCommand.hentAvsenderNavn(journalpost))
-        val saksnummer = if (endreJournalpostCommand.harEnTilknyttetSak()) {
-            endreJournalpostCommand.hentTilknyttetSak()
-        } else {
-            journalpost.sak?.fagsakId
-        }
-        bruker = Bruker(endreJournalpostCommand.hentGjelder(), endreJournalpostCommand.hentGjelderType())
         tittel = endreJournalpostCommand.endreJournalpostCommand.tittel
-        sak = if (saksnummer != null) Sak(saksnummer) else null
-        tema = if (endreJournalpostCommand.hentFagomrade() != null) endreJournalpostCommand.hentFagomrade() else journalpost.tema
         dokumenter = endreJournalpostCommand.endreJournalpostCommand.endreDokumenter
             .map { dokument -> Dokument(dokument.dokId.toString(), dokument.tittel, dokument.brevkode) }
+        datoMottatt = endreJournalpostCommand.endreJournalpostCommand.dokumentDato?.format(DateTimeFormatter.ofPattern("YYYY-MM-dd"))
+
+        if (journalpost.isStatusMottatt()) updateValuesForMottattJournalpost()
+    }
+
+    fun updateValuesForMottattJournalpost(){
+        val journalpostSak = if (journalpost.hasSak()) journalpost.sak?.fagsakId else null
+        val saksnummer = if (journalpostSak == null && endreJournalpostCommand.harEnTilknyttetSak()) {
+            endreJournalpostCommand.hentTilknyttetSak()
+        } else {
+            journalpostSak
+        }
+        sak = if (saksnummer != null) Sak(saksnummer) else null
+
+        bruker = if (endreJournalpostCommand.hentGjelder()!=null) Bruker(endreJournalpostCommand.hentGjelder(), endreJournalpostCommand.hentGjelderType()) else Bruker()
+        tema = if (endreJournalpostCommand.hentFagomrade() != null) endreJournalpostCommand.hentFagomrade() else journalpost.tema
     }
 }
 
@@ -28,6 +37,7 @@ sealed class OppdaterJournalpostRequest(private var journalpostId: Long? = -1) {
     open var tittel: String? = null
     open var journalfoerendeEnhet: String? = null
     open var tema: String? = null
+    open var datoMottatt: String? = null
     open var bruker: Bruker? = null
     open var dokumenter = emptyList<Dokument>()
     open var avsenderMottaker: AvsenderMottaker? = null

@@ -57,11 +57,12 @@ public class HendelseListener {
 
   private void registrerOppgaveForHendelse(@Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
     var hendelsesType = HendelsesType.from(journalfoeringHendelseRecord.getHendelsesType()).orElse(null);
-    if (hendelsesType == HendelsesType.JOURNALPOST_MOTTATT) {
-      LOGGER.info("Behandler journalpost hendelse {} med data {}", hendelsesType, journalfoeringHendelseRecord);
-      behandleHendelse(hendelsesType, journalfoeringHendelseRecord);
-    } else {
-      LOGGER.info("Ignorer hendelse {} med data {}", hendelsesType, journalfoeringHendelseRecord);
+    switch (hendelsesType){
+      case JOURNALPOST_MOTTATT, ENDELIG_JOURNALFORT, TEMA_ENDRET -> {
+        LOGGER.info("Behandler journalpost hendelse {} med data {}", hendelsesType, journalfoeringHendelseRecord);
+        behandleHendelse(hendelsesType, journalfoeringHendelseRecord);
+      }
+      default -> LOGGER.info("Ignorer hendelse {} med data {}", hendelsesType, journalfoeringHendelseRecord);
     }
   }
 
@@ -107,7 +108,7 @@ public class HendelseListener {
     var journalpost = hentJournalpost(journalpostId);
     var brukerId = hentBrukerId(journalpost);
     var geografiskEnhet = hentGeografiskEnhet(brukerId);
-    if (!journalpost.hasJournalforendeEnhet(geografiskEnhet)){
+    if (journalpost.isStatusMottatt() && !journalpost.harJournalforendeEnhetLik(geografiskEnhet)){
       var response = dokarkivConsumer.endre(new OverforEnhetRequest(journalpostId, geografiskEnhet));
       if (response.is2xxSuccessful()) {
         journalpost.setJournalforendeEnhet(geografiskEnhet);

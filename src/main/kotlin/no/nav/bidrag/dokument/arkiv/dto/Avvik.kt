@@ -34,7 +34,8 @@ data class AvvikshendelseIntern(
     )
 
     fun toOverforEnhetRequest() = OverforEnhetRequest(journalpostId, enhetsnummerNytt)
-    fun toEndreFagomradeRequest() = EndreFagomradeRequest(journalpostId, nyttFagomrade)
+    fun toEndreFagomradeRequest() = toEndreFagomradeRequest(journalpostId)
+    fun toEndreFagomradeRequest(journalpostId: Long) = EndreFagomradeRequest(journalpostId, nyttFagomrade)
 }
 
 data class OverforEnhetRequest(private var journalpostId: Long, override var journalfoerendeEnhet: String?): OppdaterJournalpostRequest(journalpostId)

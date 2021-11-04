@@ -177,7 +177,7 @@ public class JournalpostController {
     }
 
     return journalpostService.hentJournalpostMedFnr(Long.valueOf(journalpostId), saksnummer)
-        .map(journalpostService::populateWithTilknyttedeSaker)
+        .map(journalpostService::populerMedTilknyttedeSaker)
         .map(journalpost -> ResponseEntity.ok(journalpost.tilJournalpostResponse()))
         .orElse(ResponseEntity.badRequest().build());
   }
