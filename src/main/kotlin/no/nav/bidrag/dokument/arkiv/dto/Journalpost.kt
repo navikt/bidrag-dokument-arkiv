@@ -34,26 +34,28 @@ data class Journalpost(
     var tilknyttedeSaker: List<String> = emptyList()
 ) {
     fun hentJournalStatus(): String? {
-        return when(journalstatus){
-            JournalStatus.MOTTATT->"M"
-            JournalStatus.JOURNALFOERT->"J"
-            JournalStatus.FERDIGSTILT->"FS"
-            JournalStatus.RESERVERT->"R"
-            JournalStatus.UTGAAR->"U"
-            JournalStatus.AVBRUTT->"A"
+        return when (journalstatus) {
+            JournalStatus.MOTTATT -> "M"
+            JournalStatus.JOURNALFOERT -> "J"
+            JournalStatus.FERDIGSTILT -> "FS"
+            JournalStatus.RESERVERT -> "R"
+            JournalStatus.UTGAAR -> "U"
+            JournalStatus.AVBRUTT -> "A"
             else -> journalstatus?.name
         }
     }
+
     fun hentKilde(): Kanal? {
-        return when(kanal){
-            "NAV_NO"->Kanal.NAV_NO
-            "SKAN_NETS"->Kanal.SKAN_NETS
+        return when (kanal) {
+            "NAV_NO" -> Kanal.NAV_NO
+            "SKAN_NETS" -> Kanal.SKAN_NETS
             else -> null
         }
     }
+
     fun harJournalforendeEnhetLik(enhet: String) = journalforendeEnhet == enhet
     fun hentJournalpostIdLong() = journalpostId?.toLong()
-    fun hentJournalpostIdMedPrefix() = "JOARK-"+journalpostId
+    fun hentJournalpostIdMedPrefix() = "JOARK-" + journalpostId
     fun hentDatoJournalfort(): LocalDate? {
         val journalfort = relevanteDatoer
             .find { it.datotype == DATO_JOURNALFORT }
@@ -126,7 +128,7 @@ data class Journalpost(
         return registrert?.somDato()
     }
 
-    private fun erTilknyttetSak(saksnummer: String?) = sak?.fagsakId == saksnummer
+    private fun erTilknyttetSak(saksnummer: String?) = hentTilknyttetSaker().filter { sakid -> sakid == saksnummer }.isNotEmpty()
     fun hentAvsenderNavn() = avsenderMottaker?.navn
     fun erIkkeTilknyttetSakNarOppgitt(saksnummer: String?) = if (saksnummer == null) false else !erTilknyttetSak(saksnummer)
 }
@@ -139,6 +141,7 @@ enum class BrukerType {
     AKTOERID,
     FNR
 }
+
 data class Bruker(
     var id: String? = null,
     var type: String? = null
@@ -146,6 +149,7 @@ data class Bruker(
     fun tilAktorDto(): AktorDto {
         return if (id != null) AktorDto(id!!, type ?: BrukerType.FNR.name) else throw JournalpostDataException("ingen id i $this")
     }
+
     fun isAktoerId(): Boolean {
         return this.type == BrukerType.AKTOERID.name
     }
@@ -180,7 +184,7 @@ data class Sak(
     var sakstype: String? = null,
     var tema: String? = null
 ) {
-    constructor(fagsakId: String?): this(fagsakId, null, null, null)
+    constructor(fagsakId: String?) : this(fagsakId, null, null, null)
 }
 
 enum class JournalStatus {

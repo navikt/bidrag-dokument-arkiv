@@ -53,17 +53,8 @@ public class JournalpostService {
   }
 
   public Optional<Journalpost> hentJournalpost(Long journalpostId) {
-    return hentJournalpost(journalpostId, null);
-  }
-
-  public Optional<Journalpost> hentJournalpost(Long journalpostId, String saksnummer) {
     var journalpost = safConsumer.hentJournalpost(journalpostId);
-
-    if (Objects.isNull(journalpost) || journalpost.erIkkeTilknyttetSakNarOppgitt(saksnummer)) {
-      return Optional.empty();
-    }
-
-    return Optional.of(journalpost);
+    return Optional.ofNullable(journalpost);
   }
 
   public List<TilknyttetJournalpost> hentTilknyttedeJournalposter(Journalpost journalpost){
@@ -91,8 +82,8 @@ public class JournalpostService {
       return journalpost;
   }
 
-  public Optional<Journalpost> hentJournalpostMedFnr(Long journalpostId, String saksummer) {
-    var journalpost = hentJournalpost(journalpostId, saksummer);
+  public Optional<Journalpost> hentJournalpostMedFnr(Long journalpostId) {
+    var journalpost = hentJournalpost(journalpostId);
     return journalpost.map(this::konverterAktoerIdTilFnr);
   }
 

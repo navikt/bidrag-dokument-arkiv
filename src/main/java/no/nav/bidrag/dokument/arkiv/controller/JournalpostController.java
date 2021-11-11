@@ -176,8 +176,9 @@ public class JournalpostController {
           .build();
     }
 
-    return journalpostService.hentJournalpostMedFnr(Long.valueOf(journalpostId), saksnummer)
+    return journalpostService.hentJournalpostMedFnr(Long.valueOf(journalpostId))
         .map(journalpostService::populerMedTilknyttedeSaker)
+        .map(journalpost -> journalpost.erIkkeTilknyttetSakNarOppgitt(saksnummer) ? null : journalpost)
         .map(journalpost -> ResponseEntity.ok(journalpost.tilJournalpostResponse()))
         .orElse(ResponseEntity.badRequest().build());
   }
