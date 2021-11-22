@@ -16,6 +16,7 @@ data class DokumentoversiktFagsakQuery(val saksnummer: String, val tema: String)
                   dokumentInfoId
                   tittel
                 }
+                kanal
                 journalforendeEnhet
                 journalfortAvNavn
                 journalpostId
