@@ -44,9 +44,14 @@ data class Journalpost(
             else -> journalstatus?.name
         }
     }
+
+    fun isFeilregistrert() = journalstatus == JournalStatus.FEILREGISTRERT
+
     fun hentKilde(): Kanal? {
         return when(kanal){
             "NAV_NO"->Kanal.NAV_NO
+            "NAV_NO_CHAT"->Kanal.NAV_NO
+            "NAV_NO_UINNLOGGET"->Kanal.NAV_NO
             "SKAN_NETS"->Kanal.SKAN_NETS
             else -> null
         }
@@ -86,6 +91,7 @@ data class Journalpost(
             fagomrade = tema,
             kilde = hentKilde(),
             gjelderAktor = bruker?.tilAktorDto(),
+            feilfort = isFeilregistrert(),
             innhold = tittel,
             journalfortDato = hentDatoJournalfort(),
             journalforendeEnhet = journalforendeEnhet,
