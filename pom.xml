@@ -21,14 +21,14 @@
 
     <!-- language -->
     <java.version>17</java.version>
-    <kotlin.version>1.5.31</kotlin.version>
+    <kotlin.version>1.6.0</kotlin.version>
 
     <!-- dependent versions other than from spring-boot -->
-    <bidrag-commons.version>0.5.17.1</bidrag-commons.version>
+    <bidrag-commons.version>0.5.18</bidrag-commons.version>
     <bidrag-commons-test.version>0.2.2</bidrag-commons-test.version>
-    <bidrag-dokument-dto.version>1.0.0</bidrag-dokument-dto.version>
+    <bidrag-dokument-dto.version>1.0.1.1</bidrag-dokument-dto.version>
     <graphq-dgs-client.version>4.9.2</graphq-dgs-client.version>
-    <logback-encoder.version>6.6</logback-encoder.version>
+    <logback-encoder.version>7.0.1</logback-encoder.version>
     <nimbus-jose-jwt.version>9.15.2</nimbus-jose-jwt.version>
     <springdoc-openapi-ui.version>1.5.12</springdoc-openapi-ui.version>
     <springframework-cloud.version>3.0.4</springframework-cloud.version>
@@ -41,7 +41,7 @@
     <maven.compiler.release>${java.version}</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <bidrag-tilgangskontroll.version>1.9.20</bidrag-tilgangskontroll.version>
+    <bidrag-tilgangskontroll.version>1.9.21</bidrag-tilgangskontroll.version>
     <apache-avro-version>1.10.2</apache-avro-version>
     <joark-hendelse.version>67a9be4476b63b7247cfacfaf821ab656bd2a952</joark-hendelse.version>
     <kafka-avro-serializer.version>6.2.1</kafka-avro-serializer.version>
