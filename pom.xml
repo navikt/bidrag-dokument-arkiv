@@ -26,7 +26,7 @@
     <!-- dependent versions other than from spring-boot -->
     <bidrag-commons.version>0.5.18</bidrag-commons.version>
     <bidrag-commons-test.version>0.2.2</bidrag-commons-test.version>
-    <bidrag-dokument-dto.version>1.0.0</bidrag-dokument-dto.version>
+    <bidrag-dokument-dto.version>1.0.1.1</bidrag-dokument-dto.version>
     <graphq-dgs-client.version>4.9.2</graphq-dgs-client.version>
     <logback-encoder.version>7.0.1</logback-encoder.version>
     <nimbus-jose-jwt.version>9.15.2</nimbus-jose-jwt.version>
