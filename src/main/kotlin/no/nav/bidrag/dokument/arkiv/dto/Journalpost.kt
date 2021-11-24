@@ -1,7 +1,11 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.bidrag.dokument.arkiv.model.JournalpostDataException
+import no.nav.bidrag.dokument.arkiv.utils.DateUtils
 import no.nav.bidrag.dokument.dto.AktorDto
 import no.nav.bidrag.dokument.dto.AvvikType
 import no.nav.bidrag.dokument.dto.DokumentDto
@@ -9,12 +13,17 @@ import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
 import no.nav.bidrag.dokument.dto.JournalpostDto
 import no.nav.bidrag.dokument.dto.JournalpostResponse
 import no.nav.bidrag.dokument.dto.Kanal
+import no.nav.bidrag.dokument.dto.ReturDetaljer
+import no.nav.bidrag.dokument.dto.ReturDetaljerLog
+import org.apache.logging.log4j.util.Strings
 import java.time.LocalDate
 import java.util.stream.Collectors.toList
 
+const val RETUR_DETALJER_KEY = "retur"
 private const val DATO_DOKUMENT = "DATO_DOKUMENT"
 private const val DATO_JOURNALFORT = "DATO_JOURNALFOERT"
 private const val DATO_REGISTRERT = "DATO_REGISTRERT"
+private const val DATO_RETUR = "DATO_AVS_RETUR"
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Journalpost(
@@ -30,8 +39,10 @@ data class Journalpost(
     var relevanteDatoer: List<DatoType> = emptyList(),
     var sak: Sak? = null,
     var tema: String? = null,
+    var antallRetur: Int? = null,
     var tittel: String? = null,
-    var tilknyttedeSaker: List<String> = emptyList()
+    var tilknyttedeSaker: List<String> = emptyList(),
+    var tilleggsopplysninger: List<Map<String, String>> = emptyList()
 ) {
     fun hentJournalStatus(): String? {
         return when(journalstatus){
@@ -66,11 +77,69 @@ data class Journalpost(
         return journalfort?.somDato()
     }
 
+    fun hentReturDetaljerLogDO(): List<ReturDetaljerLogDO> {
+        val returDetaljer = tilleggsopplysninger.filter { it["nokkel"]?.contains(RETUR_DETALJER_KEY) ?: false}
+            .filter { Strings.isNotEmpty(it["verdi"]) }
+            .filter {
+                val keySplit = it["nokkel"]!!.split("_")
+                if (keySplit.size > 1) DateUtils.isValid(keySplit[1]) else false
+            }
+            .sortedBy { it["nokkel"]?.get(RETUR_DETALJER_KEY.length) }
+
+        val returDetaljerList: MutableList<ReturDetaljerLogDO> = mutableListOf()
+        returDetaljer.forEach{
+            val dato = DateUtils.parseDate(it["nokkel"]!!.split("_")[1])
+            val beskrivelse = it["verdi"]!!
+            val existing = returDetaljerList.find{ it.dato == dato }
+            if (existing != null){
+                existing.beskrivelse = existing.beskrivelse + beskrivelse
+            } else {
+                returDetaljerList.add(ReturDetaljerLogDO(beskrivelse, dato!!))
+            }
+
+        }
+        return returDetaljerList
+    }
+
+    fun addReturDetaljerLogToTilleggOpplysninger(returDetaljerLogDO: ReturDetaljerLogDO){
+        tilleggsopplysninger = tilleggsopplysninger + returDetaljerLogDO.toMap()
+    }
+
+    fun replaceTilleggsOpplysningerReturDetalj(originalDate: LocalDate, returDetaljerLogDO: ReturDetaljerLogDO){
+        tilleggsopplysninger = hentReturDetaljerLogDO().map { if (it.dato == originalDate) returDetaljerLogDO else it }.flatMap { it.toMap() }
+    }
+
+    fun hasReturDetaljerWithDate(date: LocalDate) = !hentReturDetaljerLogDO().stream().filter { it.dato == date }.findAny().isEmpty
+
+    fun hentReturDetaljerLog(): List<ReturDetaljerLog> {
+        val detaljerLog = hentReturDetaljerLogDO()
+        return detaljerLog.map { ReturDetaljerLog(
+            dato = it.dato,
+            beskrivelse = it.beskrivelse
+        ) }
+    }
+
+    fun hentReturDetaljer(): ReturDetaljer? {
+        if (hentDatoRetur() == null){
+            return null
+        }
+        return ReturDetaljer(
+            dato = hentDatoRetur(),
+            logg = hentReturDetaljerLog(),
+            antall = antallRetur
+        )
+    }
+
     fun hentDatoRegistrert(): LocalDate? {
         val registrert = relevanteDatoer
             .find { it.datotype == DATO_REGISTRERT }
 
         return registrert?.somDato()
+    }
+
+    fun hentDatoRetur(): LocalDate? {
+        val returDato = relevanteDatoer.find { it.datotype == DATO_RETUR }
+        return returDato?.somDato()
     }
 
     fun hentTilknyttetSaker(): List<String> {
@@ -98,12 +167,14 @@ data class Journalpost(
             journalfortAv = journalfortAvNavn,
             journalpostId = "JOARK-$journalpostId",
             journalstatus = hentJournalStatus(),
-            mottattDato = hentDatoRegistrert()
+            mottattDato = hentDatoRegistrert(),
+            returDetaljer = hentReturDetaljer()
         )
     }
 
     fun tilAvvik(): List<AvvikType> {
         val avvikTypeList = mutableListOf<AvvikType>()
+        if (isUtgaaendeDokument()) avvikTypeList.add(AvvikType.REGISTRER_RETUR)
         if (isStatusMottatt() && isInngaaendeDokument()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
         if (!isStatusMottatt() && hasSak() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.FEILFORE_SAK)
@@ -116,6 +187,7 @@ data class Journalpost(
     fun isStatusMottatt(): Boolean = journalstatus == JournalStatus.MOTTATT
     fun isStatusJournalfort(): Boolean = journalstatus == JournalStatus.JOURNALFOERT
     fun isInngaaendeDokument(): Boolean = journalposttype == "I"
+    fun isUtgaaendeDokument(): Boolean = journalposttype == "U"
 
     fun tilJournalpostResponse(): JournalpostResponse {
         val journalpost = tilJournalpostDto()
@@ -137,6 +209,13 @@ data class Journalpost(
     fun erIkkeTilknyttetSakNarOppgitt(saksnummer: String?) = if (saksnummer == null) false else !erTilknyttetSak(saksnummer)
 }
 
+data class ReturDetaljerLogDO(
+    var beskrivelse: String,
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
+    var dato: LocalDate
+) {
+    fun toMap(): List<Map<String, String>> = beskrivelse.chunked(100).mapIndexed{ index, it -> mapOf("nokkel" to RETUR_DETALJER_KEY + index + "_" + DateUtils.formatDate(dato), "verdi" to it) }
+}
 data class AvsenderMottaker(
     var navn: String? = null
 )
@@ -224,3 +303,7 @@ data class TilknyttetJournalpost(
     var journalpostId: Long,
     var sak: Sak?
 )
+
+fun returDetaljerDOListDoToMap(returDetaljerLog: List<ReturDetaljerLogDO>): Map<String, String>{
+    return mapOf("nokkel" to RETUR_DETALJER_KEY, "verdi" to jacksonObjectMapper().registerModule(JavaTimeModule()).writeValueAsString(returDetaljerLog))
+}

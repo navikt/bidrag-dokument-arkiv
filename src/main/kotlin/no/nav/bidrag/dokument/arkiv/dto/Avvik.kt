@@ -1,11 +1,14 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
 import no.nav.bidrag.dokument.arkiv.model.AvvikDetaljException
+import no.nav.bidrag.dokument.arkiv.utils.DateUtils
 import no.nav.bidrag.dokument.dto.AvvikType
 import no.nav.bidrag.dokument.dto.Avvikshendelse
+import java.time.LocalDate
 
 object AvvikDetaljer {
     const val ENHETSNUMMER = "enhetsnummer"
+    const val RETUR_DATO = "returDato"
     const val ENHETSNUMMER_GAMMELT = "gammeltEnhetsnummer"
     const val ENHETSNUMMER_NYTT = "nyttEnhetsnummer"
     const val FAGOMRADE = "fagomrade"
@@ -19,6 +22,7 @@ data class AvvikshendelseIntern(
     var saksnummer: String? = null,
     private val detaljer: Map<String, String?> = HashMap()
 ) {
+    val returDato: String get() = detaljer[AvvikDetaljer.RETUR_DATO] ?: throw AvvikDetaljException(AvvikDetaljer.RETUR_DATO)
     val enhetsnummer: String get() = detaljer[AvvikDetaljer.ENHETSNUMMER] ?: throw AvvikDetaljException(AvvikDetaljer.ENHETSNUMMER)
     val enhetsnummerGammelt: String get() = detaljer[AvvikDetaljer.ENHETSNUMMER] ?: throw AvvikDetaljException(AvvikDetaljer.ENHETSNUMMER_GAMMELT)
     val enhetsnummerNytt: String get() = detaljer[AvvikDetaljer.ENHETSNUMMER_NYTT] ?: throw AvvikDetaljException(AvvikDetaljer.ENHETSNUMMER_NYTT)
@@ -41,3 +45,8 @@ data class AvvikshendelseIntern(
 data class OverforEnhetRequest(private var journalpostId: Long, override var journalfoerendeEnhet: String?): OppdaterJournalpostRequest(journalpostId)
 data class EndreFagomradeRequest(private var journalpostId: Long, override var tema: String?): OppdaterJournalpostRequest(journalpostId)
 data class InngaaendeTilUtgaaendeRequest(private var journalpostId: Long, override var tema: String?): OppdaterJournalpostRequest(journalpostId)
+data class RegistrerReturRequest(private var journalpostId: Long, private var _datoRetur: LocalDate, override var tilleggsopplysninger: List<Map<String, String>>?): OppdaterJournalpostRequest(journalpostId) {
+    init {
+        datoRetur = DateUtils.formatDate(_datoRetur)
+    }
+}

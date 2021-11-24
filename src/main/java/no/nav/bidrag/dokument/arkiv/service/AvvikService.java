@@ -1,11 +1,14 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.AvvikshendelseIntern;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.RegistrerReturRequest;
+import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
 import no.nav.bidrag.dokument.arkiv.model.AvvikNotSupportedException;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
@@ -17,6 +20,7 @@ import no.nav.bidrag.dokument.arkiv.model.UgyldigAvvikException;
 import no.nav.bidrag.dokument.dto.AvvikType;
 import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse;
 import no.nav.bidrag.dokument.dto.JournalpostIkkeFunnetException;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -55,12 +59,23 @@ public class AvvikService {
       case ENDRE_FAGOMRADE -> oppdater(avvikshendelseIntern.toEndreFagomradeRequest());
       case TREKK_JOURNALPOST -> trekkJournalpost(avvikshendelseIntern);
       case FEILFORE_SAK -> feilforSak(avvikshendelseIntern);
+      case REGISTRER_RETUR -> registrerRetur(journalpost, avvikshendelseIntern);
       default -> throw new AvvikNotSupportedException("Avvik %s ikke støttet".formatted(avvikshendelseIntern.getAvvikstype()));
     }
 
     hendelserProducer.publishJournalpostUpdated(journalpost.hentJournalpostIdLong());
 
     return Optional.of(new BehandleAvvikshendelseResponse(avvikshendelseIntern.getAvvikstype()));
+  }
+
+  public void registrerRetur(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
+    var returDato = LocalDate.parse(avvikshendelseIntern.getReturDato());
+    if (journalpost.hasReturDetaljerWithDate(returDato)){
+      throw new UgyldigAvvikException("Journalpost har allerede registrert retur med samme dato");
+    }
+    var beskrivelse = Strings.isNotEmpty(avvikshendelseIntern.getBeskrivelse()) ? avvikshendelseIntern.getBeskrivelse() : "";
+    journalpost.addReturDetaljerLogToTilleggOpplysninger(new ReturDetaljerLogDO(beskrivelse, returDato));
+    oppdater(new RegistrerReturRequest(journalpost.hentJournalpostIdLong(), returDato, journalpost.getTilleggsopplysninger()));
   }
 
   public void trekkJournalpost(AvvikshendelseIntern avvikshendelseIntern){
