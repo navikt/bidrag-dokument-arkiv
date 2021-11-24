@@ -14,8 +14,10 @@ import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.dto.AktorDto;
 import no.nav.bidrag.dokument.dto.EndreDokument;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
+import no.nav.bidrag.dokument.dto.EndreReturDetaljer;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
 import no.nav.bidrag.dokument.dto.JournalpostResponse;
+import no.nav.bidrag.dokument.dto.ReturDetaljerLog;
 import org.json.JSONException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -159,6 +161,41 @@ class JournalpostControllerTest extends AbstractControllerTest {
   }
 
   @Test
+  @DisplayName("skal hente Journalpost med retur detaljer")
+  void skalHenteJournalpostMedReturDetaljer() throws IOException {
+    var journalpostIdFraJson = 201028011;
+
+    stubs.mockSafResponseHentJournalpost(responseJournalpostJsonWithReturDetaljer, HttpStatus.OK);
+    stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK);
+    stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
+
+    var responseEntity = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
+        HttpMethod.GET,
+        null,
+        JournalpostResponse.class
+    );
+
+    var journalpost = responseEntity.getBody() != null ? responseEntity.getBody().getJournalpost() : null;
+    var returDetaljer = journalpost.getReturDetaljer();
+    var returDetaljerLog = journalpost.getReturDetaljer().getLogg();
+    assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
+        () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
+        () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getJournalpostId).isEqualTo("JOARK-" + journalpostIdFraJson),
+        () -> assertThat(returDetaljer).isNotNull(),
+        () -> assertThat(returDetaljerLog.size()).isEqualTo(3),
+        () -> assertThat(returDetaljerLog.contains(new ReturDetaljerLog(LocalDate.parse("2020-11-15"), "Beskrivelse av retur"))).isTrue(),
+        () -> assertThat(returDetaljerLog.contains(new ReturDetaljerLog(LocalDate.parse("2020-12-14"), "Beskrivelse av retur mer tekst for å teste lengre verdier"))).isTrue(),
+        () -> assertThat(returDetaljerLog.contains(new ReturDetaljerLog(LocalDate.parse("2020-12-15"), "Beskrivelse av retur 2 mer tekst for å teste lengre verdier"))).isTrue(),
+        () -> assertThat(returDetaljer.getAntall()).isEqualTo(6),
+        () -> assertThat(returDetaljer.getDato()).isEqualTo(LocalDate.parse("2020-12-15")),
+        () -> stubs.verifyStub.harEnSafKallEtterHentJournalpost(),
+        () -> stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter(),
+        () -> stubs.verifyStub.bidragPersonKalt()
+    ));
+  }
+
+  @Test
   @DisplayName("skal hente Journalpost når den eksisterer")
   void skalHenteJournalpostNarDenEksisterer() throws IOException {
     var journalpostIdFraJson = 201028011;
@@ -295,6 +332,48 @@ class JournalpostControllerTest extends AbstractControllerTest {
         () -> stubs.verifyStub.dokarkivFerdigstillKalt(journalpostIdFraJson),
         () -> stubs.verifyStub.dokarkivProxyTilknyttSakerIkkeKalt(journalpostIdFraJson, saksnummer1),
         () -> stubs.verifyStub.dokarkivProxyTilknyttSakerKalt(journalpostIdFraJson, saksnummer2, "\"journalfoerendeEnhet\":\"4806\"")
+    );
+  }
+
+  @Test
+  @DisplayName("skal endre utgaaende journalpost retur detaljer")
+  void skalEndreUtgaaendeJournalpostReturDetaljer() throws IOException, JSONException {
+    var xEnhet = "1234";
+    var journalpostIdFraJson = 201028011L;
+    var headersMedEnhet = new HttpHeaders();
+    headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
+
+    var endreJournalpostCommand = createEndreJournalpostCommand();
+    endreJournalpostCommand.setSkalJournalfores(false);
+    endreJournalpostCommand.setEndreReturDetaljer(
+        List.of(
+            new EndreReturDetaljer(LocalDate.parse("2020-11-15"), null, "Ny beskrivelse 1"),
+            new EndreReturDetaljer(LocalDate.parse("2020-12-15"), LocalDate.parse("2020-10-10"), "Ny beskrivelse 2")));
+    stubs.mockSafResponseHentJournalpost(responseJournalpostJsonWithReturDetaljer, HttpStatus.OK);
+    stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK);
+    stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
+    stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson);
+    stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson);
+    stubs.mockDokarkivProxyTilknyttRequest(journalpostIdFraJson);
+
+    // when
+    var oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
+        HttpMethod.PATCH,
+        new HttpEntity<>(endreJournalpostCommand, headersMedEnhet),
+        JournalpostDto.class
+    );
+
+    // then
+    assertAll(
+        () -> assertThat(oppdaterJournalpostResponseEntity)
+            .extracting(ResponseEntity::getStatusCode)
+            .as("statusCode")
+            .isEqualTo(HttpStatus.OK),
+        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "\"tilleggsopplysninger\":["
+            + "{\"nokkel\":\"retur0_2020-11-15\",\"verdi\":\"Ny beskrivelse 1\"},"
+            + "{\"nokkel\":\"retur0_2020-12-14\",\"verdi\":\"Beskrivelse av retur mer tekst for å teste lengre verdier\"},"
+            + "{\"nokkel\":\"retur0_2020-10-10\",\"verdi\":\"Ny beskrivelse 2\"}]")
     );
   }
 

@@ -21,6 +21,28 @@
   "journalpostId": "203915975",
   "journalposttype": "I",
   "journalstatus": "JOURNALFOERT",
+  "tilleggsopplysninger": [
+    {
+      "nokkel": "retur0_2020-11-15",
+      "verdi": "Beskrivelse av retur"
+    },
+    {
+      "nokkel": "retur0_2020-12-14",
+      "verdi": "Beskrivelse av retur"
+    },
+    {
+      "nokkel": "retur1_2020-12-15",
+      "verdi": " mer tekst for å teste lengre verdier"
+    },
+    {
+      "nokkel": "retur1_2020-12-14",
+      "verdi": " mer tekst for å teste lengre verdier"
+    },
+    {
+      "nokkel": "retur0_2020-12-15",
+      "verdi": "Beskrivelse av retur 2"
+    }
+  ],
   "relevanteDatoer": [
     {
       "dato": "2010-12-16T00:00",
@@ -29,6 +51,10 @@
     {
       "dato": "2010-12-15T00:00",
       "datotype": "DATO_REGISTRERT"
+    },
+    {
+      "dato": "2020-12-15T01:00",
+      "datotype": "DATO_AVS_RETUR"
     }
   ],
   "sak": {

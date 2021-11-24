@@ -9,9 +9,11 @@ import org.apache.logging.log4j.util.Strings
 data class LagreJournalpostRequest(private var journalpostId: Long, private var endreJournalpostCommand: EndreJournalpostCommandIntern, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId) {
     init {
         tittel = endreJournalpostCommand.endreJournalpostCommand.tittel
-        dokumenter = endreJournalpostCommand.endreJournalpostCommand.endreDokumenter
-            .map { dokument -> Dokument(dokument.dokId.toString(), dokument.tittel, dokument.brevkode) }
 
+        if (endreJournalpostCommand.endreJournalpostCommand.endreDokumenter.isNotEmpty()){
+            dokumenter = endreJournalpostCommand.endreJournalpostCommand.endreDokumenter
+                .map { dokument -> Dokument(dokument.dokId.toString(), dokument.tittel, dokument.brevkode) }
+        }
 
         if (journalpost.isInngaaendeDokument()){
             avsenderMottaker = AvsenderMottaker(endreJournalpostCommand.hentAvsenderNavn(journalpost))

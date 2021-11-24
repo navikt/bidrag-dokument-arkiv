@@ -49,10 +49,12 @@ class JournalpostTest {
         () -> assertThat(journalpost.getJournalstatus()).as("journalstatus").isEqualTo(JournalStatus.JOURNALFOERT),
         () -> assertThat(journalpost.getRelevanteDatoer()).as("relevanteDater").isEqualTo(List.of(
             new DatoType("2010-12-16T00:00", "DATO_JOURNALFOERT"),
-            new DatoType("2010-12-15T00:00", "DATO_REGISTRERT")
+            new DatoType("2010-12-15T00:00", "DATO_REGISTRERT"),
+            new DatoType("2020-12-15T01:00", "DATO_AVS_RETUR")
         )),
         () -> assertThat(journalpost.getTema()).as("tema").isEqualTo("AAP"),
         () -> assertThat(journalpost.getTittel()).as("tittel").isEqualTo("...and so on...")
+
     );
   }
 
@@ -70,6 +72,22 @@ class JournalpostTest {
     var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
 
     assertThat(journalpost.hentDatoRegistrert()).isEqualTo(LocalDate.of(2010, 12, 15));
+  }
+
+  @Test
+  @DisplayName("skal hente retur detaljer")
+  void skalHenteReturDetaljer() throws IOException {
+    var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
+    var returDetaljer = journalpost.hentReturDetaljerLogDO();
+
+    assertAll(
+      () -> assertThat(journalpost.hentDatoRetur()).as("datoRegistrert").isEqualTo(LocalDate.parse("2020-12-15")),
+      () -> assertThat(returDetaljer.size()).isEqualTo(3),
+      () -> assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-14")).isNotNull(),
+      () -> assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-14").getBeskrivelse()).isEqualTo("Beskrivelse av retur mer tekst for å teste lengre verdier"),
+      () -> assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-15").getBeskrivelse()).isEqualTo("Beskrivelse av retur 2 mer tekst for å teste lengre verdier"),
+      () -> assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-11-15").getBeskrivelse()).isEqualTo("Beskrivelse av retur")
+    );
   }
 
   @Test
@@ -107,5 +125,9 @@ class JournalpostTest {
     var avvikListe = journalpost.tilAvvik();
     assertThat(avvikListe).hasSize(1);
     assertThat(avvikListe).doesNotContain(AvvikType.FEILFORE_SAK);
+  }
+
+  private ReturDetaljerLogDO getReturDetaljerDOByDate(List<ReturDetaljerLogDO> returDetaljerLogDOList, String dato){
+    return returDetaljerLogDOList.stream().filter(it->it.getDato().equals(LocalDate.parse(dato))).findFirst().get();
   }
 }

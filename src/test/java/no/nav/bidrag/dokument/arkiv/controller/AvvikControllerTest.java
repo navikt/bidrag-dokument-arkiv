@@ -61,6 +61,91 @@ public class AvvikControllerTest extends AbstractControllerTest {
   }
 
   @Test
+  @DisplayName("skal utføre avvik REGISTRER_RETUR")
+  void skalSendeAvvikRegistrerRetur() throws IOException, JSONException {
+    // given
+    var xEnhet = "1234";
+    var returDato = "2021-02-03";
+    var beskrivelse = "Dette er en beskrivelse i en test";
+    var journalpostIdFraJson = 201028011L;
+    var avvikHendelse = createAvvikHendelse(AvvikType.REGISTRER_RETUR, Map.of("returDato", returDato));
+    avvikHendelse.setBeskrivelse(beskrivelse);
+
+    stubs.mockSafResponseHentJournalpost(responseJournalpostJsonWithReturDetaljer, HttpStatus.OK);
+    stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
+    stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson);
+    stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson);
+
+    // when
+    var headersMedEnhet = new HttpHeaders();
+    headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
+    var overforEnhetResponse = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/journal/JOARK-" + journalpostIdFraJson + "/avvik",
+        HttpMethod.POST,
+        new HttpEntity<>(avvikHendelse, headersMedEnhet),
+        BehandleAvvikshendelseResponse.class
+    );
+
+    // then
+    assertAll(
+        () -> assertThat(overforEnhetResponse)
+            .extracting(ResponseEntity::getStatusCode)
+            .as("statusCode")
+            .isEqualTo(HttpStatus.OK),
+        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "{\"tilleggsopplysninger\":["
+            + "{\"nokkel\":\"retur0_2020-11-15\",\"verdi\":\"Beskrivelse av retur\"},"
+            + "{\"nokkel\":\"retur0_2020-12-14\",\"verdi\":\"Beskrivelse av retur\"},"
+            + "{\"nokkel\":\"retur1_2020-12-15\",\"verdi\":\" mer tekst for å teste lengre verdier\"},"
+            + "{\"nokkel\":\"retur1_2020-12-14\",\"verdi\":\" mer tekst for å teste lengre verdier\"},"
+            + "{\"nokkel\":\"retur0_2020-12-15\",\"verdi\":\"Beskrivelse av retur 2\"},"
+            + "{\"nokkel\":\"retur0_2021-02-03\",\"verdi\":\"Dette er en beskrivelse i en test\"}],"
+            + "\"datoRetur\":\"2021-02-03\",\"dokumenter\":[]}"),
+        () -> verify(kafkaTemplateMock).send(eq(topicJournalpost), eq("JOARK-" + journalpostIdFraJson), any())
+    );
+  }
+
+  @Test
+  @DisplayName("skal utføre avvik REGISTRER_RETUR with long beskrivelse")
+  void skalSendeAvvikRegistrerReturLongBeskrivelse() throws IOException, JSONException {
+    // given
+    var xEnhet = "1234";
+    var returDato = "2021-02-03";
+    var beskrivelse = "Dette er en veldig lang beskrivelse i en test. "
+        + "Batman nanananana nananana nananana nananana nananan. Batman nanananana nananana nananana nananana nananan. Batman nanananana nananana nananana nananana nananan";
+    var journalpostIdFraJson = 201028011L;
+    var avvikHendelse = createAvvikHendelse(AvvikType.REGISTRER_RETUR, Map.of("returDato", returDato));
+    avvikHendelse.setBeskrivelse(beskrivelse);
+
+    stubs.mockSafResponseHentJournalpost(responseJournalpostJsonUtgaaende, HttpStatus.OK);
+    stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
+    stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson);
+    stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson);
+
+    // when
+    var headersMedEnhet = new HttpHeaders();
+    headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
+    var overforEnhetResponse = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/journal/JOARK-" + journalpostIdFraJson + "/avvik",
+        HttpMethod.POST,
+        new HttpEntity<>(avvikHendelse, headersMedEnhet),
+        BehandleAvvikshendelseResponse.class
+    );
+
+    // then
+    assertAll(
+        () -> assertThat(overforEnhetResponse)
+            .extracting(ResponseEntity::getStatusCode)
+            .as("statusCode")
+            .isEqualTo(HttpStatus.OK),
+        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "{\"tilleggsopplysninger\":["
+            + "{\"nokkel\":\"retur0_2021-02-03\",\"verdi\":\"Dette er en veldig lang beskrivelse i en test. Batman nanananana nananana nananana nananana nananan.\"},"
+            + "{\"nokkel\":\"retur1_2021-02-03\",\"verdi\":\" Batman nanananana nananana nananana nananana nananan. Batman nanananana nananana nananana nananana \"},"
+            + "{\"nokkel\":\"retur2_2021-02-03\",\"verdi\":\"nananan\"}],\"datoRetur\":\"2021-02-03\",\"dokumenter\":[]}"),
+        () -> verify(kafkaTemplateMock).send(eq(topicJournalpost), eq("JOARK-" + journalpostIdFraJson), any())
+    );
+  }
+
+  @Test
   @DisplayName("skal ikke sende journalpostHendelse når avvik OVER_TIL_ANNEN_ENHET feiler")
   void shouldNotSendeKafkaMessageWhenAvvikFails() throws IOException, JSONException {
     // given
