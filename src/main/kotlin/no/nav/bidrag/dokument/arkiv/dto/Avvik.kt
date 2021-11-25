@@ -45,8 +45,9 @@ data class AvvikshendelseIntern(
 data class OverforEnhetRequest(private var journalpostId: Long, override var journalfoerendeEnhet: String?): OppdaterJournalpostRequest(journalpostId)
 data class EndreFagomradeRequest(private var journalpostId: Long, override var tema: String?): OppdaterJournalpostRequest(journalpostId)
 data class InngaaendeTilUtgaaendeRequest(private var journalpostId: Long, override var tema: String?): OppdaterJournalpostRequest(journalpostId)
-data class RegistrerReturRequest(private var journalpostId: Long, private var _datoRetur: LocalDate, override var tilleggsopplysninger: List<Map<String, String>>?): OppdaterJournalpostRequest(journalpostId) {
+data class RegistrerReturRequest(private var journalpostId: Long, private var _datoRetur: LocalDate, private var _tilleggsopplysninger: TilleggsOpplysninger?): OppdaterJournalpostRequest(journalpostId) {
     init {
         datoRetur = DateUtils.formatDate(_datoRetur)
+        tilleggsopplysninger = _tilleggsopplysninger
     }
 }

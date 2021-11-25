@@ -74,8 +74,9 @@ public class AvvikService {
       throw new UgyldigAvvikException("Journalpost har allerede registrert retur med samme dato");
     }
     var beskrivelse = Strings.isNotEmpty(avvikshendelseIntern.getBeskrivelse()) ? avvikshendelseIntern.getBeskrivelse() : "";
-    journalpost.addReturDetaljerLogToTilleggOpplysninger(new ReturDetaljerLogDO(beskrivelse, returDato));
-    oppdater(new RegistrerReturRequest(journalpost.hentJournalpostIdLong(), returDato, journalpost.getTilleggsopplysninger()));
+    var tilleggsOpplysninger = journalpost.getTilleggsopplysninger();
+    tilleggsOpplysninger.addReturDetaljLog(new ReturDetaljerLogDO(beskrivelse, returDato));
+    oppdater(new RegistrerReturRequest(journalpost.hentJournalpostIdLong(), returDato, tilleggsOpplysninger));
   }
 
   public void trekkJournalpost(AvvikshendelseIntern avvikshendelseIntern){

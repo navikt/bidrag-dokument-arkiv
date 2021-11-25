@@ -42,7 +42,7 @@ data class Journalpost(
     var antallRetur: Int? = null,
     var tittel: String? = null,
     var tilknyttedeSaker: List<String> = emptyList(),
-    var tilleggsopplysninger: List<Map<String, String>> = emptyList()
+    var tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger()
 ) {
     fun hentJournalStatus(): String? {
         return when(journalstatus){
@@ -77,47 +77,7 @@ data class Journalpost(
         return journalfort?.somDato()
     }
 
-    fun hentReturDetaljerLogDO(): List<ReturDetaljerLogDO> {
-        val returDetaljer = tilleggsopplysninger.filter { it["nokkel"]?.contains(RETUR_DETALJER_KEY) ?: false}
-            .filter { Strings.isNotEmpty(it["verdi"]) }
-            .filter {
-                val keySplit = it["nokkel"]!!.split("_")
-                if (keySplit.size > 1) DateUtils.isValid(keySplit[1]) else false
-            }
-            .sortedBy { it["nokkel"]?.get(RETUR_DETALJER_KEY.length) }
-
-        val returDetaljerList: MutableList<ReturDetaljerLogDO> = mutableListOf()
-        returDetaljer.forEach{
-            val dato = DateUtils.parseDate(it["nokkel"]!!.split("_")[1])
-            val beskrivelse = it["verdi"]!!
-            val existing = returDetaljerList.find{ it.dato == dato }
-            if (existing != null){
-                existing.beskrivelse = existing.beskrivelse + beskrivelse
-            } else {
-                returDetaljerList.add(ReturDetaljerLogDO(beskrivelse, dato!!))
-            }
-
-        }
-        return returDetaljerList
-    }
-
-    fun addReturDetaljerLogToTilleggOpplysninger(returDetaljerLogDO: ReturDetaljerLogDO){
-        tilleggsopplysninger = tilleggsopplysninger + returDetaljerLogDO.toMap()
-    }
-
-    fun replaceTilleggsOpplysningerReturDetalj(originalDate: LocalDate, returDetaljerLogDO: ReturDetaljerLogDO){
-        tilleggsopplysninger = hentReturDetaljerLogDO().map { if (it.dato == originalDate) returDetaljerLogDO else it }.flatMap { it.toMap() }
-    }
-
-    fun hasReturDetaljerWithDate(date: LocalDate) = !hentReturDetaljerLogDO().stream().filter { it.dato == date }.findAny().isEmpty
-
-    fun hentReturDetaljerLog(): List<ReturDetaljerLog> {
-        val detaljerLog = hentReturDetaljerLogDO()
-        return detaljerLog.map { ReturDetaljerLog(
-            dato = it.dato,
-            beskrivelse = it.beskrivelse
-        ) }
-    }
+    fun hasReturDetaljerWithDate(date: LocalDate) = !tilleggsopplysninger.hentReturDetaljerLogDO().stream().filter { it.dato == date }.findAny().isEmpty
 
     fun hentReturDetaljer(): ReturDetaljer? {
         if (hentDatoRetur() == null){
@@ -128,6 +88,14 @@ data class Journalpost(
             logg = hentReturDetaljerLog(),
             antall = antallRetur
         )
+    }
+
+    fun hentReturDetaljerLog(): List<ReturDetaljerLog> {
+        val returDetaljerLog = tilleggsopplysninger.hentReturDetaljerLogDO()
+        return returDetaljerLog.map { ReturDetaljerLog(
+            dato = it.dato,
+            beskrivelse = it.beskrivelse
+        ) }
     }
 
     fun hentDatoRegistrert(): LocalDate? {
@@ -209,6 +177,43 @@ data class Journalpost(
     fun erIkkeTilknyttetSakNarOppgitt(saksnummer: String?) = if (saksnummer == null) false else !erTilknyttetSak(saksnummer)
 }
 
+class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() {
+
+    fun addReturDetaljLog(returDetaljerLogDO: ReturDetaljerLogDO){
+        this.addAll(returDetaljerLogDO.toMap())
+    }
+
+    fun updateReturDetaljLog(originalDate: LocalDate, returDetaljerLogDO: ReturDetaljerLogDO){
+        val updatedTilleggsopplysninger = hentReturDetaljerLogDO().map { if (it.dato == originalDate) returDetaljerLogDO else it }.flatMap { it.toMap() }
+        this.removeAll{ it["nokkel"]?.contains(RETUR_DETALJER_KEY) ?: false}
+        this.addAll(updatedTilleggsopplysninger)
+    }
+
+    fun hentReturDetaljerLogDO(): List<ReturDetaljerLogDO> {
+        val returDetaljer = this.filter { it["nokkel"]?.contains(RETUR_DETALJER_KEY) ?: false}
+            .filter { Strings.isNotEmpty(it["verdi"]) }
+            .filter {
+                val keySplit = it["nokkel"]!!.split("_")
+                if (keySplit.size > 1) DateUtils.isValid(keySplit[1]) else false
+            }
+            .sortedBy { it["nokkel"]?.get(RETUR_DETALJER_KEY.length) }
+
+        val returDetaljerList: MutableList<ReturDetaljerLogDO> = mutableListOf()
+        returDetaljer.forEach {
+            val dato = DateUtils.parseDate(it["nokkel"]!!.split("_")[1])
+            val beskrivelse = it["verdi"]!!
+            val existing = returDetaljerList.find{ it.dato == dato }
+            if (existing != null){
+                existing.beskrivelse = existing.beskrivelse + beskrivelse
+            } else {
+                returDetaljerList.add(ReturDetaljerLogDO(beskrivelse, dato!!))
+            }
+
+        }
+        return returDetaljerList
+    }
+
+}
 data class ReturDetaljerLogDO(
     var beskrivelse: String,
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")

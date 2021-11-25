@@ -78,7 +78,7 @@ class JournalpostTest {
   @DisplayName("skal hente retur detaljer")
   void skalHenteReturDetaljer() throws IOException {
     var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
-    var returDetaljer = journalpost.hentReturDetaljerLogDO();
+    var returDetaljer = journalpost.getTilleggsopplysninger().hentReturDetaljerLogDO();
 
     assertAll(
       () -> assertThat(journalpost.hentDatoRetur()).as("datoRegistrert").isEqualTo(LocalDate.parse("2020-12-15")),
