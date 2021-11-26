@@ -48,7 +48,7 @@ data class Journalpost(
         return when(journalstatus){
             JournalStatus.MOTTATT->"M"
             JournalStatus.JOURNALFOERT->"J"
-            JournalStatus.FERDIGSTILT->"FS"
+            JournalStatus.FERDIGSTILT->"R"
             JournalStatus.RESERVERT->"R"
             JournalStatus.UTGAAR->"U"
             JournalStatus.AVBRUTT->"A"
@@ -142,7 +142,7 @@ data class Journalpost(
 
     fun tilAvvik(): List<AvvikType> {
         val avvikTypeList = mutableListOf<AvvikType>()
-        if (isUtgaaendeDokument()) avvikTypeList.add(AvvikType.REGISTRER_RETUR)
+        if (isUtgaaendeDokument() && isStatusFerdigsstilt()) avvikTypeList.add(AvvikType.REGISTRER_RETUR)
         if (isStatusMottatt() && isInngaaendeDokument()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
         if (!isStatusMottatt() && hasSak() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.FEILFORE_SAK)
@@ -154,6 +154,7 @@ data class Journalpost(
     fun isStatusFeilregistrert(): Boolean = journalstatus == JournalStatus.FEILREGISTRERT
     fun isStatusMottatt(): Boolean = journalstatus == JournalStatus.MOTTATT
     fun isStatusJournalfort(): Boolean = journalstatus == JournalStatus.JOURNALFOERT
+    fun isStatusFerdigsstilt(): Boolean = journalstatus == JournalStatus.FERDIGSTILT
     fun isInngaaendeDokument(): Boolean = journalposttype == "I"
     fun isUtgaaendeDokument(): Boolean = journalposttype == "U"
 
@@ -190,13 +191,14 @@ class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() 
     }
 
     fun hentReturDetaljerLogDO(): List<ReturDetaljerLogDO> {
+        // Key format (RETUR_DETALJER_KEY)(index)_(date)
         val returDetaljer = this.filter { it["nokkel"]?.contains(RETUR_DETALJER_KEY) ?: false}
             .filter { Strings.isNotEmpty(it["verdi"]) }
             .filter {
                 val keySplit = it["nokkel"]!!.split("_")
                 if (keySplit.size > 1) DateUtils.isValid(keySplit[1]) else false
             }
-            .sortedBy { it["nokkel"]?.get(RETUR_DETALJER_KEY.length) }
+            .sortedBy { it["nokkel"]!!.split("_")[0].replace(RETUR_DETALJER_KEY, "") }
 
         val returDetaljerList: MutableList<ReturDetaljerLogDO> = mutableListOf()
         returDetaljer.forEach {
@@ -219,7 +221,7 @@ data class ReturDetaljerLogDO(
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
     var dato: LocalDate
 ) {
-    fun toMap(): List<Map<String, String>> = beskrivelse.chunked(100).mapIndexed{ index, it -> mapOf("nokkel" to RETUR_DETALJER_KEY + index + "_" + DateUtils.formatDate(dato), "verdi" to it) }
+    fun toMap(): List<Map<String, String>> = beskrivelse.chunked(100).mapIndexed{ index, it -> mapOf("nokkel" to "$RETUR_DETALJER_KEY${index}_${DateUtils.formatDate(dato)}", "verdi" to it) }
 }
 data class AvsenderMottaker(
     var navn: String? = null

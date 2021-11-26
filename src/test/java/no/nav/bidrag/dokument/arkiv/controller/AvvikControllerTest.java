@@ -105,7 +105,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
 
   @Test
   @DisplayName("skal utføre avvik REGISTRER_RETUR with long beskrivelse")
-  void skalSendeAvvikRegistrerReturLongBeskrivelse() throws IOException, JSONException {
+  void skalSendeAvvikRegistrerReturLangBeskrivelse() throws IOException, JSONException {
     // given
     var xEnhet = "1234";
     var returDato = "2021-02-03";
