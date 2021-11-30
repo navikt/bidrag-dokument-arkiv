@@ -33,6 +33,8 @@ public abstract class AbstractControllerTest {
   protected String PERSON_IDENT = "12345678910";
   protected String AKTOR_IDENT = "92345678910";
   protected String responseJournalpostJson = "journalpostSafResponse.json";
+  protected String responseJournalpostJsonUtgaaende = "journalpostSafUtgaaendeResponse.json";
+  protected String responseJournalpostJsonWithReturDetaljer = "journalpostSafReturDetaljerResponse.json";
   protected String responseJournalpostIngenSakerJson = "journalpostSafIngenSakerResponse.json";
   protected String journalpostSafNotFoundResponse = "journalpostSafNotFoundResponse.json";
   protected String journalpostJournalfortSafResponse = "journalpostJournalfortSafResponse.json";

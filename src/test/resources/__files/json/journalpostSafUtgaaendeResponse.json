@@ -1,0 +1,32 @@
+{
+  "data": {
+    "journalpost": {
+      "avsenderMottaker": {
+        "navn": null
+      },
+      "bruker": {
+        "id": "1385076492416",
+        "type": "AKTOERID"
+      },
+      "dokumenter": [
+        {
+          "dokumentInfoId": "12345",
+          "tittel": null
+        }
+      ],
+      "journalforendeEnhet": "4806",
+      "journalfortAvNavn": null,
+      "journalpostId": "201028011",
+      "journalposttype": "U",
+      "journalstatus": "FERDIGSTILT",
+      "relevanteDatoer": [
+        {
+          "dato": "2021-08-18T13:20:33",
+          "datotype": "DATO_DOKUMENT"
+        }
+      ],
+      "tema": "BID",
+      "tittel": "Filosofens bidrag"
+    }
+  }
+}

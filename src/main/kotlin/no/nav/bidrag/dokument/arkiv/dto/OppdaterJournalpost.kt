@@ -3,17 +3,33 @@ package no.nav.bidrag.dokument.arkiv.dto
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
-import java.time.format.DateTimeFormatter
+import no.nav.bidrag.dokument.arkiv.utils.DateUtils
+import org.apache.logging.log4j.util.Strings
 
 data class LagreJournalpostRequest(private var journalpostId: Long, private var endreJournalpostCommand: EndreJournalpostCommandIntern, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId) {
     init {
-        avsenderMottaker = AvsenderMottaker(endreJournalpostCommand.hentAvsenderNavn(journalpost))
         tittel = endreJournalpostCommand.endreJournalpostCommand.tittel
-        dokumenter = endreJournalpostCommand.endreJournalpostCommand.endreDokumenter
-            .map { dokument -> Dokument(dokument.dokId.toString(), dokument.tittel, dokument.brevkode) }
-        datoMottatt = endreJournalpostCommand.endreJournalpostCommand.dokumentDato?.format(DateTimeFormatter.ofPattern("YYYY-MM-dd"))
+
+        if (endreJournalpostCommand.endreJournalpostCommand.endreDokumenter.isNotEmpty()){
+            dokumenter = endreJournalpostCommand.endreJournalpostCommand.endreDokumenter
+                .map { dokument -> Dokument(dokument.dokId.toString(), dokument.tittel, dokument.brevkode) }
+        }
+
+        if (journalpost.isInngaaendeDokument()){
+            avsenderMottaker = AvsenderMottaker(endreJournalpostCommand.hentAvsenderNavn(journalpost))
+            datoMottatt = DateUtils.formatDate(endreJournalpostCommand.endreJournalpostCommand.dokumentDato)
+        }
 
         if (journalpost.isStatusMottatt()) updateValuesForMottattJournalpost()
+
+        if (journalpost.isUtgaaendeDokument()){
+            val endreReturDetaljer = endreJournalpostCommand.endreJournalpostCommand.endreReturDetaljer?.filter { Strings.isNotEmpty(it.beskrivelse) }
+            if (endreReturDetaljer != null && endreReturDetaljer.isNotEmpty()){
+                endreReturDetaljer
+                    .forEach { journalpost.tilleggsopplysninger.updateReturDetaljLog(it.originalDato, ReturDetaljerLogDO(it.beskrivelse, it.nyDato ?: it.originalDato)) }
+                tilleggsopplysninger = journalpost.tilleggsopplysninger
+            }
+        }
     }
 
     fun updateValuesForMottattJournalpost(){
@@ -36,6 +52,8 @@ sealed class OppdaterJournalpostRequest(private var journalpostId: Long? = -1) {
     open var sak: Sak? = null
     open var tittel: String? = null
     open var journalfoerendeEnhet: String? = null
+    open var datoRetur: String? = null
+    open var tilleggsopplysninger: List<Map<String, String>>? = null
     open var tema: String? = null
     open var datoMottatt: String? = null
     open var bruker: Bruker? = null

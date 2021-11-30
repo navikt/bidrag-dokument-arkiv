@@ -22,6 +22,11 @@ data class DokumentoversiktFagsakQuery(val saksnummer: String, val tema: String)
                 journalpostId
                 journalposttype
                 journalstatus
+                antallRetur
+                tilleggsopplysninger {
+                    nokkel
+                    verdi
+                } 
                 relevanteDatoer {
                   dato
                   datotype

@@ -35,6 +35,7 @@ class JsonMapperTest {
   void skalMappeOppdaterJournalpostTilJson() {
     var journalpost = new Journalpost();
     journalpost.setJournalstatus(JournalStatus.MOTTATT);
+    journalpost.setJournalposttype("I");
     var endreDokument = new EndreDokument();
     endreDokument.setTittel("Tittelen på dokument");
     endreDokument.setDokId(55555);

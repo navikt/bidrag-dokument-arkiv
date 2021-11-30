@@ -23,8 +23,13 @@ data class JournalpostQuery(val journalpostId: Long) : GraphQuery() {
               journalfortAvNavn
               journalpostId
               kanal
+              antallRetur
               journalposttype
               journalstatus
+              tilleggsopplysninger {
+                nokkel
+                verdi
+              }   
               relevanteDatoer {
                 dato
                 datotype
