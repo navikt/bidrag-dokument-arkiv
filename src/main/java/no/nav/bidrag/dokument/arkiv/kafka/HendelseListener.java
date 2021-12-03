@@ -106,6 +106,7 @@ public class HendelseListener {
 
   private Journalpost oppdaterJournalpostMedPersonGeografiskEnhet(Long journalpostId){
     var journalpost = hentJournalpost(journalpostId);
+    LOGGER.info("Hentet journalpost med data {}", journalpost);
     var brukerId = hentBrukerId(journalpost);
     var geografiskEnhet = hentGeografiskEnhet(brukerId);
     if (journalpost.isStatusMottatt() && !journalpost.harJournalforendeEnhetLik(geografiskEnhet)){
