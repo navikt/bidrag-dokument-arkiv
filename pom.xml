@@ -28,11 +28,13 @@
     <bidrag-commons.version>0.5.19</bidrag-commons.version>
     <bidrag-commons-test.version>0.2.2</bidrag-commons-test.version>
     <bidrag-dokument-dto.version>1.2.0</bidrag-dokument-dto.version>
+    <commons-codec.version>1.15</commons-codec.version>
     <graphq-dgs-client.version>4.9.2</graphq-dgs-client.version>
     <logback-encoder.version>7.0.1</logback-encoder.version>
     <nimbus-jose-jwt.version>9.15.2</nimbus-jose-jwt.version>
     <springdoc-openapi-ui.version>1.5.13</springdoc-openapi-ui.version>
     <springframework-cloud.version>3.0.4</springframework-cloud.version>
+    <squareup.version>4.9.2</squareup.version>
     <token-support.version>1.3.9</token-support.version>
 
     <!-- build -->
@@ -188,7 +190,7 @@
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
-      <version>1.15</version>
+      <version>${commons-codec.version}</version>
     </dependency>
 
     <!-- kotlin -->
@@ -267,13 +269,13 @@
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>mockwebserver</artifactId>
-      <version>4.9.2</version>
+      <version>${squareup.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
-      <version>4.9.2</version>
+      <version>${squareup.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
