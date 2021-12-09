@@ -81,12 +81,14 @@ class JournalpostTest {
     var returDetaljer = journalpost.getTilleggsopplysninger().hentReturDetaljerLogDO();
 
     assertAll(
-      () -> assertThat(journalpost.hentDatoRetur()).as("datoRegistrert").isEqualTo(LocalDate.parse("2020-12-15")),
-      () -> assertThat(returDetaljer.size()).isEqualTo(3),
-      () -> assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-14")).isNotNull(),
-      () -> assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-14").getBeskrivelse()).isEqualTo("Beskrivelse av retur mer tekst for å teste lengre verdier"),
-      () -> assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-15").getBeskrivelse()).isEqualTo("Beskrivelse av retur 2 mer tekst for å teste lengre verdier"),
-      () -> assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-11-15").getBeskrivelse()).isEqualTo("Beskrivelse av retur")
+        () -> assertThat(journalpost.hentDatoRetur()).as("datoRegistrert").isEqualTo(LocalDate.parse("2020-12-15")),
+        () -> assertThat(returDetaljer.size()).isEqualTo(3),
+        () -> assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-14")).isNotNull(),
+        () -> assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-14").getBeskrivelse()).isEqualTo(
+            "Beskrivelse av retur mer tekst for å teste lengre verdier"),
+        () -> assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-15").getBeskrivelse()).isEqualTo(
+            "Beskrivelse av retur 2 mer tekst for å teste lengre verdier"),
+        () -> assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-11-15").getBeskrivelse()).isEqualTo("Beskrivelse av retur")
     );
   }
 
@@ -127,7 +129,9 @@ class JournalpostTest {
     assertThat(avvikListe).doesNotContain(AvvikType.FEILFORE_SAK);
   }
 
-  private ReturDetaljerLogDO getReturDetaljerDOByDate(List<ReturDetaljerLogDO> returDetaljerLogDOList, String dato){
-    return returDetaljerLogDOList.stream().filter(it->it.getDato().equals(LocalDate.parse(dato))).findFirst().get();
+  private ReturDetaljerLogDO getReturDetaljerDOByDate(List<ReturDetaljerLogDO> returDetaljerLogDOList, String dato) {
+    return returDetaljerLogDOList.stream().filter(it -> it.getDato().equals(LocalDate.parse(dato))).findFirst().orElse(
+        new ReturDetaljerLogDO("junit", LocalDate.now())
+    );
   }
 }
