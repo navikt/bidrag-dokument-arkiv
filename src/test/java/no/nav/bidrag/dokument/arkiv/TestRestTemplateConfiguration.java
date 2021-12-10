@@ -1,6 +1,6 @@
 package no.nav.bidrag.dokument.arkiv;
 
-import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.ISSUER;
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.ISSUER_ISSO;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal.PROFILE_INTEGRATION;
 
 import no.nav.bidrag.commons.web.test.HttpHeaderTestRestTemplate;
@@ -28,7 +28,7 @@ public class TestRestTemplateConfiguration {
   }
 
   private String generateBearerToken() {
-    var token = mockOAuth2Server.issueToken(ISSUER, "aud-localhost", "aud-localhost");
+    var token = mockOAuth2Server.issueToken(ISSUER_ISSO, "aud-localhost", "aud-localhost");
     return "Bearer " + token.serialize();
   }
 }

@@ -34,7 +34,8 @@ public class BidragDokumentArkivConfig {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BidragDokumentArkivConfig.class);
 
-  public static final String ISSUER = "isso";
+  public static final String ISSUER_ISSO = "isso";
+  public static final String ISSUER_STS = "sts";
   public static final String PROFILE_LIVE = "live";
   public static final String PROFILE_TEST = "test";
 
@@ -103,7 +104,8 @@ public class BidragDokumentArkivConfig {
       OidcTokenGenerator oidcTokenGenerator,
       TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator
   ) {
-    safConsumerRegularUser.leggTilSikkerhet(oidcTokenGenerator::getBearerToken);
+    safConsumerRegularUser.leggTilSikkerhet(()->
+        oidcTokenGenerator.isTokenIssuerSTS() ? tokenForBasicAuthenticationGenerator.generateToken() : oidcTokenGenerator.getBearerToken());
     safConsumerServiceUser.leggTilSikkerhet(tokenForBasicAuthenticationGenerator::generateToken);
     var safConsumers = new HashMap<Discriminator, SafConsumer>();
     safConsumers.put(Discriminator.REGULAR_USER, safConsumerRegularUser);
@@ -118,7 +120,8 @@ public class BidragDokumentArkivConfig {
       OidcTokenGenerator oidcTokenGenerator,
       TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator
   ) {
-    personConsumerRegularUser.leggTilSikkerhet(oidcTokenGenerator::getBearerToken);
+    personConsumerRegularUser.leggTilSikkerhet(()->
+        oidcTokenGenerator.isTokenIssuerSTS() ? tokenForBasicAuthenticationGenerator.generateToken() : oidcTokenGenerator.getBearerToken());
     personConsumerServiceUser.leggTilSikkerhet(tokenForBasicAuthenticationGenerator::generateToken);
     var personConsumers = new HashMap<Discriminator, PersonConsumer>();
     personConsumers.put(Discriminator.REGULAR_USER, personConsumerRegularUser);

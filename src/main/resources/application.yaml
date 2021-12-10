@@ -18,6 +18,9 @@ no.nav.security.jwt:
     isso:
       acceptedaudience: ${ACCEPTED_AUDIENCE}
       discoveryurl: ${ISSO_ISSUER_URL}/.well-known/openid-configuration
+    sts:
+      accepted_audience: ${ACCEPTED_SERVICE_USER_AUDIENCE}
+      discoveryurl: ${STS_ISSUER_URL}/rest/v1/sts/.well-known/openid-configuration
 
 
 spring.kafka:

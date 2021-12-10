@@ -28,5 +28,9 @@ env:
     value: https://dokarkivproxy.intern.nav.no
   - name: FEATURE_ENABLED
     value: NONE
+  - name: STS_URL
+    value: https://security-token-service.nais.adeo.no
+  - name: ACCEPTED_SERVICE_USER_AUDIENCE
+    value: srvbdarkivering
 vault:
   kvPath: prod

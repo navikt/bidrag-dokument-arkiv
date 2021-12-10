@@ -29,5 +29,9 @@ env:
     value: https://dokarkivproxy.dev.intern.nav.no
   - name: FEATURE_ENABLED
     value: KAFKA_ARBEIDSFLYT
+  - name: STS_URL
+    value: https://security-token-service.dev.adeo.no
+  - name: ACCEPTED_SERVICE_USER_AUDIENCE
+    value: srvbdarkivering
 vault:
   kvPath: dev

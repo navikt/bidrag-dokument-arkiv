@@ -1,5 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.security;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.ISSUER_STS;
+
 import java.util.Optional;
 import no.nav.bidrag.dokument.arkiv.model.TokenException;
 import no.nav.security.token.support.core.context.TokenValidationContext;
@@ -17,6 +19,13 @@ public class OidcTokenGenerator {
   @SuppressWarnings("unused") // metode-referanse sendes fra RestTemplateConfiguration
   public String getBearerToken() {
     return "Bearer " + fetchToken();
+  }
+
+  public Boolean isTokenIssuerSTS(){
+    return Optional.ofNullable(tokenValidationContextHolder)
+        .map(TokenValidationContextHolder::getTokenValidationContext)
+        .map(TokenValidationContext::getIssuers)
+        .map((issuers)-> issuers.contains(ISSUER_STS)).orElse(false);
   }
 
   public Optional<String> getToken() {

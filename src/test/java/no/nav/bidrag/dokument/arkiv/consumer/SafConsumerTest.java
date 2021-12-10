@@ -65,7 +65,7 @@ class SafConsumerTest {
 
     when(oidcTokenGenerator.getBearerToken()).thenReturn("token");
     when(tokenForBasicAuthenticationGenerator.generateToken()).thenReturn("token");
-    when(tokenValidationContextMock.getJwtTokenAsOptional(BidragDokumentArkivConfig.ISSUER)).thenReturn(Optional.of(jwtTokenMock));
+    when(tokenValidationContextMock.getJwtTokenAsOptional(BidragDokumentArkivConfig.ISSUER_ISSO)).thenReturn(Optional.of(jwtTokenMock));
     when(jwtTokenMock.getTokenAsString()).thenReturn("A very secure token");
   }
 

@@ -4,7 +4,6 @@ import static no.nav.bidrag.commons.KildesystemIdenfikator.PREFIX_BIDRAG_COMPLET
 import static no.nav.bidrag.commons.KildesystemIdenfikator.PREFIX_JOARK;
 import static no.nav.bidrag.commons.KildesystemIdenfikator.PREFIX_JOARK_COMPLETE;
 import static no.nav.bidrag.commons.web.WebUtil.initHttpHeadersWith;
-import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.ISSUER;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -29,7 +28,7 @@ import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
 import no.nav.bidrag.dokument.dto.JournalpostResponse;
-import no.nav.security.token.support.core.api.ProtectedWithClaims;
+import no.nav.security.token.support.core.api.Protected;
 import no.nav.security.token.support.core.api.Unprotected;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +47,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@ProtectedWithClaims(issuer = ISSUER)
+@Protected
 public class JournalpostController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JournalpostController.class);
