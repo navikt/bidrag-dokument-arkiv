@@ -29,8 +29,6 @@ env:
     value: https://bidrag-organisasjon-feature.dev.adeo.no
   - name: DOKARKIV_PROXY_URL
     value: https://dokarkivproxy-q1.dev.intern.nav.no
-  - name: STS_URL
-    value: https://security-token-service.dev.adeo.no
   - name: ACCEPTED_SERVICE_USER_AUDIENCE
     value: srvbdarkivering
   - name: JAVA_OPTS
