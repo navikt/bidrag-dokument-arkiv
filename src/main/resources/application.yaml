@@ -8,6 +8,8 @@ management:
         include: "prometheus,health"
 springdoc:
   packages-to-scan: no.nav.bidrag.dokument.arkiv.controller
+
+STS_ISSUER_URL: ${STS_ISSUER_URL:${ACCESS_TOKEN_URL}}
 ---
 
 spring.profiles: live
@@ -20,7 +22,7 @@ no.nav.security.jwt:
       discoveryurl: ${ISSO_ISSUER_URL}/.well-known/openid-configuration
     sts:
       accepted_audience: ${ACCEPTED_SERVICE_USER_AUDIENCE}
-      discoveryurl: ${ACCESS_TOKEN_URL}/rest/v1/sts/.well-known/openid-configuration
+      discoveryurl: ${STS_ISSUER_URL}/rest/v1/sts/.well-known/openid-configuration
 
 
 spring.kafka:
