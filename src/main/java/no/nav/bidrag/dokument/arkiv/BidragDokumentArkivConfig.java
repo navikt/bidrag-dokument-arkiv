@@ -140,8 +140,10 @@ public class BidragDokumentArkivConfig {
     httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
 
     DokarkivProxyConsumer dokarkivProxyConsumer = new DokarkivProxyConsumer(httpHeaderRestTemplate);
-    dokarkivProxyConsumer.leggTilAuthorizationToken(oidcTokenGenerator::getBearerToken);
-    dokarkivProxyConsumer.leggTilNavConsumerToken(tokenForBasicAuthenticationGenerator::generateToken);
+    dokarkivProxyConsumer.leggTilAuthorizationToken(()->
+        oidcTokenGenerator.isTokenIssuerSTS() ? tokenForBasicAuthenticationGenerator.generateToken() : oidcTokenGenerator.getBearerToken());
+    dokarkivProxyConsumer.leggTilNavConsumerToken(()->
+        oidcTokenGenerator.isTokenIssuerSTS() ? null : tokenForBasicAuthenticationGenerator.generateToken());
     return dokarkivProxyConsumer;
   }
 
@@ -152,9 +154,10 @@ public class BidragDokumentArkivConfig {
       OidcTokenGenerator oidcTokenGenerator,
       TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator
   ) {
-    dokarkivConsumerRegularUser.leggTilAuthorizationToken(oidcTokenGenerator::getBearerToken);
-    dokarkivConsumerRegularUser.leggTilNavConsumerToken(tokenForBasicAuthenticationGenerator::generateToken);
-
+    dokarkivConsumerRegularUser.leggTilAuthorizationToken(()->
+        oidcTokenGenerator.isTokenIssuerSTS() ? tokenForBasicAuthenticationGenerator.generateToken() : oidcTokenGenerator.getBearerToken());
+    dokarkivConsumerRegularUser.leggTilNavConsumerToken(()->
+        oidcTokenGenerator.isTokenIssuerSTS() ? null : tokenForBasicAuthenticationGenerator.generateToken());
     dokarkivConsumerServiceUser.leggTilAuthorizationToken(tokenForBasicAuthenticationGenerator::generateToken);
     var dokarkivConsumers = new HashMap<Discriminator, DokarkivConsumer>();
     dokarkivConsumers.put(Discriminator.REGULAR_USER, dokarkivConsumerRegularUser);

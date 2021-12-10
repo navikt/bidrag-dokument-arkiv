@@ -200,6 +200,7 @@ public class JournalpostService {
 
   private void tilknyttTilSak(String saksnummer, Journalpost journalpost){
     KnyttTilAnnenSakRequest knyttTilAnnenSakRequest = new KnyttTilAnnenSakRequest(saksnummer, journalpost);
+    LOGGER.info("Tilknytter sak {} til journalpost {}", saksnummer, journalpost.getJournalpostId());
     dokarkivProxyConsumer.knyttTilSak(journalpost.hentJournalpostIdLong(), knyttTilAnnenSakRequest);
   }
 
