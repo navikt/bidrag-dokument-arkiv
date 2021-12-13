@@ -12,6 +12,6 @@ NAIS_APP_NAME: bidrag-dokument-arkiv-feature
 TOPIC_JOURNALPOST: bidrag.journalpost-feature
 TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering-q1
 STS_ISSUER_URL: http://localhost:8888/sts
-ACCEPTED_SERVICE_USER_AUDIENCE: srvbisys
+ACCEPTED_SERVICE_USER_AUDIENCE: srvbdarkivering
 SRV_BD_ARKIV_AUTH: changme
 FEATURE_ENABLED: NONE

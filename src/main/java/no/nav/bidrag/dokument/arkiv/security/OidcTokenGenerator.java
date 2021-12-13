@@ -11,9 +11,12 @@ import no.nav.security.token.support.core.jwt.JwtToken;
 public class OidcTokenGenerator {
 
   private final TokenValidationContextHolder tokenValidationContextHolder;
+  private TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator;
 
-  public OidcTokenGenerator(TokenValidationContextHolder tokenValidationContextHolder) {
+  public OidcTokenGenerator(TokenValidationContextHolder tokenValidationContextHolder,
+      TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator) {
     this.tokenValidationContextHolder = tokenValidationContextHolder;
+    this.tokenForBasicAuthenticationGenerator = tokenForBasicAuthenticationGenerator;
   }
 
   @SuppressWarnings("unused") // metode-referanse sendes fra RestTemplateConfiguration
@@ -21,7 +24,14 @@ public class OidcTokenGenerator {
     return "Bearer " + fetchToken();
   }
 
-  public Boolean isTokenIssuerSTS(){
+  public String getUserBearerTokenOrServiceUserToken() {
+    if (isIncomingTokenIssuerSTS()){
+      return tokenForBasicAuthenticationGenerator.generateToken();
+    }
+    return "Bearer " + fetchToken();
+  }
+
+  public Boolean isIncomingTokenIssuerSTS(){
     return Optional.ofNullable(tokenValidationContextHolder)
         .map(TokenValidationContextHolder::getTokenValidationContext)
         .map(TokenValidationContext::getIssuers)
