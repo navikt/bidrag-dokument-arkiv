@@ -28,7 +28,7 @@ public class OidcTokenGenerator {
     if (isIncomingTokenIssuerSTS()){
       return tokenForBasicAuthenticationGenerator.generateToken();
     }
-    return "Bearer " + fetchToken();
+    return getBearerToken();
   }
 
   public Boolean isIncomingTokenIssuerSTS(){

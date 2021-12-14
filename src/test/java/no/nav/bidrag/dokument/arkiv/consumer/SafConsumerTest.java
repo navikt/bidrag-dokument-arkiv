@@ -296,7 +296,7 @@ class SafConsumerTest {
     safConsumers.get(Discriminator.REGULAR_USER).finnJournalposter("101", "BID");
 
     // så
-    verify(oidcTokenGenerator).getBearerToken();
+    verify(oidcTokenGenerator).getUserBearerTokenOrServiceUserToken();
   }
 
   @Test
