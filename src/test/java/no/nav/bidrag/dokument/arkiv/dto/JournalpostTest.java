@@ -39,8 +39,8 @@ class JournalpostTest {
         () -> assertThat(journalpost.getAvsenderMottaker()).as("avsenderMottaker").isEqualTo(new AvsenderMottaker("Tuborg")),
         () -> assertThat(journalpost.getBruker()).as("bruker").isEqualTo(new Bruker("1000024690889", "AKTOERID")),
         () -> assertThat(journalpost.getDokumenter()).as("dokumenter").isEqualTo(List.of(
-            new Dokument("ROD SNO", "12345"),
-            new Dokument("SNOMANNEN", "56789")
+            new Dokument("ROD SNO", "12345", "BI01S02"),
+            new Dokument("SNOMANNEN", "56789", "BI01S02")
         )),
         () -> assertThat(journalpost.getJournalforendeEnhet()).as("journalforendeEnhet").isEqualTo("0104"),
         () -> assertThat(journalpost.getJournalfortAvNavn()).as("journalfortAvNavn").isEqualTo("Terkelsen, Karin"),

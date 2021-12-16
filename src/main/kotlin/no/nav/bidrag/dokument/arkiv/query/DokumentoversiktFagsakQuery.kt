@@ -14,6 +14,7 @@ data class DokumentoversiktFagsakQuery(val saksnummer: String, val tema: String)
                 }
                 dokumenter {
                   dokumentInfoId
+                  brevkode
                   tittel
                 }
                 kanal

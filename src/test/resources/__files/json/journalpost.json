@@ -9,10 +9,12 @@
   "dokumenter": [
     {
       "dokumentInfoId": "12345",
+      "brevkode": "BI01S02",
       "tittel": "ROD SNO"
     },
     {
       "dokumentInfoId": "56789",
+      "brevkode": "BI01S02",
       "tittel": "SNOMANNEN"
     }
   ],
