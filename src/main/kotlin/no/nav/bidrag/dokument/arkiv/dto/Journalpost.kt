@@ -13,6 +13,7 @@ import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
 import no.nav.bidrag.dokument.dto.JournalpostDto
 import no.nav.bidrag.dokument.dto.JournalpostResponse
 import no.nav.bidrag.dokument.dto.Kanal
+import no.nav.bidrag.dokument.dto.KodeDto
 import no.nav.bidrag.dokument.dto.ReturDetaljer
 import no.nav.bidrag.dokument.dto.ReturDetaljerLog
 import org.apache.logging.log4j.util.Strings
@@ -117,6 +118,8 @@ data class Journalpost(
         return saksnummerList
     }
 
+    fun hentBrevkode(): KodeDto? = if (dokumenter.isEmpty()) null else KodeDto(kode = dokumenter[0].brevkode)
+
     fun tilJournalpostDto(): JournalpostDto {
 
         @Suppress("UNCHECKED_CAST")
@@ -136,7 +139,8 @@ data class Journalpost(
             journalpostId = "JOARK-$journalpostId",
             journalstatus = hentJournalStatus(),
             mottattDato = hentDatoRegistrert(),
-            returDetaljer = hentReturDetaljer()
+            returDetaljer = hentReturDetaljer(),
+            brevkode = hentBrevkode()
         )
     }
 
@@ -245,7 +249,8 @@ data class Bruker(
 
 data class Dokument(
     var tittel: String? = null,
-    var dokumentInfoId: String? = null
+    var dokumentInfoId: String? = null,
+    var brevkode: String? = null
 ) {
     fun tilDokumentDto(journalposttype: String?): DokumentDto = DokumentDto(
         dokumentreferanse = this.dokumentInfoId,

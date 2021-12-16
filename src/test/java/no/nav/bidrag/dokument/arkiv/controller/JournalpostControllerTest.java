@@ -17,6 +17,7 @@ import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.bidrag.dokument.dto.EndreReturDetaljer;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
 import no.nav.bidrag.dokument.dto.JournalpostResponse;
+import no.nav.bidrag.dokument.dto.KodeDto;
 import no.nav.bidrag.dokument.dto.ReturDetaljerLog;
 import org.json.JSONException;
 import org.junit.jupiter.api.DisplayName;
@@ -219,6 +220,7 @@ class JournalpostControllerTest extends AbstractControllerTest {
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getInnhold).isEqualTo("Filosofens bidrag"),
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getJournalpostId).isEqualTo("JOARK-" + journalpostIdFraJson),
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getGjelderAktor).extracting(AktorDto::getIdent).isEqualTo(PERSON_IDENT),
+        () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getBrevkode).extracting(KodeDto::getKode).isEqualTo("BI01S02"),
         () -> assertThat(saker).isNotNull().hasSize(3).contains("2106585").contains("5276661"),
         () -> stubs.verifyStub.harEnSafKallEtterHentJournalpost(),
         () -> stubs.verifyStub.harEnSafKallEtterTilknyttedeJournalposter(),

@@ -14,6 +14,7 @@ data class JournalpostQuery(val journalpostId: Long) : GraphQuery() {
               }
               dokumenter {
                 dokumentInfoId
+                brevkode
                 tittel
               }
               sak {
