@@ -34,7 +34,8 @@ public class BidragDokumentArkivConfig {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BidragDokumentArkivConfig.class);
 
-  public static final String ISSUER = "isso";
+  public static final String ISSUER_ISSO = "isso";
+  public static final String ISSUER_STS = "sts";
   public static final String PROFILE_LIVE = "live";
   public static final String PROFILE_TEST = "test";
 
@@ -138,7 +139,8 @@ public class BidragDokumentArkivConfig {
 
     DokarkivProxyConsumer dokarkivProxyConsumer = new DokarkivProxyConsumer(httpHeaderRestTemplate);
     dokarkivProxyConsumer.leggTilAuthorizationToken(oidcTokenGenerator::getBearerToken);
-    dokarkivProxyConsumer.leggTilNavConsumerToken(tokenForBasicAuthenticationGenerator::generateToken);
+    dokarkivProxyConsumer.leggTilNavConsumerToken(()->
+        oidcTokenGenerator.isIncomingTokenIssuerSTS() ? null : tokenForBasicAuthenticationGenerator.generateToken());
     return dokarkivProxyConsumer;
   }
 
@@ -150,8 +152,8 @@ public class BidragDokumentArkivConfig {
       TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator
   ) {
     dokarkivConsumerRegularUser.leggTilAuthorizationToken(oidcTokenGenerator::getBearerToken);
-    dokarkivConsumerRegularUser.leggTilNavConsumerToken(tokenForBasicAuthenticationGenerator::generateToken);
-
+    dokarkivConsumerRegularUser.leggTilNavConsumerToken(()->
+        oidcTokenGenerator.isIncomingTokenIssuerSTS() ? null : tokenForBasicAuthenticationGenerator.generateToken());
     dokarkivConsumerServiceUser.leggTilAuthorizationToken(tokenForBasicAuthenticationGenerator::generateToken);
     var dokarkivConsumers = new HashMap<Discriminator, DokarkivConsumer>();
     dokarkivConsumers.put(Discriminator.REGULAR_USER, dokarkivConsumerRegularUser);

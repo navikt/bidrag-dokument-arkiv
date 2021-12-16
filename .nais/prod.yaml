@@ -8,6 +8,8 @@ kafka:
 env:
   - name: ACCEPTED_AUDIENCE
     value: bisys-p,bidrag-ui-p
+  - name: ACCEPTED_SERVICE_USER_AUDIENCE
+    value: srvbdarkivering
   - name: ISSO_ISSUER_URL
     value: https://isso.adeo.no:443/isso/oauth2
   - name: DOKARKIV_URL

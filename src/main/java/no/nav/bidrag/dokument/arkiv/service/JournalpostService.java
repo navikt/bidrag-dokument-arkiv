@@ -189,7 +189,7 @@ public class JournalpostService {
   }
 
   private void tilknyttSakerTilJournalfoertJournalpost(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
-    if (journalpost.isStatusJournalfort()) {
+    if (journalpost.isStatusJournalfort() || journalpost.isStatusFerdigsstilt()) {
       populerMedTilknyttedeSaker(journalpost);
       endreJournalpostCommand.hentTilknyttetSaker().stream()
           .filter(sak -> !journalpost.hentTilknyttetSaker().contains(sak))
@@ -200,6 +200,7 @@ public class JournalpostService {
 
   private void tilknyttTilSak(String saksnummer, Journalpost journalpost){
     KnyttTilAnnenSakRequest knyttTilAnnenSakRequest = new KnyttTilAnnenSakRequest(saksnummer, journalpost);
+    LOGGER.info("Tilknytter sak {} til journalpost {}", saksnummer, journalpost.getJournalpostId());
     dokarkivProxyConsumer.knyttTilSak(journalpost.hentJournalpostIdLong(), knyttTilAnnenSakRequest);
   }
 

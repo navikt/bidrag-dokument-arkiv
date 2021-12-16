@@ -8,8 +8,6 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.EnvironmentProperties;
 import no.nav.bidrag.dokument.arkiv.consumer.AccessTokenConsumer;
-import no.nav.bidrag.dokument.arkiv.dto.Saksbehandler;
-import no.nav.bidrag.tilgangskontroll.SecurityUtils;
 import no.nav.security.token.support.core.context.TokenValidationContextHolder;
 import no.nav.security.token.support.spring.api.EnableJwtTokenValidation;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -53,7 +51,7 @@ public class SecurityConfig {
   }
 
   @Bean
-  OidcTokenGenerator oidcTokenGenerator(TokenValidationContextHolder tokenValidationContextHolder) {
-    return new OidcTokenGenerator(tokenValidationContextHolder);
+  OidcTokenGenerator oidcTokenGenerator(TokenValidationContextHolder tokenValidationContextHolder, TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator) {
+    return new OidcTokenGenerator(tokenValidationContextHolder, tokenForBasicAuthenticationGenerator);
   }
 }
