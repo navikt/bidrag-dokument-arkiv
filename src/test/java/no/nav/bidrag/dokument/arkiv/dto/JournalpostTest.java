@@ -106,6 +106,19 @@ class JournalpostTest {
   }
 
   @Test
+  @DisplayName("skal hente avvik hvis Journalpost er status er FERDIGSTILT og utgående")
+  void skalHenteAvvikForFERDIGSTILT_Utgaaende() {
+    var journalpost = new Journalpost();
+    journalpost.setJournalstatus(JournalStatus.FERDIGSTILT);
+    journalpost.setJournalposttype("U");
+    journalpost.setSak(new Sak(""));
+    var avvikListe = journalpost.tilAvvik();
+    assertThat(avvikListe).hasSize(2);
+    assertThat(avvikListe).contains(AvvikType.REGISTRER_RETUR);
+    assertThat(avvikListe).contains(AvvikType.FEILFORE_SAK);
+  }
+
+  @Test
   @DisplayName("skal returnere avvik FEILFORE_SAK hvis status ikke er feilfort")
   void skalHenteAvvikFEILFORE_SAKHvisIkkeFeilfort() {
     var journalpost = new Journalpost();
