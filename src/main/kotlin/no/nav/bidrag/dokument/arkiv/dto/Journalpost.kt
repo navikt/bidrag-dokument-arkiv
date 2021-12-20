@@ -21,6 +21,7 @@ import java.time.LocalDate
 import java.util.stream.Collectors.toList
 
 const val RETUR_DETALJER_KEY = "retur"
+const val JOURNALFORT_AV_KEY = "journalfortAv"
 private const val DATO_DOKUMENT = "DATO_DOKUMENT"
 private const val DATO_JOURNALFORT = "DATO_JOURNALFOERT"
 private const val DATO_REGISTRERT = "DATO_REGISTRERT"
@@ -80,6 +81,10 @@ data class Journalpost(
 
     fun hasReturDetaljerWithDate(date: LocalDate) = !tilleggsopplysninger.hentReturDetaljerLogDO().stream().filter { it.dato == date }.findAny().isEmpty
 
+    fun hentJournalfortAv(): String? {
+       return tilleggsopplysninger.hentJournalfortAv() ?: journalfortAvNavn
+    }
+
     fun hentReturDetaljer(): ReturDetaljer? {
         if (hentDatoRetur() == null){
             return null
@@ -135,7 +140,7 @@ data class Journalpost(
             innhold = tittel,
             journalfortDato = hentDatoJournalfort(),
             journalforendeEnhet = journalforendeEnhet,
-            journalfortAv = journalfortAvNavn,
+            journalfortAv = hentJournalfortAv(),
             journalpostId = "JOARK-$journalpostId",
             journalstatus = hentJournalStatus(),
             mottattDato = hentDatoRegistrert(),
@@ -150,7 +155,7 @@ data class Journalpost(
         if (isStatusMottatt() && isInngaaendeDokument()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
         if (!isStatusMottatt() && hasSak() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.FEILFORE_SAK)
-        avvikTypeList.add(AvvikType.ENDRE_FAGOMRADE)
+        if (!isUtgaaendeDokument()) avvikTypeList.add(AvvikType.ENDRE_FAGOMRADE)
         return avvikTypeList;
     }
 
@@ -184,6 +189,12 @@ data class Journalpost(
 
 class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() {
 
+    fun hentJournalfortAv(): String? {
+        return this.filter { it["nokkel"]?.contains(JOURNALFORT_AV_KEY) ?: false}
+            .filter { Strings.isNotEmpty(it["verdi"]) }
+            .map { it["verdi"] }
+            .firstOrNull()
+    }
     fun addReturDetaljLog(returDetaljerLogDO: ReturDetaljerLogDO){
         this.addAll(returDetaljerLogDO.toMap())
     }
