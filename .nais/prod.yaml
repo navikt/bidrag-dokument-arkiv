@@ -12,6 +12,8 @@ env:
     value: srvbdarkivering
   - name: ISSO_ISSUER_URL
     value: https://isso.adeo.no:443/isso/oauth2
+  - name: STS_ISSUER_URL
+    value: https://security-token-service.nais.adeo.no
   - name: DOKARKIV_URL
     value: https://dokarkiv.nais.adeo.no/
   - name: SAF_GRAPHQL_URL
