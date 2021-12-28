@@ -3,7 +3,8 @@ package no.nav.bidrag.dokument.arkiv.query
 data class DokumentoversiktFagsakQuery(val saksnummer: String, val tema: String) : GraphQuery() {
     private val query = """
         query dokumentoversiktFagsak(${"$"}fagsakId: String!, ${"$"}tema: [Tema]){
-            dokumentoversiktFagsak(fagsak: {fagsakId: ${"$"}fagsakId, fagsaksystem: "BISYS"}, tema:${"$"}tema, foerste: 500) {
+            dokumentoversiktFagsak(fagsak: {fagsakId: ${"$"}fagsakId, fagsaksystem: "BISYS"}, tema:${"$"}tema, 
+            foerste: 500, journalstatuser: [FEILREGISTRERT, MOTTATT, JOURNALFOERT, FERDIGSTILT, EKSPEDERT, RESERVERT]) {
               journalposter {
                 avsenderMottaker {
                   navn
