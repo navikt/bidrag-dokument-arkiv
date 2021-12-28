@@ -50,6 +50,8 @@ data class Journalpost(
         return when(journalstatus){
             JournalStatus.MOTTATT->"M"
             JournalStatus.JOURNALFOERT->"J"
+            JournalStatus.FEILREGISTRERT->"F"
+            JournalStatus.EKSPEDERT->"E"
             JournalStatus.FERDIGSTILT->"R"
             JournalStatus.RESERVERT->"R"
             JournalStatus.UTGAAR->"U"
