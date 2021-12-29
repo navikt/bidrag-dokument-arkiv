@@ -41,8 +41,9 @@ spring.kafka:
       value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
       max-poll-records: 1
       properties:
-        retry.backoff.ms: 2000
-        reconnect.backoff.ms: 5000
+        max.poll.interval.ms: 50000
+        retry.backoff.ms: 5000
+        reconnect.backoff.ms: 8000
         enable.auto.commit: false
     ssl:
       trust-store-location: file:${KAFKA_TRUSTSTORE_PATH}
