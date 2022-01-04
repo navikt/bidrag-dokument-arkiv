@@ -189,7 +189,7 @@ public class JournalpostService {
   }
 
   private void tilknyttSakerTilJournalfoertJournalpost(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
-    if (journalpost.isStatusJournalfort() || journalpost.isStatusFerdigsstilt()) {
+    if (journalpost.kanTilknytteSaker()) {
       populerMedTilknyttedeSaker(journalpost);
       endreJournalpostCommand.hentTilknyttetSaker().stream()
           .filter(sak -> !journalpost.hentTilknyttetSaker().contains(sak))
