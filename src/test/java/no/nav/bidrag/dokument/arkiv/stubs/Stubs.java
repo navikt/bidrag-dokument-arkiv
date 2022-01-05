@@ -116,6 +116,19 @@ public class Stubs {
     );
   }
 
+  public void mockDokarkivOppdaterDistribusjonsInfoRequest(Long journalpostId) {
+    stubFor(
+        patch(
+            urlMatching(
+                "/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" + journalpostId + "/oppdaterDistribusjonsinfo"
+            )
+        ).willReturn(
+            aClosedJsonResponse()
+                .withStatus(HttpStatus.OK.value())
+        )
+    );
+  }
+
   public void mockDokarkivFerdigstillRequest(Long journalpostId) {
     stubFor(
         patch(
@@ -194,6 +207,12 @@ public class Stubs {
   }
 
   public static class VerifyStub {
+
+    public void dokarkivOppdaterDistribusjonsInfoKalt(Long journalpostId, String... contains) {
+      var requestPattern = putRequestedFor(urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + '/' + journalpostId + "/oppdaterDistribusjonsinfo"));
+      Arrays.stream(contains).forEach(contain -> requestPattern.withRequestBody(new ContainsPattern(contain)));
+      verify(requestPattern);
+    }
 
     public void dokarkivOppdaterKalt(Long journalpostId, String... contains) {
       var requestPattern = putRequestedFor(urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + '/' + journalpostId));
