@@ -165,6 +165,7 @@ data class Journalpost(
     fun isStatusFeilregistrert(): Boolean = journalstatus == JournalStatus.FEILREGISTRERT
     fun isStatusMottatt(): Boolean = journalstatus == JournalStatus.MOTTATT
     fun isStatusFerdigsstilt(): Boolean = journalstatus == JournalStatus.FERDIGSTILT
+    fun isStatusEkspedert(): Boolean = journalstatus == JournalStatus.EKSPEDERT
     fun kanTilknytteSaker(): Boolean = journalstatus == JournalStatus.JOURNALFOERT || journalstatus == JournalStatus.FERDIGSTILT || journalstatus == JournalStatus.EKSPEDERT
     fun isInngaaendeDokument(): Boolean = journalposttype == "I"
     fun isUtgaaendeDokument(): Boolean = journalposttype == "U"
@@ -326,6 +327,7 @@ data class EndreJournalpostCommandIntern(
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class TilknyttetJournalpost(
     var journalpostId: Long,
+    var journalstatus: JournalStatus,
     var sak: Sak?
 )
 

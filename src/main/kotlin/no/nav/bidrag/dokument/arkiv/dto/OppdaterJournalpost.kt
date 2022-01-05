@@ -6,6 +6,11 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import no.nav.bidrag.dokument.arkiv.utils.DateUtils
 import org.apache.logging.log4j.util.Strings
 
+data class OppdaterDistribusjonsInfoRequest(
+    var settStatusEkspedert: Boolean,
+    var utsendingsKanal: String
+)
+
 data class LagreJournalpostRequest(private var journalpostId: Long, private var endreJournalpostCommand: EndreJournalpostCommandIntern, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId) {
     init {
         tittel = endreJournalpostCommand.endreJournalpostCommand.tittel

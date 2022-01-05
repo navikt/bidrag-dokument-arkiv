@@ -81,6 +81,15 @@ public class Stubs {
     this.mockDokarkivOppdaterRequest(journalpostId, HttpStatus.OK);
   }
 
+  public void mockDokarkivOppdaterDistribusjonsInfoRequest(Long journalpostId, HttpStatus status) throws JsonProcessingException {
+    stubFor(
+        patch(urlMatching("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + '/' + journalpostId + "/oppdaterDistribusjonsinfo")).willReturn(
+            aClosedJsonResponse()
+                .withStatus(status.value())
+        )
+    );
+  }
+
   public void mockDokarkivOppdaterRequest(Long journalpostId, HttpStatus status) throws JsonProcessingException {
     stubFor(
         put(urlMatching("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + '/' + journalpostId)).willReturn(
@@ -239,6 +248,14 @@ public class Stubs {
               DokarkivConsumer.URL_JOURNALPOSTAPI_V1_FEILREGISTRER,
               journalpostId
           ) + "/" + path))
+      );
+    }
+
+    public void dokarkivOppdaterDistribusjonsInfoKalt(Long journalpostId) {
+      verify(
+          patchRequestedFor(urlMatching("/dokarkiv" +
+              DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/"+
+              journalpostId + "/oppdaterDistribusjonsinfo"))
       );
     }
 

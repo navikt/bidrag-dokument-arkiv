@@ -26,7 +26,7 @@ public class SaksbehandlerInfoManager {
     if (!response.is2xxSuccessful() && response.fetchBody().isEmpty()){
       return null;
     }
-    var saksbehandlerNavn = response.fetchBody().get().getNavn();
+    var saksbehandlerNavn = response.fetchBody().isEmpty() ? saksbehandlerIdent : response.fetchBody().get().getNavn();
     return new Saksbehandler(saksbehandlerIdent, saksbehandlerNavn);
   }
 
