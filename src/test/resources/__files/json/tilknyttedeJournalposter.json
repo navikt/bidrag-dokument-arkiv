@@ -4,6 +4,7 @@
       {
         "tittel": "Hoveddokument - Testdokument",
         "journalpostId": "510560098",
+        "journalstatus": "JOURNALFOERT",
         "sak": {
           "fagsakId": "9999999",
           "fagsaksystem": "BISYS",
@@ -14,6 +15,7 @@
       {
         "tittel": "Hoveddokument - Testdokument",
         "journalpostId": "510560082",
+        "journalstatus": "JOURNALFOERT",
         "sak": {
           "fagsakId": "2106585",
           "fagsaksystem": "BISYS",

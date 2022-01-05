@@ -2,6 +2,7 @@ package no.nav.bidrag.dokument.arkiv.dto
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.bidrag.dokument.arkiv.model.JournalpostDataException
@@ -325,6 +326,7 @@ data class EndreJournalpostCommandIntern(
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class TilknyttetJournalpost(
     var journalpostId: Long,
     var journalstatus: JournalStatus,
