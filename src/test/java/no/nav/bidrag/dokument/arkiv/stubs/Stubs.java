@@ -81,6 +81,15 @@ public class Stubs {
     this.mockDokarkivOppdaterRequest(journalpostId, HttpStatus.OK);
   }
 
+  public void mockDokarkivOppdaterDistribusjonsInfoRequest(Long journalpostId, HttpStatus status) throws JsonProcessingException {
+    stubFor(
+        patch(urlMatching("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + '/' + journalpostId + "/oppdaterDistribusjonsinfo")).willReturn(
+            aClosedJsonResponse()
+                .withStatus(status.value())
+        )
+    );
+  }
+
   public void mockDokarkivOppdaterRequest(Long journalpostId, HttpStatus status) throws JsonProcessingException {
     stubFor(
         put(urlMatching("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + '/' + journalpostId)).willReturn(
@@ -99,6 +108,19 @@ public class Stubs {
                     DokarkivConsumer.URL_JOURNALPOSTAPI_V1_FEILREGISTRER,
                     journalpostId
                 ) + "/" + path
+            )
+        ).willReturn(
+            aClosedJsonResponse()
+                .withStatus(HttpStatus.OK.value())
+        )
+    );
+  }
+
+  public void mockDokarkivOppdaterDistribusjonsInfoRequest(Long journalpostId) {
+    stubFor(
+        patch(
+            urlMatching(
+                "/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" + journalpostId + "/oppdaterDistribusjonsinfo"
             )
         ).willReturn(
             aClosedJsonResponse()
@@ -186,6 +208,12 @@ public class Stubs {
 
   public static class VerifyStub {
 
+    public void dokarkivOppdaterDistribusjonsInfoKalt(Long journalpostId, String... contains) {
+      var requestPattern = putRequestedFor(urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + '/' + journalpostId + "/oppdaterDistribusjonsinfo"));
+      Arrays.stream(contains).forEach(contain -> requestPattern.withRequestBody(new ContainsPattern(contain)));
+      verify(requestPattern);
+    }
+
     public void dokarkivOppdaterKalt(Long journalpostId, String... contains) {
       var requestPattern = putRequestedFor(urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + '/' + journalpostId));
       Arrays.stream(contains).forEach(contain -> requestPattern.withRequestBody(new ContainsPattern(contain)));
@@ -239,6 +267,14 @@ public class Stubs {
               DokarkivConsumer.URL_JOURNALPOSTAPI_V1_FEILREGISTRER,
               journalpostId
           ) + "/" + path))
+      );
+    }
+
+    public void dokarkivOppdaterDistribusjonsInfoKalt(Long journalpostId) {
+      verify(
+          patchRequestedFor(urlMatching("/dokarkiv" +
+              DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/"+
+              journalpostId + "/oppdaterDistribusjonsinfo"))
       );
     }
 

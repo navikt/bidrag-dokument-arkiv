@@ -9,6 +9,8 @@ import java.time.LocalDate
 object AvvikDetaljer {
     const val ENHETSNUMMER = "enhetsnummer"
     const val RETUR_DATO = "returDato"
+    const val UTSENDINGSKANAL = "utsendingsKanal"
+    const val SETT_STATUS_EKSPEDERT = "settStatusEkspedert"
     const val ENHETSNUMMER_GAMMELT = "gammeltEnhetsnummer"
     const val ENHETSNUMMER_NYTT = "nyttEnhetsnummer"
     const val FAGOMRADE = "fagomrade"
@@ -27,6 +29,8 @@ data class AvvikshendelseIntern(
     val enhetsnummerGammelt: String get() = detaljer[AvvikDetaljer.ENHETSNUMMER] ?: throw AvvikDetaljException(AvvikDetaljer.ENHETSNUMMER_GAMMELT)
     val enhetsnummerNytt: String get() = detaljer[AvvikDetaljer.ENHETSNUMMER_NYTT] ?: throw AvvikDetaljException(AvvikDetaljer.ENHETSNUMMER_NYTT)
     val nyttFagomrade: String get() = detaljer[AvvikDetaljer.FAGOMRADE] ?: throw AvvikDetaljException(AvvikDetaljer.FAGOMRADE)
+    val utsendingsKanal: String get() = detaljer[AvvikDetaljer.UTSENDINGSKANAL] ?: throw AvvikDetaljException(AvvikDetaljer.UTSENDINGSKANAL)
+    val settStatusEkspedert: Boolean get() = (detaljer[AvvikDetaljer.SETT_STATUS_EKSPEDERT] ?: throw AvvikDetaljException(AvvikDetaljer.SETT_STATUS_EKSPEDERT)).toBoolean()
 
     constructor(avvikshendelse: Avvikshendelse, opprettetAvEnhetsnummer: String, journalpostId: Long) : this(
         avvikstype = AvvikType.valueOf(avvikshendelse.avvikType),

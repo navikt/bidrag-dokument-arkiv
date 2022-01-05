@@ -5,6 +5,7 @@ data class TilknyttedeJournalposterQuery(val dokumentInfoId: String) : GraphQuer
         query tilknyttedeJournalposter(${"$"}dokumentInfoId: String!) {
              tilknyttedeJournalposter(dokumentInfoId: ${"$"}dokumentInfoId, tilknytning: GJENBRUK) {
                     journalpostId
+                    journalstatus
                     sak {
                         fagsakId
                         fagsaksystem
