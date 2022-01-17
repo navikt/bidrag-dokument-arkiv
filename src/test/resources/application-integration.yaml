@@ -1,5 +1,6 @@
 SAF_GRAPHQL_URL: http://localhost:${wiremock.server.port}/saf
 DOKARKIV_URL: http://localhost:${wiremock.server.port}/dokarkiv
+DOKDISTFORDELING_URL: http://localhost:${wiremock.server.port}/dokdistfordeling
 DOKARKIV_PROXY_URL: http://localhost:${wiremock.server.port}/dokarkivproxy
 ACCESS_TOKEN_URL: http://localhost:${wiremock.server.port}/sts
 BIDRAG_PERSON_URL: http://localhost:${wiremock.server.port}/person
