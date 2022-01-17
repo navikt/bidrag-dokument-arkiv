@@ -34,9 +34,9 @@ spec:
     - {{url}}
   {{/each}}
   env:
-  {{ #each env}}
-    - name: {{@key}}
-      value: "{{this}}"
+  {{#each env}}
+     - name: {{@key}}
+       value: "{{this}}"
   {{/each}}
   vault:
     enabled: true
