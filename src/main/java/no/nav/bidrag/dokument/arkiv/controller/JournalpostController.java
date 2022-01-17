@@ -253,7 +253,7 @@ public class JournalpostController {
   })
   @ResponseBody
   public DistribuerJournalpostResponse distribuerJournalpost(
-      @RequestBody DistribuerJournalpostRequest distribuerJournalpostRequest,
+      @RequestBody(required = false) DistribuerJournalpostRequest distribuerJournalpostRequest,
       @PathVariable Long journalpostId,
       @RequestHeader(EnhetFilter.X_ENHET_HEADER) String enhet
   ) {

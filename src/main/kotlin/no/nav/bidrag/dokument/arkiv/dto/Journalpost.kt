@@ -254,7 +254,8 @@ enum class AvsenderMottakerIdType {
     UKJENT,
     ORGNR,
     HPRNR,
-    UTL_ORG
+    UTL_ORG,
+    NULL
 }
 
 enum class BrukerType {
