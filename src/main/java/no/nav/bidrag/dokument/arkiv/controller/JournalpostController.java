@@ -17,10 +17,13 @@ import java.util.Optional;
 import no.nav.bidrag.commons.KildesystemIdenfikator;
 import no.nav.bidrag.commons.web.EnhetFilter;
 import no.nav.bidrag.dokument.arkiv.dto.AvvikshendelseIntern;
+import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.service.AvvikService;
+import no.nav.bidrag.dokument.arkiv.service.DistribuerJournalpostService;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.bidrag.dokument.dto.AvvikType;
 import no.nav.bidrag.dokument.dto.Avvikshendelse;
@@ -44,6 +47,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -55,10 +59,12 @@ public class JournalpostController {
 
   private final JournalpostService journalpostService;
   private final AvvikService avvikService;
+  private final DistribuerJournalpostService distribuerJournalpostService;
 
-  public JournalpostController(ResourceByDiscriminator<JournalpostService> journalpostService, AvvikService avvikService) {
+  public JournalpostController(ResourceByDiscriminator<JournalpostService> journalpostService, AvvikService avvikService, DistribuerJournalpostService distribuerJournalpostService) {
     this.journalpostService = journalpostService.get(Discriminator.REGULAR_USER);
     this.avvikService = avvikService;
+    this.distribuerJournalpostService = distribuerJournalpostService;
   }
 
   @GetMapping(ROOT_JOURNAL+"/{journalpostId}/avvik")
@@ -234,6 +240,26 @@ public class JournalpostController {
     );
 
     return new ResponseEntity<>(endreJournalpostHttpResponse.getResponseEntity().getStatusCode());
+  }
+
+  @PostMapping(ROOT_JOURNAL+"/distribuer/{journalpostId}")
+  @Operation(description = "Distribuer journalpost ved bruk av DOKSYS")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Distribusjon av journalpost er bestilt"),
+      @ApiResponse(responseCode = "400", description = "Journalpost mangler mottakerid og adresse er ikke oppgitt i kallet"),
+      @ApiResponse(responseCode = "401", description = "Sikkerhetstoken er ikke gyldig"),
+      @ApiResponse(responseCode = "403", description = "Sikkerhetstoke1n er ikke gyldig, eller det er ikke gitt adgang til kode 6 og 7 (nav-ansatt)"),
+      @ApiResponse(responseCode = "404", description = "Fant ikke journalpost som skal distribueres")
+  })
+  @ResponseBody
+  public DistribuerJournalpostResponse distribuerJournalpost(
+      @RequestBody DistribuerJournalpostRequest distribuerJournalpostRequest,
+      @PathVariable Long journalpostId,
+      @RequestHeader(EnhetFilter.X_ENHET_HEADER) String enhet
+  ) {
+    LOGGER.info("Distribuerer journalpost {} for enhet {}", journalpostId, enhet);
+
+    return distribuerJournalpostService.distribuerJournalpost(journalpostId, distribuerJournalpostRequest);
   }
 
   @Unprotected

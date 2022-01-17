@@ -7,6 +7,8 @@ data class JournalpostQuery(val journalpostId: Long) : GraphQuery() {
             journalpost(journalpostId: ${"$"}journalpostId) {
               avsenderMottaker {
                 navn
+                id
+                type
               }
               bruker {
                 id

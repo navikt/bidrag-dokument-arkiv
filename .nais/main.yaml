@@ -7,31 +7,19 @@ ingresses:
 kafka:
   pool: nav-dev
 env:
-  - name: ACCEPTED_AUDIENCE
-    value: bisys-q2,bidrag-ui-q2,bidrag-q-localhost,ida-q
-  - name: ACCEPTED_SERVICE_USER_AUDIENCE
-    value: srvbdarkivering
-  - name: ISSO_ISSUER_URL
-    value: https://isso-q.adeo.no:443/isso/oauth2
-  - name: STS_ISSUER_URL
-    value: https://security-token-service.dev.adeo.no
-  - name: DOKARKIV_URL
-    value: https://dokarkiv-q2.dev.adeo.no/
-  - name: SAF_GRAPHQL_URL
-    value: https://saf-q2.dev.adeo.no/graphql
-  - name: ACCESS_TOKEN_URL
-    value: https://security-token-service.nais.preprod.local
-  - name: TOPIC_JOURNALPOST
-    value: bidrag.journalpost
-  - name: TOPIC_JOURNALFOERING
-    value: teamdokumenthandtering.aapen-dok-journalfoering
-  - name: BIDRAG_PERSON_URL
-    value: https://bidrag-person.dev.adeo.no
-  - name: BIDRAG_ORGANISASJON_URL
-    value: https://bidrag-organisasjon.dev.adeo.no
-  - name: DOKARKIV_PROXY_URL
-    value: https://dokarkivproxy.dev.intern.nav.no
-  - name: FEATURE_ENABLED
-    value: KAFKA_ARBEIDSFLYT
+    ACCEPTED_AUDIENCE: bisys-q2,bidrag-ui-q2,bidrag-q-localhost,ida-q
+    ACCEPTED_SERVICE_USER_AUDIENCE: srvbdarkivering
+    ISSO_ISSUER_URL: https://isso-q.adeo.no:443/isso/oauth2
+    STS_ISSUER_URL: https://security-token-service.dev.adeo.no
+    ACCESS_TOKEN_URL: https://security-token-service.dev.adeo.no
+    DOKARKIV_URL: https://dokarkiv-q2.dev.adeo.no/
+    DOKARKIV_PROXY_URL: https://dokarkivproxy-q2.dev.intern.nav.no
+    DOKDISTFORDELING_URL: https://dokdistfordeling-q2.dev.adeo.no
+    SAF_GRAPHQL_URL: https://saf-q2.dev.adeo.no/graphql
+    TOPIC_JOURNALPOST: bidrag.journalpost
+    TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering
+    BIDRAG_PERSON_URL: https://bidrag-person.dev.adeo.no
+    BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon.dev.adeo.no
+    FEATURE_ENABLED: KAFKA_ARBEIDSFLYT
 vault:
   kvPath: dev

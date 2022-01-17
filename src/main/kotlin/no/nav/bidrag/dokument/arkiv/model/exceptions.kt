@@ -10,6 +10,10 @@ class JournalIkkeFunnetException(message: String) : HttpStatusException(message)
     override val status: HttpStatus get() = HttpStatus.NOT_FOUND
 }
 
+class JournalpostManglerMottakerIdException(message: String) : HttpStatusException(message) {
+    override val status: HttpStatus get() = HttpStatus.BAD_REQUEST
+}
+
 class JournalpostDataException(message: String) : RuntimeException(message)
 class JournalpostHendelseException(message: String, throwable: Throwable) : RuntimeException(message, throwable)
 class JournalpostIkkeFunnetException(message: String) : HttpStatusException(message) {

@@ -9,6 +9,7 @@ import no.nav.bidrag.dokument.arkiv.aop.HttpStatusRestControllerAdvice;
 import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivProxyConsumer;
+import no.nav.bidrag.dokument.arkiv.consumer.DokdistFordelingConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
@@ -16,6 +17,7 @@ import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
 import no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator;
+import no.nav.bidrag.dokument.arkiv.service.DistribuerJournalpostService;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +62,29 @@ public class BidragDokumentArkivConfig {
     httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
     return new DokarkivConsumer(httpHeaderRestTemplate);
   }
+
+  @Bean
+  @Scope("prototype")
+  public DokdistFordelingConsumer dokdistFordelingConsumer(
+      @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
+      EnvironmentProperties environmentProperties,
+      TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator
+  ) {
+    httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.dokdistFordelingUrl));
+    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
+    DokdistFordelingConsumer dokdistFordelingConsumer = new DokdistFordelingConsumer(httpHeaderRestTemplate);
+    dokdistFordelingConsumer.leggTilAuthorizationToken(tokenForBasicAuthenticationGenerator::generateToken);
+    return dokdistFordelingConsumer;
+  }
+
+  @Bean
+  public DistribuerJournalpostService distribuerJournalpostService(
+      ResourceByDiscriminator<SafConsumer> safConsumers,
+      DokdistFordelingConsumer dokdistFordelingConsumer
+  ) {
+    return new DistribuerJournalpostService(safConsumers.get(Discriminator.REGULAR_USER), dokdistFordelingConsumer);
+  }
+
 
   @Bean
   @Scope("prototype")
@@ -185,6 +210,7 @@ public class BidragDokumentArkivConfig {
   @Bean
   public EnvironmentProperties environmentProperties(
       @Value("${DOKARKIV_URL}") String dokarkivUrl,
+      @Value("${DOKDISTFORDELING_URL}") String dokdistFordelingUrl,
       @Value("${DOKARKIV_PROXY_URL}") String dokarkivProxyUrl,
       @Value("${BIDRAG_PERSON_URL}") String bidragPersonUrl,
       @Value("${SAF_GRAPHQL_URL}") String safQraphiQlUrl,
@@ -193,7 +219,7 @@ public class BidragDokumentArkivConfig {
       @Value("${BIDRAG_ORGANISASJON_URL}") String bidragOrganisasjonUrl,
       @Value("${NAIS_APP_NAME}") String naisAppName
   ) {
-    var environmentProperties = new EnvironmentProperties(dokarkivUrl, dokarkivProxyUrl, safQraphiQlUrl, secretForServiceUser, securityTokenUrl,
+    var environmentProperties = new EnvironmentProperties(dokdistFordelingUrl, dokarkivUrl, dokarkivProxyUrl, safQraphiQlUrl, secretForServiceUser, securityTokenUrl,
         naisAppName, bidragPersonUrl, bidragOrganisasjonUrl);
     LOGGER.info(String.format("> Environment: %s", environmentProperties));
 
@@ -203,6 +229,7 @@ public class BidragDokumentArkivConfig {
   public static class EnvironmentProperties {
 
     public final String dokarkivUrl;
+    public final String dokdistFordelingUrl;
     public final String dokarkivProxyUrl;
     public final String bidragPersonUrl;
     public final String safQraphiQlUrl;
@@ -212,9 +239,11 @@ public class BidragDokumentArkivConfig {
     public final String naisAppName;
 
     public EnvironmentProperties(
+        String dokdistFordelingUrl,
         String dokarkivUrl, String dokarkivProxyUrl, String safQraphiQlUrl, String secretForServiceUser,
         String securityTokenUrl, String naisAppName, String bidragPersonUrl, String bidragOrganisasjonUrl
     ) {
+      this.dokdistFordelingUrl = dokdistFordelingUrl;
       this.dokarkivProxyUrl = dokarkivProxyUrl;
       this.bidragPersonUrl = bidragPersonUrl;
       this.dokarkivUrl = dokarkivUrl;

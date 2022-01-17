@@ -162,6 +162,7 @@ data class Journalpost(
         return avvikTypeList;
     }
 
+    fun hasMottakerId(): Boolean = avsenderMottaker?.id != null
     fun hasSak(): Boolean = sak != null
     fun isStatusFeilregistrert(): Boolean = journalstatus == JournalStatus.FEILREGISTRERT
     fun isStatusMottatt(): Boolean = journalstatus == JournalStatus.MOTTATT
@@ -243,8 +244,18 @@ data class ReturDetaljerLogDO(
     fun toMap(): List<Map<String, String>> = beskrivelse.chunked(100).mapIndexed{ index, it -> mapOf("nokkel" to "$RETUR_DETALJER_KEY${index}_${DateUtils.formatDate(dato)}", "verdi" to it) }
 }
 data class AvsenderMottaker(
-    var navn: String? = null
+    var navn: String? = null,
+    var id: String? = null,
+    var type: AvsenderMottakerIdType? = null
 )
+
+enum class AvsenderMottakerIdType {
+    FNR,
+    UKJENT,
+    ORGNR,
+    HPRNR,
+    UTL_ORG
+}
 
 enum class BrukerType {
     AKTOERID,
