@@ -242,7 +242,7 @@ public class JournalpostController {
     return new ResponseEntity<>(endreJournalpostHttpResponse.getResponseEntity().getStatusCode());
   }
 
-  @PostMapping(ROOT_JOURNAL+"/distribuer/{journalpostId}")
+  @PostMapping(ROOT_JOURNAL+"/distribuer/{joarkJournalpostId}")
   @Operation(description = "Distribuer journalpost ved bruk av DOKSYS")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Distribusjon av journalpost er bestilt"),
@@ -252,14 +252,27 @@ public class JournalpostController {
       @ApiResponse(responseCode = "404", description = "Fant ikke journalpost som skal distribueres")
   })
   @ResponseBody
-  public DistribuerJournalpostResponse distribuerJournalpost(
+  public ResponseEntity<DistribuerJournalpostResponse> distribuerJournalpost(
       @RequestBody(required = false) DistribuerJournalpostRequest distribuerJournalpostRequest,
-      @PathVariable Long journalpostId,
+      @PathVariable String joarkJournalpostId,
       @RequestHeader(EnhetFilter.X_ENHET_HEADER) String enhet
   ) {
-    LOGGER.info("Distribuerer journalpost {} for enhet {}", journalpostId, enhet);
+    LOGGER.info("Distribuerer journalpost {} for enhet {}", joarkJournalpostId, enhet);
+    KildesystemIdenfikator kildesystemIdenfikator = new KildesystemIdenfikator(joarkJournalpostId);
 
-    return distribuerJournalpostService.distribuerJournalpost(journalpostId, distribuerJournalpostRequest);
+    if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix()) {
+      var msgBadRequest = String.format("Id har ikke riktig prefix: %s", joarkJournalpostId);
+
+      LOGGER.warn(msgBadRequest);
+
+      return ResponseEntity
+          .badRequest()
+          .header(HttpHeaders.WARNING, msgBadRequest)
+          .build();
+    }
+
+    var journalpostId = kildesystemIdenfikator.hentJournalpostIdLong();
+    return ResponseEntity.ok(distribuerJournalpostService.distribuerJournalpost(journalpostId, distribuerJournalpostRequest));
   }
 
   @Unprotected
