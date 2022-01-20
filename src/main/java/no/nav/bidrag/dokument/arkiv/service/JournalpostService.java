@@ -56,6 +56,14 @@ public class JournalpostService {
     return hentJournalpost(journalpostId, null);
   }
 
+  public Optional<Journalpost> hentJournalposMedTilknyttedeSaker(Long journalpostId) {
+    var jpOptional = hentJournalpost(journalpostId, null);
+    if (jpOptional.isEmpty()){
+      return jpOptional;
+    }
+    return Optional.ofNullable(populerMedTilknyttedeSaker(jpOptional.get()));
+  }
+
   public Optional<Journalpost> hentJournalpost(Long journalpostId, String saksnummer) {
     var journalpost = safConsumer.hentJournalpost(journalpostId);
 

@@ -4,6 +4,7 @@ import no.nav.bidrag.dokument.arkiv.model.HttpStatusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -13,6 +14,18 @@ import org.springframework.web.client.HttpClientErrorException;
 @RestControllerAdvice
 public class HttpStatusRestControllerAdvice {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpStatusRestControllerAdvice.class);
+
+
+  @ResponseBody
+  @ExceptionHandler
+  public ResponseEntity<?> handleIllegalArgumentException(IllegalArgumentException illegalArgumentException) {
+    LOGGER.warn(illegalArgumentException.getMessage());
+
+    return ResponseEntity
+        .status(HttpStatus.BAD_REQUEST)
+        .header(HttpHeaders.WARNING, illegalArgumentException.getMessage())
+        .build();
+  }
 
   @ResponseBody
   @ExceptionHandler

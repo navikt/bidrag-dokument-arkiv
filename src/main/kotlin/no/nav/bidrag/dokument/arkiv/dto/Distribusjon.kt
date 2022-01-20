@@ -1,5 +1,8 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
+import no.nav.bidrag.dokument.dto.JournalpostDto
+import org.apache.commons.lang3.Validate
+
 data class DokDistDistribuerJournalpostRequest(
     var journalpostId: Long,
     var batchId: String? = null,
@@ -62,4 +65,12 @@ data class DistribuerTilAdresse(
         val dokDistAdresseType = if (adressetype == AdresseType.UTENLANDSK_POSTADRESSE) DokDistAdresseType.utenlandskPostadresse else DokDistAdresseType.norskPostadresse
         return DokDistDistribuerTilAdresse(adresselinje1, adresselinje2, adresselinje3, dokDistAdresseType, land, postnummer, poststed)
     }
+}
+fun validerKanDistribueres(journalpost: Journalpost?, distribuerJournalpostRequest: DistribuerJournalpostRequest?) {
+    Validate.isTrue(journalpost != null, "Fant ingen journalpost")
+    Validate.isTrue(journalpost?.journalstatus == JournalStatus.FERDIGSTILT, "Journalpost må ha status FERDIGSTILT")
+    Validate.isTrue(journalpost?.hentTilknyttetSaker()?.size == 1, "Journalpost må ha totalt 1 sak før distribusjon, journalposten har ${journalpost?.hentTilknyttetSaker()?.size} saker")
+    Validate.isTrue(journalpost?.tema == "BID", "Journalpost må ha tema BID")
+    Validate.isTrue(journalpost?.hasMottakerId() == true, "Journalpost må ha satt mottakerId")
+    Validate.isTrue(distribuerJournalpostRequest != null && distribuerJournalpostRequest.hasAdresse(), "Adresse må være satt i input")
 }

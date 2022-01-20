@@ -78,15 +78,6 @@ public class BidragDokumentArkivConfig {
   }
 
   @Bean
-  public DistribuerJournalpostService distribuerJournalpostService(
-      ResourceByDiscriminator<SafConsumer> safConsumers,
-      DokdistFordelingConsumer dokdistFordelingConsumer
-  ) {
-    return new DistribuerJournalpostService(safConsumers.get(Discriminator.REGULAR_USER), dokdistFordelingConsumer);
-  }
-
-
-  @Bean
   @Scope("prototype")
   PersonConsumer basePersonConsumer(
       @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
