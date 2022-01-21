@@ -17,8 +17,7 @@ import java.util.Optional;
 import no.nav.bidrag.commons.KildesystemIdenfikator;
 import no.nav.bidrag.commons.web.EnhetFilter;
 import no.nav.bidrag.dokument.arkiv.dto.AvvikshendelseIntern;
-import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequest;
-import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostResponse;
+import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
@@ -28,6 +27,8 @@ import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.bidrag.dokument.dto.AvvikType;
 import no.nav.bidrag.dokument.dto.Avvikshendelse;
 import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse;
+import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest;
+import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
 import no.nav.bidrag.dokument.dto.JournalpostResponse;
@@ -243,10 +244,10 @@ public class JournalpostController {
   }
 
   @PostMapping(ROOT_JOURNAL+"/distribuer/{joarkJournalpostId}")
-  @Operation(description = "Distribuer journalpost ved bruk av DOKSYS")
+  @Operation(description = "Bestill distribusjon av journalpost")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Distribusjon av journalpost er bestilt"),
-      @ApiResponse(responseCode = "400", description = "Journalpost mangler mottakerid og adresse er ikke oppgitt i kallet"),
+      @ApiResponse(responseCode = "400", description = "Journalpost mangler mottakerid eller adresse er ikke oppgitt i kallet"),
       @ApiResponse(responseCode = "401", description = "Sikkerhetstoken er ikke gyldig"),
       @ApiResponse(responseCode = "403", description = "Sikkerhetstoke1n er ikke gyldig, eller det er ikke gitt adgang til kode 6 og 7 (nav-ansatt)"),
       @ApiResponse(responseCode = "404", description = "Fant ikke journalpost som skal distribueres")
@@ -272,7 +273,7 @@ public class JournalpostController {
     }
 
     var journalpostId = kildesystemIdenfikator.hentJournalpostIdLong();
-    return ResponseEntity.ok(distribuerJournalpostService.distribuerJournalpost(journalpostId, distribuerJournalpostRequest));
+    return ResponseEntity.ok(distribuerJournalpostService.distribuerJournalpost(journalpostId, new DistribuerJournalpostRequestInternal(distribuerJournalpostRequest)));
   }
 
   @Unprotected

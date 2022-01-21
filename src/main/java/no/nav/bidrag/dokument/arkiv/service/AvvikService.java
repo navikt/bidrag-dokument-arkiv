@@ -61,20 +61,12 @@ public class AvvikService {
       case TREKK_JOURNALPOST -> trekkJournalpost(avvikshendelseIntern);
       case FEILFORE_SAK -> feilforSak(avvikshendelseIntern);
       case REGISTRER_RETUR -> registrerRetur(journalpost, avvikshendelseIntern);
-      case OPPDATER_DISTRIBUSJONSINFO -> oppdaterDistribusjonsInfo(journalpost, avvikshendelseIntern);
       default -> throw new AvvikNotSupportedException("Avvik %s ikke støttet".formatted(avvikshendelseIntern.getAvvikstype()));
     }
 
     hendelserProducer.publishJournalpostUpdated(journalpost.hentJournalpostIdLong());
 
     return Optional.of(new BehandleAvvikshendelseResponse(avvikshendelseIntern.getAvvikstype()));
-  }
-
-  public void oppdaterDistribusjonsInfo(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
-      var tilknyttedeJournalpost = journalpostService.hentTilknyttedeJournalposter(journalpost);
-      tilknyttedeJournalpost.stream()
-          .filter((jp)-> jp.getJournalstatus() != JournalStatus.EKSPEDERT)
-          .forEach((jp)-> dokarkivConsumer.oppdaterDistribusjonsInfo(jp.getJournalpostId(), avvikshendelseIntern.getSettStatusEkspedert(), avvikshendelseIntern.getUtsendingsKanal()));
   }
 
   public void registrerRetur(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
@@ -112,7 +104,6 @@ public class AvvikService {
   }
 
   public Boolean erGyldigAvviksBehandling(Journalpost journalpost, AvvikType avvikType){
-    var kanUtforeOppdaterDistribusjonsInfo = avvikType.equals(AvvikType.OPPDATER_DISTRIBUSJONSINFO) && (journalpost.isStatusEkspedert() || journalpost.isStatusFerdigsstilt());
-    return journalpost.tilAvvik().contains(avvikType) || kanUtforeOppdaterDistribusjonsInfo;
+    return journalpost.tilAvvik().contains(avvikType);
   }
 }
