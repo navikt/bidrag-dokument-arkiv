@@ -2,11 +2,14 @@ package no.nav.bidrag.dokument.arkiv;
 
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_LIVE;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class BidragDokumentArkiv {
+  public static final Logger SECURE_LOGGER = LoggerFactory.getLogger("secureLogger");
 
   public static void main(String... args) {
 

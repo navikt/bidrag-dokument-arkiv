@@ -1,5 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
 import static no.nav.bidrag.dokument.arkiv.dto.DistribusjonKt.validerKanDistribueres;
 
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
@@ -19,7 +20,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class DistribuerJournalpostService {
   private static final Logger LOGGER = LoggerFactory.getLogger(DistribuerJournalpostService.class);
-  private static final Logger SECURE_LOGGER = LoggerFactory.getLogger("secureLogger");
 
   private final JournalpostService journalpostService;
   private final DokdistFordelingConsumer dokdistFordelingConsumer;
@@ -33,7 +33,8 @@ public class DistribuerJournalpostService {
 
   public DistribuerJournalpostResponse distribuerJournalpost(Long journalpostId, DistribuerJournalpostRequestInternal distribuerJournalpostRequest){
     var adresse = distribuerJournalpostRequest.getAdresse();
-    SECURE_LOGGER.info("Forsøker å distribuerer journalpost {} med foreslått adresse {}", journalpostId, adresse);
+    LOGGER.info("Forsøker å distribuere journalpost {}", journalpostId);
+    SECURE_LOGGER.info("Forsøker å distribuere journalpost {} med foreslått adresse {}", journalpostId, adresse);
     var journalpostOptional = journalpostService.hentJournalpost(journalpostId);
     if (journalpostOptional.isEmpty()){
       throw new JournalpostIkkeFunnetException(String.format("Fant ingen journalpost med id %s", journalpostId));
