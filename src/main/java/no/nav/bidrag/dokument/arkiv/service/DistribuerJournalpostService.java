@@ -33,7 +33,7 @@ public class DistribuerJournalpostService {
   public DistribuerJournalpostResponse distribuerJournalpost(Long journalpostId, DistribuerJournalpostRequestInternal distribuerJournalpostRequest){
     var adresse = distribuerJournalpostRequest.getAdresse();
     LOGGER.info("Forsøker å distribuerer journalpost {} med foreslått adresse {}", journalpostId, adresse);
-    var journalpostOptional = journalpostService.hentJournalposMedTilknyttedeSaker(journalpostId);
+    var journalpostOptional = journalpostService.hentJournalpost(journalpostId);
     if (journalpostOptional.isEmpty()){
       throw new JournalpostIkkeFunnetException(String.format("Fant ingen journalpost med id %s", journalpostId));
     }

@@ -66,7 +66,6 @@ data class DokDistDistribuerJournalpostResponse(
 fun validerKanDistribueres(journalpost: Journalpost?, distribuerJournalpostRequest: DistribuerJournalpostRequestInternal?) {
     Validate.isTrue(journalpost != null, "Fant ingen journalpost")
     Validate.isTrue(journalpost?.journalstatus == JournalStatus.FERDIGSTILT, "Journalpost må ha status FERDIGSTILT")
-    Validate.isTrue(journalpost?.hentTilknyttetSaker()?.size == 1, "Journalpost må ha totalt 1 sak før distribusjon, journalposten har ${journalpost?.hentTilknyttetSaker()?.size} saker")
     Validate.isTrue(journalpost?.tema == "BID", "Journalpost må ha tema BID")
     Validate.isTrue(journalpost?.hasMottakerId() == true, "Journalpost må ha satt mottakerId")
     Validate.isTrue(distribuerJournalpostRequest != null && distribuerJournalpostRequest.hasAdresse(), "Adresse må være satt i input")

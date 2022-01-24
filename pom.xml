@@ -317,6 +317,18 @@
         <version>${kotlin.version}</version>
         <executions>
           <execution>
+            <id>test-compile</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>test-compile</goal>
+            </goals>
+            <configuration>
+              <sourceDirs>
+                <source>src/test/java</source>
+              </sourceDirs>
+            </configuration>
+          </execution>
+          <execution>
             <id>compile</id>
             <phase>process-sources</phase>
             <goals>

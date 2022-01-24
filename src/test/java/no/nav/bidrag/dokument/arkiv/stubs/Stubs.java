@@ -24,6 +24,7 @@ import com.github.tomakehurst.wiremock.matching.ContainsPattern;
 import java.util.Arrays;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivProxyConsumer;
+import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerInfoResponse;
@@ -79,6 +80,20 @@ public class Stubs {
 
   public void mockDokarkivOppdaterRequest(Long journalpostId) throws JsonProcessingException {
     this.mockDokarkivOppdaterRequest(journalpostId, HttpStatus.OK);
+  }
+
+  public void mockDokdistFordelingRequest(HttpStatus status, String bestillingId) {
+    try {
+      stubFor(
+          post(urlMatching("/dokdistfordeling/rest/v1/distribuerjournalpost")).willReturn(
+              aClosedJsonResponse()
+                  .withStatus(status.value())
+                  .withBody(objectMapper.writeValueAsString(new DokDistDistribuerJournalpostResponse(bestillingId)))
+          )
+      );
+    } catch (JsonProcessingException e) {
+      fail(e.getMessage());
+    }
   }
 
   public void mockDokarkivOppdaterDistribusjonsInfoRequest(Long journalpostId, HttpStatus status) throws JsonProcessingException {
@@ -223,6 +238,18 @@ public class Stubs {
     public void bidragPersonKalt() {
       verify(
           getRequestedFor(urlMatching("/person/.*"))
+      );
+    }
+
+    public void dokdistFordelingKalt(String... contains) {
+      var requestPattern = postRequestedFor(urlMatching("/dokdistfordeling/.*"));
+      Arrays.stream(contains).forEach(contain -> requestPattern.withRequestBody(new ContainsPattern(contain)));
+      verify(requestPattern);
+    }
+
+    public void dokdistFordelingIkkeKalt() {
+      verify(0,
+          postRequestedFor(urlMatching("/dokdistfordeling/.*"))
       );
     }
 
