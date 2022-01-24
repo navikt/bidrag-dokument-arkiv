@@ -7,6 +7,8 @@ metadata:
     team: bidrag
 spec:
   image: {{ image }}
+  secureLogs:
+    enabled: true
   kafka:
     pool: {{ kafka.pool }}
   liveness:

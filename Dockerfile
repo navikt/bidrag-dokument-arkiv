@@ -5,4 +5,5 @@ LABEL maintainer="Team Bidrag" \
 COPY init-scripts /init-scripts
 ADD ./target/bidrag-dokument-arkiv*.jar app.jar
 
+ENV SPRING_PROFILES_ACTIVE=nais
 EXPOSE 8080
