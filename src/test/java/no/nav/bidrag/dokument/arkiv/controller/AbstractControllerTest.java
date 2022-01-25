@@ -3,6 +3,7 @@ package no.nav.bidrag.dokument.arkiv.controller;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TEST;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal.PROFILE_INTEGRATION;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import no.nav.bidrag.commons.web.test.HttpHeaderTestRestTemplate;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
@@ -50,6 +51,8 @@ public abstract class AbstractControllerTest {
   protected KafkaTemplate<String, String> kafkaTemplateMock;
   @Value("${TOPIC_JOURNALPOST}")
   protected String topicJournalpost;
+  @Autowired
+  protected ObjectMapper objectMapper;
 
 
   @BeforeEach

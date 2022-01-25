@@ -36,7 +36,7 @@ class JournalpostTest {
     var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
 
     assertAll(
-        () -> assertThat(journalpost.getAvsenderMottaker()).as("avsenderMottaker").isEqualTo(new AvsenderMottaker("Tuborg")),
+        () -> assertThat(journalpost.getAvsenderMottaker()).as("avsenderMottaker").isEqualTo(new AvsenderMottaker("Tuborg" , null, null)),
         () -> assertThat(journalpost.getBruker()).as("bruker").isEqualTo(new Bruker("1000024690889", "AKTOERID")),
         () -> assertThat(journalpost.getDokumenter()).as("dokumenter").isEqualTo(List.of(
             new Dokument("ROD SNO", "12345", "BI01S02"),

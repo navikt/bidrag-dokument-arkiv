@@ -26,45 +26,6 @@ import org.springframework.http.ResponseEntity;
 public class AvvikControllerTest extends AbstractControllerTest {
 
   @Test
-  @DisplayName("skal utføre avvik OPPDATER_DISTRIBUSJONSINFO")
-  void skalSendeAvvikOppdaterDistribusjonsInfo() throws IOException, JSONException {
-    // given
-    var xEnhet = "1234";
-    var journalpostIdFraJson = 201028011L;
-    var tilknyttetJournalpost1 = 510560098L;
-    var tilknyttetJournalpost2 = 510560082L;
-    var avvikHendelse = createAvvikHendelse(AvvikType.OPPDATER_DISTRIBUSJONSINFO, Map.of("settStatusEkspedert", "true", "utsendingsKanal", "L"));
-
-    stubs.mockSafResponseHentJournalpost(responseJournalpostJsonUtgaaende, HttpStatus.OK);
-    stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK);
-    stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
-    stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson);
-    stubs.mockDokarkivOppdaterDistribusjonsInfoRequest(tilknyttetJournalpost1);
-    stubs.mockDokarkivOppdaterDistribusjonsInfoRequest(tilknyttetJournalpost2);
-
-    // when
-    var headersMedEnhet = new HttpHeaders();
-    headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
-    var overforEnhetResponse = httpHeaderTestRestTemplate.exchange(
-        initUrl() + "/journal/JOARK-" + journalpostIdFraJson + "/avvik",
-        HttpMethod.POST,
-        new HttpEntity<>(avvikHendelse, headersMedEnhet),
-        BehandleAvvikshendelseResponse.class
-    );
-
-    // then
-    assertAll(
-        () -> assertThat(overforEnhetResponse)
-            .extracting(ResponseEntity::getStatusCode)
-            .as("statusCode")
-            .isEqualTo(HttpStatus.OK),
-        () -> stubs.verifyStub.dokarkivOppdaterDistribusjonsInfoKalt(tilknyttetJournalpost1),
-        () -> stubs.verifyStub.dokarkivOppdaterDistribusjonsInfoKalt(tilknyttetJournalpost2),
-        () -> verify(kafkaTemplateMock).send(eq(topicJournalpost), eq("JOARK-" + journalpostIdFraJson), any())
-    );
-  }
-
-  @Test
   @DisplayName("skal utføre avvik OVERFOR_TIL_ANNEN_ENHET")
   void skalSendeAvvikOverforEnhet() throws IOException, JSONException {
     // given

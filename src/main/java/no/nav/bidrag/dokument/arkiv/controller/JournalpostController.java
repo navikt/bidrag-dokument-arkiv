@@ -17,14 +17,18 @@ import java.util.Optional;
 import no.nav.bidrag.commons.KildesystemIdenfikator;
 import no.nav.bidrag.commons.web.EnhetFilter;
 import no.nav.bidrag.dokument.arkiv.dto.AvvikshendelseIntern;
+import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.service.AvvikService;
+import no.nav.bidrag.dokument.arkiv.service.DistribuerJournalpostService;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.bidrag.dokument.dto.AvvikType;
 import no.nav.bidrag.dokument.dto.Avvikshendelse;
 import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse;
+import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest;
+import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
 import no.nav.bidrag.dokument.dto.JournalpostResponse;
@@ -44,6 +48,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -55,10 +60,12 @@ public class JournalpostController {
 
   private final JournalpostService journalpostService;
   private final AvvikService avvikService;
+  private final DistribuerJournalpostService distribuerJournalpostService;
 
-  public JournalpostController(ResourceByDiscriminator<JournalpostService> journalpostService, AvvikService avvikService) {
+  public JournalpostController(ResourceByDiscriminator<JournalpostService> journalpostService, AvvikService avvikService, DistribuerJournalpostService distribuerJournalpostService) {
     this.journalpostService = journalpostService.get(Discriminator.REGULAR_USER);
     this.avvikService = avvikService;
+    this.distribuerJournalpostService = distribuerJournalpostService;
   }
 
   @GetMapping(ROOT_JOURNAL+"/{journalpostId}/avvik")
@@ -234,6 +241,39 @@ public class JournalpostController {
     );
 
     return new ResponseEntity<>(endreJournalpostHttpResponse.getResponseEntity().getStatusCode());
+  }
+
+  @PostMapping(ROOT_JOURNAL+"/distribuer/{joarkJournalpostId}")
+  @Operation(description = "Bestill distribusjon av journalpost")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Distribusjon av journalpost er bestilt"),
+      @ApiResponse(responseCode = "400", description = "Journalpost mangler mottakerid eller adresse er ikke oppgitt i kallet"),
+      @ApiResponse(responseCode = "401", description = "Sikkerhetstoken er ikke gyldig"),
+      @ApiResponse(responseCode = "403", description = "Sikkerhetstoke1n er ikke gyldig, eller det er ikke gitt adgang til kode 6 og 7 (nav-ansatt)"),
+      @ApiResponse(responseCode = "404", description = "Fant ikke journalpost som skal distribueres")
+  })
+  @ResponseBody
+  public ResponseEntity<DistribuerJournalpostResponse> distribuerJournalpost(
+      @RequestBody(required = false) DistribuerJournalpostRequest distribuerJournalpostRequest,
+      @PathVariable String joarkJournalpostId,
+      @RequestHeader(EnhetFilter.X_ENHET_HEADER) String enhet
+  ) {
+    LOGGER.info("Distribuerer journalpost {} for enhet {}", joarkJournalpostId, enhet);
+    KildesystemIdenfikator kildesystemIdenfikator = new KildesystemIdenfikator(joarkJournalpostId);
+
+    if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix()) {
+      var msgBadRequest = String.format("Id har ikke riktig prefix: %s", joarkJournalpostId);
+
+      LOGGER.warn(msgBadRequest);
+
+      return ResponseEntity
+          .badRequest()
+          .header(HttpHeaders.WARNING, msgBadRequest)
+          .build();
+    }
+
+    var journalpostId = kildesystemIdenfikator.hentJournalpostIdLong();
+    return ResponseEntity.ok(distribuerJournalpostService.distribuerJournalpost(journalpostId, new DistribuerJournalpostRequestInternal(distribuerJournalpostRequest)));
   }
 
   @Unprotected

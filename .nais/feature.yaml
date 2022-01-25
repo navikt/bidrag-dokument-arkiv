@@ -7,33 +7,20 @@ ingresses:
 kafka:
   pool: nav-dev
 env:
-  - name: ACCEPTED_AUDIENCE
-    value: bisys-q1,bidrag-ui-q1,bidrag-ui-feature-q1,bidrag-q-localhost,ida-q
-  - name: ACCEPTED_SERVICE_USER_AUDIENCE
-    value: srvbdarkivering
-  - name: ISSO_ISSUER_URL
-    value: https://isso-q.adeo.no:443/isso/oauth2
-  - name: STS_ISSUER_URL
-    value: https://security-token-service.dev.adeo.no
-  - name: DOKARKIV_URL
-    value: https://dokarkiv-q1.dev.adeo.no/
-  - name: SAF_GRAPHQL_URL
-    value: https://saf-q1.dev.adeo.no/graphql
-  - name: ACCESS_TOKEN_URL
-    value: https://security-token-service.dev.adeo.no
-  - name: TOPIC_JOURNALPOST
-    value: bidrag.journalpost-feature
-  - name: TOPIC_JOURNALFOERING
-    value: teamdokumenthandtering.aapen-dok-journalfoering-q1
-  - name: BIDRAG_PERSON_URL
-    value: https://bidrag-person-feature.dev.adeo.no
-  - name: FEATURE_ENABLED
-    value: KAFKA_ARBEIDSFLYT
-  - name: BIDRAG_ORGANISASJON_URL
-    value: https://bidrag-organisasjon-feature.dev.adeo.no
-  - name: DOKARKIV_PROXY_URL
-    value: https://dokarkivproxy-q1.dev.intern.nav.no
-  - name: JAVA_OPTS
-    value: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
+  ACCEPTED_AUDIENCE: bisys-q1,bidrag-ui-q1,bidrag-ui-feature-q1,bidrag-q-localhost,ida-q
+  ACCEPTED_SERVICE_USER_AUDIENCE: srvbdarkivering
+  ISSO_ISSUER_URL: https://isso-q.adeo.no:443/isso/oauth2
+  STS_ISSUER_URL: https://security-token-service.dev.adeo.no
+  ACCESS_TOKEN_URL: https://security-token-service.dev.adeo.no
+  DOKARKIV_URL: https://dokarkiv-q1.dev.adeo.no/
+  DOKARKIV_PROXY_URL: https://dokarkivproxy-q1.dev.intern.nav.no
+  DOKDISTFORDELING_URL: https://dokdistfordeling-q1.dev.adeo.no
+  SAF_GRAPHQL_URL: https://saf-q1.dev.adeo.no/graphql
+  TOPIC_JOURNALPOST: bidrag.journalpost-feature
+  TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering-q1
+  BIDRAG_PERSON_URL: https://bidrag-person-feature.dev.adeo.no
+  BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon-feature.dev.adeo.no
+  FEATURE_ENABLED: KAFKA_ARBEIDSFLYT
+  JAVA_OPTS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
 vault:
   kvPath: dev

@@ -2,9 +2,7 @@
   "data": {
     "journalpost": {
       "avsenderMottaker": {
-        "navn": "Mottaker mottakersen",
-        "id": "12312321312321",
-        "type": "FNR"
+        "navn": null
       },
       "bruker": {
         "id": "1385076492416",
