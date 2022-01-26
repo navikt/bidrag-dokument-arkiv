@@ -36,6 +36,7 @@ public abstract class AbstractControllerTest {
   protected String responseJournalpostJson = "journalpostSafResponse.json";
   protected String responseJournalpostJsonUtgaaende = "journalpostSafUtgaaendeResponse.json";
   protected String responseJournalpostJsonWithReturDetaljer = "journalpostSafReturDetaljerResponse.json";
+  protected String responseJournalpostJsonWithAdresse = "journalpostSafAdresseResponse.json";
   protected String responseJournalpostIngenSakerJson = "journalpostSafIngenSakerResponse.json";
   protected String journalpostSafNotFoundResponse = "journalpostSafNotFoundResponse.json";
   protected String journalpostJournalfortSafResponse = "journalpostJournalfortSafResponse.json";

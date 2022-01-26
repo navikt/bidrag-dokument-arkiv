@@ -158,7 +158,7 @@ data class Journalpost(
             mottattDato = hentDatoRegistrert(),
             returDetaljer = hentReturDetaljer(),
             brevkode = hentBrevkode(),
-            distribuertTilAdresse = if (isSentralPrint()) tilleggsopplysninger.hentAdresseDo()?.toDistribuerTilAdresse() else null
+            distribuertTilAdresse = tilleggsopplysninger.hentAdresseDo()?.toDistribuerTilAdresse()
         )
     }
 
