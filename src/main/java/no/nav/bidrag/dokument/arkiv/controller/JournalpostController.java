@@ -273,7 +273,7 @@ public class JournalpostController {
     }
 
     var journalpostId = kildesystemIdenfikator.hentJournalpostIdLong();
-    return ResponseEntity.ok(distribuerJournalpostService.distribuerJournalpost(journalpostId, new DistribuerJournalpostRequestInternal(distribuerJournalpostRequest)));
+    return ResponseEntity.ok(distribuerJournalpostService.distribuerJournalpost(journalpostId, new DistribuerJournalpostRequestInternal(distribuerJournalpostRequest), enhet));
   }
 
   @Unprotected

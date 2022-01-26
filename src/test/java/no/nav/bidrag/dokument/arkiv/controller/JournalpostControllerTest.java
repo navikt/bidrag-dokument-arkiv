@@ -5,20 +5,16 @@ import static no.nav.bidrag.dokument.arkiv.stubs.TestDataKt.createDistribuerTilA
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import no.nav.bidrag.commons.web.EnhetFilter;
-import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal;
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
-import no.nav.bidrag.dokument.dto.AdresseType;
 import no.nav.bidrag.dokument.dto.AktorDto;
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest;
-import no.nav.bidrag.dokument.dto.DistribuerTilAdresse;
 import no.nav.bidrag.dokument.dto.EndreDokument;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.bidrag.dokument.dto.EndreReturDetaljer;
@@ -478,6 +474,7 @@ class JournalpostControllerTest extends AbstractControllerTest {
 
     stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponse.json", HttpStatus.OK);
     stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId);
+    stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson);
 
     var request = new DistribuerJournalpostRequest(createDistribuerTilAdresse());
 
@@ -495,7 +492,8 @@ class JournalpostControllerTest extends AbstractControllerTest {
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
-        () -> stubs.verifyStub.dokdistFordelingKalt(objectMapper.writeValueAsString(new DokDistDistribuerJournalpostRequest(journalpostIdFraJson, request.getAdresse())))
+        () -> stubs.verifyStub.dokdistFordelingKalt(objectMapper.writeValueAsString(new DokDistDistribuerJournalpostRequest(journalpostIdFraJson, request.getAdresse()))),
+        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,  request.getAdresse().getAdresselinje1(),  request.getAdresse().getLand())
     );
   }
 
