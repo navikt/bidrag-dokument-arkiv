@@ -510,7 +510,10 @@ class JournalpostControllerTest extends AbstractControllerTest {
     stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId);
     stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson);
 
-    var request = new DistribuerJournalpostRequest(createDistribuerTilAdresse());
+    var distribuerTilAdresse = createDistribuerTilAdresse();
+    distribuerTilAdresse.setAdresselinje2("Adresselinje2");
+    distribuerTilAdresse.setAdresselinje3("Adresselinje3");
+    var request = new DistribuerJournalpostRequest(distribuerTilAdresse);
 
     // when
     var oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
