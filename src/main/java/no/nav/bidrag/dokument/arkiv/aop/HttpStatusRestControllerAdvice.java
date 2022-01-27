@@ -18,6 +18,17 @@ public class HttpStatusRestControllerAdvice {
 
   @ResponseBody
   @ExceptionHandler
+  public ResponseEntity<?> handleOtherExceptions(Exception exception) {
+    LOGGER.error(exception.getMessage());
+
+    return ResponseEntity
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .header(HttpHeaders.WARNING, exception.getMessage())
+        .build();
+  }
+
+  @ResponseBody
+  @ExceptionHandler
   public ResponseEntity<?> handleIllegalArgumentException(IllegalArgumentException illegalArgumentException) {
     LOGGER.warn(illegalArgumentException.getMessage());
 

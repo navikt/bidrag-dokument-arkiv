@@ -182,8 +182,7 @@ public class JournalpostController {
           .build();
     }
 
-    return journalpostService.hentJournalpostMedFnr(Long.valueOf(journalpostId), saksnummer)
-        .map(journalpostService::populerMedTilknyttedeSaker)
+    return journalpostService.hentJournalpostMedFnrOgTilknyttedeSaker(Long.valueOf(journalpostId), saksnummer)
         .map(journalpost -> ResponseEntity.ok(journalpost.tilJournalpostResponse()))
         .orElse(ResponseEntity.notFound()
             .header(HttpHeaders.WARNING, String.format("Fant ingen journalpost med id %s og saksnummer %s", journalpostId, saksnummer))

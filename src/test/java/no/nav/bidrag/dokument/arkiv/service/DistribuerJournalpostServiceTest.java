@@ -3,6 +3,7 @@ package no.nav.bidrag.dokument.arkiv.service;
 import static no.nav.bidrag.dokument.arkiv.dto.DistribusjonKt.validerAdresse;
 import static no.nav.bidrag.dokument.arkiv.dto.DistribusjonKt.validerKanDistribueres;
 import static no.nav.bidrag.dokument.arkiv.stubs.TestDataKt.createDistribuerTilAdresse;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker;
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottakerIdType;
@@ -26,12 +27,23 @@ public class DistribuerJournalpostServiceTest {
   }
 
   @Test
+  @DisplayName("skal feile validering av distribuer journalpost hvis journalpost allerede er distribuert")
+  void skalIkkeValidereHvisJournalpostAlleredeErDistribuert() {
+    var jp = createValidJournalpost();
+    jp.getTilleggsopplysninger().setDistribusjonBestillt();
+    var exceptionResult = Assertions.assertThrows(IllegalArgumentException.class, ()->validerKanDistribueres(jp, new DistribuerJournalpostRequestInternal(
+        createValidDistribuerJournalpostRequest())), "skal feile hvis journalpost allerede er distribuert");
+    assertThat(exceptionResult.getMessage()).contains("Journalpost er allerede distribuert");
+  }
+
+  @Test
   @DisplayName("skal feile validering av distribuer journalpost hvis status ikke er FERDIGSTILT")
   void skalIkkeValidereHvisStatusIkkeErFerdigstilt() {
     var jp = createValidJournalpost();
     jp.setJournalstatus(JournalStatus.JOURNALFOERT);
-    Assertions.assertThrows(IllegalArgumentException.class, ()->validerKanDistribueres(jp, new DistribuerJournalpostRequestInternal(
+    var exceptionResult = Assertions.assertThrows(IllegalArgumentException.class, ()->validerKanDistribueres(jp, new DistribuerJournalpostRequestInternal(
         createValidDistribuerJournalpostRequest())), "skal feile hvis status ikke er FERDIGSTILT");
+    assertThat(exceptionResult.getMessage()).contains("FERDIGSTILT");
   }
 
   @Test
@@ -39,8 +51,9 @@ public class DistribuerJournalpostServiceTest {
   void skalIkkeValidereHvisTemaIkkeErBID() {
     var jp = createValidJournalpost();
     jp.setTema("FAR");
-    Assertions.assertThrows(IllegalArgumentException.class, ()->validerKanDistribueres(jp, new DistribuerJournalpostRequestInternal(
+    var exceptionResult = Assertions.assertThrows(IllegalArgumentException.class, ()->validerKanDistribueres(jp, new DistribuerJournalpostRequestInternal(
         createValidDistribuerJournalpostRequest())), "Skal feile hvis tema ikke er BID");
+    assertThat(exceptionResult.getMessage()).contains("BID");
   }
 
   @Test
@@ -48,8 +61,9 @@ public class DistribuerJournalpostServiceTest {
   void skalIkkeValidereHvisJournalpostIkkeHarMottakerIdSatt() {
     var jp = createValidJournalpost();
     jp.setAvsenderMottaker(new AvsenderMottaker());
-    Assertions.assertThrows(IllegalArgumentException.class, ()->validerKanDistribueres(jp, new DistribuerJournalpostRequestInternal(
+    var exceptionResult = Assertions.assertThrows(IllegalArgumentException.class, ()->validerKanDistribueres(jp, new DistribuerJournalpostRequestInternal(
         createValidDistribuerJournalpostRequest())), "Skal feile hvis mottakerid ikke er satt");
+    assertThat(exceptionResult.getMessage()).contains("mottakerId");
   }
 
   @Test
@@ -57,7 +71,8 @@ public class DistribuerJournalpostServiceTest {
   void skalIkkeValidereHvisJournalpostHvisAdresseIkkeErSatt() {
     var request = createValidDistribuerJournalpostRequest();
     request.setAdresse(null);
-    Assertions.assertThrows(IllegalArgumentException.class, ()->validerKanDistribueres(createValidJournalpost(), new DistribuerJournalpostRequestInternal(request)), "Skal feile hvis adresse ikke er satt");
+    var exceptionResult =Assertions.assertThrows(IllegalArgumentException.class, ()->validerKanDistribueres(createValidJournalpost(), new DistribuerJournalpostRequestInternal(request)), "Skal feile hvis adresse ikke er satt");
+    assertThat(exceptionResult.getMessage()).contains("Adresse");
   }
 
   @Nested
