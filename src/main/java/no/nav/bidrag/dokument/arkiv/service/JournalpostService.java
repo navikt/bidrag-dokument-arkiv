@@ -167,7 +167,7 @@ public class JournalpostService {
     return personResponse.getResponseEntity().getBody();
   }
 
-  private HttpResponse<OppdaterJournalpostResponse> lagreJournalpost(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
+  public HttpResponse<OppdaterJournalpostResponse> lagreJournalpost(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
     var oppdaterJournalpostRequest = new LagreJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost);
     var oppdatertJournalpostResponse = dokarkivConsumer.endre(oppdaterJournalpostRequest);
 

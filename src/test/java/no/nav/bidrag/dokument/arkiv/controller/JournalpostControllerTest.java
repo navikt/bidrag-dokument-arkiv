@@ -5,20 +5,16 @@ import static no.nav.bidrag.dokument.arkiv.stubs.TestDataKt.createDistribuerTilA
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import no.nav.bidrag.commons.web.EnhetFilter;
-import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal;
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
-import no.nav.bidrag.dokument.dto.AdresseType;
 import no.nav.bidrag.dokument.dto.AktorDto;
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest;
-import no.nav.bidrag.dokument.dto.DistribuerTilAdresse;
 import no.nav.bidrag.dokument.dto.EndreDokument;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.bidrag.dokument.dto.EndreReturDetaljer;
@@ -93,8 +89,8 @@ class JournalpostControllerTest extends AbstractControllerTest {
   }
 
   @Test
-  @DisplayName("skal få 400 BAD REQUEST når eksisterende journalpost er knyttet til annen sak")
-  void skalFaBadRequestNarEksisterendeJournalpostErKnyttetTilAnnenSak() throws IOException {
+  @DisplayName("skal få 404 NOT FOUND når eksisterende journalpost er knyttet til annen sak")
+  void skalFaNotFoundNarEksisterendeJournalpostErKnyttetTilAnnenSak() throws IOException {
     var journalpostIdFraJson = 201028011;
     stubs.mockSafResponseHentJournalpost(responseJournalpostJson, HttpStatus.OK);
     stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
@@ -107,7 +103,7 @@ class JournalpostControllerTest extends AbstractControllerTest {
     );
 
     assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
-        () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST),
+        () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND),
         () -> assertThat(response.getBody()).isNull(),
         () -> stubs.verifyStub.harEnSafKallEtterHentJournalpost()
     ));
@@ -162,6 +158,40 @@ class JournalpostControllerTest extends AbstractControllerTest {
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getJournalpostId).isEqualTo("JOARK-" + journalpostIdFraJson),
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getGjelderAktor).extracting(AktorDto::getIdent).isEqualTo(PERSON_IDENT),
         () -> assertThat(saker).isNotNull().hasSize(0),
+        () -> stubs.verifyStub.harEnSafKallEtterHentJournalpost(),
+        () -> stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter(),
+        () -> stubs.verifyStub.bidragPersonKalt()
+    ));
+  }
+
+  @Test
+  @DisplayName("skal hente Journalpost med adresse")
+  void skalHenteJournalpostMedAdresse() throws IOException {
+    var journalpostIdFraJson = 201028011;
+
+    stubs.mockSafResponseHentJournalpost(responseJournalpostJsonWithAdresse, HttpStatus.OK);
+    stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK);
+    stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
+
+    var responseEntity = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
+        HttpMethod.GET,
+        null,
+        JournalpostResponse.class
+    );
+
+    var journalpost = responseEntity.getBody() != null ? responseEntity.getBody().getJournalpost() : null;
+    var distribuertTilAdresse = journalpost.getDistribuertTilAdresse();
+    assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
+        () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
+        () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getJournalpostId).isEqualTo("JOARK-" + journalpostIdFraJson),
+        () -> assertThat(distribuertTilAdresse).isNotNull(),
+        () -> assertThat(distribuertTilAdresse.getAdresselinje1()).isEqualTo("Testveien 20A"),
+        () -> assertThat(distribuertTilAdresse.getAdresselinje2()).isEqualTo("TestLinje2"),
+        () -> assertThat(distribuertTilAdresse.getAdresselinje3()).isEqualTo("TestLinje4"),
+        () -> assertThat(distribuertTilAdresse.getPostnummer()).isEqualTo("7950"),
+        () -> assertThat(distribuertTilAdresse.getPoststed()).isEqualTo("ABELVÆR"),
+        () -> assertThat(distribuertTilAdresse.getLand()).isEqualTo("NO"),
         () -> stubs.verifyStub.harEnSafKallEtterHentJournalpost(),
         () -> stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter(),
         () -> stubs.verifyStub.bidragPersonKalt()
@@ -478,8 +508,12 @@ class JournalpostControllerTest extends AbstractControllerTest {
 
     stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponse.json", HttpStatus.OK);
     stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId);
+    stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson);
 
-    var request = new DistribuerJournalpostRequest(createDistribuerTilAdresse());
+    var distribuerTilAdresse = createDistribuerTilAdresse();
+    distribuerTilAdresse.setAdresselinje2("Adresselinje2");
+    distribuerTilAdresse.setAdresselinje3("Adresselinje3");
+    var request = new DistribuerJournalpostRequest(distribuerTilAdresse);
 
     // when
     var oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
@@ -495,7 +529,8 @@ class JournalpostControllerTest extends AbstractControllerTest {
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
-        () -> stubs.verifyStub.dokdistFordelingKalt(objectMapper.writeValueAsString(new DokDistDistribuerJournalpostRequest(journalpostIdFraJson, request.getAdresse())))
+        () -> stubs.verifyStub.dokdistFordelingKalt(objectMapper.writeValueAsString(new DokDistDistribuerJournalpostRequest(journalpostIdFraJson, request.getAdresse()))),
+        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,  request.getAdresse().getAdresselinje1(),  request.getAdresse().getLand())
     );
   }
 

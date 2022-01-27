@@ -185,7 +185,9 @@ public class JournalpostController {
     return journalpostService.hentJournalpostMedFnr(Long.valueOf(journalpostId), saksnummer)
         .map(journalpostService::populerMedTilknyttedeSaker)
         .map(journalpost -> ResponseEntity.ok(journalpost.tilJournalpostResponse()))
-        .orElse(ResponseEntity.badRequest().build());
+        .orElse(ResponseEntity.notFound()
+            .header(HttpHeaders.WARNING, String.format("Fant ingen journalpost med id %s og saksnummer %s", journalpostId, saksnummer))
+            .build());
   }
 
   private boolean erIkkePrefixetMedJoark(String joarkJournalpostId) {
@@ -273,7 +275,7 @@ public class JournalpostController {
     }
 
     var journalpostId = kildesystemIdenfikator.hentJournalpostIdLong();
-    return ResponseEntity.ok(distribuerJournalpostService.distribuerJournalpost(journalpostId, new DistribuerJournalpostRequestInternal(distribuerJournalpostRequest)));
+    return ResponseEntity.ok(distribuerJournalpostService.distribuerJournalpost(journalpostId, new DistribuerJournalpostRequestInternal(distribuerJournalpostRequest), enhet));
   }
 
   @Unprotected

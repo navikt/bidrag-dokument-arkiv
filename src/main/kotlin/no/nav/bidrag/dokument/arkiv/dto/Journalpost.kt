@@ -7,8 +7,11 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.bidrag.dokument.arkiv.model.JournalpostDataException
 import no.nav.bidrag.dokument.arkiv.utils.DateUtils
+import no.nav.bidrag.dokument.arkiv.utils.JsonMapper.fromJsonString
+import no.nav.bidrag.dokument.arkiv.utils.JsonMapper.toJsonString
 import no.nav.bidrag.dokument.dto.AktorDto
 import no.nav.bidrag.dokument.dto.AvvikType
+import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 import no.nav.bidrag.dokument.dto.DokumentDto
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
 import no.nav.bidrag.dokument.dto.JournalpostDto
@@ -22,6 +25,7 @@ import java.time.LocalDate
 import java.util.stream.Collectors.toList
 
 const val RETUR_DETALJER_KEY = "retur"
+const val DISTRIBUERT_ADRESSE_KEY = "distribuert_adresse"
 const val JOURNALFORT_AV_KEY = "journalfortAv"
 private const val DATO_DOKUMENT = "DATO_DOKUMENT"
 private const val DATO_JOURNALFORT = "DATO_JOURNALFOERT"
@@ -75,6 +79,7 @@ data class Journalpost(
             else -> null
         }
     }
+    fun isSentralPrint() = hentKanal() == Kanal.SENTRAL_UTSKRIFT
     fun harJournalforendeEnhetLik(enhet: String) = journalforendeEnhet == enhet
     fun hentJournalpostIdLong() = journalpostId?.toLong()
     fun hentJournalpostIdMedPrefix() = "JOARK-"+journalpostId
@@ -152,7 +157,8 @@ data class Journalpost(
             journalstatus = hentJournalStatus(),
             mottattDato = hentDatoRegistrert(),
             returDetaljer = hentReturDetaljer(),
-            brevkode = hentBrevkode()
+            brevkode = hentBrevkode(),
+            distribuertTilAdresse = tilleggsopplysninger.hentAdresseDo()?.toDistribuerTilAdresse()
         )
     }
 
@@ -196,6 +202,30 @@ data class Journalpost(
     fun erIkkeTilknyttetSakNarOppgitt(saksnummer: String?) = if (saksnummer == null) false else !erTilknyttetSak(saksnummer)
 }
 
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class DistribuertTilAdresseDo(
+        var adresselinje1: String?,
+        var adresselinje2: String?,
+        var adresselinje3: String?,
+        var land: String,
+        var postnummer: String?,
+        var poststed: String?
+){
+    private fun asJsonString(): String = toJsonString(this)
+    fun toMap(): List<Map<String, String>> = asJsonString().chunked(100).mapIndexed{ index, it -> mapOf("nokkel" to "$DISTRIBUERT_ADRESSE_KEY${index}", "verdi" to it) }
+    fun toDistribuerTilAdresse(): DistribuerTilAdresse {
+        return DistribuerTilAdresse(
+            adresselinje1 = adresselinje1 ?: "",
+            adresselinje2 = adresselinje2,
+            adresselinje3 = adresselinje3,
+            land = land,
+            postnummer = postnummer,
+            poststed = poststed
+        )
+    }
+}
+
 class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() {
 
     fun hentJournalfortAv(): String? {
@@ -204,6 +234,12 @@ class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() 
             .map { it["verdi"] }
             .firstOrNull()
     }
+
+    fun addMottakerAdresse(adresseDo: DistribuertTilAdresseDo){
+        this.removeAll{ it["nokkel"]?.contains(DISTRIBUERT_ADRESSE_KEY) ?: false}
+        this.addAll(adresseDo.toMap())
+    }
+
     fun addReturDetaljLog(returDetaljerLogDO: ReturDetaljerLogDO){
         this.addAll(returDetaljerLogDO.toMap())
     }
@@ -212,6 +248,20 @@ class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() 
         val updatedTilleggsopplysninger = hentReturDetaljerLogDO().map { if (it.dato == originalDate) returDetaljerLogDO else it }.flatMap { it.toMap() }
         this.removeAll{ it["nokkel"]?.contains(RETUR_DETALJER_KEY) ?: false}
         this.addAll(updatedTilleggsopplysninger)
+    }
+
+    fun hentAdresseDo(): DistribuertTilAdresseDo? {
+        // Key format (DISTRIBUERT_ADRESSE_KEY)(index)
+        val adresseKeyValueMapList = this.filter { it["nokkel"]?.contains(DISTRIBUERT_ADRESSE_KEY) ?: false}
+            .filter { Strings.isNotEmpty(it["verdi"]) }
+            .sortedBy { it["nokkel"]!!.replace(DISTRIBUERT_ADRESSE_KEY, "") }
+
+        if (adresseKeyValueMapList.isEmpty()){
+            return null
+        }
+
+        val adresseJsonString = adresseKeyValueMapList.map { it["verdi"] }.joinToString("")
+        return fromJsonString(adresseJsonString)
     }
 
     fun hentReturDetaljerLogDO(): List<ReturDetaljerLogDO> {
@@ -328,8 +378,11 @@ enum class JournalStatus {
 
 data class EndreJournalpostCommandIntern(
     val endreJournalpostCommand: EndreJournalpostCommand,
-    val enhet: String
+    val enhet: String,
+    val endreAdresse: DistribuertTilAdresseDo?
 ) {
+    constructor(endreAdresse: DistribuertTilAdresseDo, enhet: String): this(EndreJournalpostCommand(), enhet, endreAdresse)
+    constructor(endreJournalpostCommand: EndreJournalpostCommand, enhet: String): this(endreJournalpostCommand, enhet, null)
     fun skalJournalfores() = endreJournalpostCommand.skalJournalfores
     fun hentAvsenderNavn(journalpost: Journalpost) = endreJournalpostCommand.avsenderNavn ?: journalpost.hentAvsenderNavn()
     fun harEnTilknyttetSak(): Boolean = endreJournalpostCommand.tilknyttSaker.isNotEmpty()

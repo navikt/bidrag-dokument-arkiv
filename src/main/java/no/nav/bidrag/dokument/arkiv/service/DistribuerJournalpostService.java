@@ -1,12 +1,15 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
+import static no.nav.bidrag.dokument.arkiv.dto.DistribusjonKt.validerAdresse;
 import static no.nav.bidrag.dokument.arkiv.dto.DistribusjonKt.validerKanDistribueres;
 
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokdistFordelingConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.AvvikshendelseIntern;
 import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal;
+import no.nav.bidrag.dokument.arkiv.dto.DistribuertTilAdresseDo;
+import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
@@ -31,7 +34,7 @@ public class DistribuerJournalpostService {
     this.dokarkivConsumer = dokarkivConsumer;
   }
 
-  public DistribuerJournalpostResponse distribuerJournalpost(Long journalpostId, DistribuerJournalpostRequestInternal distribuerJournalpostRequest){
+  public DistribuerJournalpostResponse distribuerJournalpost(Long journalpostId, DistribuerJournalpostRequestInternal distribuerJournalpostRequest, String enhet){
     var adresse = distribuerJournalpostRequest.getAdresse();
     LOGGER.info("Forsøker å distribuere journalpost {}", journalpostId);
     SECURE_LOGGER.info("Forsøker å distribuere journalpost {} med foreslått adresse {}", journalpostId, adresse);
@@ -42,11 +45,20 @@ public class DistribuerJournalpostService {
 
     var journalpost = journalpostOptional.get();
     validerKanDistribueres(journalpost, distribuerJournalpostRequest);
+    validerAdresse(distribuerJournalpostRequest.getAdresse());
+
+    lagreAdresse(journalpostId, distribuerJournalpostRequest.getAdresseDo(), enhet, journalpost);
 
     //TODO: Lagre bestillingsid når bd-arkiv er koblet mot database
     var distribuerResponse = dokdistFordelingConsumer.distribuerJournalpost(journalpostId, adresse);
     LOGGER.info("Bestillt distribusjon av journalpost {} med bestillingsId {}", journalpostId, distribuerResponse.getBestillingsId());
     return distribuerResponse;
+  }
+
+  public void lagreAdresse(Long journalpostId, DistribuertTilAdresseDo distribuertTilAdresseDo, String enhet, Journalpost journalpost){
+    if (distribuertTilAdresseDo != null){
+      journalpostService.lagreJournalpost(journalpostId, new EndreJournalpostCommandIntern(distribuertTilAdresseDo, enhet), journalpost);
+    }
   }
 
   public void oppdaterDistribusjonsInfo(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){

@@ -1,0 +1,37 @@
+{
+  "data": {
+    "journalpost": {
+      "avsenderMottaker": {
+        "navn": null
+      },
+      "bruker": {
+        "id": "1385076492416",
+        "type": "AKTOERID"
+      },
+      "dokumenter": [
+        {
+          "dokumentInfoId": "12345",
+          "tittel": null
+        }
+      ],
+      "journalforendeEnhet": "4806",
+      "journalfortAvNavn": null,
+      "journalpostId": "201028011",
+      "journalposttype": "U",
+      "journalstatus": "FERDIGSTILT",
+      "kanal": "SENTRAL_UTSKRIFT",
+      "tilleggsopplysninger": [
+        {
+          "nokkel": "distribuert_adresse0",
+          "verdi": "{\"adresselinje1\":\"Testveien 20A\",\"adresselinje2\":\"TestLinje2\",\"adresselinje3\":\"TestLinje4\",\"land\":\""
+        },
+        {
+          "nokkel": "distribuert_adresse1",
+          "verdi": "NO\",\"postnummer\":\"7950\",\"poststed\":\"ABELVÆR\"}"
+        }
+      ],
+      "tema": "BID",
+      "tittel": "Filosofens bidrag"
+    }
+  }
+}

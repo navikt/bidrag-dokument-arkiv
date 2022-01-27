@@ -34,6 +34,12 @@ data class LagreJournalpostRequest(private var journalpostId: Long, private var 
                     .forEach { journalpost.tilleggsopplysninger.updateReturDetaljLog(it.originalDato, ReturDetaljerLogDO(it.beskrivelse, it.nyDato ?: it.originalDato)) }
                 tilleggsopplysninger = journalpost.tilleggsopplysninger
             }
+
+            val adresseDo = endreJournalpostCommand.endreAdresse
+            if (adresseDo != null){
+                journalpost.tilleggsopplysninger.addMottakerAdresse(adresseDo)
+                tilleggsopplysninger = journalpost.tilleggsopplysninger
+            }
         }
     }
 
