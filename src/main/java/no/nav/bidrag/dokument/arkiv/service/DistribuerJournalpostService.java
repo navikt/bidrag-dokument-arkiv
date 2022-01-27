@@ -26,12 +26,10 @@ public class DistribuerJournalpostService {
 
   private final JournalpostService journalpostService;
   private final DokdistFordelingConsumer dokdistFordelingConsumer;
-  private final DokarkivConsumer dokarkivConsumer;
 
-  public DistribuerJournalpostService(ResourceByDiscriminator<JournalpostService> journalpostServices, DokdistFordelingConsumer dokdistFordelingConsumer, DokarkivConsumer dokarkivConsumer) {
+  public DistribuerJournalpostService(ResourceByDiscriminator<JournalpostService> journalpostServices, DokdistFordelingConsumer dokdistFordelingConsumer) {
     this.journalpostService = journalpostServices.get(Discriminator.REGULAR_USER);
     this.dokdistFordelingConsumer = dokdistFordelingConsumer;
-    this.dokarkivConsumer = dokarkivConsumer;
   }
 
   public DistribuerJournalpostResponse distribuerJournalpost(Long journalpostId, DistribuerJournalpostRequestInternal distribuerJournalpostRequest, String enhet){
@@ -52,6 +50,7 @@ public class DistribuerJournalpostService {
     //TODO: Lagre bestillingsid når bd-arkiv er koblet mot database
     var distribuerResponse = dokdistFordelingConsumer.distribuerJournalpost(journalpostId, adresse);
     LOGGER.info("Bestillt distribusjon av journalpost {} med bestillingsId {}", journalpostId, distribuerResponse.getBestillingsId());
+    journalpostService.oppdaterJournalpostDistribusjonBestiltStatus(journalpostId, journalpost);
     return distribuerResponse;
   }
 
@@ -59,12 +58,5 @@ public class DistribuerJournalpostService {
     if (distribuertTilAdresseDo != null){
       journalpostService.lagreJournalpost(journalpostId, new EndreJournalpostCommandIntern(distribuertTilAdresseDo, enhet), journalpost);
     }
-  }
-
-  public void oppdaterDistribusjonsInfo(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
-    var tilknyttedeJournalpost = journalpostService.hentTilknyttedeJournalposter(journalpost);
-    tilknyttedeJournalpost.stream()
-        .filter((jp)-> jp.getJournalstatus() != JournalStatus.EKSPEDERT)
-        .forEach((jp)-> dokarkivConsumer.oppdaterDistribusjonsInfo(jp.getJournalpostId(), avvikshendelseIntern.getSettStatusEkspedert(), avvikshendelseIntern.getUtsendingsKanal()));
   }
 }

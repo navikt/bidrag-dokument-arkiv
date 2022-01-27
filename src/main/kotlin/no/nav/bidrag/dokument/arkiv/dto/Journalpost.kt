@@ -26,6 +26,7 @@ import java.util.stream.Collectors.toList
 
 const val RETUR_DETALJER_KEY = "retur"
 const val DISTRIBUERT_ADRESSE_KEY = "distribuert_adresse"
+const val DISTRIBUSJON_BESTILLT = "distribusjon_bestilt"
 const val JOURNALFORT_AV_KEY = "journalfortAv"
 private const val DATO_DOKUMENT = "DATO_DOKUMENT"
 private const val DATO_JOURNALFORT = "DATO_JOURNALFOERT"
@@ -53,17 +54,19 @@ data class Journalpost(
 ) {
     fun hentJournalStatus(): String? {
         return when(journalstatus){
-            JournalStatus.MOTTATT->"M"
-            JournalStatus.JOURNALFOERT->"J"
-            JournalStatus.FEILREGISTRERT->"F"
-            JournalStatus.EKSPEDERT->"E"
-            JournalStatus.FERDIGSTILT->"R"
-            JournalStatus.RESERVERT->"R"
-            JournalStatus.UTGAAR->"U"
-            JournalStatus.AVBRUTT->"A"
-            else -> journalstatus?.name
-        }
+                JournalStatus.MOTTATT->"M"
+                JournalStatus.JOURNALFOERT->"J"
+                JournalStatus.FEILREGISTRERT->"F"
+                JournalStatus.EKSPEDERT->"E"
+                JournalStatus.FERDIGSTILT-> if(isDistribusjonBestilt()) "E" else "KP"
+                JournalStatus.RESERVERT->"R"
+                JournalStatus.UTGAAR->"U"
+                JournalStatus.AVBRUTT->"A"
+                else -> journalstatus?.name
+            }
     }
+
+    fun isDistribusjonBestilt(): Boolean = tilleggsopplysninger.isDistribusjonBestilt()
 
     fun isFeilregistrert() = journalstatus == JournalStatus.FEILREGISTRERT
 
@@ -233,6 +236,15 @@ class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() 
             .filter { Strings.isNotEmpty(it["verdi"]) }
             .map { it["verdi"] }
             .firstOrNull()
+    }
+
+    fun setDistribusjonBestillt() {
+      this.removeAll{ it["nokkel"]?.contains(DISTRIBUSJON_BESTILLT) ?: false}
+      this.add(mapOf("nokkel" to DISTRIBUSJON_BESTILLT, "verdi" to "true"))
+    }
+
+    fun isDistribusjonBestilt(): Boolean{
+        return this.any { it["nokkel"]?.contains(DISTRIBUSJON_BESTILLT) ?: false }
     }
 
     fun addMottakerAdresse(adresseDo: DistribuertTilAdresseDo){

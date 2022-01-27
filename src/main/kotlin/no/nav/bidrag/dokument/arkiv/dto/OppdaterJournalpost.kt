@@ -11,6 +11,12 @@ data class OppdaterDistribusjonsInfoRequest(
     var utsendingsKanal: String
 )
 
+data class OppdaterJournalpostDistribusjonsInfoRequest(private var journalpostId: Long, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId) {
+    init {
+        journalpost.tilleggsopplysninger.setDistribusjonBestillt()
+        tilleggsopplysninger = journalpost.tilleggsopplysninger
+    }
+}
 data class LagreJournalpostRequest(private var journalpostId: Long, private var endreJournalpostCommand: EndreJournalpostCommandIntern, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId) {
     init {
         tittel = endreJournalpostCommand.endreJournalpostCommand.tittel
