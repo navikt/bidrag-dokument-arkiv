@@ -25,8 +25,8 @@ import java.time.LocalDate
 import java.util.stream.Collectors.toList
 
 const val RETUR_DETALJER_KEY = "retur"
-const val DISTRIBUERT_ADRESSE_KEY = "distribuert_adresse"
-const val DISTRIBUSJON_BESTILLT = "distribusjon_bestilt"
+const val DISTRIBUERT_ADRESSE_KEY = "distAdresse"
+const val DISTRIBUSJON_BESTILT_KEY = "distribusjonBestilt"
 const val JOURNALFORT_AV_KEY = "journalfortAv"
 private const val DATO_DOKUMENT = "DATO_DOKUMENT"
 private const val DATO_JOURNALFORT = "DATO_JOURNALFOERT"
@@ -219,7 +219,7 @@ data class DistribuertTilAdresseDo(
     fun toMap(): List<Map<String, String>> = asJsonString().chunked(100).mapIndexed{ index, it -> mapOf("nokkel" to "$DISTRIBUERT_ADRESSE_KEY${index}", "verdi" to it) }
     fun toDistribuerTilAdresse(): DistribuerTilAdresse {
         return DistribuerTilAdresse(
-            adresselinje1 = adresselinje1 ?: "",
+            adresselinje1 = adresselinje1,
             adresselinje2 = adresselinje2,
             adresselinje3 = adresselinje3,
             land = land,
@@ -231,6 +231,16 @@ data class DistribuertTilAdresseDo(
 
 class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() {
 
+    private var REGEX_NOT_NUMBER = "\\D".toRegex()
+
+    private fun extractIndexFromKey(keyWithIndex: String): Int {
+        val indexStr = keyWithIndex.replace(REGEX_NOT_NUMBER, "")
+        return try {
+            Integer.parseInt(indexStr)
+        } catch (e: NumberFormatException){
+            -1
+        }
+    }
     fun hentJournalfortAv(): String? {
         return this.filter { it["nokkel"]?.contains(JOURNALFORT_AV_KEY) ?: false}
             .filter { Strings.isNotEmpty(it["verdi"]) }
@@ -239,12 +249,12 @@ class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() 
     }
 
     fun setDistribusjonBestillt() {
-      this.removeAll{ it["nokkel"]?.contains(DISTRIBUSJON_BESTILLT) ?: false}
-      this.add(mapOf("nokkel" to DISTRIBUSJON_BESTILLT, "verdi" to "true"))
+      this.removeAll{ it["nokkel"]?.contains(DISTRIBUSJON_BESTILT_KEY) ?: false}
+      this.add(mapOf("nokkel" to DISTRIBUSJON_BESTILT_KEY, "verdi" to "true"))
     }
 
     fun isDistribusjonBestilt(): Boolean{
-        return this.any { it["nokkel"]?.contains(DISTRIBUSJON_BESTILLT) ?: false }
+        return this.any { it["nokkel"]?.contains(DISTRIBUSJON_BESTILT_KEY) ?: false }
     }
 
     fun addMottakerAdresse(adresseDo: DistribuertTilAdresseDo){
@@ -266,7 +276,7 @@ class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() 
         // Key format (DISTRIBUERT_ADRESSE_KEY)(index)
         val adresseKeyValueMapList = this.filter { it["nokkel"]?.contains(DISTRIBUERT_ADRESSE_KEY) ?: false}
             .filter { Strings.isNotEmpty(it["verdi"]) }
-            .sortedBy { it["nokkel"]!!.replace(DISTRIBUERT_ADRESSE_KEY, "") }
+            .sortedBy { extractIndexFromKey(it["nokkel"]!!) }
 
         if (adresseKeyValueMapList.isEmpty()){
             return null
@@ -284,7 +294,7 @@ class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() 
                 val keySplit = it["nokkel"]!!.split("_")
                 if (keySplit.size > 1) DateUtils.isValid(keySplit[1]) else false
             }
-            .sortedBy { it["nokkel"]!!.split("_")[0].replace(RETUR_DETALJER_KEY, "") }
+            .sortedBy { extractIndexFromKey(it["nokkel"]!!.split("_")[0]) }
 
         val returDetaljerList: MutableList<ReturDetaljerLogDO> = mutableListOf()
         returDetaljer.forEach {
