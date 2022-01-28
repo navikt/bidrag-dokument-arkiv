@@ -22,11 +22,11 @@
       "kanal": "SENTRAL_UTSKRIFT",
       "tilleggsopplysninger": [
         {
-          "nokkel": "distribuert_adresse0",
+          "nokkel": "distAdresse0",
           "verdi": "{\"adresselinje1\":\"Testveien 20A\",\"adresselinje2\":\"TestLinje2\",\"adresselinje3\":\"TestLinje4\",\"land\":\""
         },
         {
-          "nokkel": "distribuert_adresse1",
+          "nokkel": "distAdresse1",
           "verdi": "NO\",\"postnummer\":\"7950\",\"poststed\":\"ABELVÆR\"}"
         }
       ],

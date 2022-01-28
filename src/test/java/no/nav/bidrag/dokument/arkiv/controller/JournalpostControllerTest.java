@@ -531,7 +531,7 @@ class JournalpostControllerTest extends AbstractControllerTest {
             .isEqualTo(HttpStatus.OK),
         () -> stubs.verifyStub.dokdistFordelingKalt(objectMapper.writeValueAsString(new DokDistDistribuerJournalpostRequest(journalpostIdFraJson, request.getAdresse()))),
         () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,  request.getAdresse().getAdresselinje1(),  request.getAdresse().getLand()),
-        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,  "{\"nokkel\":\"distribusjon_bestilt\",\"verdi\":\"true\"}")
+        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,  "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}")
     );
   }
 
