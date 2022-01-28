@@ -28,6 +28,10 @@
         {
           "nokkel": "distAdresse1",
           "verdi": "NO\",\"postnummer\":\"7950\",\"poststed\":\"ABELVÆR\"}"
+        },
+        {
+          "nokkel": "distribusjonBestilt",
+          "verdi": "true"
         }
       ],
       "tema": "BID",

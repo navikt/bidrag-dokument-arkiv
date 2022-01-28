@@ -93,6 +93,36 @@ class JournalpostTest {
   }
 
   @Test
+  @DisplayName("skal hente distribuert adresse")
+  void skalHenteDistribuertAdresse() throws IOException {
+    var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
+    journalpost.setJournalstatus(JournalStatus.FERDIGSTILT);
+    var adresse = journalpost.getTilleggsopplysninger().hentAdresseDo();
+
+    assertAll(
+        () -> assertThat(adresse.getAdresselinje1()).isEqualTo("Testveien 20A"),
+        () -> assertThat(adresse.getAdresselinje2()).isEqualTo("TestLinje2"),
+        () -> assertThat(adresse.getAdresselinje3()).isEqualTo("TestLinje4"),
+        () -> assertThat(adresse.getPostnummer()).isEqualTo("7950"),
+        () -> assertThat(adresse.getPoststed()).isEqualTo("ABELVÆR"),
+        () -> assertThat(adresse.getLand()).isEqualTo("NO"),
+        () -> assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.KLAR_TIL_PRINT)
+    );
+  }
+
+  @Test
+  @DisplayName("skal hente status EKSPEDERT når distribuert")
+  void skalHenteJournalpostStatusEkspedertNarDistribuert() throws IOException {
+    var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
+    journalpost.setJournalstatus(JournalStatus.FERDIGSTILT);
+    journalpost.getTilleggsopplysninger().setDistribusjonBestillt();
+
+    assertAll(
+        () -> assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.EKSPEDERT)
+    );
+  }
+
+  @Test
   @DisplayName("skal hente avvik hvis Journalpost med status mottatt og inngående")
   void skalHenteAvvikForMottattOgInngaaende() {
     var journalpost = new Journalpost();

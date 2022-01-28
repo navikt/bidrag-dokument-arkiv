@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import no.nav.bidrag.commons.web.EnhetFilter;
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.JournalstatusDto;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.dto.AktorDto;
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest;
@@ -165,8 +166,8 @@ class JournalpostControllerTest extends AbstractControllerTest {
   }
 
   @Test
-  @DisplayName("skal hente Journalpost med adresse")
-  void skalHenteJournalpostMedAdresse() throws IOException {
+  @DisplayName("skal hente distribuert Journalpost med adresse")
+  void skalHenteDistribuertJournalpostMedAdresse() throws IOException {
     var journalpostIdFraJson = 201028011;
 
     stubs.mockSafResponseHentJournalpost(responseJournalpostJsonWithAdresse, HttpStatus.OK);
@@ -185,6 +186,7 @@ class JournalpostControllerTest extends AbstractControllerTest {
     assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
         () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getJournalpostId).isEqualTo("JOARK-" + journalpostIdFraJson),
+        () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getJournalstatus).isEqualTo(JournalstatusDto.EKSPEDERT),
         () -> assertThat(distribuertTilAdresse).isNotNull(),
         () -> assertThat(distribuertTilAdresse.getAdresselinje1()).isEqualTo("Testveien 20A"),
         () -> assertThat(distribuertTilAdresse.getAdresselinje2()).isEqualTo("TestLinje2"),

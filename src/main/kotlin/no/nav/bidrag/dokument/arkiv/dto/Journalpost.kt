@@ -33,6 +33,18 @@ private const val DATO_JOURNALFORT = "DATO_JOURNALFOERT"
 private const val DATO_REGISTRERT = "DATO_REGISTRERT"
 private const val DATO_RETUR = "DATO_AVS_RETUR"
 
+object JournalstatusDto {
+    const val EKSPEDERT = "E"
+    const val AVBRUTT = "A"
+    const val KLAR_TIL_PRINT = "KP"
+    const val JOURNALFORT = "J"
+    const val FEILREGISTRERT = "F"
+    const val MOTTAKSREGISTRERT = "M"
+    const val RESERVERT = "R"
+    const val UTGAR = "U"
+}
+
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Journalpost(
     var avsenderMottaker: AvsenderMottaker? = null,
@@ -54,14 +66,14 @@ data class Journalpost(
 ) {
     fun hentJournalStatus(): String? {
         return when(journalstatus){
-                JournalStatus.MOTTATT->"M"
-                JournalStatus.JOURNALFOERT->"J"
-                JournalStatus.FEILREGISTRERT->"F"
-                JournalStatus.EKSPEDERT->"E"
-                JournalStatus.FERDIGSTILT-> if(isDistribusjonBestilt()) "E" else "KP"
-                JournalStatus.RESERVERT->"R"
-                JournalStatus.UTGAAR->"U"
-                JournalStatus.AVBRUTT->"A"
+                JournalStatus.MOTTATT -> JournalstatusDto.MOTTAKSREGISTRERT
+                JournalStatus.JOURNALFOERT -> JournalstatusDto.JOURNALFORT
+                JournalStatus.FEILREGISTRERT -> JournalstatusDto.FEILREGISTRERT
+                JournalStatus.EKSPEDERT -> JournalstatusDto.EKSPEDERT
+                JournalStatus.FERDIGSTILT -> if(isDistribusjonBestilt()) JournalstatusDto.EKSPEDERT else JournalstatusDto.KLAR_TIL_PRINT
+                JournalStatus.RESERVERT -> JournalstatusDto.RESERVERT
+                JournalStatus.UTGAAR -> JournalstatusDto.UTGAR
+                JournalStatus.AVBRUTT -> JournalstatusDto.AVBRUTT
                 else -> journalstatus?.name
             }
     }
