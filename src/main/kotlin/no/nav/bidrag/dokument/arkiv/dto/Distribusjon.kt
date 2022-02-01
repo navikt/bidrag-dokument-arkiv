@@ -11,8 +11,10 @@ private val ALPHA2_NORGE = "NO"
 data class DokDistDistribuerJournalpostRequest(
     var journalpostId: Long,
     var batchId: String? = null,
-    var bestillendeFagsystem: String = "BID",
+    var bestillendeFagsystem: String = "BIDRAG",
     var dokumentProdApp: String = "bidragDokArkiv",
+    var distribusjonstype: DistribusjonsType = DistribusjonsType.ANNET,
+    var distribusjonstidspunkt: DistribusjonsTidspunkt = DistribusjonsTidspunkt.UMIDDELBART,
     var adresse: DokDistDistribuerTilAdresse? = null
 ) {
 
@@ -35,6 +37,16 @@ data class DokDistDistribuerJournalpostRequest(
     }
 }
 
+enum class DistribusjonsTidspunkt {
+    UMIDDELBART,
+    KJERNETID
+}
+
+enum class DistribusjonsType {
+    VEDTAK,
+    VIKTIG,
+    ANNET
+}
 enum class DokDistAdresseType{
     norskPostadresse,
     utenlandskPostadresse
@@ -76,13 +88,13 @@ data class DokDistDistribuerJournalpostResponse(
     }
 }
 
-fun validerKanDistribueres(journalpost: Journalpost?, distribuerJournalpostRequest: DistribuerJournalpostRequestInternal?) {
+fun validerKanDistribueres(journalpost: Journalpost?) {
     Validate.isTrue(journalpost != null, "Fant ingen journalpost")
     Validate.isTrue(journalpost?.journalstatus == JournalStatus.FERDIGSTILT, "Journalpost må ha status FERDIGSTILT")
     Validate.isTrue(journalpost?.tilleggsopplysninger?.isDistribusjonBestilt() == false, "Journalpost er allerede distribuert")
     Validate.isTrue(journalpost?.tema == "BID", "Journalpost må ha tema BID")
     Validate.isTrue(journalpost?.hasMottakerId() == true, "Journalpost må ha satt mottakerId")
-    Validate.isTrue(distribuerJournalpostRequest != null && distribuerJournalpostRequest.hasAdresse(), "Adresse må være satt i input")
+    Validate.isTrue(journalpost?.isMottakerIdSamhandlerId() == false, "Journalpost mottakerId kan ikke være samhandlerId")
 }
 
 fun validerAdresse(adresse: DistribuerTilAdresse?){

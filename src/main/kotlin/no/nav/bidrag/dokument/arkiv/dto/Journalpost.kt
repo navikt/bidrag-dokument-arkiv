@@ -188,6 +188,7 @@ data class Journalpost(
     }
 
     fun hasMottakerId(): Boolean = avsenderMottaker?.id != null
+    fun isMottakerIdSamhandlerId(): Boolean = avsenderMottaker?.id?.startsWith("8") ?: false
     fun hasSak(): Boolean = sak != null
     fun isStatusFeilregistrert(): Boolean = journalstatus == JournalStatus.FEILREGISTRERT
     fun isStatusMottatt(): Boolean = journalstatus == JournalStatus.MOTTATT
