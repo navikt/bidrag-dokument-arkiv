@@ -11,8 +11,8 @@ private val ALPHA2_NORGE = "NO"
 data class DokDistDistribuerJournalpostRequest(
     var journalpostId: Long,
     var batchId: String? = null,
-    var bestillendeFagsystem: String = "BISYS",
-    var dokumentProdApp: String = "bidrag-dokument-arkiv",
+    var bestillendeFagsystem: String = "BID",
+    var dokumentProdApp: String = "bidragDokArkiv",
     var adresse: DokDistDistribuerTilAdresse? = null
 ) {
 
