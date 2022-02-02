@@ -61,15 +61,6 @@ public class DistribuerJournalpostServiceTest {
   }
 
   @Test
-  @DisplayName("skal feile validering av distribuer journalpost hvis adresse ikke er satt")
-  void skalIkkeValidereHvisJournalpostHvisAdresseIkkeErSatt() {
-    var request = createValidDistribuerJournalpostRequest();
-    request.setAdresse(null);
-    var exceptionResult =Assertions.assertThrows(IllegalArgumentException.class, ()->validerKanDistribueres(createValidJournalpost()), "Skal feile hvis adresse ikke er satt");
-    assertThat(exceptionResult.getMessage()).contains("Adresse");
-  }
-
-  @Test
   @DisplayName("skal feile validering av distribuer journalpost hvis mottakerid er samhandlerid")
   void skalIkkeValidereHvisMottakerIdErSamhandlerId() {
     var jp = createValidJournalpost();
@@ -81,6 +72,12 @@ public class DistribuerJournalpostServiceTest {
   @Nested
   @DisplayName("ValiderAdresseTest")
   class ValiderAdresseTest {
+    @Test
+    @DisplayName("skal feile validering av distribuer journalpost hvis adresse ikke er satt")
+    void skalIkkeValidereHvisJournalpostHvisAdresseIkkeErSatt() {
+      Assertions.assertThrows(IllegalArgumentException.class, ()->validerAdresse(null), "Skal validere adresse");
+    }
+
     @Test
     @DisplayName("skal validere adresse")
     void skalValidereAdresse() {
