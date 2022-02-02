@@ -11,6 +11,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import no.nav.bidrag.commons.web.EnhetFilter;
+import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsTidspunkt;
+import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsType;
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.JournalstatusDto;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
@@ -531,7 +533,9 @@ class JournalpostControllerTest extends AbstractControllerTest {
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
-        () -> stubs.verifyStub.dokdistFordelingKalt(objectMapper.writeValueAsString(new DokDistDistribuerJournalpostRequest(journalpostIdFraJson, request.getAdresse()))),
+        () -> stubs.verifyStub.dokdistFordelingKalt(objectMapper.writeValueAsString(new DokDistDistribuerJournalpostRequest(journalpostIdFraJson, "BI01A01", request.getAdresse()))),
+        () -> stubs.verifyStub.dokdistFordelingKalt(DistribusjonsType.VEDTAK.name()),
+        () -> stubs.verifyStub.dokdistFordelingKalt(DistribusjonsTidspunkt.KJERNETID.name()),
         () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,  request.getAdresse().getAdresselinje1(),  request.getAdresse().getLand()),
         () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,  "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}")
     );

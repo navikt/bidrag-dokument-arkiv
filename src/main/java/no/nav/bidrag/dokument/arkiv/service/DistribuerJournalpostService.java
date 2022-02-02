@@ -45,7 +45,7 @@ public class DistribuerJournalpostService {
     lagreAdresse(journalpostId, distribuerJournalpostRequest.getAdresseDo(), enhet, journalpost);
 
     //TODO: Lagre bestillingsid når bd-arkiv er koblet mot database
-    var distribuerResponse = dokdistFordelingConsumer.distribuerJournalpost(journalpostId, adresse);
+    var distribuerResponse = dokdistFordelingConsumer.distribuerJournalpost(journalpost, adresse);
     LOGGER.info("Bestillt distribusjon av journalpost {} med bestillingsId {}", journalpostId, distribuerResponse.getBestillingsId());
     journalpostService.oppdaterJournalpostDistribusjonBestiltStatus(journalpostId, journalpost);
     return distribuerResponse;

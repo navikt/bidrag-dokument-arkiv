@@ -4,6 +4,7 @@ import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostResponse;
+import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse;
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse;
 import org.springframework.http.HttpEntity;
@@ -19,8 +20,9 @@ public class DokdistFordelingConsumer {
   }
 
 
-  public DistribuerJournalpostResponse distribuerJournalpost(Long journalpostId, DistribuerTilAdresse adresse){
-      var request = new DokDistDistribuerJournalpostRequest(journalpostId, adresse);
+  public DistribuerJournalpostResponse distribuerJournalpost(Journalpost journalpost, DistribuerTilAdresse adresse){
+      var journalpostId = journalpost.hentJournalpostIdLong();
+      var request = new DokDistDistribuerJournalpostRequest(journalpostId, journalpost.hentBrevkode(), adresse);
       var response = new HttpResponse<>(restTemplate.exchange("/rest/v1/distribuerjournalpost", HttpMethod.POST, new HttpEntity<>(request), DokDistDistribuerJournalpostResponse.class));
       var responseBody = response.getResponseEntity().getBody();
       if (!response.is2xxSuccessful() || responseBody == null){

@@ -13,7 +13,8 @@
       "dokumenter": [
         {
           "dokumentInfoId": "12345",
-          "tittel": null
+          "tittel": null,
+          "brevkode": "BI01A01"
         }
       ],
       "journalforendeEnhet": "4806",

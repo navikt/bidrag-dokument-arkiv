@@ -78,6 +78,8 @@ data class Journalpost(
             }
     }
 
+    fun hentBrevkode(): String? = dokumenter[0].brevkode
+
     fun isDistribusjonBestilt(): Boolean = tilleggsopplysninger.isDistribusjonBestilt()
 
     fun isFeilregistrert() = journalstatus == JournalStatus.FEILREGISTRERT
@@ -149,7 +151,7 @@ data class Journalpost(
         return saksnummerList
     }
 
-    fun hentBrevkode(): KodeDto? = if (dokumenter.isEmpty()) null else KodeDto(kode = dokumenter[0].brevkode)
+    fun hentBrevkodeDto(): KodeDto? = if (dokumenter.isEmpty()) null else KodeDto(kode = dokumenter[0].brevkode)
 
     fun tilJournalpostDto(): JournalpostDto {
 
@@ -172,7 +174,7 @@ data class Journalpost(
             journalstatus = hentJournalStatus(),
             mottattDato = hentDatoRegistrert(),
             returDetaljer = hentReturDetaljer(),
-            brevkode = hentBrevkode(),
+            brevkode = hentBrevkodeDto(),
             distribuertTilAdresse = tilleggsopplysninger.hentAdresseDo()?.toDistribuerTilAdresse()
         )
     }
