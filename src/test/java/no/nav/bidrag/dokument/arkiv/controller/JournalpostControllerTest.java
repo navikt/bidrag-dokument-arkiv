@@ -611,6 +611,65 @@ class JournalpostControllerTest extends AbstractControllerTest {
     );
   }
 
+
+  @Test
+  @DisplayName("skal få OK fra kan distribuere kall hvis gyldig journalpost for distribusjon")
+  void skalFaaOkFraKanDistribuereKall() throws IOException, JSONException {
+    // given
+    var xEnhet = "1234";
+    var bestillingId = "TEST_BEST_ID";
+    var journalpostIdFraJson = 201028011L;
+    var headersMedEnhet = new HttpHeaders();
+    headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
+
+    stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponse.json", HttpStatus.OK);
+    stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId);
+    // when
+    var response = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/journal/distribuer/JOARK-"+journalpostIdFraJson+"/enabled",
+        HttpMethod.GET,
+        new HttpEntity<>(headersMedEnhet),
+        JournalpostDto.class
+    );
+
+    // then
+    assertAll(
+        () -> assertThat(response)
+            .extracting(ResponseEntity::getStatusCode)
+            .as("statusCode")
+            .isEqualTo(HttpStatus.OK)
+    );
+  }
+
+  @Test
+  @DisplayName("skal få NOT_ACCEPTABLE fra kan distribuere kall hvis ugyldig journalpost for distribusjon")
+  void skalFaaNotAcceptableFraKanDistribuereKall() throws IOException, JSONException {
+    // given
+    var xEnhet = "1234";
+    var bestillingId = "TEST_BEST_ID";
+    var journalpostIdFraJson = 201028011L;
+    var headersMedEnhet = new HttpHeaders();
+    headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
+
+    stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponseNoMottaker.json", HttpStatus.OK);
+    stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId);
+    // when
+    var response = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/journal/distribuer/JOARK-"+journalpostIdFraJson+"/enabled",
+        HttpMethod.GET,
+        new HttpEntity<>(headersMedEnhet),
+        JournalpostDto.class
+    );
+
+    // then
+    assertAll(
+        () -> assertThat(response)
+            .extracting(ResponseEntity::getStatusCode)
+            .as("statusCode")
+            .isEqualTo(HttpStatus.NOT_ACCEPTABLE)
+    );
+  }
+
   private EndreJournalpostCommand createEndreJournalpostCommand() {
     var endreJournalpostCommand = new EndreJournalpostCommand();
     endreJournalpostCommand.setAvsenderNavn("Dauden, Svarte");
