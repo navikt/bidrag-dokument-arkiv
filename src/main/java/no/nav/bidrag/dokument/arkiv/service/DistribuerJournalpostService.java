@@ -4,13 +4,10 @@ import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
 import static no.nav.bidrag.dokument.arkiv.dto.DistribusjonKt.validerAdresse;
 import static no.nav.bidrag.dokument.arkiv.dto.DistribusjonKt.validerKanDistribueres;
 
-import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokdistFordelingConsumer;
-import no.nav.bidrag.dokument.arkiv.dto.AvvikshendelseIntern;
 import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal;
 import no.nav.bidrag.dokument.arkiv.dto.DistribuertTilAdresseDo;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
-import no.nav.bidrag.dokument.arkiv.dto.JournalStatus;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
@@ -42,16 +39,27 @@ public class DistribuerJournalpostService {
     }
 
     var journalpost = journalpostOptional.get();
-    validerKanDistribueres(journalpost, distribuerJournalpostRequest);
+    validerKanDistribueres(journalpost);
     validerAdresse(distribuerJournalpostRequest.getAdresse());
 
     lagreAdresse(journalpostId, distribuerJournalpostRequest.getAdresseDo(), enhet, journalpost);
 
     //TODO: Lagre bestillingsid når bd-arkiv er koblet mot database
-    var distribuerResponse = dokdistFordelingConsumer.distribuerJournalpost(journalpostId, adresse);
+    var distribuerResponse = dokdistFordelingConsumer.distribuerJournalpost(journalpost, adresse);
     LOGGER.info("Bestillt distribusjon av journalpost {} med bestillingsId {}", journalpostId, distribuerResponse.getBestillingsId());
     journalpostService.oppdaterJournalpostDistribusjonBestiltStatus(journalpostId, journalpost);
     return distribuerResponse;
+  }
+
+  public void kanDistribuereJournalpost(Long journalpostId){
+    LOGGER.info("Sjekker om distribuere journalpost {} kan distribueres", journalpostId);
+    var journalpostOptional = journalpostService.hentJournalpost(journalpostId);
+    if (journalpostOptional.isEmpty()){
+      throw new JournalpostIkkeFunnetException(String.format("Fant ingen journalpost med id %s", journalpostId));
+    }
+
+    var journalpost = journalpostOptional.get();
+    validerKanDistribueres(journalpost);
   }
 
   public void lagreAdresse(Long journalpostId, DistribuertTilAdresseDo distribuertTilAdresseDo, String enhet, Journalpost journalpost){

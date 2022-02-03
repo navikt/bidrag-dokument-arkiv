@@ -25,13 +25,25 @@ import java.time.LocalDate
 import java.util.stream.Collectors.toList
 
 const val RETUR_DETALJER_KEY = "retur"
-const val DISTRIBUERT_ADRESSE_KEY = "distribuert_adresse"
-const val DISTRIBUSJON_BESTILLT = "distribusjon_bestilt"
+const val DISTRIBUERT_ADRESSE_KEY = "distAdresse"
+const val DISTRIBUSJON_BESTILT_KEY = "distribusjonBestilt"
 const val JOURNALFORT_AV_KEY = "journalfortAv"
 private const val DATO_DOKUMENT = "DATO_DOKUMENT"
 private const val DATO_JOURNALFORT = "DATO_JOURNALFOERT"
 private const val DATO_REGISTRERT = "DATO_REGISTRERT"
 private const val DATO_RETUR = "DATO_AVS_RETUR"
+
+object JournalstatusDto {
+    const val EKSPEDERT = "E"
+    const val AVBRUTT = "A"
+    const val KLAR_TIL_PRINT = "KP"
+    const val JOURNALFORT = "J"
+    const val FEILREGISTRERT = "F"
+    const val MOTTAKSREGISTRERT = "M"
+    const val RESERVERT = "R"
+    const val UTGAR = "U"
+}
+
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Journalpost(
@@ -54,17 +66,19 @@ data class Journalpost(
 ) {
     fun hentJournalStatus(): String? {
         return when(journalstatus){
-                JournalStatus.MOTTATT->"M"
-                JournalStatus.JOURNALFOERT->"J"
-                JournalStatus.FEILREGISTRERT->"F"
-                JournalStatus.EKSPEDERT->"E"
-                JournalStatus.FERDIGSTILT-> if(isDistribusjonBestilt()) "E" else "KP"
-                JournalStatus.RESERVERT->"R"
-                JournalStatus.UTGAAR->"U"
-                JournalStatus.AVBRUTT->"A"
+                JournalStatus.MOTTATT -> JournalstatusDto.MOTTAKSREGISTRERT
+                JournalStatus.JOURNALFOERT -> JournalstatusDto.JOURNALFORT
+                JournalStatus.FEILREGISTRERT -> JournalstatusDto.FEILREGISTRERT
+                JournalStatus.EKSPEDERT -> JournalstatusDto.EKSPEDERT
+                JournalStatus.FERDIGSTILT -> if(isDistribusjonBestilt()) JournalstatusDto.EKSPEDERT else JournalstatusDto.KLAR_TIL_PRINT
+                JournalStatus.RESERVERT -> JournalstatusDto.RESERVERT
+                JournalStatus.UTGAAR -> JournalstatusDto.UTGAR
+                JournalStatus.AVBRUTT -> JournalstatusDto.AVBRUTT
                 else -> journalstatus?.name
             }
     }
+
+    fun hentBrevkode(): String? = dokumenter[0].brevkode
 
     fun isDistribusjonBestilt(): Boolean = tilleggsopplysninger.isDistribusjonBestilt()
 
@@ -137,7 +151,7 @@ data class Journalpost(
         return saksnummerList
     }
 
-    fun hentBrevkode(): KodeDto? = if (dokumenter.isEmpty()) null else KodeDto(kode = dokumenter[0].brevkode)
+    fun hentBrevkodeDto(): KodeDto? = if (dokumenter.isEmpty()) null else KodeDto(kode = dokumenter[0].brevkode)
 
     fun tilJournalpostDto(): JournalpostDto {
 
@@ -160,7 +174,7 @@ data class Journalpost(
             journalstatus = hentJournalStatus(),
             mottattDato = hentDatoRegistrert(),
             returDetaljer = hentReturDetaljer(),
-            brevkode = hentBrevkode(),
+            brevkode = hentBrevkodeDto(),
             distribuertTilAdresse = tilleggsopplysninger.hentAdresseDo()?.toDistribuerTilAdresse()
         )
     }
@@ -176,6 +190,7 @@ data class Journalpost(
     }
 
     fun hasMottakerId(): Boolean = avsenderMottaker?.id != null
+    fun isMottakerIdSamhandlerId(): Boolean = avsenderMottaker?.id?.startsWith("8") ?: false
     fun hasSak(): Boolean = sak != null
     fun isStatusFeilregistrert(): Boolean = journalstatus == JournalStatus.FEILREGISTRERT
     fun isStatusMottatt(): Boolean = journalstatus == JournalStatus.MOTTATT
@@ -219,7 +234,7 @@ data class DistribuertTilAdresseDo(
     fun toMap(): List<Map<String, String>> = asJsonString().chunked(100).mapIndexed{ index, it -> mapOf("nokkel" to "$DISTRIBUERT_ADRESSE_KEY${index}", "verdi" to it) }
     fun toDistribuerTilAdresse(): DistribuerTilAdresse {
         return DistribuerTilAdresse(
-            adresselinje1 = adresselinje1 ?: "",
+            adresselinje1 = adresselinje1,
             adresselinje2 = adresselinje2,
             adresselinje3 = adresselinje3,
             land = land,
@@ -231,6 +246,16 @@ data class DistribuertTilAdresseDo(
 
 class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() {
 
+    private var REGEX_NOT_NUMBER = "\\D".toRegex()
+
+    private fun extractIndexFromKey(keyWithIndex: String): Int {
+        val indexStr = keyWithIndex.replace(REGEX_NOT_NUMBER, "")
+        return try {
+            Integer.parseInt(indexStr)
+        } catch (e: NumberFormatException){
+            -1
+        }
+    }
     fun hentJournalfortAv(): String? {
         return this.filter { it["nokkel"]?.contains(JOURNALFORT_AV_KEY) ?: false}
             .filter { Strings.isNotEmpty(it["verdi"]) }
@@ -239,12 +264,12 @@ class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() 
     }
 
     fun setDistribusjonBestillt() {
-      this.removeAll{ it["nokkel"]?.contains(DISTRIBUSJON_BESTILLT) ?: false}
-      this.add(mapOf("nokkel" to DISTRIBUSJON_BESTILLT, "verdi" to "true"))
+      this.removeAll{ it["nokkel"]?.contains(DISTRIBUSJON_BESTILT_KEY) ?: false}
+      this.add(mapOf("nokkel" to DISTRIBUSJON_BESTILT_KEY, "verdi" to "true"))
     }
 
     fun isDistribusjonBestilt(): Boolean{
-        return this.any { it["nokkel"]?.contains(DISTRIBUSJON_BESTILLT) ?: false }
+        return this.any { it["nokkel"]?.contains(DISTRIBUSJON_BESTILT_KEY) ?: false }
     }
 
     fun addMottakerAdresse(adresseDo: DistribuertTilAdresseDo){
@@ -266,7 +291,7 @@ class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() 
         // Key format (DISTRIBUERT_ADRESSE_KEY)(index)
         val adresseKeyValueMapList = this.filter { it["nokkel"]?.contains(DISTRIBUERT_ADRESSE_KEY) ?: false}
             .filter { Strings.isNotEmpty(it["verdi"]) }
-            .sortedBy { it["nokkel"]!!.replace(DISTRIBUERT_ADRESSE_KEY, "") }
+            .sortedBy { extractIndexFromKey(it["nokkel"]!!) }
 
         if (adresseKeyValueMapList.isEmpty()){
             return null
@@ -284,7 +309,7 @@ class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() 
                 val keySplit = it["nokkel"]!!.split("_")
                 if (keySplit.size > 1) DateUtils.isValid(keySplit[1]) else false
             }
-            .sortedBy { it["nokkel"]!!.split("_")[0].replace(RETUR_DETALJER_KEY, "") }
+            .sortedBy { extractIndexFromKey(it["nokkel"]!!.split("_")[0]) }
 
         val returDetaljerList: MutableList<ReturDetaljerLogDO> = mutableListOf()
         returDetaljer.forEach {

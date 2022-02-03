@@ -12,6 +12,28 @@ import org.junit.jupiter.api.Test;
 class DokDistDistribuerJournalpostRequestTest {
 
   @Test
+  @DisplayName("skal mappe DokDistDistribuerJournalpostRequest")
+  void skalMappeDokDistDistribuerJournalpostRequest() throws IOException {
+    var jpid = 123123;
+    var distribuerTilAdresse = new DistribuerTilAdresse(
+        "Adresselinje1",
+        "Adresselinje2",
+        "Adresselinje3",
+        "NO",
+        "3000",
+        "Ingen"
+    );
+
+    var request = new DokDistDistribuerJournalpostRequest(jpid, "asdasd", distribuerTilAdresse);
+    assertAll(
+        () -> assertThat(request.getBestillendeFagsystem()).isEqualTo("BIDRAG"),
+        () -> assertThat(request.getDokumentProdApp()).isEqualTo("bidragDokArkiv"),
+        () -> assertThat(request.getDistribusjonstype()).isEqualTo(DistribusjonsType.VIKTIG),
+        () -> assertThat(request.getDistribusjonstidspunkt()).isEqualTo(DistribusjonsTidspunkt.KJERNETID)
+    );
+  }
+
+  @Test
   @DisplayName("skal distribuerTilAdresse til DokdistDistribuerTilAdresse")
   void skalMappeDistribuerTilAdresseTilDokdistDistribuerTilAdresse() throws IOException {
     var jpid = 123123;
@@ -24,7 +46,7 @@ class DokDistDistribuerJournalpostRequestTest {
         "Ingen"
     );
 
-    var request = new DokDistDistribuerJournalpostRequest(jpid, distribuerTilAdresse);
+    var request = new DokDistDistribuerJournalpostRequest(jpid, "asdasd", distribuerTilAdresse);
     var mappedAdresse = request.getAdresse();
     assertAll(
         () -> assertThat(mappedAdresse.getAdresselinje1()).isEqualTo(distribuerTilAdresse.getAdresselinje1()),
@@ -33,7 +55,9 @@ class DokDistDistribuerJournalpostRequestTest {
         () -> assertThat(mappedAdresse.getLand()).isEqualTo(distribuerTilAdresse.getLand()),
         () -> assertThat(mappedAdresse.getPostnummer()).isEqualTo(distribuerTilAdresse.getPostnummer()),
         () -> assertThat(mappedAdresse.getPoststed()).isEqualTo(distribuerTilAdresse.getPoststed()),
-        () -> assertThat(mappedAdresse.getAdressetype()).isEqualTo(DokDistAdresseType.norskPostadresse)
+        () -> assertThat(mappedAdresse.getAdressetype()).isEqualTo(DokDistAdresseType.norskPostadresse),
+        () -> assertThat(request.getDistribusjonstype()).isEqualTo(DistribusjonsType.VIKTIG),
+        () -> assertThat(request.getDistribusjonstidspunkt()).isEqualTo(DistribusjonsTidspunkt.KJERNETID)
     );
   }
 
@@ -50,7 +74,7 @@ class DokDistDistribuerJournalpostRequestTest {
         "Ingen"
     );
 
-    var request = new DokDistDistribuerJournalpostRequest(jpid, distribuerTilAdresse);
+    var request = new DokDistDistribuerJournalpostRequest(jpid, null, distribuerTilAdresse);
     var mappedAdresse = request.getAdresse();
     assertAll(
         () -> assertThat(mappedAdresse.getAdressetype()).isEqualTo(DokDistAdresseType.utenlandskPostadresse)
@@ -62,9 +86,32 @@ class DokDistDistribuerJournalpostRequestTest {
   void skalIkkeMappeAdresseHvisDistribuerTilAdresseErNull() throws IOException {
     var jpid = 123123;
 
-    var request = new DokDistDistribuerJournalpostRequest(jpid, null);
+    var request = new DokDistDistribuerJournalpostRequest(jpid, null, null);
     assertAll(
-        () -> assertThat(request.getAdresse()).isNull()
+        () -> assertThat(request.getAdresse()).isNull(),
+        () -> assertThat(request.getDistribusjonstype()).isEqualTo(DistribusjonsType.VIKTIG)
+    );
+  }
+
+  @Test
+  @DisplayName("skal mappe distribusjonstype vedtak")
+  void skalMappeDistribusjonsTypeVedtak() throws IOException {
+    var jpid = 123123;
+
+    var request = new DokDistDistribuerJournalpostRequest(jpid, "BI01A01", null);
+    assertAll(
+        () -> assertThat(request.getDistribusjonstype()).isEqualTo(DistribusjonsType.VEDTAK)
+    );
+  }
+
+  @Test
+  @DisplayName("skal mappe distribusjonstype viktig")
+  void skalMappeDistribusjonsTypeViktig() throws IOException {
+    var jpid = 123123;
+
+    var request = new DokDistDistribuerJournalpostRequest(jpid, "BI01A03", null);
+    assertAll(
+        () -> assertThat(request.getDistribusjonstype()).isEqualTo(DistribusjonsType.VIKTIG)
     );
   }
 
