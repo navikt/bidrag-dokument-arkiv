@@ -159,7 +159,7 @@ data class Journalpost(
         @Suppress("UNCHECKED_CAST")
         return JournalpostDto(
             avsenderNavn = avsenderMottaker?.navn,
-            dokumenter = dokumenter.stream().map { dok -> dok?.tilDokumentDto(journalposttype) }.collect(toList()) as List<DokumentDto>,
+            dokumenter = dokumenter.stream().map { dok -> dok?.tilDokumentDto(hentJournalpostType()) }.collect(toList()) as List<DokumentDto>,
             dokumentDato = hentDokumentDato(),
             dokumentType = hentJournalpostType(),
             fagomrade = tema,
