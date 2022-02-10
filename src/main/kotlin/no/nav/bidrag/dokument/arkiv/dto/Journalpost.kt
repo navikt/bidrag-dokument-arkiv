@@ -100,6 +100,7 @@ data class Journalpost(
     fun harJournalforendeEnhetLik(enhet: String) = journalforendeEnhet == enhet
     fun hentJournalpostIdLong() = journalpostId?.toLong()
     fun hentJournalpostIdMedPrefix() = "JOARK-"+journalpostId
+    fun hentJournalpostType() = if (journalposttype == "N") "X" else journalposttype
     fun hentDatoJournalfort(): LocalDate? {
         val journalfort = relevanteDatoer
             .find { it.datotype == DATO_JOURNALFORT }
@@ -160,7 +161,7 @@ data class Journalpost(
             avsenderNavn = avsenderMottaker?.navn,
             dokumenter = dokumenter.stream().map { dok -> dok?.tilDokumentDto(journalposttype) }.collect(toList()) as List<DokumentDto>,
             dokumentDato = hentDokumentDato(),
-            dokumentType = journalposttype,
+            dokumentType = hentJournalpostType(),
             fagomrade = tema,
             kilde = hentKanal(),
             kanal = hentKanal(),

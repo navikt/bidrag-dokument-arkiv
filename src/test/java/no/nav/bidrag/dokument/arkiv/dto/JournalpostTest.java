@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import no.nav.bidrag.dokument.dto.AvvikType;
@@ -97,6 +98,7 @@ class JournalpostTest {
   void skalHenteDistribuertAdresse() throws IOException {
     var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
     journalpost.setJournalstatus(JournalStatus.FERDIGSTILT);
+    journalpost.setJournalposttype("U");
     var adresse = journalpost.getTilleggsopplysninger().hentAdresseDo();
 
     assertAll(
@@ -111,10 +113,25 @@ class JournalpostTest {
   }
 
   @Test
+  @DisplayName("skal hente status JOURNALFØRT når notat and ferdigstilt")
+  void skalHenteJournalpostStatusJournalfortForNotat() throws IOException {
+    var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
+    journalpost.setJournalstatus(JournalStatus.FERDIGSTILT);
+    journalpost.setJournalposttype("N");
+    journalpost.getTilleggsopplysninger().setDistribusjonBestillt();
+
+    assertAll(
+        () -> assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.JOURNALFORT),
+        () -> assertThat(journalpost.hentJournalpostType()).isEqualTo("X")
+    );
+  }
+
+  @Test
   @DisplayName("skal hente status EKSPEDERT når distribuert")
   void skalHenteJournalpostStatusEkspedertNarDistribuert() throws IOException {
     var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
     journalpost.setJournalstatus(JournalStatus.FERDIGSTILT);
+    journalpost.setJournalposttype("U");
     journalpost.getTilleggsopplysninger().setDistribusjonBestillt();
 
     assertAll(
