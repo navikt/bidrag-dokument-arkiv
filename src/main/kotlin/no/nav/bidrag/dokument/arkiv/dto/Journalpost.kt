@@ -80,7 +80,7 @@ data class Journalpost(
 
     fun hentBrevkode(): String? = dokumenter[0].brevkode
 
-    fun isDistribusjonBestilt(): Boolean =  isUtgaaendeDokument() && tilleggsopplysninger.isDistribusjonBestilt()
+    fun isDistribusjonBestilt(): Boolean = tilleggsopplysninger.isDistribusjonBestilt()
 
     fun isFeilregistrert() = journalstatus == JournalStatus.FEILREGISTRERT
 
