@@ -70,7 +70,7 @@ data class Journalpost(
                 JournalStatus.JOURNALFOERT -> JournalstatusDto.JOURNALFORT
                 JournalStatus.FEILREGISTRERT -> JournalstatusDto.FEILREGISTRERT
                 JournalStatus.EKSPEDERT -> JournalstatusDto.EKSPEDERT
-                JournalStatus.FERDIGSTILT -> if(isDistribusjonBestilt()) JournalstatusDto.EKSPEDERT else JournalstatusDto.KLAR_TIL_PRINT
+                JournalStatus.FERDIGSTILT -> if (isUtgaaendeDokument()) if(isDistribusjonBestilt()) JournalstatusDto.EKSPEDERT else JournalstatusDto.KLAR_TIL_PRINT else JournalstatusDto.JOURNALFORT
                 JournalStatus.RESERVERT -> JournalstatusDto.RESERVERT
                 JournalStatus.UTGAAR -> JournalstatusDto.UTGAR
                 JournalStatus.AVBRUTT -> JournalstatusDto.AVBRUTT
@@ -80,7 +80,7 @@ data class Journalpost(
 
     fun hentBrevkode(): String? = dokumenter[0].brevkode
 
-    fun isDistribusjonBestilt(): Boolean = tilleggsopplysninger.isDistribusjonBestilt()
+    fun isDistribusjonBestilt(): Boolean =  isUtgaaendeDokument() && tilleggsopplysninger.isDistribusjonBestilt()
 
     fun isFeilregistrert() = journalstatus == JournalStatus.FEILREGISTRERT
 
