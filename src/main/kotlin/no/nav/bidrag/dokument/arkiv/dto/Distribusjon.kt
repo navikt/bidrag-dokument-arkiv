@@ -26,7 +26,7 @@ data class DokDistDistribuerJournalpostRequest(
             adresselinje2 = adresse.adresselinje2,
             adresselinje3 =  adresse.adresselinje3,
             adressetype = dokDistAdresseType,
-            land =  adresse.land,
+            land =  adresse.land!!,
             postnummer =  adresse.postnummer,
             poststed = adresse.poststed
         )
@@ -74,7 +74,7 @@ data class DistribuerJournalpostRequestInternal(
             adresselinje1 = adresse.adresselinje1,
             adresselinje2 = adresse.adresselinje2,
             adresselinje3 = adresse.adresselinje3,
-            land = adresse.land,
+            land = adresse.land!!,
             poststed = adresse.poststed,
             postnummer = adresse.postnummer
         ) else null
