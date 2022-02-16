@@ -5,7 +5,7 @@ DOKARKIV_PROXY_URL: http://localhost:${wiremock.server.port}/dokarkivproxy
 ACCESS_TOKEN_URL: http://localhost:${wiremock.server.port}/sts
 BIDRAG_PERSON_URL: http://localhost:${wiremock.server.port}/person
 BIDRAG_ORGANISASJON_URL: http://localhost:${wiremock.server.port}/organisasjon
-
+ALLOW_REDISTRIBUTION_JOURNALPOST_IDS: 12333
 no.nav.security.jwt:
   issuer.isso:
     discovery_url: http://localhost:${mock-oauth2-server.port}/isso/.well-known/openid-configuration

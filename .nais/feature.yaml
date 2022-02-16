@@ -22,5 +22,6 @@ env:
   BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon-feature.dev.adeo.no
   FEATURE_ENABLED: KAFKA_ARBEIDSFLYT
   JAVA_OPTS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
+  ALLOW_REDISTRIBUTION_JOURNALPOST_IDS:
 vault:
   kvPath: dev

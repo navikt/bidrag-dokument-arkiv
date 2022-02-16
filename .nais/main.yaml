@@ -21,5 +21,6 @@ env:
     BIDRAG_PERSON_URL: https://bidrag-person.dev.adeo.no
     BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon.dev.adeo.no
     FEATURE_ENABLED: KAFKA_ARBEIDSFLYT
+    ALLOW_REDISTRIBUTION_JOURNALPOST_IDS:
 vault:
   kvPath: dev
