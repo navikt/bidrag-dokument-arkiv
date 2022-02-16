@@ -32,9 +32,9 @@ data class DokDistDistribuerJournalpostRequest(
         )
     }
 
-    constructor(journalpostId: Long, brevkode: String?, distribuerTilAdresse: DistribuerTilAdresse?): this(journalpostId = journalpostId) {
+    constructor(journalpostId: Long, brevkode: String?, tittel: String?, distribuerTilAdresse: DistribuerTilAdresse?): this(journalpostId = journalpostId) {
         adresse = mapAdresse(distribuerTilAdresse)
-        distribusjonstype = BrevkodeToDistribusjonstypeMapper().toDistribusjonsType(brevkode)
+        distribusjonstype = BrevkodeToDistribusjonstypeMapper().toDistribusjonsType(brevkode, tittel)
     }
 }
 
@@ -89,10 +89,10 @@ data class DokDistDistribuerJournalpostResponse(
     }
 }
 
-fun validerKanDistribueres(journalpost: Journalpost?) {
+fun validerKanDistribueres(journalpost: Journalpost?, allowReDisributionJournalpostIds: String? = null) {
     Validate.isTrue(journalpost != null, "Fant ingen journalpost")
     Validate.isTrue(journalpost?.journalstatus == JournalStatus.FERDIGSTILT, "Journalpost må ha status FERDIGSTILT")
-    Validate.isTrue(journalpost?.tilleggsopplysninger?.isDistribusjonBestilt() == false, "Journalpost er allerede distribuert")
+    Validate.isTrue(allowReDisributionJournalpostIds?.contains("${journalpost?.journalpostId}") == true || journalpost?.tilleggsopplysninger?.isDistribusjonBestilt() == false, "Journalpost er allerede distribuert")
     Validate.isTrue(journalpost?.tema == "BID", "Journalpost må ha tema BID")
     Validate.isTrue(journalpost?.hasMottakerId() == true, "Journalpost må ha satt mottakerId")
     Validate.isTrue(journalpost?.isMottakerIdSamhandlerId() == false, "Journalpost mottakerId kan ikke være samhandlerId")
@@ -240,7 +240,10 @@ class BrevkodeToDistribusjonstypeMapper {
         brevkodemap["BI01V04"] = DistribusjonsType.VIKTIG
     }
 
-    fun toDistribusjonsType(brevkode: String?): DistribusjonsType {
+    fun toDistribusjonsType(brevkode: String?, tittel: String?): DistribusjonsType {
+        if (tittel?.lowercase()?.contains("vedtak") == true){
+            return DistribusjonsType.VEDTAK
+        }
         return brevkodemap.getOrDefault(brevkode, DistribusjonsType.VIKTIG)
     }
 

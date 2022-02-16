@@ -15,12 +15,15 @@ import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class DistribuerJournalpostService {
   private static final Logger LOGGER = LoggerFactory.getLogger(DistribuerJournalpostService.class);
 
+  @Value("${ALLOW_REDISTRIBUTION_JOURNALPOST_IDS:}")
+  private String allowReDisributionJournalpostIds;
   private final JournalpostService journalpostService;
   private final DokdistFordelingConsumer dokdistFordelingConsumer;
 
@@ -39,7 +42,7 @@ public class DistribuerJournalpostService {
     }
 
     var journalpost = journalpostOptional.get();
-    validerKanDistribueres(journalpost);
+    validerKanDistribueres(journalpost, allowReDisributionJournalpostIds);
     validerAdresse(distribuerJournalpostRequest.getAdresse());
 
     lagreAdresse(journalpostId, distribuerJournalpostRequest.getAdresseDo(), enhet, journalpost);
@@ -59,7 +62,7 @@ public class DistribuerJournalpostService {
     }
 
     var journalpost = journalpostOptional.get();
-    validerKanDistribueres(journalpost);
+    validerKanDistribueres(journalpost, allowReDisributionJournalpostIds);
   }
 
   public void lagreAdresse(Long journalpostId, DistribuertTilAdresseDo distribuertTilAdresseDo, String enhet, Journalpost journalpost){
