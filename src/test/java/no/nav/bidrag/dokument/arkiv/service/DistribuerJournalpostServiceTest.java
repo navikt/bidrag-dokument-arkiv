@@ -21,7 +21,7 @@ public class DistribuerJournalpostServiceTest {
   @Test
   @DisplayName("skal validere distribuer journalpost")
   void skalValidere() {
-    Assertions.assertDoesNotThrow(()->validerKanDistribueres(createValidJournalpost(), null));
+    Assertions.assertDoesNotThrow(()->validerKanDistribueres(createValidJournalpost()));
   }
 
   @Test
@@ -30,7 +30,7 @@ public class DistribuerJournalpostServiceTest {
     var jp = createValidJournalpost();
     jp.setJournalpostId("123");
     jp.getTilleggsopplysninger().setDistribusjonBestillt();
-    Assertions.assertDoesNotThrow(()->validerKanDistribueres(createValidJournalpost(), "123"));
+    Assertions.assertDoesNotThrow(()->validerKanDistribueres(createValidJournalpost()));
   }
 
   @Test
@@ -38,7 +38,7 @@ public class DistribuerJournalpostServiceTest {
   void skalIkkeValidereHvisJournalpostAlleredeErDistribuert() {
     var jp = createValidJournalpost();
     jp.getTilleggsopplysninger().setDistribusjonBestillt();
-    var exceptionResult = Assertions.assertThrows(IllegalArgumentException.class, ()->validerKanDistribueres(jp, null), "skal feile hvis journalpost allerede er distribuert");
+    var exceptionResult = Assertions.assertThrows(IllegalArgumentException.class, ()->validerKanDistribueres(jp), "skal feile hvis journalpost allerede er distribuert");
     assertThat(exceptionResult.getMessage()).contains("Journalpost er allerede distribuert");
   }
 
@@ -47,7 +47,7 @@ public class DistribuerJournalpostServiceTest {
   void skalIkkeValidereHvisStatusIkkeErFerdigstilt() {
     var jp = createValidJournalpost();
     jp.setJournalstatus(JournalStatus.JOURNALFOERT);
-    var exceptionResult = Assertions.assertThrows(IllegalArgumentException.class, ()->validerKanDistribueres(jp, null), "skal feile hvis status ikke er FERDIGSTILT");
+    var exceptionResult = Assertions.assertThrows(IllegalArgumentException.class, ()->validerKanDistribueres(jp), "skal feile hvis status ikke er FERDIGSTILT");
     assertThat(exceptionResult.getMessage()).contains("FERDIGSTILT");
   }
 
@@ -56,7 +56,7 @@ public class DistribuerJournalpostServiceTest {
   void skalIkkeValidereHvisTemaIkkeErBID() {
     var jp = createValidJournalpost();
     jp.setTema("FAR");
-    var exceptionResult = Assertions.assertThrows(IllegalArgumentException.class, ()->validerKanDistribueres(jp, null), "Skal feile hvis tema ikke er BID");
+    var exceptionResult = Assertions.assertThrows(IllegalArgumentException.class, ()->validerKanDistribueres(jp), "Skal feile hvis tema ikke er BID");
     assertThat(exceptionResult.getMessage()).contains("BID");
   }
 
@@ -65,7 +65,7 @@ public class DistribuerJournalpostServiceTest {
   void skalIkkeValidereHvisJournalpostIkkeHarMottakerIdSatt() {
     var jp = createValidJournalpost();
     jp.setAvsenderMottaker(new AvsenderMottaker());
-    var exceptionResult = Assertions.assertThrows(IllegalArgumentException.class, ()->validerKanDistribueres(jp, null), "Skal feile hvis mottakerid ikke er satt");
+    var exceptionResult = Assertions.assertThrows(IllegalArgumentException.class, ()->validerKanDistribueres(jp), "Skal feile hvis mottakerid ikke er satt");
     assertThat(exceptionResult.getMessage()).contains("mottakerId");
   }
 
@@ -74,7 +74,7 @@ public class DistribuerJournalpostServiceTest {
   void skalIkkeValidereHvisMottakerIdErSamhandlerId() {
     var jp = createValidJournalpost();
     jp.setAvsenderMottaker(new AvsenderMottaker("", "8123213213", null));
-    var exceptionResult = Assertions.assertThrows(IllegalArgumentException.class, ()->validerKanDistribueres(jp, null), "Skal feile hvis mottakerid er samhandlerId");
+    var exceptionResult = Assertions.assertThrows(IllegalArgumentException.class, ()->validerKanDistribueres(jp), "Skal feile hvis mottakerid er samhandlerId");
     assertThat(exceptionResult.getMessage()).contains("samhandlerId");
   }
 
