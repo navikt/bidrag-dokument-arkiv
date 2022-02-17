@@ -24,7 +24,7 @@ class DokDistDistribuerJournalpostRequestTest {
         "Ingen"
     );
 
-    var request = new DokDistDistribuerJournalpostRequest(jpid, "asdasd", distribuerTilAdresse);
+    var request = new DokDistDistribuerJournalpostRequest(jpid, "asdasd", "", distribuerTilAdresse);
     assertAll(
         () -> assertThat(request.getBestillendeFagsystem()).isEqualTo("BIDRAG"),
         () -> assertThat(request.getDokumentProdApp()).isEqualTo("bidragDokArkiv"),
@@ -46,7 +46,7 @@ class DokDistDistribuerJournalpostRequestTest {
         "Ingen"
     );
 
-    var request = new DokDistDistribuerJournalpostRequest(jpid, "asdasd", distribuerTilAdresse);
+    var request = new DokDistDistribuerJournalpostRequest(jpid, "asdasd", "", distribuerTilAdresse);
     var mappedAdresse = request.getAdresse();
     assertAll(
         () -> assertThat(mappedAdresse.getAdresselinje1()).isEqualTo(distribuerTilAdresse.getAdresselinje1()),
@@ -74,7 +74,7 @@ class DokDistDistribuerJournalpostRequestTest {
         "Ingen"
     );
 
-    var request = new DokDistDistribuerJournalpostRequest(jpid, null, distribuerTilAdresse);
+    var request = new DokDistDistribuerJournalpostRequest(jpid, null, null, distribuerTilAdresse);
     var mappedAdresse = request.getAdresse();
     assertAll(
         () -> assertThat(mappedAdresse.getAdressetype()).isEqualTo(DokDistAdresseType.utenlandskPostadresse)
@@ -86,10 +86,21 @@ class DokDistDistribuerJournalpostRequestTest {
   void skalIkkeMappeAdresseHvisDistribuerTilAdresseErNull() throws IOException {
     var jpid = 123123;
 
-    var request = new DokDistDistribuerJournalpostRequest(jpid, null, null);
+    var request = new DokDistDistribuerJournalpostRequest(jpid, null, null, null);
     assertAll(
         () -> assertThat(request.getAdresse()).isNull(),
         () -> assertThat(request.getDistribusjonstype()).isEqualTo(DistribusjonsType.VIKTIG)
+    );
+  }
+
+  @Test
+  @DisplayName("skal mappe distribusjonstype vedtak hvis tittel inneholder vedtak")
+  void skalMappeDistribusjonsTypeVedtakHvisTittelInneholderVedtak() throws IOException {
+    var jpid = 123123;
+
+    var request = new DokDistDistribuerJournalpostRequest(jpid, "???", "Brev som inneholder VedTak", null);
+    assertAll(
+        () -> assertThat(request.getDistribusjonstype()).isEqualTo(DistribusjonsType.VEDTAK)
     );
   }
 
@@ -98,7 +109,7 @@ class DokDistDistribuerJournalpostRequestTest {
   void skalMappeDistribusjonsTypeVedtak() throws IOException {
     var jpid = 123123;
 
-    var request = new DokDistDistribuerJournalpostRequest(jpid, "BI01A01", null);
+    var request = new DokDistDistribuerJournalpostRequest(jpid, "BI01A01", null, null);
     assertAll(
         () -> assertThat(request.getDistribusjonstype()).isEqualTo(DistribusjonsType.VEDTAK)
     );
@@ -109,7 +120,7 @@ class DokDistDistribuerJournalpostRequestTest {
   void skalMappeDistribusjonsTypeViktig() throws IOException {
     var jpid = 123123;
 
-    var request = new DokDistDistribuerJournalpostRequest(jpid, "BI01A03", null);
+    var request = new DokDistDistribuerJournalpostRequest(jpid, "BI01A03", null, null);
     assertAll(
         () -> assertThat(request.getDistribusjonstype()).isEqualTo(DistribusjonsType.VIKTIG)
     );
