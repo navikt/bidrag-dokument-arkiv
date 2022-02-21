@@ -8,7 +8,7 @@ kafka:
   pool: nav-dev
 env:
     ACCEPTED_AUDIENCE: bisys-q2,bidrag-ui-q2,bidrag-q-localhost,ida-q
-    ACCEPTED_SERVICE_USER_AUDIENCE: srvbdarkivering
+    ACCEPTED_SERVICE_USER_AUDIENCE: srvbdarkivering,srvbisys
     ISSO_ISSUER_URL: https://isso-q.adeo.no:443/isso/oauth2
     STS_ISSUER_URL: https://security-token-service.dev.adeo.no
     ACCESS_TOKEN_URL: https://security-token-service.dev.adeo.no
