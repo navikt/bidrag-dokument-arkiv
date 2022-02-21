@@ -1,0 +1,31 @@
+{
+  "data": {
+    "journalpost": {
+      "avsenderMottaker": {
+        "navn": "Mottaker mottakersen",
+        "id": "12312321312321",
+        "type": "FNR"
+      },
+      "bruker": {
+        "id": "1385076492416",
+        "type": "AKTOERID"
+      },
+      "journalforendeEnhet": "4806",
+      "journalfortAvNavn": null,
+      "journalpostId": "201028011",
+      "journalposttype": "U",
+      "journalstatus": "FERDIGSTILT",
+      "relevanteDatoer": [
+        {
+          "dato": "2021-08-18T13:20:33",
+          "datotype": "DATO_DOKUMENT"
+        }
+      ],
+      "tema": "BID",
+      "tittel": "Brev som inneholder Vedtak",
+      "sak": {
+        "fagsakId": "5276661"
+      }
+    }
+  }
+}

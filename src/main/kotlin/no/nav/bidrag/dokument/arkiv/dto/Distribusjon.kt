@@ -32,9 +32,9 @@ data class DokDistDistribuerJournalpostRequest(
         )
     }
 
-    constructor(journalpostId: Long, brevkode: String?, distribuerTilAdresse: DistribuerTilAdresse?): this(journalpostId = journalpostId) {
+    constructor(journalpostId: Long, brevkode: String?, tittel: String?, distribuerTilAdresse: DistribuerTilAdresse?): this(journalpostId = journalpostId) {
         adresse = mapAdresse(distribuerTilAdresse)
-        distribusjonstype = BrevkodeToDistribusjonstypeMapper().toDistribusjonsType(brevkode)
+        distribusjonstype = BrevkodeToDistribusjonstypeMapper().toDistribusjonsType(brevkode, tittel)
     }
 }
 
@@ -240,7 +240,10 @@ class BrevkodeToDistribusjonstypeMapper {
         brevkodemap["BI01V04"] = DistribusjonsType.VIKTIG
     }
 
-    fun toDistribusjonsType(brevkode: String?): DistribusjonsType {
+    fun toDistribusjonsType(brevkode: String?, tittel: String?): DistribusjonsType {
+        if (tittel?.lowercase()?.contains("vedtak") == true){
+            return DistribusjonsType.VEDTAK
+        }
         return brevkodemap.getOrDefault(brevkode, DistribusjonsType.VIKTIG)
     }
 

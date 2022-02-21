@@ -79,7 +79,7 @@ data class Journalpost(
             }
     }
 
-    fun hentBrevkode(): String? = dokumenter[0].brevkode
+    fun hentBrevkode(): String? = hentHoveddokument()?.brevkode
 
     fun isDistribusjonBestilt(): Boolean = tilleggsopplysninger.isDistribusjonBestilt()
 
@@ -153,8 +153,10 @@ data class Journalpost(
         return saksnummerList
     }
 
-    fun hentBrevkodeDto(): KodeDto? = if (dokumenter.isEmpty()) null else KodeDto(kode = dokumenter[0].brevkode)
+    fun hentBrevkodeDto(): KodeDto? = if (hentBrevkode()!=null) KodeDto(kode = hentBrevkode()) else null
 
+    fun hentHoveddokument(): Dokument? = if (dokumenter.isNotEmpty()) dokumenter[0] else null
+    fun hentTittel(): String? = hentHoveddokument()?.tittel ?: tittel
     fun tilJournalpostDto(): JournalpostDto {
 
         @Suppress("UNCHECKED_CAST")
