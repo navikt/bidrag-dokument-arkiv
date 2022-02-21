@@ -29,6 +29,7 @@ const val DISTRIBUERT_ADRESSE_KEY = "distAdresse"
 const val DISTRIBUSJON_BESTILT_KEY = "distribusjonBestilt"
 const val JOURNALFORT_AV_KEY = "journalfortAv"
 private const val DATO_DOKUMENT = "DATO_DOKUMENT"
+private const val DATO_EKSPEDERT = "DATO_EKSPEDERT"
 private const val DATO_JOURNALFORT = "DATO_JOURNALFOERT"
 private const val DATO_REGISTRERT = "DATO_REGISTRERT"
 private const val DATO_RETUR = "DATO_AVS_RETUR"
@@ -78,7 +79,7 @@ data class Journalpost(
             }
     }
 
-    fun hentBrevkode(): String? = dokumenter[0].brevkode
+    fun hentBrevkode(): String? = hentHoveddokument()?.brevkode
 
     fun isDistribusjonBestilt(): Boolean = tilleggsopplysninger.isDistribusjonBestilt()
 
@@ -152,8 +153,10 @@ data class Journalpost(
         return saksnummerList
     }
 
-    fun hentBrevkodeDto(): KodeDto? = if (dokumenter.isEmpty()) null else KodeDto(kode = dokumenter[0].brevkode)
+    fun hentBrevkodeDto(): KodeDto? = if (hentBrevkode()!=null) KodeDto(kode = hentBrevkode()) else null
 
+    fun hentHoveddokument(): Dokument? = if (dokumenter.isNotEmpty()) dokumenter[0] else null
+    fun hentTittel(): String? = hentHoveddokument()?.tittel ?: tittel
     fun tilJournalpostDto(): JournalpostDto {
 
         @Suppress("UNCHECKED_CAST")
@@ -161,6 +164,7 @@ data class Journalpost(
             avsenderNavn = avsenderMottaker?.navn,
             dokumenter = dokumenter.stream().map { dok -> dok?.tilDokumentDto(hentJournalpostType()) }.collect(toList()) as List<DokumentDto>,
             dokumentDato = hentDokumentDato(),
+            ekspedertDato = hentEkspedertDato(),
             dokumentType = hentJournalpostType(),
             fagomrade = tema,
             kilde = hentKanal(),
@@ -207,6 +211,13 @@ data class Journalpost(
         val saksnummerList = if (saksnummer != null) mutableListOf(saksnummer) else mutableListOf()
         saksnummerList.addAll(tilknyttedeSaker)
         return JournalpostResponse(journalpost, saksnummerList)
+    }
+
+    private fun hentEkspedertDato(): LocalDate? {
+        val registrert = relevanteDatoer
+            .find { it.datotype == DATO_EKSPEDERT }
+
+        return registrert?.somDato()
     }
 
     private fun hentDokumentDato(): LocalDate? {

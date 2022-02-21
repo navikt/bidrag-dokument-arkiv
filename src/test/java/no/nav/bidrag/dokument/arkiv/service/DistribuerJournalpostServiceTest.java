@@ -25,6 +25,15 @@ public class DistribuerJournalpostServiceTest {
   }
 
   @Test
+  @DisplayName("skal validere av hvis journalpost allerede er distribuert men er tillatt for redistribuering")
+  void skalValidereHvisJournalpostAlleredeErDistribuertMenTillatForRedistribusjon() {
+    var jp = createValidJournalpost();
+    jp.setJournalpostId("123");
+    jp.getTilleggsopplysninger().setDistribusjonBestillt();
+    Assertions.assertDoesNotThrow(()->validerKanDistribueres(createValidJournalpost()));
+  }
+
+  @Test
   @DisplayName("skal feile validering av distribuer journalpost hvis journalpost allerede er distribuert")
   void skalIkkeValidereHvisJournalpostAlleredeErDistribuert() {
     var jp = createValidJournalpost();
