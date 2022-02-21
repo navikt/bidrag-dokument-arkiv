@@ -10,13 +10,6 @@
         "id": "1385076492416",
         "type": "AKTOERID"
       },
-      "dokumenter": [
-        {
-          "dokumentInfoId": "12345",
-          "tittel": null,
-          "brevkode": "BI01A01"
-        }
-      ],
       "journalforendeEnhet": "4806",
       "journalfortAvNavn": null,
       "journalpostId": "201028011",
@@ -29,7 +22,7 @@
         }
       ],
       "tema": "BID",
-      "tittel": "Filosofens bidrag",
+      "tittel": "Brev som inneholder Vedtak",
       "sak": {
         "fagsakId": "5276661"
       }

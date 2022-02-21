@@ -43,6 +43,14 @@
     {
       "nokkel": "retur20_2020-12-15",
       "verdi": "Beskrivelse av retur 2"
+    },
+    {
+      "nokkel": "distAdresse0",
+      "verdi": "{\"adresselinje1\":\"Testveien 20A\",\"adresselinje2\":\"TestLinje2\",\"adresselinje3\":\"TestLinje4\",\"land\":\""
+    },
+    {
+      "nokkel": "distAdresse1",
+      "verdi": "NO\",\"postnummer\":\"7950\",\"poststed\":\"ABELVÆR\"}"
     }
   ],
   "relevanteDatoer": [

@@ -11,7 +11,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import no.nav.bidrag.commons.web.EnhetFilter;
+import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsTidspunkt;
+import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsType;
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.JournalstatusDto;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.dto.AktorDto;
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest;
@@ -165,8 +168,8 @@ class JournalpostControllerTest extends AbstractControllerTest {
   }
 
   @Test
-  @DisplayName("skal hente Journalpost med adresse")
-  void skalHenteJournalpostMedAdresse() throws IOException {
+  @DisplayName("skal hente distribuert Journalpost med adresse")
+  void skalHenteDistribuertJournalpostMedAdresse() throws IOException {
     var journalpostIdFraJson = 201028011;
 
     stubs.mockSafResponseHentJournalpost(responseJournalpostJsonWithAdresse, HttpStatus.OK);
@@ -185,6 +188,7 @@ class JournalpostControllerTest extends AbstractControllerTest {
     assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
         () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getJournalpostId).isEqualTo("JOARK-" + journalpostIdFraJson),
+        () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getJournalstatus).isEqualTo(JournalstatusDto.EKSPEDERT),
         () -> assertThat(distribuertTilAdresse).isNotNull(),
         () -> assertThat(distribuertTilAdresse.getAdresselinje1()).isEqualTo("Testveien 20A"),
         () -> assertThat(distribuertTilAdresse.getAdresselinje2()).isEqualTo("TestLinje2"),
@@ -529,9 +533,52 @@ class JournalpostControllerTest extends AbstractControllerTest {
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
-        () -> stubs.verifyStub.dokdistFordelingKalt(objectMapper.writeValueAsString(new DokDistDistribuerJournalpostRequest(journalpostIdFraJson, request.getAdresse()))),
+        () -> stubs.verifyStub.dokdistFordelingKalt(objectMapper.writeValueAsString(new DokDistDistribuerJournalpostRequest(journalpostIdFraJson, "BI01A01",null, request.getAdresse()))),
+        () -> stubs.verifyStub.dokdistFordelingKalt(DistribusjonsType.VEDTAK.name()),
+        () -> stubs.verifyStub.dokdistFordelingKalt(DistribusjonsTidspunkt.KJERNETID.name()),
         () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,  request.getAdresse().getAdresselinje1(),  request.getAdresse().getLand()),
-        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,  "{\"nokkel\":\"distribusjon_bestilt\",\"verdi\":\"true\"}")
+        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,  "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}")
+    );
+  }
+
+  @Test
+  @DisplayName("skal distribuere journalpost med tittel vedtak")
+  void skalDistribuereJournalpostMedTittelVedtak() throws IOException, JSONException {
+    // given
+    var xEnhet = "1234";
+    var bestillingId = "TEST_BEST_ID";
+    var journalpostIdFraJson = 201028011L;
+    var headersMedEnhet = new HttpHeaders();
+    headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
+
+    stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponseVedtakTittel.json", HttpStatus.OK);
+    stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId);
+    stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson);
+
+    var distribuerTilAdresse = createDistribuerTilAdresse();
+    distribuerTilAdresse.setAdresselinje2("Adresselinje2");
+    distribuerTilAdresse.setAdresselinje3("Adresselinje3");
+    var request = new DistribuerJournalpostRequest(distribuerTilAdresse);
+
+    // when
+    var oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/journal/distribuer/JOARK-"+journalpostIdFraJson,
+        HttpMethod.POST,
+        new HttpEntity<>(request, headersMedEnhet),
+        JournalpostDto.class
+    );
+
+    // then
+    assertAll(
+        () -> assertThat(oppdaterJournalpostResponseEntity)
+            .extracting(ResponseEntity::getStatusCode)
+            .as("statusCode")
+            .isEqualTo(HttpStatus.OK),
+        () -> stubs.verifyStub.dokdistFordelingKalt(objectMapper.writeValueAsString(new DokDistDistribuerJournalpostRequest(journalpostIdFraJson, "BI01H03","Brev som inneholder Vedtak", request.getAdresse()))),
+        () -> stubs.verifyStub.dokdistFordelingKalt(DistribusjonsType.VEDTAK.name()),
+        () -> stubs.verifyStub.dokdistFordelingKalt(DistribusjonsTidspunkt.KJERNETID.name()),
+        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,  request.getAdresse().getAdresselinje1(),  request.getAdresse().getLand()),
+        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,  "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}")
     );
   }
 
@@ -602,6 +649,65 @@ class JournalpostControllerTest extends AbstractControllerTest {
             .as("statusCode")
             .isEqualTo(HttpStatus.BAD_REQUEST),
         () -> stubs.verifyStub.dokdistFordelingIkkeKalt()
+    );
+  }
+
+
+  @Test
+  @DisplayName("skal få OK fra kan distribuere kall hvis gyldig journalpost for distribusjon")
+  void skalFaaOkFraKanDistribuereKall() throws IOException, JSONException {
+    // given
+    var xEnhet = "1234";
+    var bestillingId = "TEST_BEST_ID";
+    var journalpostIdFraJson = 201028011L;
+    var headersMedEnhet = new HttpHeaders();
+    headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
+
+    stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponse.json", HttpStatus.OK);
+    stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId);
+    // when
+    var response = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/journal/distribuer/JOARK-"+journalpostIdFraJson+"/enabled",
+        HttpMethod.GET,
+        new HttpEntity<>(headersMedEnhet),
+        JournalpostDto.class
+    );
+
+    // then
+    assertAll(
+        () -> assertThat(response)
+            .extracting(ResponseEntity::getStatusCode)
+            .as("statusCode")
+            .isEqualTo(HttpStatus.OK)
+    );
+  }
+
+  @Test
+  @DisplayName("skal få NOT_ACCEPTABLE fra kan distribuere kall hvis ugyldig journalpost for distribusjon")
+  void skalFaaNotAcceptableFraKanDistribuereKall() throws IOException, JSONException {
+    // given
+    var xEnhet = "1234";
+    var bestillingId = "TEST_BEST_ID";
+    var journalpostIdFraJson = 201028011L;
+    var headersMedEnhet = new HttpHeaders();
+    headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
+
+    stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponseNoMottaker.json", HttpStatus.OK);
+    stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId);
+    // when
+    var response = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/journal/distribuer/JOARK-"+journalpostIdFraJson+"/enabled",
+        HttpMethod.GET,
+        new HttpEntity<>(headersMedEnhet),
+        JournalpostDto.class
+    );
+
+    // then
+    assertAll(
+        () -> assertThat(response)
+            .extracting(ResponseEntity::getStatusCode)
+            .as("statusCode")
+            .isEqualTo(HttpStatus.NOT_ACCEPTABLE)
     );
   }
 
