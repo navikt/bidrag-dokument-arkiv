@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import no.nav.bidrag.dokument.dto.AvvikType;
@@ -89,6 +90,52 @@ class JournalpostTest {
         () -> assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-15").getBeskrivelse()).isEqualTo(
             "Beskrivelse av retur 2 mer tekst for å teste lengre verdier"),
         () -> assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-11-15").getBeskrivelse()).isEqualTo("Beskrivelse av retur")
+    );
+  }
+
+  @Test
+  @DisplayName("skal hente distribuert adresse")
+  void skalHenteDistribuertAdresse() throws IOException {
+    var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
+    journalpost.setJournalstatus(JournalStatus.FERDIGSTILT);
+    journalpost.setJournalposttype("U");
+    var adresse = journalpost.getTilleggsopplysninger().hentAdresseDo();
+
+    assertAll(
+        () -> assertThat(adresse.getAdresselinje1()).isEqualTo("Testveien 20A"),
+        () -> assertThat(adresse.getAdresselinje2()).isEqualTo("TestLinje2"),
+        () -> assertThat(adresse.getAdresselinje3()).isEqualTo("TestLinje4"),
+        () -> assertThat(adresse.getPostnummer()).isEqualTo("7950"),
+        () -> assertThat(adresse.getPoststed()).isEqualTo("ABELVÆR"),
+        () -> assertThat(adresse.getLand()).isEqualTo("NO"),
+        () -> assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.KLAR_TIL_PRINT)
+    );
+  }
+
+  @Test
+  @DisplayName("skal hente status JOURNALFØRT når notat and ferdigstilt")
+  void skalHenteJournalpostStatusJournalfortForNotat() throws IOException {
+    var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
+    journalpost.setJournalstatus(JournalStatus.FERDIGSTILT);
+    journalpost.setJournalposttype("N");
+    journalpost.getTilleggsopplysninger().setDistribusjonBestillt();
+
+    assertAll(
+        () -> assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.JOURNALFORT),
+        () -> assertThat(journalpost.hentJournalpostType()).isEqualTo("X")
+    );
+  }
+
+  @Test
+  @DisplayName("skal hente status EKSPEDERT når distribuert")
+  void skalHenteJournalpostStatusEkspedertNarDistribuert() throws IOException {
+    var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
+    journalpost.setJournalstatus(JournalStatus.FERDIGSTILT);
+    journalpost.setJournalposttype("U");
+    journalpost.getTilleggsopplysninger().setDistribusjonBestillt();
+
+    assertAll(
+        () -> assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.EKSPEDERT)
     );
   }
 
