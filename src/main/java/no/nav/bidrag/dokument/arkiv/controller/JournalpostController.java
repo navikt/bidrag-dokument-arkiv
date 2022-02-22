@@ -257,6 +257,7 @@ public class JournalpostController {
   public ResponseEntity<DistribuerJournalpostResponse> distribuerJournalpost(
       @RequestBody(required = false) DistribuerJournalpostRequest distribuerJournalpostRequest,
       @PathVariable String joarkJournalpostId,
+      @RequestParam(required = false) String batchId,
       @RequestHeader(EnhetFilter.X_ENHET_HEADER) String enhet
   ) {
     LOGGER.info("Distribuerer journalpost {} for enhet {}", joarkJournalpostId, enhet);
@@ -274,7 +275,7 @@ public class JournalpostController {
     }
 
     var journalpostId = kildesystemIdenfikator.hentJournalpostIdLong();
-    return ResponseEntity.ok(distribuerJournalpostService.distribuerJournalpost(journalpostId, new DistribuerJournalpostRequestInternal(distribuerJournalpostRequest), enhet));
+    return ResponseEntity.ok(distribuerJournalpostService.distribuerJournalpost(journalpostId, batchId, new DistribuerJournalpostRequestInternal(distribuerJournalpostRequest), enhet));
   }
 
   @GetMapping("/journal/distribuer/{journalpostId}/enabled")
