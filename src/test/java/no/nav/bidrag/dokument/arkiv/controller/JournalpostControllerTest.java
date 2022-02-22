@@ -533,7 +533,7 @@ class JournalpostControllerTest extends AbstractControllerTest {
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
-        () -> stubs.verifyStub.dokdistFordelingKalt(objectMapper.writeValueAsString(new DokDistDistribuerJournalpostRequest(journalpostIdFraJson, "BI01A01",null, request.getAdresse()))),
+        () -> stubs.verifyStub.dokdistFordelingKalt(objectMapper.writeValueAsString(new DokDistDistribuerJournalpostRequest(journalpostIdFraJson, null,"BI01A01",null, request.getAdresse()))),
         () -> stubs.verifyStub.dokdistFordelingKalt(DistribusjonsType.VEDTAK.name()),
         () -> stubs.verifyStub.dokdistFordelingKalt(DistribusjonsTidspunkt.KJERNETID.name()),
         () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,  request.getAdresse().getAdresselinje1(),  request.getAdresse().getLand()),
@@ -574,7 +574,7 @@ class JournalpostControllerTest extends AbstractControllerTest {
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
-        () -> stubs.verifyStub.dokdistFordelingKalt(objectMapper.writeValueAsString(new DokDistDistribuerJournalpostRequest(journalpostIdFraJson, "BI01H03","Brev som inneholder Vedtak", request.getAdresse()))),
+        () -> stubs.verifyStub.dokdistFordelingKalt(objectMapper.writeValueAsString(new DokDistDistribuerJournalpostRequest(journalpostIdFraJson, null, "BI01H03","Brev som inneholder Vedtak", request.getAdresse()))),
         () -> stubs.verifyStub.dokdistFordelingKalt(DistribusjonsType.VEDTAK.name()),
         () -> stubs.verifyStub.dokdistFordelingKalt(DistribusjonsTidspunkt.KJERNETID.name()),
         () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,  request.getAdresse().getAdresselinje1(),  request.getAdresse().getLand()),

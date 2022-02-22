@@ -32,7 +32,8 @@ data class DokDistDistribuerJournalpostRequest(
         )
     }
 
-    constructor(journalpostId: Long, brevkode: String?, tittel: String?, distribuerTilAdresse: DistribuerTilAdresse?): this(journalpostId = journalpostId) {
+    constructor(journalpostId: Long, batchNavn: String?, brevkode: String?, tittel: String?, distribuerTilAdresse: DistribuerTilAdresse?): this(journalpostId = journalpostId) {
+        batchId = batchNavn
         adresse = mapAdresse(distribuerTilAdresse)
         distribusjonstype = BrevkodeToDistribusjonstypeMapper().toDistribusjonsType(brevkode, tittel)
     }
