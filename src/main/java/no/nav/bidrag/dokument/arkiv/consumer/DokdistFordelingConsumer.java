@@ -26,7 +26,7 @@ public class DokdistFordelingConsumer {
 
   public DistribuerJournalpostResponse distribuerJournalpost(Journalpost journalpost, String batchId, DistribuerTilAdresse adresse){
       var journalpostId = journalpost.hentJournalpostIdLong();
-      var request = new DokDistDistribuerJournalpostRequest(journalpostId, batchId, journalpost.hentBrevkode(), journalpost.hentTittel(), adresse);
+      var request = new DokDistDistribuerJournalpostRequest(journalpostId, journalpost.hentBrevkode(), journalpost.hentTittel(), adresse, batchId);
       LOGGER.info("Bestiller distribusjon for journalpost {} med distribusjonstype {}, distribusjonstidspunkt {} {}",
           request.getJournalpostId(),
           request.getDistribusjonstype(),
