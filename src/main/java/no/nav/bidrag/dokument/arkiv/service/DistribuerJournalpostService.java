@@ -32,7 +32,10 @@ public class DistribuerJournalpostService {
 
   public DistribuerJournalpostResponse distribuerJournalpost(Long journalpostId, String batchId, DistribuerJournalpostRequestInternal distribuerJournalpostRequest, String enhet){
     var adresse = distribuerJournalpostRequest.getAdresse();
-    SECURE_LOGGER.info("Forsøker å distribuere journalpost {} med foreslått adresse {}", journalpostId, adresse);
+    if (adresse != null){
+      SECURE_LOGGER.info("Forsøker å distribuere journalpost {} med foreslått adresse {}", journalpostId, adresse);
+    }
+
     var journalpostOptional = journalpostService.hentJournalpost(journalpostId);
     if (journalpostOptional.isEmpty()){
       throw new JournalpostIkkeFunnetException(String.format("Fant ingen journalpost med id %s", journalpostId));
@@ -41,8 +44,8 @@ public class DistribuerJournalpostService {
     var journalpost = journalpostOptional.get();
 
     if (journalpost.getTilleggsopplysninger().isDistribusjonBestilt()){
-      LOGGER.info("Distribusjon er allerede bestillt for journalpostid {}. Stopper videre behandling", journalpostId);
-      return new DistribuerJournalpostResponse(String.valueOf(journalpostId), "ALLEREDE_BESTILT");
+      LOGGER.info("Distribusjon er allerede bestillt for journalpostid {} {}. Stopper videre behandling", journalpostId, batchId != null ? String.format("med batchId %s", batchId) : "");
+      return new DistribuerJournalpostResponse("JOARK-"+journalpostId, null);
     }
 
     validerKanDistribueres(journalpost);
