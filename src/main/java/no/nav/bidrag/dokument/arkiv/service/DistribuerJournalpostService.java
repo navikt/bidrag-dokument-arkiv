@@ -32,7 +32,6 @@ public class DistribuerJournalpostService {
 
   public DistribuerJournalpostResponse distribuerJournalpost(Long journalpostId, String batchId, DistribuerJournalpostRequestInternal distribuerJournalpostRequest, String enhet){
     var adresse = distribuerJournalpostRequest.getAdresse();
-    LOGGER.info("Forsøker å distribuere journalpost {}", journalpostId);
     SECURE_LOGGER.info("Forsøker å distribuere journalpost {} med foreslått adresse {}", journalpostId, adresse);
     var journalpostOptional = journalpostService.hentJournalpost(journalpostId);
     if (journalpostOptional.isEmpty()){
@@ -42,7 +41,7 @@ public class DistribuerJournalpostService {
     var journalpost = journalpostOptional.get();
     validerKanDistribueres(journalpost);
 
-    if (Strings.isEmpty(batchId)){
+    if (Strings.isEmpty(batchId) || adresse != null){
       validerAdresse(distribuerJournalpostRequest.getAdresse());
       lagreAdresse(journalpostId, distribuerJournalpostRequest.getAdresseDo(), enhet, journalpost);
     }

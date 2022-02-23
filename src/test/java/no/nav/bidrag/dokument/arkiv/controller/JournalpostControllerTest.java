@@ -542,6 +542,43 @@ class JournalpostControllerTest extends AbstractControllerTest {
   }
 
   @Test
+  @DisplayName("skal distribuere journalpost med batchid")
+  void skalDistribuereJournalpostMedBatchId() throws IOException, JSONException {
+    // given
+    var xEnhet = "1234";
+    var batchId = "FB201";
+    var bestillingId = "TEST_BEST_ID";
+    var journalpostIdFraJson = 201028011L;
+    var headersMedEnhet = new HttpHeaders();
+    headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
+
+    stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponse.json", HttpStatus.OK);
+    stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId);
+    stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson);
+
+    // when
+    var oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/journal/distribuer/JOARK-"+journalpostIdFraJson+"?batchId="+batchId,
+        HttpMethod.POST,
+        new HttpEntity<>(null, headersMedEnhet),
+        JournalpostDto.class
+    );
+
+    // then
+    assertAll(
+        () -> assertThat(oppdaterJournalpostResponseEntity)
+            .extracting(ResponseEntity::getStatusCode)
+            .as("statusCode")
+            .isEqualTo(HttpStatus.OK),
+        () -> stubs.verifyStub.dokdistFordelingKalt(objectMapper.writeValueAsString(new DokDistDistribuerJournalpostRequest(journalpostIdFraJson, batchId,"BI01A01",null, null))),
+        () -> stubs.verifyStub.dokdistFordelingKalt(DistribusjonsType.VEDTAK.name()),
+        () -> stubs.verifyStub.dokdistFordelingKalt(DistribusjonsTidspunkt.KJERNETID.name()),
+        () -> stubs.verifyStub.dokdistFordelingKalt(batchId),
+        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,  "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}")
+    );
+  }
+
+  @Test
   @DisplayName("skal distribuere journalpost med tittel vedtak")
   void skalDistribuereJournalpostMedTittelVedtak() throws IOException, JSONException {
     // given

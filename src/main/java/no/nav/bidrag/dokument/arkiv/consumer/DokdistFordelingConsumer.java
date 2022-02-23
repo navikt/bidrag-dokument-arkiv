@@ -27,7 +27,13 @@ public class DokdistFordelingConsumer {
   public DistribuerJournalpostResponse distribuerJournalpost(Journalpost journalpost, String batchId, DistribuerTilAdresse adresse){
       var journalpostId = journalpost.hentJournalpostIdLong();
       var request = new DokDistDistribuerJournalpostRequest(journalpostId, batchId, journalpost.hentBrevkode(), journalpost.hentTittel(), adresse);
-      LOGGER.info("Bestiller distribusjon for journalpost {} med distribusjonstype {} og distribusjonstidspunkt {}", request.getJournalpostId(), request.getDistribusjonstype(), request.getDistribusjonstidspunkt());
+      LOGGER.info("Bestiller distribusjon for journalpost {} med distribusjonstype {}, distribusjonstidspunkt {} {}",
+          request.getJournalpostId(),
+          request.getDistribusjonstype(),
+          request.getDistribusjonstidspunkt(),
+          batchId != null ? String.format(" og batchId %s", batchId) : null
+      );
+
       var response = new HttpResponse<>(restTemplate.exchange("/rest/v1/distribuerjournalpost", HttpMethod.POST, new HttpEntity<>(request), DokDistDistribuerJournalpostResponse.class));
       var responseBody = response.getResponseEntity().getBody();
       if (!response.is2xxSuccessful() || responseBody == null){
