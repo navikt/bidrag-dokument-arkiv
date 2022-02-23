@@ -39,6 +39,12 @@ public class DistribuerJournalpostService {
     }
 
     var journalpost = journalpostOptional.get();
+
+    if (journalpost.getTilleggsopplysninger().isDistribusjonBestilt()){
+      LOGGER.info("Distribusjon er allerede bestillt for journalpostid {}. Stopper videre behandling", journalpostId);
+      return new DistribuerJournalpostResponse(String.valueOf(journalpostId), "ALLEREDE_BESTILT");
+    }
+
     validerKanDistribueres(journalpost);
 
     if (Strings.isEmpty(batchId) || adresse != null){

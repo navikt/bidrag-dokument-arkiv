@@ -18,6 +18,7 @@ import no.nav.bidrag.dokument.arkiv.dto.JournalstatusDto;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.dto.AktorDto;
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest;
+import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse;
 import no.nav.bidrag.dokument.dto.EndreDokument;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.bidrag.dokument.dto.EndreReturDetaljer;
@@ -540,6 +541,49 @@ class JournalpostControllerTest extends AbstractControllerTest {
         () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,  "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}")
     );
   }
+
+  @Test
+  @DisplayName("skal ikke distribuere journalpost hvis allerede distribuert")
+  void skalIkkeDistribuereJournalpostHvisAlleredeDistribuert() throws IOException, JSONException {
+    // given
+    var xEnhet = "1234";
+    var bestillingId = "TEST_BEST_ID";
+    var journalpostIdFraJson = 201028011L;
+    var headersMedEnhet = new HttpHeaders();
+    headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
+
+    stubs.mockSafResponseHentJournalpost(responseJournalpostJsonWithAdresse, HttpStatus.OK);
+    stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId);
+    stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson);
+
+    var distribuerTilAdresse = createDistribuerTilAdresse();
+    distribuerTilAdresse.setAdresselinje2("Adresselinje2");
+    distribuerTilAdresse.setAdresselinje3("Adresselinje3");
+    var request = new DistribuerJournalpostRequest(distribuerTilAdresse);
+
+    // when
+    var oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/journal/distribuer/JOARK-"+journalpostIdFraJson,
+        HttpMethod.POST,
+        new HttpEntity<>(request, headersMedEnhet),
+        DistribuerJournalpostResponse.class
+    );
+
+    // then
+    assertAll(
+        () -> assertThat(oppdaterJournalpostResponseEntity)
+            .extracting(ResponseEntity::getStatusCode)
+            .as("statusCode")
+            .isEqualTo(HttpStatus.OK),
+        () -> assertThat(oppdaterJournalpostResponseEntity)
+            .extracting(ResponseEntity::getBody)
+            .extracting(DistribuerJournalpostResponse::getJournalpostId)
+            .as("journalpostId")
+            .isEqualTo("201028011"),
+        () -> stubs.verifyStub.dokdistFordelingIkkeKalt()
+    );
+  }
+
 
   @Test
   @DisplayName("skal distribuere journalpost med batchid")
