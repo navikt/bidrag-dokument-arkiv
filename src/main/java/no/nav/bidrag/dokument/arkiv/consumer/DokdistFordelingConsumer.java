@@ -7,6 +7,7 @@ import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse;
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -31,7 +32,7 @@ public class DokdistFordelingConsumer {
           request.getJournalpostId(),
           request.getDistribusjonstype(),
           request.getDistribusjonstidspunkt(),
-          batchId != null ? String.format(" og batchId %s", batchId) : ""
+          Strings.isEmpty(batchId) ? String.format(" og batchId %s", batchId) : ""
       );
 
       var response = new HttpResponse<>(restTemplate.exchange("/rest/v1/distribuerjournalpost", HttpMethod.POST, new HttpEntity<>(request), DokDistDistribuerJournalpostResponse.class));
