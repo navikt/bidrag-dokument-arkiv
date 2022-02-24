@@ -427,10 +427,10 @@ enum class JournalStatus {
 
 data class EndreJournalpostCommandIntern(
     val endreJournalpostCommand: EndreJournalpostCommand,
-    val enhet: String,
+    val enhet: String?,
     val endreAdresse: DistribuertTilAdresseDo?
 ) {
-    constructor(endreAdresse: DistribuertTilAdresseDo, enhet: String): this(EndreJournalpostCommand(), enhet, endreAdresse)
+    constructor(endreAdresse: DistribuertTilAdresseDo): this(EndreJournalpostCommand(), null, endreAdresse)
     constructor(endreJournalpostCommand: EndreJournalpostCommand, enhet: String): this(endreJournalpostCommand, enhet, null)
     fun skalJournalfores() = endreJournalpostCommand.skalJournalfores
     fun hentAvsenderNavn(journalpost: Journalpost) = endreJournalpostCommand.avsenderNavn ?: journalpost.hentAvsenderNavn()

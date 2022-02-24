@@ -7,6 +7,7 @@ import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse;
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -24,10 +25,16 @@ public class DokdistFordelingConsumer {
   }
 
 
-  public DistribuerJournalpostResponse distribuerJournalpost(Journalpost journalpost, DistribuerTilAdresse adresse){
+  public DistribuerJournalpostResponse distribuerJournalpost(Journalpost journalpost, String batchId, DistribuerTilAdresse adresse){
       var journalpostId = journalpost.hentJournalpostIdLong();
-      var request = new DokDistDistribuerJournalpostRequest(journalpostId, journalpost.hentBrevkode(), journalpost.hentTittel(), adresse);
-      LOGGER.info("Bestiller distribusjon for journalpost {} med distribusjonstype {} og distribusjonstidspunkt {}", request.getJournalpostId(), request.getDistribusjonstype(), request.getDistribusjonstidspunkt());
+      var request = new DokDistDistribuerJournalpostRequest(journalpostId, journalpost.hentBrevkode(), journalpost.hentTittel(), adresse, batchId);
+      LOGGER.info("Bestiller distribusjon for journalpost {} med distribusjonstype {} og distribusjonstidspunkt {}{}",
+          request.getJournalpostId(),
+          request.getDistribusjonstype(),
+          request.getDistribusjonstidspunkt(),
+          Strings.isNotEmpty(batchId) ? String.format(" og batchId %s", batchId) : ""
+      );
+
       var response = new HttpResponse<>(restTemplate.exchange("/rest/v1/distribuerjournalpost", HttpMethod.POST, new HttpEntity<>(request), DokDistDistribuerJournalpostResponse.class));
       var responseBody = response.getResponseEntity().getBody();
       if (!response.is2xxSuccessful() || responseBody == null){
