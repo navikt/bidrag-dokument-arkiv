@@ -34,6 +34,7 @@ import no.nav.bidrag.dokument.dto.JournalpostDto;
 import no.nav.bidrag.dokument.dto.JournalpostResponse;
 import no.nav.security.token.support.core.api.Protected;
 import no.nav.security.token.support.core.api.Unprotected;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -257,8 +258,9 @@ public class JournalpostController {
   public ResponseEntity<DistribuerJournalpostResponse> distribuerJournalpost(
       @RequestBody(required = false) DistribuerJournalpostRequest distribuerJournalpostRequest,
       @PathVariable String joarkJournalpostId,
-      @RequestParam(required = false) String batchId
+      @RequestParam(required = false) String batchIdHeader
   ) {
+    var batchId = Strings.isEmpty(batchIdHeader) ? null : batchIdHeader;
     LOGGER.info("Distribuerer journalpost {}{}", joarkJournalpostId, batchId != null ? String.format(" og batchId %s", batchId) : "");
     KildesystemIdenfikator kildesystemIdenfikator = new KildesystemIdenfikator(joarkJournalpostId);
 
