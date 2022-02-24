@@ -44,7 +44,7 @@ public class DistribuerJournalpostService {
     var journalpost = journalpostOptional.get();
 
     if (journalpost.getTilleggsopplysninger().isDistribusjonBestilt()){
-      LOGGER.info("Distribusjon er allerede bestillt for journalpostid {} {}. Stopper videre behandling", journalpostId, batchId != null ? String.format("med batchId %s", batchId) : "");
+      LOGGER.warn("Distribusjon er allerede bestillt for journalpostid {}{}. Stopper videre behandling", journalpostId, batchId != null ? String.format(" med batchId %s", batchId) : "");
       return new DistribuerJournalpostResponse("JOARK-"+journalpostId, null);
     }
 
