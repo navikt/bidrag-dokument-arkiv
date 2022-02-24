@@ -73,11 +73,11 @@ data class DistribuerJournalpostRequestInternal(
         val adresse = getAdresse()
         return if (adresse != null) DistribuertTilAdresseDo(
             adresselinje1 = adresse.adresselinje1,
-            adresselinje2 = adresse.adresselinje2,
-            adresselinje3 = adresse.adresselinje3,
+            adresselinje2 = if (adresse.adresselinje2.isNullOrEmpty()) null else adresse.adresselinje2,
+            adresselinje3 = if (adresse.adresselinje3.isNullOrEmpty()) null else adresse.adresselinje3,
             land = adresse.land!!,
-            poststed = adresse.poststed,
-            postnummer = adresse.postnummer
+            poststed = if (adresse.poststed.isNullOrEmpty()) null else adresse.poststed,
+            postnummer = if (adresse.postnummer.isNullOrEmpty()) null else adresse.postnummer
         ) else null
     }
 }
