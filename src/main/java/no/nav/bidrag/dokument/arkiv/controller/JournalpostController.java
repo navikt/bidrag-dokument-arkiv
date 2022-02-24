@@ -261,7 +261,7 @@ public class JournalpostController {
       @RequestParam(required = false, name = "batchId") String batchIdHeader
   ) {
     var batchId = Strings.isEmpty(batchIdHeader) ? null : batchIdHeader;
-    LOGGER.info("Distribuerer journalpost {}{}", joarkJournalpostId, Strings.isEmpty(batchId) ? String.format(" og batchId %s", batchId) : "");
+    LOGGER.info("Distribuerer journalpost {}{}", joarkJournalpostId, Strings.isNotEmpty(batchId) ? String.format(" og batchId %s", batchId) : "");
     KildesystemIdenfikator kildesystemIdenfikator = new KildesystemIdenfikator(joarkJournalpostId);
 
     if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix()) {

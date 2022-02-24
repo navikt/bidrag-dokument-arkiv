@@ -32,7 +32,7 @@ public class DokdistFordelingConsumer {
           request.getJournalpostId(),
           request.getDistribusjonstype(),
           request.getDistribusjonstidspunkt(),
-          Strings.isEmpty(batchId) ? String.format(" og batchId %s", batchId) : ""
+          Strings.isNotEmpty(batchId) ? String.format(" og batchId %s", batchId) : ""
       );
 
       var response = new HttpResponse<>(restTemplate.exchange("/rest/v1/distribuerjournalpost", HttpMethod.POST, new HttpEntity<>(request), DokDistDistribuerJournalpostResponse.class));
