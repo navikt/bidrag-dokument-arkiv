@@ -258,7 +258,7 @@ public class JournalpostController {
   public ResponseEntity<DistribuerJournalpostResponse> distribuerJournalpost(
       @RequestBody(required = false) DistribuerJournalpostRequest distribuerJournalpostRequest,
       @PathVariable String joarkJournalpostId,
-      @RequestParam(required = false) String batchIdHeader
+      @RequestParam(required = false, name = "batchId") String batchIdHeader
   ) {
     var batchId = Strings.isEmpty(batchIdHeader) ? null : batchIdHeader;
     LOGGER.info("Distribuerer journalpost {}{}", joarkJournalpostId, Strings.isEmpty(batchId) ? String.format(" og batchId %s", batchId) : "");
