@@ -30,7 +30,7 @@ public class DistribuerJournalpostService {
     this.dokdistFordelingConsumer = dokdistFordelingConsumer;
   }
 
-  public DistribuerJournalpostResponse distribuerJournalpost(Long journalpostId, String batchId, DistribuerJournalpostRequestInternal distribuerJournalpostRequest, String enhet){
+  public DistribuerJournalpostResponse distribuerJournalpost(Long journalpostId, String batchId, DistribuerJournalpostRequestInternal distribuerJournalpostRequest){
     var adresse = distribuerJournalpostRequest.getAdresse();
     if (adresse != null){
       SECURE_LOGGER.info("Forsøker å distribuere journalpost {} med foreslått adresse {}", journalpostId, adresse);
@@ -52,7 +52,7 @@ public class DistribuerJournalpostService {
 
     if (Strings.isEmpty(batchId) || adresse != null){
       validerAdresse(distribuerJournalpostRequest.getAdresse());
-      lagreAdresse(journalpostId, distribuerJournalpostRequest.getAdresseDo(), enhet, journalpost);
+      lagreAdresse(journalpostId, distribuerJournalpostRequest.getAdresseDo(), journalpost);
     }
 
     //TODO: Lagre bestillingsid når bd-arkiv er koblet mot database
@@ -73,9 +73,9 @@ public class DistribuerJournalpostService {
     validerKanDistribueres(journalpost);
   }
 
-  public void lagreAdresse(Long journalpostId, DistribuertTilAdresseDo distribuertTilAdresseDo, String enhet, Journalpost journalpost){
+  public void lagreAdresse(Long journalpostId, DistribuertTilAdresseDo distribuertTilAdresseDo, Journalpost journalpost){
     if (distribuertTilAdresseDo != null){
-      journalpostService.lagreJournalpost(journalpostId, new EndreJournalpostCommandIntern(distribuertTilAdresseDo, enhet), journalpost);
+      journalpostService.lagreJournalpost(journalpostId, new EndreJournalpostCommandIntern(distribuertTilAdresseDo), journalpost);
     }
   }
 }

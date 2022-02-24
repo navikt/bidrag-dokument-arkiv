@@ -257,10 +257,9 @@ public class JournalpostController {
   public ResponseEntity<DistribuerJournalpostResponse> distribuerJournalpost(
       @RequestBody(required = false) DistribuerJournalpostRequest distribuerJournalpostRequest,
       @PathVariable String joarkJournalpostId,
-      @RequestParam(required = false) String batchId,
-      @RequestHeader(value = EnhetFilter.X_ENHET_HEADER) String enhet
+      @RequestParam(required = false) String batchId
   ) {
-    LOGGER.info("Distribuerer journalpost {} for enhet {} og batchId {}", joarkJournalpostId, enhet, batchId);
+    LOGGER.info("Distribuerer journalpost {}{}", joarkJournalpostId, batchId != null ? String.format(" og batchId %s", batchId) : "");
     KildesystemIdenfikator kildesystemIdenfikator = new KildesystemIdenfikator(joarkJournalpostId);
 
     if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix()) {
@@ -275,7 +274,7 @@ public class JournalpostController {
     }
 
     var journalpostId = kildesystemIdenfikator.hentJournalpostIdLong();
-    return ResponseEntity.ok(distribuerJournalpostService.distribuerJournalpost(journalpostId, batchId, new DistribuerJournalpostRequestInternal(distribuerJournalpostRequest), enhet));
+    return ResponseEntity.ok(distribuerJournalpostService.distribuerJournalpost(journalpostId, batchId, new DistribuerJournalpostRequestInternal(distribuerJournalpostRequest)));
   }
 
   @GetMapping("/journal/distribuer/{journalpostId}/enabled")
@@ -288,11 +287,8 @@ public class JournalpostController {
       @ApiResponse(responseCode = "404", description = "Fant ikke journalpost som skal distribueres")
   })
   @ResponseBody
-  public ResponseEntity<Void> kanDistribuerJournalpost(
-      @PathVariable String journalpostId,
-      @RequestHeader(EnhetFilter.X_ENHET_HEADER) String enhet
-  ) {
-    LOGGER.info("Sjekker om journalpost {} for enhet {} kan distribueres", journalpostId, enhet);
+  public ResponseEntity<Void> kanDistribuerJournalpost(@PathVariable String journalpostId) {
+    LOGGER.info("Sjekker om journalpost {} kan distribueres", journalpostId);
     KildesystemIdenfikator kildesystemIdenfikator = new KildesystemIdenfikator(journalpostId);
 
     if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix()) {
