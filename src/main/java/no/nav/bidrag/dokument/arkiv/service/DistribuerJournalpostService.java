@@ -13,6 +13,7 @@ import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -29,23 +30,33 @@ public class DistribuerJournalpostService {
     this.dokdistFordelingConsumer = dokdistFordelingConsumer;
   }
 
-  public DistribuerJournalpostResponse distribuerJournalpost(Long journalpostId, DistribuerJournalpostRequestInternal distribuerJournalpostRequest, String enhet){
+  public DistribuerJournalpostResponse distribuerJournalpost(Long journalpostId, String batchId, DistribuerJournalpostRequestInternal distribuerJournalpostRequest){
     var adresse = distribuerJournalpostRequest.getAdresse();
-    LOGGER.info("Forsøker å distribuere journalpost {}", journalpostId);
-    SECURE_LOGGER.info("Forsøker å distribuere journalpost {} med foreslått adresse {}", journalpostId, adresse);
+    if (adresse != null){
+      SECURE_LOGGER.info("Forsøker å distribuere journalpost {} med foreslått adresse {}", journalpostId, adresse);
+    }
+
     var journalpostOptional = journalpostService.hentJournalpost(journalpostId);
     if (journalpostOptional.isEmpty()){
       throw new JournalpostIkkeFunnetException(String.format("Fant ingen journalpost med id %s", journalpostId));
     }
 
     var journalpost = journalpostOptional.get();
-    validerKanDistribueres(journalpost);
-    validerAdresse(distribuerJournalpostRequest.getAdresse());
 
-    lagreAdresse(journalpostId, distribuerJournalpostRequest.getAdresseDo(), enhet, journalpost);
+    if (journalpost.getTilleggsopplysninger().isDistribusjonBestilt()){
+      LOGGER.warn("Distribusjon er allerede bestillt for journalpostid {}{}. Stopper videre behandling", journalpostId, batchId != null ? String.format(" med batchId %s", batchId) : "");
+      return new DistribuerJournalpostResponse("JOARK-"+journalpostId, null);
+    }
+
+    validerKanDistribueres(journalpost);
+
+    if (Strings.isEmpty(batchId) || adresse != null){
+      validerAdresse(distribuerJournalpostRequest.getAdresse());
+      lagreAdresse(journalpostId, distribuerJournalpostRequest.getAdresseDo(), journalpost);
+    }
 
     //TODO: Lagre bestillingsid når bd-arkiv er koblet mot database
-    var distribuerResponse = dokdistFordelingConsumer.distribuerJournalpost(journalpost, adresse);
+    var distribuerResponse = dokdistFordelingConsumer.distribuerJournalpost(journalpost, batchId, adresse);
     LOGGER.info("Bestillt distribusjon av journalpost {} med bestillingsId {}", journalpostId, distribuerResponse.getBestillingsId());
     journalpostService.oppdaterJournalpostDistribusjonBestiltStatus(journalpostId, journalpost);
     return distribuerResponse;
@@ -62,9 +73,9 @@ public class DistribuerJournalpostService {
     validerKanDistribueres(journalpost);
   }
 
-  public void lagreAdresse(Long journalpostId, DistribuertTilAdresseDo distribuertTilAdresseDo, String enhet, Journalpost journalpost){
+  public void lagreAdresse(Long journalpostId, DistribuertTilAdresseDo distribuertTilAdresseDo, Journalpost journalpost){
     if (distribuertTilAdresseDo != null){
-      journalpostService.lagreJournalpost(journalpostId, new EndreJournalpostCommandIntern(distribuertTilAdresseDo, enhet), journalpost);
+      journalpostService.lagreJournalpost(journalpostId, new EndreJournalpostCommandIntern(distribuertTilAdresseDo), journalpost);
     }
   }
 }
