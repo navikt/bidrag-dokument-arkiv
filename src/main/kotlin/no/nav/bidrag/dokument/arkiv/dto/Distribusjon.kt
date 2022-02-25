@@ -24,15 +24,17 @@ data class DokDistDistribuerJournalpostRequest(
         return DokDistDistribuerTilAdresse(
             adresselinje1 = adresse.adresselinje1,
             adresselinje2 = adresse.adresselinje2,
-            adresselinje3 =  adresse.adresselinje3,
+            adresselinje3 = adresse.adresselinje3,
             adressetype = dokDistAdresseType,
-            land =  adresse.land!!,
-            postnummer =  adresse.postnummer,
+            land = adresse.land!!,
+            postnummer = adresse.postnummer,
             poststed = adresse.poststed
         )
     }
 
-    constructor(journalpostId: Long, brevkode: String?, tittel: String?, distribuerTilAdresse: DistribuerTilAdresse?, _batchId: String?): this(journalpostId = journalpostId) {
+    constructor(journalpostId: Long, brevkode: String?, tittel: String?, distribuerTilAdresse: DistribuerTilAdresse?, _batchId: String?) : this(
+        journalpostId = journalpostId
+    ) {
         batchId = _batchId
         adresse = mapAdresse(distribuerTilAdresse)
         distribusjonstype = BrevkodeToDistribusjonstypeMapper().toDistribusjonsType(brevkode, tittel)
@@ -49,7 +51,8 @@ enum class DistribusjonsType {
     VIKTIG,
     ANNET
 }
-enum class DokDistAdresseType{
+
+enum class DokDistAdresseType {
     norskPostadresse,
     utenlandskPostadresse
 }
@@ -68,16 +71,27 @@ data class DistribuerJournalpostRequestInternal(
     var request: DistribuerJournalpostRequest? = null
 ) {
     fun hasAdresse(): Boolean = request?.adresse != null
-    fun getAdresse(): DistribuerTilAdresse? = request?.adresse
+    fun getAdresse(): DistribuerTilAdresse? {
+        val adresse = request?.adresse
+        return if (adresse != null) DistribuerTilAdresse(
+            adresselinje1 = StringUtils.stripToNull(adresse.adresselinje1),
+            adresselinje2 = StringUtils.stripToNull(adresse.adresselinje2),
+            adresselinje3 = StringUtils.stripToNull(adresse.adresselinje3),
+            land = adresse.land!!,
+            poststed = StringUtils.stripToNull(adresse.poststed),
+            postnummer = StringUtils.stripToNull(adresse.postnummer)
+        ) else null
+    }
+
     fun getAdresseDo(): DistribuertTilAdresseDo? {
         val adresse = getAdresse()
         return if (adresse != null) DistribuertTilAdresseDo(
             adresselinje1 = adresse.adresselinje1,
-            adresselinje2 = if (adresse.adresselinje2.isNullOrEmpty()) null else adresse.adresselinje2,
-            adresselinje3 = if (adresse.adresselinje3.isNullOrEmpty()) null else adresse.adresselinje3,
+            adresselinje2 = adresse.adresselinje2,
+            adresselinje3 = adresse.adresselinje3,
             land = adresse.land!!,
-            poststed = if (adresse.poststed.isNullOrEmpty()) null else adresse.poststed,
-            postnummer = if (adresse.postnummer.isNullOrEmpty()) null else adresse.postnummer
+            poststed = adresse.poststed,
+            postnummer = adresse.postnummer
         ) else null
     }
 }
@@ -99,11 +113,11 @@ fun validerKanDistribueres(journalpost: Journalpost?) {
     Validate.isTrue(journalpost?.isMottakerIdSamhandlerId() == false, "Journalpost mottakerId kan ikke være samhandlerId")
 }
 
-fun validerAdresse(adresse: DistribuerTilAdresse?){
+fun validerAdresse(adresse: DistribuerTilAdresse?) {
     Validate.isTrue(adresse != null, "Adresse må være satt")
     validateNotNullOrEmpty(adresse?.land, "Land er påkrevd på adresse")
     Validate.isTrue(adresse?.land?.length == 2, "Land må være formatert som Alpha-2 to-bokstavers landkode ")
-    if (ALPHA2_NORGE == adresse?.land){
+    if (ALPHA2_NORGE == adresse?.land) {
         validateNotNullOrEmpty(adresse.postnummer, "Postnummer er påkrevd på norsk adresse")
         validateNotNullOrEmpty(adresse.poststed, "Poststed er påkrevd på norsk adresse")
     } else {
@@ -111,10 +125,9 @@ fun validerAdresse(adresse: DistribuerTilAdresse?){
     }
 }
 
-fun validateNotNullOrEmpty(value: String?, message: String){
+fun validateNotNullOrEmpty(value: String?, message: String) {
     Validate.isTrue(StringUtils.isNotEmpty(value), message)
 }
-
 
 
 class BrevkodeToDistribusjonstypeMapper {
@@ -242,7 +255,7 @@ class BrevkodeToDistribusjonstypeMapper {
     }
 
     fun toDistribusjonsType(brevkode: String?, tittel: String?): DistribusjonsType {
-        if (tittel?.lowercase()?.contains("vedtak") == true){
+        if (tittel?.lowercase()?.contains("vedtak") == true) {
             return DistribusjonsType.VEDTAK
         }
         return brevkodemap.getOrDefault(brevkode, DistribusjonsType.VIKTIG)
