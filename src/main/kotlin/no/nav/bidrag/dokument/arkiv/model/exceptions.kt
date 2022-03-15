@@ -2,8 +2,16 @@ package no.nav.bidrag.dokument.arkiv.model
 
 import org.springframework.http.HttpStatus
 
-abstract class HttpStatusException(message: String) : RuntimeException(message) {
+abstract class HttpStatusException(message: String, throwable: Throwable? = null) : RuntimeException(message, throwable) {
     abstract val status: HttpStatus
+}
+
+open class FunksjonellFeilException(message: String) : HttpStatusException(message) {
+    override val status: HttpStatus get() = HttpStatus.BAD_REQUEST
+}
+
+open class TekniskFeilException(message: String, throwable: Throwable) : HttpStatusException(message, throwable) {
+    override val status: HttpStatus get() = HttpStatus.INTERNAL_SERVER_ERROR
 }
 
 class JournalIkkeFunnetException(message: String) : HttpStatusException(message) {
@@ -45,3 +53,6 @@ class FerdigstillFeiletException(message: String) : EndreJournalpostFeiletExcept
 class OppdaterJournalpostFeiletException(message: String) : AvvikFeiletException(message)
 class TrekkJournalpostFeiletException(message: String) : AvvikFeiletException(message)
 class FeilforSakFeiletException(message: String) : AvvikFeiletException(message)
+
+class DistribusjonFeiletException(message: String): FunksjonellFeilException(message)
+class DistribusjonFeiletTekniskException(message: String, throwable: Throwable): TekniskFeilException(message, throwable)
