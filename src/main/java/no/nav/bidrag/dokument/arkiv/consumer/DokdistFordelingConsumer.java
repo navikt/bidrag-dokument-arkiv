@@ -1,7 +1,5 @@
 package no.nav.bidrag.dokument.arkiv.consumer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
@@ -9,12 +7,11 @@ import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
-import no.nav.bidrag.dokument.arkiv.model.DistribusjonFeiletException;
+import no.nav.bidrag.dokument.arkiv.model.DistribusjonFeiletFunksjoneltException;
 import no.nav.bidrag.dokument.arkiv.model.DistribusjonFeiletTekniskException;
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse;
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse;
 import org.apache.logging.log4j.util.Strings;
-import org.apache.tomcat.util.json.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -57,7 +54,7 @@ public class DokdistFordelingConsumer {
           var status = e.getStatusCode();
           var errorMessage = parseErrorMessage(e);
           if (HttpStatus.BAD_REQUEST.equals(status) || HttpStatus.NOT_FOUND.equals(status)){
-             throw new DistribusjonFeiletException(String.format("Distribusjon feilet for JOARK journalpost %s med status %s og feilmelding: %s", journalpostId, e.getStatusCode(), errorMessage));
+             throw new DistribusjonFeiletFunksjoneltException(String.format("Distribusjon feilet for JOARK journalpost %s med status %s og feilmelding: %s", journalpostId, e.getStatusCode(), errorMessage));
           }
           throw new DistribusjonFeiletTekniskException(String.format("Distribusjon feilet teknisk for JOARK journalpost %s med status %s og feilmelding: %s", journalpostId, e.getStatusCode(), errorMessage), e);
       }

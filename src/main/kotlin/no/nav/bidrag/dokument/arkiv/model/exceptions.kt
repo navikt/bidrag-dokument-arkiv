@@ -54,5 +54,5 @@ class OppdaterJournalpostFeiletException(message: String) : AvvikFeiletException
 class TrekkJournalpostFeiletException(message: String) : AvvikFeiletException(message)
 class FeilforSakFeiletException(message: String) : AvvikFeiletException(message)
 
-class DistribusjonFeiletException(message: String): FunksjonellFeilException(message)
+class DistribusjonFeiletFunksjoneltException(message: String): FunksjonellFeilException(message)
 class DistribusjonFeiletTekniskException(message: String, throwable: Throwable): TekniskFeilException(message, throwable)
