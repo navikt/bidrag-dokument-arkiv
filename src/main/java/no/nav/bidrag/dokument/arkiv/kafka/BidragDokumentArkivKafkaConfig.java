@@ -24,7 +24,6 @@ import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.util.backoff.ExponentialBackOff;
 
 @Configuration
-@EnableKafka
 public class BidragDokumentArkivKafkaConfig {
   private static final Logger LOGGER = LoggerFactory.getLogger(HendelseListener.class);
 
@@ -45,21 +44,6 @@ public class BidragDokumentArkivKafkaConfig {
         topic,
         featureToggle, saksbehandlerInfoManager
     );
-  }
-
-  @Bean
-  public ConsumerFactory<String, Object> consumerFactory(KafkaProperties properties) {
-    return new DefaultKafkaConsumerFactory<>(properties.buildConsumerProperties());
-  }
-
-  @Bean
-  public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, Object>> kafkaListenerContainerFactory(
-          ConsumerFactory<String, Object> consumerFactory
-  ) {
-    var concurrentKafkaListenerContainerFactory = new ConcurrentKafkaListenerContainerFactory<String, Object>();
-    concurrentKafkaListenerContainerFactory.setConsumerFactory(consumerFactory);
-
-    return concurrentKafkaListenerContainerFactory;
   }
 
   @Bean
