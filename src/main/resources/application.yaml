@@ -27,29 +27,29 @@ no.nav.security.jwt:
 
 spring.kafka:
     bootstrap-servers: ${KAFKA_BROKERS}
-    security.protocol: SSL
-
     properties:
+      security.protocol: SSL
       specific.avro.reader: true
       schema.registry.url: ${KAFKA_SCHEMA_REGISTRY}
       basic.auth.credentials.source: USER_INFO
       basic.auth.user.info: ${KAFKA_SCHEMA_REGISTRY_USER}:${KAFKA_SCHEMA_REGISTRY_PASSWORD}
+      ssl:
+        keystore:
+          type: PKCS12
+          location: ${KAFKA_KEYSTORE_PATH}
+          password: ${KAFKA_CREDSTORE_PASSWORD}
+        truststore:
+          location: ${KAFKA_TRUSTSTORE_PATH}
+          password: ${KAFKA_CREDSTORE_PASSWORD}
     consumer:
       group-id: ${NAIS_APP_NAME}
-      auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
-      max-poll-records: 1
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       properties:
+        spring.deserializer.value.delegate.class: io.confluent.kafka.serializers.KafkaAvroDeserializer
         max.poll.interval.ms: 50000
         retry.backoff.ms: 5000
         reconnect.backoff.ms: 8000
-        enable.auto.commit: false
-    ssl:
-      trust-store-location: file:${KAFKA_TRUSTSTORE_PATH}
-      trust-store-type: JKS
-      trust-store-password: ${KAFKA_CREDSTORE_PASSWORD}
-      key-store-type: PKCS12
-      key-store-location: file:${KAFKA_KEYSTORE_PATH}
-      key-store-password: ${KAFKA_CREDSTORE_PASSWORD}
-      key-password: ${KAFKA_CREDSTORE_PASSWORD}
+      enableAutoCommit: false
+    listener:
+      ackMode: RECORD

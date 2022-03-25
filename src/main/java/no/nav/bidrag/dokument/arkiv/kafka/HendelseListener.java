@@ -21,7 +21,6 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
 @Service
-@Profile("!local")
 public class HendelseListener {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HendelseListener.class);
@@ -44,7 +43,7 @@ public class HendelseListener {
     this.journalpostService = journalpostServices.get(Discriminator.SERVICE_USER);
   }
 
-  @KafkaListener(topics = "${TOPIC_JOURNALFOERING}", errorHandler = "hendelseErrorHandler")
+  @KafkaListener(topics = "${TOPIC_JOURNALFOERING}")
   public void listen(@Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
     Oppgavetema oppgavetema = new Oppgavetema(journalfoeringHendelseRecord);
     if (!oppgavetema.erOmhandlingAvBidrag()) {
@@ -53,6 +52,11 @@ public class HendelseListener {
     }
 
     registrerOppgaveForHendelse(journalfoeringHendelseRecord);
+  }
+
+  @KafkaListener(topics = "${TOPIC_JOURNALFOERING}")
+  public void listen2(@Payload String record) {
+    LOGGER.info(record);
   }
 
   private void registrerOppgaveForHendelse(@Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
@@ -72,7 +76,8 @@ public class HendelseListener {
         "tema", journalfoeringHendelseRecord.getTemaNytt(),
         "kanal", journalfoeringHendelseRecord.getMottaksKanal()).increment();
     var journalpostId = journalfoeringHendelseRecord.getJournalpostId();
-    var journalpost = oppdaterJournalpostMedPersonGeografiskEnhet(journalpostId);
+    var journalpost = hentJournalpost(journalpostId);
+    oppdaterJournalpostMedPersonGeografiskEnhet(journalpost);
     producer.publishJournalpostUpdated(journalpost);
   }
 
@@ -104,12 +109,11 @@ public class HendelseListener {
         .orElse(null);
   }
 
-  private Journalpost oppdaterJournalpostMedPersonGeografiskEnhet(Long journalpostId){
-    var journalpost = hentJournalpost(journalpostId);
+  private Journalpost oppdaterJournalpostMedPersonGeografiskEnhet(Journalpost journalpost){
     var brukerId = hentBrukerId(journalpost);
     var geografiskEnhet = hentGeografiskEnhet(brukerId);
     if (journalpost.isStatusMottatt() && !journalpost.harJournalforendeEnhetLik(geografiskEnhet)){
-      var response = dokarkivConsumer.endre(new OverforEnhetRequest(journalpostId, geografiskEnhet));
+      var response = dokarkivConsumer.endre(new OverforEnhetRequest(journalpost.hentJournalpostIdLong(), geografiskEnhet));
       if (response.is2xxSuccessful()) {
         journalpost.setJournalforendeEnhet(geografiskEnhet);
       }
