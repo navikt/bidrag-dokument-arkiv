@@ -14,6 +14,8 @@ import no.nav.bidrag.dokument.dto.JournalpostHendelse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 
 public class HendelserProducer {
   private static final Logger LOGGER = LoggerFactory.getLogger(HendelserProducer.class);
@@ -59,6 +61,7 @@ public class HendelserProducer {
     return new JournalpostHendelseIntern(journalpost, saksbehandler).hentJournalpostHendelse();
   }
 
+  @Retryable(value = Exception.class, maxAttempts = 10, backoff = @Backoff(delay = 1000, maxDelay = 12000, multiplier = 2.0))
   private void publish(JournalpostHendelse journalpostHendelse){
     try {
       var message = objectMapper.writeValueAsString(journalpostHendelse);

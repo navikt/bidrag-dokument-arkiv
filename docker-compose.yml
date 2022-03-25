@@ -1,0 +1,43 @@
+version: '2'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:6.2.1
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:6.2.1
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    expose:
+      - '29092'
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
+
+  topics:
+    image: confluentinc/cp-kafka:6.2.1
+    depends_on:
+      - kafka
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      echo -e 'Waiting until Kafka is ready'
+      kafka-topics --bootstrap-server kafka:29092 --list
+      echo -e 'Creating Kafka topic(s)'
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic bidrag-journalpost --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic joark-hendelse --replication-factor 1 --partitions 1
+      echo -e 'The following topic(s) are now available'
+      kafka-topics --bootstrap-server kafka:29092 --list
+      echo -e 'Ready to go!'
+      "
