@@ -54,11 +54,6 @@ public class HendelseListener {
     registrerOppgaveForHendelse(journalfoeringHendelseRecord);
   }
 
-  @KafkaListener(topics = "${TOPIC_JOURNALFOERING}")
-  public void listen2(@Payload String record) {
-    LOGGER.info(record);
-  }
-
   private void registrerOppgaveForHendelse(@Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
     var hendelsesType = HendelsesType.from(journalfoeringHendelseRecord.getHendelsesType()).orElse(null);
     switch (hendelsesType){
