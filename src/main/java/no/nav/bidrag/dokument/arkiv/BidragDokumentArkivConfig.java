@@ -1,5 +1,6 @@
 package no.nav.bidrag.dokument.arkiv;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import no.nav.bidrag.commons.ExceptionLogger;
 import no.nav.bidrag.commons.web.CorrelationIdFilter;
@@ -70,11 +71,12 @@ public class BidragDokumentArkivConfig {
   public DokdistFordelingConsumer dokdistFordelingConsumer(
       @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
       EnvironmentProperties environmentProperties,
+      ObjectMapper objectMapper,
       TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator
   ) {
     httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.dokdistFordelingUrl));
     httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
-    DokdistFordelingConsumer dokdistFordelingConsumer = new DokdistFordelingConsumer(httpHeaderRestTemplate);
+    DokdistFordelingConsumer dokdistFordelingConsumer = new DokdistFordelingConsumer(httpHeaderRestTemplate, objectMapper);
     dokdistFordelingConsumer.leggTilAuthorizationToken(tokenForBasicAuthenticationGenerator::generateToken);
     return dokdistFordelingConsumer;
   }
