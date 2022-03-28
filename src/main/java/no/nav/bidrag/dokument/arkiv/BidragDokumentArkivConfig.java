@@ -124,7 +124,7 @@ public class BidragDokumentArkivConfig {
       SecurityTokenService securityTokenService
   ) {
     safConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor());
-    safConsumerRegularUser.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor());
+    safConsumerServiceUser.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor());
     var safConsumers = new HashMap<Discriminator, SafConsumer>();
     safConsumers.put(Discriminator.REGULAR_USER, safConsumerRegularUser);
     safConsumers.put(Discriminator.SERVICE_USER, safConsumerServiceUser);
@@ -138,7 +138,7 @@ public class BidragDokumentArkivConfig {
       SecurityTokenService securityTokenService
   ) {
     personConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor());
-    personConsumerRegularUser.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor());
+    personConsumerServiceUser.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor());
     var personConsumers = new HashMap<Discriminator, PersonConsumer>();
     personConsumers.put(Discriminator.REGULAR_USER, personConsumerRegularUser);
     personConsumers.put(Discriminator.SERVICE_USER, personConsumerServiceUser);

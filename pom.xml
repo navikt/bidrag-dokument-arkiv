@@ -26,7 +26,7 @@
 
     <!-- dependent versions other than from spring-boot -->
     <apache-avro-version>1.11.0</apache-avro-version>
-    <bidrag-commons.version>0.6.7-SNAPSHOT</bidrag-commons.version>
+    <bidrag-commons.version>0.6.7</bidrag-commons.version>
     <bidrag-commons-test.version>0.2.2</bidrag-commons-test.version>
     <bidrag-dokument-dto.version>1.4.4</bidrag-dokument-dto.version>
     <bidrag-tilgangskontroll.version>1.9.21</bidrag-tilgangskontroll.version>
