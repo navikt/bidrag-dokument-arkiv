@@ -108,6 +108,7 @@ public class HendelseListener {
     var brukerId = hentBrukerId(journalpost);
     var geografiskEnhet = hentGeografiskEnhet(brukerId);
     if (journalpost.isStatusMottatt() && !journalpost.harJournalforendeEnhetLik(geografiskEnhet)){
+      LOGGER.info("Oppdaterer journalpost enhet fra {} til {}", journalpost.getJournalforendeEnhet(), geografiskEnhet);
       var response = dokarkivConsumer.endre(new OverforEnhetRequest(journalpost.hentJournalpostIdLong(), geografiskEnhet));
       if (response.is2xxSuccessful()) {
         journalpost.setJournalforendeEnhet(geografiskEnhet);

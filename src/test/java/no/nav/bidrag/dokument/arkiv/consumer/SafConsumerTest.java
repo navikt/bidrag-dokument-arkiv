@@ -5,7 +5,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TEST;
-import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal.PROFILE_INTEGRATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -32,10 +31,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.test.context.ActiveProfiles;
 
-@ActiveProfiles({PROFILE_TEST, PROFILE_INTEGRATION})
+@ActiveProfiles({PROFILE_TEST})
 @DisplayName("SafConsumer")
 @SpringBootTest(
     classes = {BidragDokumentArkivLocal.class},
@@ -54,9 +52,9 @@ class SafConsumerTest {
 
   @BeforeEach
   void mockTokenValidation() {
-    when(securityTokenService.serviceUserAuthTokenInterceptor()).thenReturn(new BasicAuthenticationInterceptor("", ""));
-    when(securityTokenService.authTokenInterceptor()).thenReturn(new BasicAuthenticationInterceptor("", ""));
-    when(securityTokenService.navConsumerTokenInterceptor()).thenReturn(new BasicAuthenticationInterceptor("", ""));
+    when(securityTokenService.serviceUserAuthTokenInterceptor()).thenReturn((request, body, execution) -> execution.execute(request, body));
+    when(securityTokenService.authTokenInterceptor()).thenReturn((request, body, execution) -> execution.execute(request, body));
+    when(securityTokenService.navConsumerTokenInterceptor()).thenReturn((request, body, execution) -> execution.execute(request, body));
   }
 
   @Test
@@ -73,7 +71,7 @@ class SafConsumerTest {
   }
 
   private void stubEmptyQueryResult() {
-    stubFor(post(urlEqualTo("/query/"))
+    stubFor(post(urlEqualTo("/saf/"))
         .willReturn(aResponse().withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
             .withStatus(200)
             .withBody(String.join(
