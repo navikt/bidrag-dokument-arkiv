@@ -18,6 +18,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
@@ -71,9 +72,10 @@ public class DokdistFordelingConsumer {
       return e.getMessage();
     }
   }
-  public void leggTilAuthorizationToken(HttpHeaderRestTemplate.ValueGenerator valueGenerator) {
+
+  public void leggTilInterceptor(ClientHttpRequestInterceptor requestInterceptor) {
     if (restTemplate instanceof HttpHeaderRestTemplate) {
-      ((HttpHeaderRestTemplate) restTemplate).addHeaderGenerator(HttpHeaders.AUTHORIZATION, valueGenerator);
+      restTemplate.getInterceptors().add(requestInterceptor);
     }
   }
 }

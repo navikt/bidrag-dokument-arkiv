@@ -1,7 +1,5 @@
 package no.nav.bidrag.dokument.arkiv.consumer;
 
-import static no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator.HEADER_NAV_CONSUMER_TOKEN;
-
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
@@ -11,11 +9,10 @@ import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 public class DokarkivConsumer {
@@ -75,15 +72,10 @@ public class DokarkivConsumer {
     }
   }
 
-  public void leggTilAuthorizationToken(HttpHeaderRestTemplate.ValueGenerator valueGenerator) {
+  public void leggTilInterceptor(ClientHttpRequestInterceptor requestInterceptor) {
     if (restTemplate instanceof HttpHeaderRestTemplate) {
-      ((HttpHeaderRestTemplate) restTemplate).addHeaderGenerator(HttpHeaders.AUTHORIZATION, valueGenerator);
+      restTemplate.getInterceptors().add(requestInterceptor);
     }
   }
 
-  public void leggTilNavConsumerToken(HttpHeaderRestTemplate.ValueGenerator valueGenerator) {
-    if (restTemplate instanceof HttpHeaderRestTemplate) {
-      ((HttpHeaderRestTemplate) restTemplate).addHeaderGenerator(HEADER_NAV_CONSUMER_TOKEN, valueGenerator);
-    }
-  }
 }

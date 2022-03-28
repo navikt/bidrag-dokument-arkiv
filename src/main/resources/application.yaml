@@ -12,17 +12,37 @@ springdoc:
 STS_ISSUER_URL: ${STS_ISSUER_URL:${ACCESS_TOKEN_URL}}
 ---
 
-spring.profiles: live
+spring.config.activate.on-profile: live
+http.proxy.parametername: prevent.isso.proxy.fss(hack)
 
-# OIDC
+---
+spring.config.activate.on-profile: live
+
 no.nav.security.jwt:
-  issuer:
-    isso:
+  sts:
+    properties:
+      url: ${ACCESS_TOKEN_URL}/rest/v1/sts/token
+      username: srvbdarkiv
+      password: ${SRV_BD_ARKIV_AUTH}
+  client:
+    registration:
+      oppgave:
+        token-endpoint-url: https://login.microsoftonline.com/${AZURE_APP_TENANT_ID}/oauth2/v2.0/token
+        grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
+        scope: api://${OPPGAVE_SCOPE:0}/.default
+        authentication:
+          client-id: ${AZURE_APP_CLIENT_ID}
+          client-secret: ${AZURE_APP_CLIENT_SECRET}
+          client-auth-method: client_secret_post
+  issuer.isso:
       acceptedaudience: ${ACCEPTED_AUDIENCE}
       discoveryurl: ${ISSO_ISSUER_URL}/.well-known/openid-configuration
-    sts:
-      accepted_audience: ${ACCEPTED_SERVICE_USER_AUDIENCE}
+  issuer.sts:
+      acceptedaudience: srvbisys
       discoveryurl: ${STS_ISSUER_URL}/rest/v1/sts/.well-known/openid-configuration
+  issuer.aad:
+      discovery_url: https://login.microsoftonline.com/${AZURE_APP_TENANT_ID}/v2.0/.well-known/openid-configuration
+      accepted_audience: ${AZURE_APP_CLIENT_ID}, api://${AZURE_APP_CLIENT_ID}
 
 
 spring.kafka:
@@ -53,3 +73,4 @@ spring.kafka:
       enableAutoCommit: false
     listener:
       ackMode: RECORD
+

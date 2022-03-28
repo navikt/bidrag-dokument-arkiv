@@ -21,6 +21,7 @@ import no.nav.bidrag.dokument.arkiv.kafka.HendelseListener;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelsesType;
 import no.nav.bidrag.dokument.arkiv.kafka.MottaksKanal;
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord;
+import no.nav.security.token.support.spring.test.EnableMockOAuth2Server;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,7 @@ import org.springframework.test.context.ActiveProfiles;
     properties = { "FEATURE_ENABLED=NONE" },
     classes = BidragDokumentArkivLocal.class
 )
+@EnableMockOAuth2Server
 @ActiveProfiles(PROFILE_TEST)
 public class FeatureToggleTest {
   @MockBean

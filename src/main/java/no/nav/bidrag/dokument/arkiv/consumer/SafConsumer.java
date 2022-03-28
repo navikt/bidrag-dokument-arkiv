@@ -22,6 +22,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.web.client.RestTemplate;
 
 public class SafConsumer {
@@ -93,9 +94,9 @@ public class SafConsumer {
     RuntimeException init(String message);
   }
 
-  public void leggTilSikkerhet(HttpHeaderRestTemplate.ValueGenerator valueGenerator) {
+  public void leggTilInterceptor(ClientHttpRequestInterceptor requestInterceptor) {
     if (restTemplate instanceof HttpHeaderRestTemplate) {
-      ((HttpHeaderRestTemplate) restTemplate).addHeaderGenerator(HttpHeaders.AUTHORIZATION, valueGenerator);
+      restTemplate.getInterceptors().add(requestInterceptor);
     }
   }
 }
