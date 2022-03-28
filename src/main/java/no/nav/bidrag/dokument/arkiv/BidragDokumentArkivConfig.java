@@ -3,6 +3,8 @@ package no.nav.bidrag.dokument.arkiv;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import no.nav.bidrag.commons.ExceptionLogger;
+import no.nav.bidrag.commons.security.api.EnableSecurityConfiguration;
+import no.nav.bidrag.commons.security.service.SecurityTokenService;
 import no.nav.bidrag.commons.web.CorrelationIdFilter;
 import no.nav.bidrag.commons.web.EnhetFilter;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
@@ -17,9 +19,6 @@ import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
-import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
-import no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator;
-import no.nav.bidrag.dokument.arkiv.service.DistribuerJournalpostService;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +34,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 @Configuration
+@EnableSecurityConfiguration
 public class BidragDokumentArkivConfig {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BidragDokumentArkivConfig.class);
@@ -72,12 +72,12 @@ public class BidragDokumentArkivConfig {
       @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
       EnvironmentProperties environmentProperties,
       ObjectMapper objectMapper,
-      TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator
+      SecurityTokenService securityTokenService
   ) {
     httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.dokdistFordelingUrl));
     httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
     DokdistFordelingConsumer dokdistFordelingConsumer = new DokdistFordelingConsumer(httpHeaderRestTemplate, objectMapper);
-    dokdistFordelingConsumer.leggTilAuthorizationToken(tokenForBasicAuthenticationGenerator::generateToken);
+    dokdistFordelingConsumer.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor());
     return dokdistFordelingConsumer;
   }
 
@@ -121,11 +121,10 @@ public class BidragDokumentArkivConfig {
   public ResourceByDiscriminator<SafConsumer> safConsumers(
       SafConsumer safConsumerRegularUser,
       SafConsumer safConsumerServiceUser,
-      OidcTokenGenerator oidcTokenGenerator,
-      TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator
+      SecurityTokenService securityTokenService
   ) {
-    safConsumerRegularUser.leggTilSikkerhet(() -> oidcTokenGenerator.isIncomingTokenIssuerSTS() ? tokenForBasicAuthenticationGenerator.generateToken() : oidcTokenGenerator.getBearerToken());
-    safConsumerServiceUser.leggTilSikkerhet(tokenForBasicAuthenticationGenerator::generateToken);
+    safConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor());
+    safConsumerServiceUser.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor());
     var safConsumers = new HashMap<Discriminator, SafConsumer>();
     safConsumers.put(Discriminator.REGULAR_USER, safConsumerRegularUser);
     safConsumers.put(Discriminator.SERVICE_USER, safConsumerServiceUser);
@@ -136,11 +135,10 @@ public class BidragDokumentArkivConfig {
   public ResourceByDiscriminator<PersonConsumer> personConsumers(
       PersonConsumer personConsumerRegularUser,
       PersonConsumer personConsumerServiceUser,
-      OidcTokenGenerator oidcTokenGenerator,
-      TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator
+      SecurityTokenService securityTokenService
   ) {
-    personConsumerRegularUser.leggTilSikkerhet(oidcTokenGenerator::getBearerToken);
-    personConsumerServiceUser.leggTilSikkerhet(tokenForBasicAuthenticationGenerator::generateToken);
+    personConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor());
+    personConsumerServiceUser.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor());
     var personConsumers = new HashMap<Discriminator, PersonConsumer>();
     personConsumers.put(Discriminator.REGULAR_USER, personConsumerRegularUser);
     personConsumers.put(Discriminator.SERVICE_USER, personConsumerServiceUser);
@@ -151,16 +149,14 @@ public class BidragDokumentArkivConfig {
   public DokarkivProxyConsumer dokarkivProxyConsumer(
       @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
       EnvironmentProperties environmentProperties,
-      OidcTokenGenerator oidcTokenGenerator,
-      TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator
+      SecurityTokenService securityTokenService
   ) {
     httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.dokarkivProxyUrl));
     httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
 
     DokarkivProxyConsumer dokarkivProxyConsumer = new DokarkivProxyConsumer(httpHeaderRestTemplate);
-    dokarkivProxyConsumer.leggTilAuthorizationToken(oidcTokenGenerator::getBearerToken);
-    dokarkivProxyConsumer.leggTilNavConsumerToken(()->
-        oidcTokenGenerator.isIncomingTokenIssuerSTS() ? null : tokenForBasicAuthenticationGenerator.generateToken());
+    dokarkivProxyConsumer.leggTilInterceptor(securityTokenService.authTokenInterceptor());
+    dokarkivProxyConsumer.leggTilInterceptor(securityTokenService.navConsumerTokenInterceptor());
     return dokarkivProxyConsumer;
   }
 
@@ -168,12 +164,11 @@ public class BidragDokumentArkivConfig {
   public ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers(
       DokarkivConsumer dokarkivConsumerRegularUser,
       DokarkivConsumer dokarkivConsumerServiceUser,
-      OidcTokenGenerator oidcTokenGenerator,
-      TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator
+      SecurityTokenService securityTokenService
   ) {
-    dokarkivConsumerRegularUser.leggTilAuthorizationToken(() -> oidcTokenGenerator.isIncomingTokenIssuerSTS() ? tokenForBasicAuthenticationGenerator.generateToken() : oidcTokenGenerator.getBearerToken());
-    dokarkivConsumerRegularUser.leggTilNavConsumerToken(() -> oidcTokenGenerator.isIncomingTokenIssuerSTS() ? null : tokenForBasicAuthenticationGenerator.generateToken());
-    dokarkivConsumerServiceUser.leggTilAuthorizationToken(tokenForBasicAuthenticationGenerator::generateToken);
+    dokarkivConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor());
+    dokarkivConsumerRegularUser.leggTilInterceptor(securityTokenService.navConsumerTokenInterceptor());
+    dokarkivConsumerServiceUser.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor());
     var dokarkivConsumers = new HashMap<Discriminator, DokarkivConsumer>();
     dokarkivConsumers.put(Discriminator.REGULAR_USER, dokarkivConsumerRegularUser);
     dokarkivConsumers.put(Discriminator.SERVICE_USER, dokarkivConsumerServiceUser);
@@ -182,10 +177,12 @@ public class BidragDokumentArkivConfig {
 
   @Bean
   public BidragOrganisasjonConsumer bidragOrganisasjonConsumer(
-      @Qualifier("serviceuser") HttpHeaderRestTemplate httpHeaderRestTemplate,
+      HttpHeaderRestTemplate httpHeaderRestTemplate,
+      SecurityTokenService securityTokenService,
       EnvironmentProperties environmentProperties
   ) {
     httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.bidragOrganisasjonUrl + "/bidrag-organisasjon"));
+    httpHeaderRestTemplate.getInterceptors().add(securityTokenService.serviceUserAuthTokenInterceptor());
     return new BidragOrganisasjonConsumer(httpHeaderRestTemplate);
   }
 

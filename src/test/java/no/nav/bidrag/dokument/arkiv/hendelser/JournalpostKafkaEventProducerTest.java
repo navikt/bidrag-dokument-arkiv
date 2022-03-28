@@ -27,6 +27,7 @@ import no.nav.bidrag.dokument.arkiv.kafka.HendelsesType;
 import no.nav.bidrag.dokument.arkiv.kafka.MottaksKanal;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord;
+import no.nav.security.token.support.spring.test.EnableMockOAuth2Server;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -40,6 +41,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles(PROFILE_TEST)
 @SpringBootTest(classes = BidragDokumentArkivLocal.class)
+@EnableMockOAuth2Server
 class JournalpostKafkaEventProducerTest {
 
   @MockBean

@@ -10,6 +10,7 @@ NAIS_APP_NAME: test
 TOPIC_JOURNALPOST: topic.journalpost
 TOPIC_JOURNALFOERING: jfhendelse.topic
 FEATURE_ENABLED: KAFKA_ARBEIDSFLYT
+AZURE_OPENID_CONFIG_ISSUER: http://aad
 
 spring.kafka:
   properties:
@@ -23,3 +24,24 @@ spring.kafka:
 logging.level.root: INFO
 logging.level.wiremock.org: INFO
 logging.level: INFO
+SRVBIDRAG_USERNAME: srvbidrag
+SRVBIDRAG_PASSWORD: bareForTest
+no.nav.security.jwt:
+  sts:
+    properties:
+      url: ${ACCESS_TOKEN_URL}
+      username: ${SRVBIDRAG_USERNAME}
+      password: ${SRVBIDRAG_PASSWORD}
+  client:
+    registration:
+      pdl:
+        token-endpoint-url: http:((
+        grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
+        scope: api://pdl/.default
+        authentication:
+          client-id: id
+          client-secret: secret
+          client-auth-method: client_secret_post
+  issuer.isso:
+    discovery_url: http://localhost:${mock-oauth2-server.port:0}/isso/.well-known/openid-configuration
+    accepted_audience: aud-localhost
