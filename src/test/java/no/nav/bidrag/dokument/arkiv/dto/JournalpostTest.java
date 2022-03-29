@@ -46,7 +46,7 @@ class JournalpostTest {
         () -> assertThat(journalpost.getJournalforendeEnhet()).as("journalforendeEnhet").isEqualTo("0104"),
         () -> assertThat(journalpost.getJournalfortAvNavn()).as("journalfortAvNavn").isEqualTo("Terkelsen, Karin"),
         () -> assertThat(journalpost.getJournalpostId()).as("journalpostId").isEqualTo("203915975"),
-        () -> assertThat(journalpost.getJournalposttype()).as("journalposttype").isEqualTo("I"),
+        () -> assertThat(journalpost.getJournalposttype()).as("journalposttype").isEqualTo(JournalpostType.I),
         () -> assertThat(journalpost.getJournalstatus()).as("journalstatus").isEqualTo(JournalStatus.JOURNALFOERT),
         () -> assertThat(journalpost.getRelevanteDatoer()).as("relevanteDater").isEqualTo(List.of(
             new DatoType("2010-12-16T00:00", "DATO_JOURNALFOERT"),
