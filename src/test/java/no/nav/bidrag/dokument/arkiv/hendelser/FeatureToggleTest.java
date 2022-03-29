@@ -1,5 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.hendelser;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_KAFKA_TEST;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TEST;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -36,7 +37,7 @@ import org.springframework.test.context.ActiveProfiles;
     classes = BidragDokumentArkivLocal.class
 )
 @EnableMockOAuth2Server
-@ActiveProfiles(PROFILE_TEST)
+@ActiveProfiles({PROFILE_TEST, PROFILE_KAFKA_TEST})
 public class FeatureToggleTest {
   @MockBean
   private KafkaTemplate<String, String> kafkaTemplateMock;

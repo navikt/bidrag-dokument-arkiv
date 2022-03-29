@@ -1,5 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonInclude
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -20,11 +22,13 @@ data class OpprettOppgaveResponse(
     var oppgavetype: String? = null
 )
 
-sealed class OppgaveData(
-    var id: Long,
-    var versjon: Int,
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+open class OppgaveData(
+    var id: Long? = null,
+    var versjon: Int = -1,
     var tildeltEnhetsnr: String? = null,
-    var endretAvEnhetsnr: String? = null,
+    open var endretAvEnhetsnr: String? = null,
     var opprettetAvEnhetsnr: String? = null,
     var journalpostId: String? = null,
     var journalpostkilde: String? = null,
@@ -67,7 +71,8 @@ sealed class OppgaveData(
 
 data class EndreForNyttDokumentRequest(private var oppgaveData: OppgaveData,
                                        private var saksbehandlersInfo: String,
-                                       private var journalpost: Journalpost):
+                                       private var journalpost: Journalpost,
+                                       override var endretAvEnhetsnr: String?):
     OppgaveData(
         id = oppgaveData.id,
         tema = journalpost.tema,
@@ -82,7 +87,7 @@ sealed class OpprettOppgaveRequest(
     var journalpostId: String,
     var oppgavetype: OppgaveType,
     var opprettetAvEnhetsnr: String = "9999",
-    var prioritet: String = Prioritet.HOY.name,
+    open var prioritet: String = Prioritet.HOY.name,
     var tildeltEnhetsnr: String? = "4833",
     open var tema: String = "BID",
     var aktivDato: String = LocalDate.now().format(DateTimeFormatter.ofPattern("YYYY-MM-dd")),
@@ -109,6 +114,7 @@ data class OpprettVurderKonsekvensYtelseOppgaveRequest(
     OpprettOppgaveRequest(
         journalpostId = journalpost.journalpostId!!,
         oppgavetype = OppgaveType.VUR_KONS_YTE,
+        prioritet = Prioritet.NORM.name,
         tildeltEnhetsnr = journalpost.journalforendeEnhet,
         opprettetAvEnhetsnr = saksbehandlerMedEnhet.enhetsnummer!!,
         beskrivelse = lagVurderKonskevensYtelseOppgaveTittel(journalpost.tittel!!, kommentar)
@@ -119,7 +125,7 @@ data class OpprettVurderKonsekvensYtelseOppgaveRequest(
 data class OpprettBehandleDokumentOppgaveRequest(
     private var journalpost: Journalpost,
     var aktoerId: String,
-    var saksbehandlerMedEnhet: SaksbehandlerMedEnhet):
+    private var saksbehandlerMedEnhet: SaksbehandlerMedEnhet):
     OpprettOppgaveRequest(
         journalpostId = journalpost.journalpostId!!,
         beskrivelse = lagDokumentOppgaveTittel("Behandle dokument", journalpost.tittel!!, journalpost.hentDatoRegistrert() ?: LocalDate.now()),
@@ -148,5 +154,5 @@ enum class OppgaveType {
 }
 
 enum class Prioritet {
-    HOY //, NORM, LAV
+    HOY, NORM, LAV
 }

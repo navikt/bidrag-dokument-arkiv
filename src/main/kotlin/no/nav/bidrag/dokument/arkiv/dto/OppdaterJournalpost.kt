@@ -12,6 +12,16 @@ data class OppdaterJournalpostDistribusjonsInfoRequest(private var journalpostId
         tilleggsopplysninger = journalpost.tilleggsopplysninger
     }
 }
+
+data class LagreAdresseRequest(private var journalpostId: Long, private val endreAdresse: DistribuertTilAdresseDo?, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId){
+        init {
+            if (journalpost.isUtgaaendeDokument() && endreAdresse != null){
+                journalpost.tilleggsopplysninger.addMottakerAdresse(endreAdresse)
+                tilleggsopplysninger = journalpost.tilleggsopplysninger
+            }
+        }
+}
+
 data class LagreJournalpostRequest(private var journalpostId: Long, private var endreJournalpostCommand: EndreJournalpostCommandIntern, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId) {
     init {
         tittel = endreJournalpostCommand.endreJournalpostCommand.tittel

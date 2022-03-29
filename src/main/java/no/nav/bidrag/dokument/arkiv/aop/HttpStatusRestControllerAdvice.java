@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.aop;
 
 import no.nav.bidrag.dokument.arkiv.model.HttpStatusException;
+import no.nav.bidrag.dokument.arkiv.model.ViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -15,6 +16,16 @@ import org.springframework.web.client.HttpClientErrorException;
 public class HttpStatusRestControllerAdvice {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpStatusRestControllerAdvice.class);
 
+  @ResponseBody
+  @ExceptionHandler
+  public ResponseEntity<?> handleViolationException(ViolationException exception) {
+    LOGGER.warn(exception.getMessage());
+
+    return ResponseEntity
+        .status(HttpStatus.BAD_REQUEST)
+        .header(HttpHeaders.WARNING, exception.getMessage())
+        .build();
+  }
 
   @ResponseBody
   @ExceptionHandler

@@ -54,7 +54,7 @@ public class OppgaveService {
     var oppgaver = finnBehandlingsoppgaverForSaker(journalpost.hentTilknyttetSaker(), journalpost.getTema());
 
     if (!oppgaver.isEmpty()) {
-      endreSamtOpprettBehandlingsoppgaver(journalpost, oppgaver);
+      endreSamtOpprettBehandlingsoppgaver(journalpost, oppgaver, journalpost.getJournalforendeEnhet());
     } else {
       opprettOppgaveForBehandleDokument(journalpost, journalpost.hentTilknyttetSaker());
     }
@@ -86,25 +86,24 @@ public class OppgaveService {
     return oppgaveConsumers.get(Discriminator.REGULAR_USER).opprett(request);
   }
 
-  private void endreOppgaverForBehandleDokument(Journalpost journalpost, List<OppgaveData> oppgaverMedBeskrivelse) {
+  private void endreOppgaverForBehandleDokument(Journalpost journalpost, List<OppgaveData> oppgaverMedBeskrivelse, String enhet) {
     var saksbehandlerInfo = saksbehandlerInfoManager.hentSaksbehandler()
         .map(saksbehandler -> saksbehandler.hentSaksbehandlerInfo(journalpost.getJournalforendeEnhet()))
         .orElse(String.format(
             "Ingen informasjon for saksbehandler (%s, %s)", saksbehandlerInfoManager.hentSaksbehandlerBrukerId(), journalpost.getJournalforendeEnhet()
         ));
-
     LOGGER.info("Antall behandle dokument oppgaver: {}", oppgaverMedBeskrivelse.size());
 
     for (var oppgaveData : oppgaverMedBeskrivelse) {
-      var request = new EndreForNyttDokumentRequest(oppgaveData, saksbehandlerInfo, journalpost);
+      var request = new EndreForNyttDokumentRequest(oppgaveData, saksbehandlerInfo, journalpost, enhet);
       LOGGER.info("Oppgave (id: {}) har beskrivelse: {}", oppgaveData.getId(), request.getBeskrivelse());
 
       oppgaveConsumers.get(Discriminator.SERVICE_USER).patchOppgave(request);
     }
   }
 
-  private void endreSamtOpprettBehandlingsoppgaver(Journalpost journalpost, List<OppgaveData> oppgaver) {
-    endreOppgaverForBehandleDokument(journalpost, oppgaver);
+  private void endreSamtOpprettBehandlingsoppgaver(Journalpost journalpost, List<OppgaveData> oppgaver, String enhet) {
+    endreOppgaverForBehandleDokument(journalpost, oppgaver, enhet);
     var saksreferanser = oppgaver.stream().map(OppgaveData::getSaksreferanse).collect(Collectors.toSet());
     var unikeSaksnummer = journalpost.hentTilknyttetSaker();
     unikeSaksnummer.removeAll(saksreferanser);

@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import kotlin.Pair;
 import no.nav.bidrag.commons.web.EnhetFilter;
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsTidspunkt;
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsType;
@@ -299,14 +300,17 @@ class JournalpostControllerTest extends AbstractControllerTest {
     // given
 
     var xEnhet = "1234";
+    var sak = "5276661";
     var journalpostIdFraJson = 201028011L;
     var headersMedEnhet = new HttpHeaders();
     headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
 
     var endreJournalpostCommand = createEndreJournalpostCommand();
     endreJournalpostCommand.setSkalJournalfores(true);
-    endreJournalpostCommand.setTilknyttSaker(Arrays.asList("5276661"));
+    endreJournalpostCommand.setTilknyttSaker(Arrays.asList(sak));
 
+    stubs.mockSokOppgave();
+    stubs.mockOpprettOppgave(HttpStatus.OK);
     stubs.mockSafResponseHentJournalpost(HttpStatus.OK);
     stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK);
     stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
@@ -334,7 +338,9 @@ class JournalpostControllerTest extends AbstractControllerTest {
         () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,
             "\"dokumenter\":[{\"dokumentInfoId\":\"1\",\"tittel\":\"In a galazy far far away\",\"brevkode\":\"BLABLA\"}]"),
         () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "\"avsenderMottaker\":{\"navn\":\"Dauden, Svarte\"}"),
-        () -> stubs.verifyStub.dokarkivFerdigstillKalt(journalpostIdFraJson)
+        () -> stubs.verifyStub.dokarkivFerdigstillKalt(journalpostIdFraJson),
+        () -> stubs.verifyStub.oppgaveSokKalt(new Pair<>("tema", "BID"), new Pair<>("saksreferanse", sak)),
+        () -> stubs.verifyStub.oppgaveOpprettKalt("\"oppgavetype\":\"BEH_SAK\"")
     );
   }
 

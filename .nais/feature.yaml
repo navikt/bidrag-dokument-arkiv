@@ -16,7 +16,7 @@ env:
   DOKARKIV_PROXY_URL: https://dokarkivproxy-q1.dev.intern.nav.no
   DOKDISTFORDELING_URL: https://dokdistfordeling-q1.dev.adeo.no
   SAF_GRAPHQL_URL: https://saf-q1.dev.adeo.no/graphql
-  OPPGAVE_URL: https://oppgave-q1.dev.adeo.no/api/v1/oppgaver
+  OPPGAVE_URL: https://oppgave.nais.preprod.local/api/v1/oppgaver
   OPPGAVE_SCOPE: dev-fss.oppgavehandtering.oppgave-q1
   TOPIC_JOURNALPOST: bidrag.journalpost-feature
   TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering-q1

@@ -22,6 +22,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.ContainsPattern;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import kotlin.Pair;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivProxyConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostResponse;
@@ -244,18 +247,13 @@ public class Stubs {
     }
   }
 
-  public void mockOpprettOppgave(PersonResponse personResponse, HttpStatus status) {
-    try {
+  public void mockOpprettOppgave(HttpStatus status) {
       stubFor(
           post(urlMatching("/oppgave/.*")).willReturn(
               aClosedJsonResponse()
                   .withStatus(status.value())
-                  .withBody(objectMapper.writeValueAsString(personResponse))
           )
       );
-    } catch (JsonProcessingException e) {
-      fail(e.getMessage());
-    }
   }
 
   public void mockPersonResponse(PersonResponse personResponse, HttpStatus status) {
@@ -274,6 +272,17 @@ public class Stubs {
 
   public static class VerifyStub {
 
+    public void oppgaveOpprettKalt(String... contains){
+      var requestPattern = postRequestedFor(urlMatching("/oppgave/.*"));
+      Arrays.stream(contains).forEach(contain -> requestPattern.withRequestBody(new ContainsPattern(contain)));
+      verify(requestPattern);
+    }
+
+    public void oppgaveSokKalt(Pair<String, String>... params){
+      var requestPattern = getRequestedFor(urlMatching("/oppgave/.*"));
+      Arrays.stream(params).forEach(contain -> requestPattern.withQueryParam(contain.getFirst(), new ContainsPattern(contain.getSecond())));
+      verify(requestPattern);
+    }
     public void dokarkivOppdaterDistribusjonsInfoKalt(Long journalpostId, String... contains) {
       var requestPattern = putRequestedFor(urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + '/' + journalpostId + "/oppdaterDistribusjonsinfo"));
       Arrays.stream(contains).forEach(contain -> requestPattern.withRequestBody(new ContainsPattern(contain)));

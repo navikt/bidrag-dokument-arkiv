@@ -1,5 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.hendelser;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_KAFKA_TEST;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -39,7 +40,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
-@ActiveProfiles(PROFILE_TEST)
+@ActiveProfiles({PROFILE_TEST, PROFILE_KAFKA_TEST})
 @SpringBootTest(classes = BidragDokumentArkivLocal.class)
 @EnableMockOAuth2Server
 class JournalpostKafkaEventProducerTest {

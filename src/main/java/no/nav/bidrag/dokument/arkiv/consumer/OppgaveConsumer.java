@@ -36,12 +36,8 @@ public class OppgaveConsumer extends AbstractConsumer {
   }
 
   public long opprett(OpprettOppgaveRequest opprettOppgaveRequest) {
-    var headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
 
-    var oppgaveResponse = restTemplate.exchange(
-        "/", HttpMethod.POST, new HttpEntity<>(opprettOppgaveRequest, headers), OppgaveResponse.class
-    );
+    var oppgaveResponse = restTemplate.postForEntity("/", opprettOppgaveRequest, OppgaveResponse.class);
 
     LOGGER.info("oppgaveResponse: " + oppgaveResponse);
 
@@ -54,13 +50,7 @@ public class OppgaveConsumer extends AbstractConsumer {
   public OppgaveData patchOppgave(OppgaveData oppgavePatch) {
     LOGGER.info("{} for oppgave med id: {}", oppgavePatch.getClass().getSimpleName(), oppgavePatch.getId());
 
-    var headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-
-    var responseEntity = restTemplate.exchange("/%s".formatted(oppgavePatch.getId()), HttpMethod.PATCH, new HttpEntity<>(oppgavePatch, headers), OppgaveData.class);
-
-
-    return responseEntity.getBody();
+    return restTemplate.patchForObject("/%s".formatted(oppgavePatch.getId()), oppgavePatch, OppgaveData.class);
   }
 
 }

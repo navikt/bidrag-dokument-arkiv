@@ -11,14 +11,12 @@ import no.nav.bidrag.dokument.arkiv.dto.JournalStatus;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilAnnenSakRequest;
 import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest;
-import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.Sak;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
-import no.nav.bidrag.dokument.arkiv.model.FerdigstillFeiletException;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
-import no.nav.bidrag.dokument.arkiv.model.LagreJournalpostFeiletException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpStatusCodeException;
 
 public class EndreJournalpostService {
@@ -41,39 +39,30 @@ public class EndreJournalpostService {
     this.hendelserProducer = hendelserProducer;
   }
 
-  public HttpResponse<OppdaterJournalpostResponse> lagreJournalpost(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
-    var oppdaterJournalpostRequest = new LagreJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost);
-    var oppdatertJournalpostResponse = dokarkivConsumer.endre(oppdaterJournalpostRequest);
-
-    oppdatertJournalpostResponse.fetchBody().ifPresent(response -> LOGGER.debug("endret: {}", response));
-
-    if (!oppdatertJournalpostResponse.is2xxSuccessful()){
-      throw new LagreJournalpostFeiletException(String.format("Lagre journalpost feilet for journalpostid %s", journalpostId));
-    }
-
-    if (Objects.nonNull(oppdaterJournalpostRequest.getSak())){
-      journalpost.setSak(new Sak(oppdaterJournalpostRequest.getSak().getFagsakId()));
-    }
-
-    hendelserProducer.publishJournalpostUpdated(journalpostId);
-    return oppdatertJournalpostResponse;
-  }
-
-
   public HttpResponse<Void> endre(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand) {
     var journalpost = journalpostService.hentJournalpost(journalpostId).orElseThrow(
         () -> new JournalpostIkkeFunnetException("Kunne ikke finne journalpost med id: " + journalpostId)
     );
-    var oppdatertJournalpostResponse = lagreJournalpost(journalpostId, endreJournalpostCommand, journalpost);
 
+    endreJournalpostCommand.sjekkGyldigEndring(journalpost);
+
+    lagreJournalpost(journalpostId, endreJournalpostCommand, journalpost);
     journalfoerJournalpostNarMottaksregistrert(endreJournalpostCommand, journalpost);
     tilknyttSakerTilJournalfoertJournalpost(endreJournalpostCommand, journalpost);
     opprettBehandleDokumentOppgaveVedJournalforing(endreJournalpostCommand, journalpost);
 
-    return HttpResponse.from(
-        oppdatertJournalpostResponse.fetchHeaders(),
-        oppdatertJournalpostResponse.getResponseEntity().getStatusCode()
-    );
+    hendelserProducer.publishJournalpostUpdated(journalpostId);
+    return HttpResponse.from(HttpStatus.OK);
+  }
+
+  private void lagreJournalpost(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
+    var oppdaterJournalpostRequest = new LagreJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost);
+
+    dokarkivConsumer.endre(oppdaterJournalpostRequest);
+
+    if (Objects.nonNull(oppdaterJournalpostRequest.getSak())){
+      journalpost.setSak(new Sak(oppdaterJournalpostRequest.getSak().getFagsakId()));
+    }
   }
 
   public void opprettBehandleDokumentOppgaveVedJournalforing(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost) {
@@ -118,10 +107,7 @@ public class EndreJournalpostService {
 
   private void journalfoerJournalpost(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand){
     var journalforRequest = new FerdigstillJournalpostRequest(journalpostId, endreJournalpostCommand.getEnhet());
-    var ferdigstillResponse = dokarkivConsumer.ferdigstill(journalforRequest);
-    if (!ferdigstillResponse.is2xxSuccessful()){
-      throw new FerdigstillFeiletException(String.format("Ferdigstill journalpost feilet for journalpostId %s", journalpostId));
-    }
+    dokarkivConsumer.ferdigstill(journalforRequest);
     LOGGER.info("Journalpost med id {} er ferdigstillt", journalpostId);
   }
 }
