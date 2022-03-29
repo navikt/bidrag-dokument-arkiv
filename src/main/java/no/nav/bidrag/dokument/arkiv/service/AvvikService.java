@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.AvvikshendelseIntern;
-import no.nav.bidrag.dokument.arkiv.dto.JournalStatus;
+import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.RegistrerReturRequest;
@@ -16,7 +16,6 @@ import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.FeilforSakFeiletException;
 import no.nav.bidrag.dokument.arkiv.model.OppdaterJournalpostFeiletException;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
-import no.nav.bidrag.dokument.arkiv.model.TrekkJournalpostFeiletException;
 import no.nav.bidrag.dokument.arkiv.model.UgyldigAvvikException;
 import no.nav.bidrag.dokument.dto.AvvikType;
 import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse;
@@ -32,11 +31,13 @@ public class AvvikService {
 
   public final JournalpostService journalpostService;
   public final HendelserProducer hendelserProducer;
+  public final OppgaveService oppgaveService;
   private final DokarkivConsumer dokarkivConsumer;
 
-  public AvvikService(ResourceByDiscriminator<JournalpostService> journalpostService, HendelserProducer hendelserProducer, ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers) {
+  public AvvikService(ResourceByDiscriminator<JournalpostService> journalpostService, HendelserProducer hendelserProducer, OppgaveService oppgaveService, ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers) {
     this.journalpostService = journalpostService.get(Discriminator.REGULAR_USER);
     this.hendelserProducer = hendelserProducer;
+    this.oppgaveService = oppgaveService;
     this.dokarkivConsumer = dokarkivConsumers.get(Discriminator.REGULAR_USER);
   }
 
@@ -57,7 +58,7 @@ public class AvvikService {
 
     switch (avvikshendelseIntern.getAvvikstype()){
       case OVERFOR_TIL_ANNEN_ENHET -> oppdater(avvikshendelseIntern.toOverforEnhetRequest());
-      case ENDRE_FAGOMRADE -> oppdater(avvikshendelseIntern.toEndreFagomradeRequest());
+      case ENDRE_FAGOMRADE -> endreFagomrade(journalpost, avvikshendelseIntern);
       case TREKK_JOURNALPOST -> trekkJournalpost(avvikshendelseIntern);
       case FEILFORE_SAK -> feilforSak(avvikshendelseIntern);
       case REGISTRER_RETUR -> registrerRetur(journalpost, avvikshendelseIntern);
@@ -67,6 +68,19 @@ public class AvvikService {
     hendelserProducer.publishJournalpostUpdated(journalpost.hentJournalpostIdLong());
 
     return Optional.of(new BehandleAvvikshendelseResponse(avvikshendelseIntern.getAvvikstype()));
+  }
+
+  public void kopierTilAnnenFagomrade(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
+    oppgaveService.opprettOverforJournalpostOppgave(journalpost, avvikshendelseIntern.getNyttFagomrade(), avvikshendelseIntern.getBeskrivelse());
+  }
+
+  public void endreFagomrade(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
+    if (journalpost.isInngaaendeDokument() && journalpost.isStatusJournalfort()){
+      oppgaveService.opprettOverforJournalpostOppgave(journalpost, avvikshendelseIntern.getNyttFagomrade(), avvikshendelseIntern.getBeskrivelse());
+      feilforSak(avvikshendelseIntern);
+    } else {
+      oppdater(avvikshendelseIntern.toEndreFagomradeRequest());
+    }
   }
 
   public void registrerRetur(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
@@ -81,10 +95,10 @@ public class AvvikService {
   }
 
   public void trekkJournalpost(AvvikshendelseIntern avvikshendelseIntern){
-    var httpResponse = dokarkivConsumer.settStatusUtgaar(avvikshendelseIntern.getJournalpostId());
-    if (!httpResponse.is2xxSuccessful()){
-      throw new TrekkJournalpostFeiletException(String.format("Sett status utgår feilet for journalpostId %s", avvikshendelseIntern.getJournalpostId()));
-    }
+    // Journalfør på GENERELL_SAK og feilfør sakstilknytning
+    oppdater(avvikshendelseIntern.toKnyttTilGenerellSakRequest());
+    dokarkivConsumer.ferdigstill(new FerdigstillJournalpostRequest(avvikshendelseIntern.getJournalpostId(), avvikshendelseIntern.getSaksbehandlersEnhet()));
+    dokarkivConsumer.feilregistrerSakstilknytning(avvikshendelseIntern.getJournalpostId());
   }
 
   public void feilforSak(AvvikshendelseIntern avvikshendelseIntern){

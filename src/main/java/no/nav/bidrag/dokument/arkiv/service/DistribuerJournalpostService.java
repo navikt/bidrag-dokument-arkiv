@@ -22,10 +22,13 @@ import org.springframework.stereotype.Service;
 public class DistribuerJournalpostService {
   private static final Logger LOGGER = LoggerFactory.getLogger(DistribuerJournalpostService.class);
 
+  private final EndreJournalpostService endreJournalpostService;
   private final JournalpostService journalpostService;
   private final DokdistFordelingConsumer dokdistFordelingConsumer;
 
-  public DistribuerJournalpostService(ResourceByDiscriminator<JournalpostService> journalpostServices, DokdistFordelingConsumer dokdistFordelingConsumer) {
+  public DistribuerJournalpostService(EndreJournalpostService endreJournalpostService,
+      ResourceByDiscriminator<JournalpostService> journalpostServices, DokdistFordelingConsumer dokdistFordelingConsumer) {
+    this.endreJournalpostService = endreJournalpostService;
     this.journalpostService = journalpostServices.get(Discriminator.REGULAR_USER);
     this.dokdistFordelingConsumer = dokdistFordelingConsumer;
   }
@@ -75,7 +78,7 @@ public class DistribuerJournalpostService {
 
   public void lagreAdresse(Long journalpostId, DistribuertTilAdresseDo distribuertTilAdresseDo, Journalpost journalpost){
     if (distribuertTilAdresseDo != null){
-      journalpostService.lagreJournalpost(journalpostId, new EndreJournalpostCommandIntern(distribuertTilAdresseDo), journalpost);
+      endreJournalpostService.lagreJournalpost(journalpostId, new EndreJournalpostCommandIntern(distribuertTilAdresseDo), journalpost);
     }
   }
 }

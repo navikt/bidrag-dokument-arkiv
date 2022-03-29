@@ -352,6 +352,7 @@ class JournalpostControllerTest extends AbstractControllerTest {
     endreJournalpostCommand.setSkalJournalfores(true);
     endreJournalpostCommand.setTilknyttSaker(Arrays.asList(saksnummer1, saksnummer2));
 
+    stubs.mockSokOppgave();
     stubs.mockSafResponseHentJournalpost(HttpStatus.OK);
     stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK);
     stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);

@@ -6,11 +6,6 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import no.nav.bidrag.dokument.arkiv.utils.DateUtils
 import org.apache.logging.log4j.util.Strings
 
-data class OppdaterDistribusjonsInfoRequest(
-    var settStatusEkspedert: Boolean,
-    var utsendingsKanal: String
-)
-
 data class OppdaterJournalpostDistribusjonsInfoRequest(private var journalpostId: Long, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId) {
     init {
         journalpost.tilleggsopplysninger.setDistribusjonBestillt()
@@ -93,10 +88,12 @@ sealed class OppdaterJournalpostRequest(private var journalpostId: Long? = -1) {
     @Suppress("unused") // properties used by jackson
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    data class Sak(val fagsakId: String? = null) {
-        val fagsaksystem = if (fagsakId == null) null else "BISYS"
-        val sakstype = if (fagsakId === null) null else "FAGSAK"
+    open class Sak(val fagsakId: String? = null) {
+        var fagsaksystem = if (fagsakId == null) null else "BISYS"
+        open var sakstype = if (fagsakId == null) null else Sakstype.FAGSAK
     }
+
+    data class GenerellSak(override var sakstype: Sakstype? = Sakstype.GENERELL_SAK): Sak()
 }
 
 data class OppdaterJournalpostResponse(var journalpostId: Long? = null)
@@ -106,3 +103,15 @@ data class FerdigstillJournalpostRequest(
         var journalpostId: Long,
         var journalfoerendeEnhet: String
 )
+
+enum class Sakstype {
+    FAGSAK, GENERELL_SAK
+}
+
+enum class BrukerIdType {
+    FNR, ORGNR, AKTOERID
+}
+
+enum class Fagsaksystem {
+    FS38, FS36, UFM, OEBS, OB36, AO01, AO11, IT01, PP01, K9, BISYS, BA, EF, KONT
+}

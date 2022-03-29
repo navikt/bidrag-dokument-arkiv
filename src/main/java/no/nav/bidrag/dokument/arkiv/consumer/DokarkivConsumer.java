@@ -3,16 +3,13 @@ package no.nav.bidrag.dokument.arkiv.consumer;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
-import no.nav.bidrag.dokument.arkiv.dto.OppdaterDistribusjonsInfoRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 public class DokarkivConsumer {
@@ -43,33 +40,10 @@ public class DokarkivConsumer {
 
   }
 
-  public HttpResponse<Void> settStatusUtgaar(Long journalpostId) {
-    var oppdaterJoarnalpostApiUrl = String.format(URL_JOURNALPOSTAPI_V1_FEILREGISTRER + "/settStatusUtgår", journalpostId);
-    var response = restTemplate.exchange(oppdaterJoarnalpostApiUrl, HttpMethod.PATCH, null, Void.class);
-    return new HttpResponse<>(response);
-  }
-
   public HttpResponse<Void> feilregistrerSakstilknytning(Long journalpostId) {
     var oppdaterJoarnalpostApiUrl = String.format(URL_JOURNALPOSTAPI_V1_FEILREGISTRER + "/feilregistrerSakstilknytning", journalpostId);
     var response = restTemplate.exchange(oppdaterJoarnalpostApiUrl, HttpMethod.PATCH, null, Void.class);
     return new HttpResponse<>(response);
-  }
-
-  public HttpResponse<Void> oppdaterDistribusjonsInfo(Long journalpostId, boolean settStatusEkspedert, String utsendingsKanal) {
-    var endpoint = URL_JOURNALPOSTAPI_V1 + "/%s";
-    var oppdaterJoarnalpostApiUrl = String.format(endpoint + "/oppdaterDistribusjonsinfo", journalpostId);
-    var request = new OppdaterDistribusjonsInfoRequest(settStatusEkspedert, utsendingsKanal);
-    try {
-      var response = restTemplate.exchange(oppdaterJoarnalpostApiUrl, HttpMethod.PATCH, new HttpEntity<>(request), Void.class);
-      return new HttpResponse<>(response);
-    } catch (HttpClientErrorException clientErrorException){
-      // Antar at status allerede er satt til ekspedert. Ignorer feil for å gjøre kallet idempotent
-      if (clientErrorException.getStatusCode() == HttpStatus.BAD_REQUEST && clientErrorException.getResponseBodyAsString().contains("Kan ikke ekspedere journalpost med status E")){
-        LOGGER.warn("Sett status til EKSPEDERT for journalpost {} feilet med melding {}", journalpostId, clientErrorException.getResponseBodyAsString());
-        return HttpResponse.from(HttpStatus.OK);
-      }
-      throw clientErrorException;
-    }
   }
 
   public void leggTilInterceptor(ClientHttpRequestInterceptor requestInterceptor) {

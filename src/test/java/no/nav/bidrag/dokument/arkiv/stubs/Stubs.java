@@ -26,19 +26,28 @@ import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivProxyConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
+import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerInfoResponse;
 import org.junit.Assert;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
 
+@Component
 public class Stubs {
 
   public static String SAKSNUMMER_JOURNALPOST = "5276661";
   public static String SAKSNUMMER_TILKNYTTET_1 = "2106585";
   public static String SAKSNUMMER_TILKNYTTET_2 = "9999999";
-  private final ObjectMapper objectMapper = new ObjectMapper();
+  @Autowired
+  private final ObjectMapper objectMapper;
   public final VerifyStub verifyStub = new VerifyStub();
+
+  public Stubs(ObjectMapper objectMapper) {
+    this.objectMapper = objectMapper;
+  }
 
   private ResponseDefinitionBuilder aClosedJsonResponse() {
     return aResponse()
@@ -205,6 +214,48 @@ public class Stubs {
                     .withBodyFile("json/dokumentoversiktFagsakQueryResponse.json")
             )
     );
+  }
+
+  public void mockSokOppgave() {
+    try {
+      stubFor(
+          get(urlMatching("/oppgave/.*")).willReturn(
+              aClosedJsonResponse()
+                  .withStatus(HttpStatus.OK.value())
+                  .withBody(objectMapper.writeValueAsString(new OppgaveSokResponse()))
+          )
+      );
+    } catch (JsonProcessingException e) {
+      fail(e.getMessage());
+    }
+  }
+
+  public void mockSokOppgave(OppgaveSokResponse oppgaveSokResponse, HttpStatus status) {
+    try {
+      stubFor(
+          get(urlMatching("/oppgave/.*")).willReturn(
+              aClosedJsonResponse()
+                  .withStatus(status.value())
+                  .withBody(objectMapper.writeValueAsString(oppgaveSokResponse))
+          )
+      );
+    } catch (JsonProcessingException e) {
+      fail(e.getMessage());
+    }
+  }
+
+  public void mockOpprettOppgave(PersonResponse personResponse, HttpStatus status) {
+    try {
+      stubFor(
+          post(urlMatching("/oppgave/.*")).willReturn(
+              aClosedJsonResponse()
+                  .withStatus(status.value())
+                  .withBody(objectMapper.writeValueAsString(personResponse))
+          )
+      );
+    } catch (JsonProcessingException e) {
+      fail(e.getMessage());
+    }
   }
 
   public void mockPersonResponse(PersonResponse personResponse, HttpStatus status) {

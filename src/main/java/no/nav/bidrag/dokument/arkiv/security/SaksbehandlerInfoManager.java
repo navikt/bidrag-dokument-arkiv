@@ -1,5 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.security;
 
+import java.util.Optional;
 import no.nav.bidrag.commons.security.service.OidcTokenManager;
 import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.Saksbehandler;
@@ -16,20 +17,28 @@ public class SaksbehandlerInfoManager {
     this.oidcTokenManager = oidcTokenManager;
   }
 
-  public Saksbehandler hentSaksbehandler(){
+
+  public String hentSaksbehandlerBrukerId(){
     try {
-      var saksbehandlerIdent = oidcTokenManager.fetchToken().getSubject();
+      return oidcTokenManager.fetchToken().getSubject();
+    } catch (Exception e){
+      return null;
+    }
+  }
+  public Optional<Saksbehandler> hentSaksbehandler(){
+    try {
+      var saksbehandlerIdent = hentSaksbehandlerBrukerId();
       if (saksbehandlerIdent == null){
-        return null;
+        return Optional.empty();
       }
       var response = bidragOrganisasjonConsumer.hentSaksbehandlerInfo(saksbehandlerIdent);
       if (!response.is2xxSuccessful() && response.fetchBody().isEmpty()){
-        return null;
+        return Optional.empty();
       }
       var saksbehandlerNavn = response.fetchBody().isEmpty() ? saksbehandlerIdent : response.fetchBody().get().getNavn();
-      return new Saksbehandler(saksbehandlerIdent, saksbehandlerNavn);
+      return Optional.of(new Saksbehandler(saksbehandlerIdent, saksbehandlerNavn));
     } catch (Exception e){
-      return null;
+      return Optional.empty();
     }
 
   }

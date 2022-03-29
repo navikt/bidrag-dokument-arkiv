@@ -1,5 +1,6 @@
 SAF_GRAPHQL_URL: http://localhost:${wiremock.server.port}/saf
 DOKARKIV_URL: http://localhost:${wiremock.server.port}/dokarkiv
+OPPGAVE_URL: http://localhost:${wiremock.server.port}/oppgave
 DOKDISTFORDELING_URL: http://localhost:${wiremock.server.port}/dokdistfordeling
 DOKARKIV_PROXY_URL: http://localhost:${wiremock.server.port}/dokarkivproxy
 ACCESS_TOKEN_URL: http://localhost:${wiremock.server.port}/sts
@@ -16,14 +17,14 @@ no.nav.security.jwt:
       password: ${SRVBIDRAG_PASSWORD}
   client:
     registration:
-      pdl:
-        token-endpoint-url: ${AZURE_OPENID_CONFIG_ISSUER}
+      oppgave:
+        token-endpoint-url: http://localhost:${mock-oauth2-server.port:1234}/aad/token
         grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
-        scope: api://pdl/.default
+        scope: api://123/.default
         authentication:
-          client-id: id
-          client-secret: secret
-          client-auth-method: client_secret_post
+          client-id: 123
+          client-secret: 123
+          client-auth-method: client_secret_basic
   issuer.isso:
     discovery_url: http://localhost:${mock-oauth2-server.port}/isso/.well-known/openid-configuration
     accepted_audience: aud-localhost

@@ -62,9 +62,13 @@ data class Journalpost(
     var tema: String? = null,
     var antallRetur: Int? = null,
     var tittel: String? = null,
+    var behandlingstema: String? = null,
+    var opprettetAvNavn: String? = null,
+    var eksternReferanseId: String? = null,
     var tilknyttedeSaker: List<String> = emptyList(),
     var tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger()
 ) {
+    fun hentGjelderId(): String? = bruker?.id
     fun hentJournalStatus(): String? {
         return when(journalstatus){
                 JournalStatus.MOTTATT -> JournalstatusDto.MOTTAKSREGISTRERT
@@ -146,9 +150,9 @@ data class Journalpost(
         return returDato?.somDato()
     }
 
-    fun hentTilknyttetSaker(): List<String> {
+    fun hentTilknyttetSaker(): Set<String> {
         val saksnummer = sak?.fagsakId
-        val saksnummerList = if (saksnummer != null) mutableListOf(saksnummer) else mutableListOf()
+        val saksnummerList = if (saksnummer != null) mutableSetOf(saksnummer) else mutableSetOf()
         saksnummerList.addAll(tilknyttedeSaker)
         return saksnummerList
     }
@@ -200,6 +204,7 @@ data class Journalpost(
     fun isStatusFeilregistrert(): Boolean = journalstatus == JournalStatus.FEILREGISTRERT
     fun isStatusMottatt(): Boolean = journalstatus == JournalStatus.MOTTATT
     fun isStatusFerdigsstilt(): Boolean = journalstatus == JournalStatus.FERDIGSTILT
+    fun isStatusJournalfort(): Boolean = journalstatus == JournalStatus.JOURNALFOERT
     fun isStatusEkspedert(): Boolean = journalstatus == JournalStatus.EKSPEDERT
     fun kanTilknytteSaker(): Boolean = journalstatus == JournalStatus.JOURNALFOERT || journalstatus == JournalStatus.FERDIGSTILT || journalstatus == JournalStatus.EKSPEDERT
     fun isInngaaendeDokument(): Boolean = journalposttype == "I"

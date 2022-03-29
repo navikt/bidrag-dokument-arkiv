@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.bidrag.dokument.arkiv.FeatureToggle;
 import no.nav.bidrag.dokument.arkiv.FeatureToggle.Feature;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.Saksbehandler;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelseException;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelseIntern;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
@@ -57,7 +58,7 @@ public class HendelserProducer {
   }
 
   private JournalpostHendelse createJournalpostHendelse(Journalpost journalpost) {
-    var saksbehandler = saksbehandlerInfoManager.hentSaksbehandler();
+    var saksbehandler = saksbehandlerInfoManager.hentSaksbehandler().orElse(new Saksbehandler("ukjent", "kunne ikke hente saksbehandler"));
     return new JournalpostHendelseIntern(journalpost, saksbehandler).hentJournalpostHendelse();
   }
 

@@ -16,9 +16,15 @@ ACCEPTED_SERVICE_USER_AUDIENCE: srvbdarkivering,srvbisys
 SRV_BD_ARKIV_AUTH: changme
 FEATURE_ENABLED: KAFKA_ARBEIDSFLYT
 AZURE_APP_TENANT_ID: 966ac572-f5b7-4bbe-aa88-c76419c0f851
+OPPGAVE_URL:  https://oppgave-q1.dev.adeo.no/api/v1/oppgaver
+OPPGAVE_SCOPE: dev-fss.oppgavehandtering.oppgave-q1
 
 KAFKA_GROUP_ID: bidrag-arkiv-consumer
 KAFKA_BROKERS: localhost:9092
+
+AZURE_APP_CLIENT_SECRET: changme
+AZURE_APP_CLIENT_ID: changeme
+
 spring:
   kafka:
     bootstrap-servers: ${KAFKA_BROKERS}

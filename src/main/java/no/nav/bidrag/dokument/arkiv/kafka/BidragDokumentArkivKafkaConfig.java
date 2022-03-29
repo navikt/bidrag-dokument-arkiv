@@ -1,5 +1,8 @@
 package no.nav.bidrag.dokument.arkiv.kafka;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_KAFKA_TEST;
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_LIVE;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.bidrag.dokument.arkiv.FeatureToggle;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
@@ -13,6 +16,7 @@ import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerContainerFactory;
