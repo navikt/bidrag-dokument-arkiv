@@ -116,7 +116,7 @@ class JournalpostControllerTest extends AbstractControllerTest {
 
   @Test
   @DisplayName("skal få 500 INTERNAL SERVER når person api feiler")
-  void skalFaServerFeilNarPersonApietFeiler() throws IOException {
+  void skalFaServerFeilNarPersonTjenestenFeiler() throws IOException {
     var journalpostIdFraJson = 201028011;
     stubs.mockSafResponseHentJournalpost(responseJournalpostJson, HttpStatus.OK);
     stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK);
@@ -359,6 +359,7 @@ class JournalpostControllerTest extends AbstractControllerTest {
     endreJournalpostCommand.setTilknyttSaker(Arrays.asList(saksnummer1, saksnummer2));
 
     stubs.mockSokOppgave();
+    stubs.mockOpprettOppgave(HttpStatus.OK);
     stubs.mockSafResponseHentJournalpost(HttpStatus.OK);
     stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK);
     stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
@@ -382,7 +383,10 @@ class JournalpostControllerTest extends AbstractControllerTest {
             .isEqualTo(HttpStatus.OK),
         () -> stubs.verifyStub.dokarkivFerdigstillKalt(journalpostIdFraJson),
         () -> stubs.verifyStub.dokarkivProxyTilknyttSakerIkkeKalt(journalpostIdFraJson, saksnummer1),
-        () -> stubs.verifyStub.dokarkivProxyTilknyttSakerKalt(journalpostIdFraJson, saksnummer2, "\"journalfoerendeEnhet\":\"4806\"")
+        () -> stubs.verifyStub.dokarkivProxyTilknyttSakerKalt(journalpostIdFraJson, saksnummer2, "\"journalfoerendeEnhet\":\"4806\""),
+        () -> stubs.verifyStub.oppgaveSokKalt(new Pair<>("tema", "BID"), new Pair<>("saksreferanse", saksnummer1), new Pair<>("saksreferanse", saksnummer2)),
+        () -> stubs.verifyStub.oppgaveOpprettKalt("\"oppgavetype\":\"BEH_SAK\"", "\"saksreferanse\":\"200000\""),
+        () -> stubs.verifyStub.oppgaveOpprettKalt("\"oppgavetype\":\"BEH_SAK\"", "\"saksreferanse\":\"200001\"")
     );
   }
 
@@ -504,7 +508,9 @@ class JournalpostControllerTest extends AbstractControllerTest {
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
         () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, ""),
-        () -> stubs.verifyStub.dokarkivFerdigstillIkkeKalt(journalpostIdFraJson)
+        () -> stubs.verifyStub.dokarkivFerdigstillIkkeKalt(journalpostIdFraJson),
+        () -> stubs.verifyStub.oppgaveOpprettIkkeKalt(),
+        () -> stubs.verifyStub.oppgaveSokIkkeKalt()
     );
   }
 

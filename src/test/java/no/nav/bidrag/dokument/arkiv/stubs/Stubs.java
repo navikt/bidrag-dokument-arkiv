@@ -28,6 +28,7 @@ import kotlin.Pair;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivProxyConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostResponse;
+import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
@@ -186,6 +187,21 @@ public class Stubs {
     mockSafResponseHentJournalpost("journalpostSafResponse.json", status);
   }
 
+  public void mockSafResponseHentJournalpost(Journalpost journalpost) {
+    try {
+      stubFor(
+          post(urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query journalpost")).willReturn(
+              aClosedJsonResponse()
+                  .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                  .withStatus(HttpStatus.OK.value())
+                  .withBody("{\"data\":{\"journalpost\": %s}}".formatted(objectMapper.writeValueAsString(journalpost)))
+          )
+      );
+    } catch (JsonProcessingException e) {
+      fail(e.getMessage());
+    }
+  }
+
   public void mockSafResponseHentJournalpost(String filename, HttpStatus status) {
     stubFor(
         post(urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query journalpost")).willReturn(
@@ -276,6 +292,12 @@ public class Stubs {
       var requestPattern = postRequestedFor(urlMatching("/oppgave/.*"));
       Arrays.stream(contains).forEach(contain -> requestPattern.withRequestBody(new ContainsPattern(contain)));
       verify(requestPattern);
+    }
+    public void oppgaveSokIkkeKalt(){
+      verify(0, getRequestedFor(urlMatching("/oppgave/.*")));
+    }
+    public void oppgaveOpprettIkkeKalt(){
+      verify(0, postRequestedFor(urlMatching("/oppgave/.*")));
     }
 
     public void oppgaveSokKalt(Pair<String, String>... params){

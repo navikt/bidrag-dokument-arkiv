@@ -125,6 +125,7 @@ data class OpprettVurderKonsekvensYtelseOppgaveRequest(
 data class OpprettBehandleDokumentOppgaveRequest(
     private var journalpost: Journalpost,
     var aktoerId: String,
+    private val saksnummer: String,
     private var saksbehandlerMedEnhet: SaksbehandlerMedEnhet):
     OpprettOppgaveRequest(
         journalpostId = journalpost.journalpostId!!,
@@ -132,7 +133,7 @@ data class OpprettBehandleDokumentOppgaveRequest(
         fristFerdigstillelse = LocalDate.now().plusDays(1).toString(),
         opprettetAvEnhetsnr = saksbehandlerMedEnhet.enhetsnummer!!,
         oppgavetype = OppgaveType.BEH_SAK,
-        saksreferanse = journalpost.sak?.fagsakId,
+        saksreferanse = saksnummer,
         tildeltEnhetsnr = saksbehandlerMedEnhet.enhetsnummer,
         tilordnetRessurs = saksbehandlerMedEnhet.saksbehandler.ident,
     )

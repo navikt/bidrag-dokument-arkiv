@@ -67,16 +67,13 @@ public class OppgaveService {
   }
 
   private void opprettOppgaveForBehandleDokument(Journalpost journalpost, Set<String> unikeSaksnummer) {
-    if (journalpost.getTittel() == null) {
-      throw new JournalpostBeskrivelseException("En journalpost skal alltid ha en beskrivelse!");
-    }
-
     var aktorId = hentAktorId(journalpost.hentGjelderId());
 
     unikeSaksnummer.forEach(
         saksnummer -> opprettOppgave(new OpprettBehandleDokumentOppgaveRequest(
             journalpost,
             aktorId,
+            saksnummer,
             hentSaksbehandlerMedEnhet(journalpost)
         ))
     );

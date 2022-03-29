@@ -11,6 +11,7 @@ import java.util.Map;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostType;
 import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.query.DokumentoversiktFagsakQuery;
 import no.nav.bidrag.dokument.arkiv.query.JournalpostQuery;
@@ -37,7 +38,7 @@ class JsonMapperTest {
   void skalMappeOppdaterJournalpostTilJson() {
     var journalpost = new Journalpost();
     journalpost.setJournalstatus(JournalStatus.MOTTATT);
-    journalpost.setJournalposttype("I");
+    journalpost.setJournalposttype(JournalpostType.I);
     var endreDokument = new EndreDokument();
     endreDokument.setTittel("Tittelen på dokument");
     endreDokument.setDokId(55555);
