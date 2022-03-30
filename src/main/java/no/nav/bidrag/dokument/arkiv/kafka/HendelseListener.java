@@ -1,5 +1,8 @@
 package no.nav.bidrag.dokument.arkiv.kafka;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_KAFKA_TEST;
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_LIVE;
+
 import io.micrometer.core.instrument.MeterRegistry;
 import java.util.Objects;
 import java.util.Optional;
@@ -12,6 +15,7 @@ import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
+import no.nav.bidrag.dokument.dto.Kanal;
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +25,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
 @Service
+@Profile({PROFILE_KAFKA_TEST, PROFILE_LIVE})
 public class HendelseListener {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HendelseListener.class);
@@ -57,9 +62,9 @@ public class HendelseListener {
   private void registrerOppgaveForHendelse(@Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
     var hendelsesType = HendelsesType.from(journalfoeringHendelseRecord.getHendelsesType()).orElse(null);
     switch (hendelsesType){
-      case JOURNALPOST_MOTTATT, ENDELIG_JOURNALFORT, TEMA_ENDRET -> {
-        LOGGER.info("Behandler journalpost hendelse {} med data {}", hendelsesType, journalfoeringHendelseRecord);
-        behandleHendelse(hendelsesType, journalfoeringHendelseRecord);
+      case JOURNALPOST_UTGATT, JOURNALPOST_MOTTATT, ENDELIG_JOURNALFORT, TEMA_ENDRET -> {
+          LOGGER.info("Behandler journalpost hendelse {} med data {}", hendelsesType, journalfoeringHendelseRecord);
+          behandleHendelse(hendelsesType, journalfoeringHendelseRecord);
       }
       default -> LOGGER.info("Ignorer hendelse {} med data {}", hendelsesType, journalfoeringHendelseRecord);
     }
@@ -70,10 +75,25 @@ public class HendelseListener {
         "hendelse_type", hendelsesType.toString(),
         "tema", journalfoeringHendelseRecord.getTemaNytt(),
         "kanal", journalfoeringHendelseRecord.getMottaksKanal()).increment();
-    var journalpostId = journalfoeringHendelseRecord.getJournalpostId();
-    var journalpost = hentJournalpost(journalpostId);
+      var journalpostId = journalfoeringHendelseRecord.getJournalpostId();
+      var journalpost = hentJournalpost(journalpostId);
+      if (!erOpprettetAvNKS(journalpost)){
+        behandleJournalpostFraHendelse(journalpost);
+      } else {
+        LOGGER.info("Journalpost er opprettet av NKS opprettetAvNavn={}. Stopper videre behandling", journalpost.getOpprettetAvNavn());
+      }
+  }
+
+  private void behandleJournalpostFraHendelse(Journalpost journalpost){
     oppdaterJournalpostMedPersonGeografiskEnhet(journalpost);
     producer.publishJournalpostUpdated(journalpost);
+  }
+
+  public boolean erOpprettetAvNKS(Journalpost journalpost){
+    var erKanalNavNoChat = "NAV_NO_CHAT".equals(journalpost.getKanal());
+    var opprettetAvSalesforce = "NKSsalesforce".equals(journalpost.getOpprettetAvNavn());
+    var brevkodeCRM = journalpost.getDokumenter().stream().anyMatch(dokument -> "CRM_MELDINGSKJEDE".equals(dokument.getBrevkode()));
+    return brevkodeCRM || opprettetAvSalesforce || erKanalNavNoChat;
   }
 
   // TODO: Error handling. Should not use DEFAULT_ENHET
