@@ -59,7 +59,7 @@ public class AvvikService {
     switch (avvikshendelseIntern.getAvvikstype()){
       case OVERFOR_TIL_ANNEN_ENHET -> oppdater(avvikshendelseIntern.toOverforEnhetRequest());
       case ENDRE_FAGOMRADE -> endreFagomrade(journalpost, avvikshendelseIntern);
-      case TREKK_JOURNALPOST -> trekkJournalpost(avvikshendelseIntern);
+      case TREKK_JOURNALPOST -> trekkJournalpost(journalpost, avvikshendelseIntern);
       case FEILFORE_SAK -> feilforSak(avvikshendelseIntern);
       case REGISTRER_RETUR -> registrerRetur(journalpost, avvikshendelseIntern);
       default -> throw new AvvikNotSupportedException("Avvik %s ikke støttet".formatted(avvikshendelseIntern.getAvvikstype()));
@@ -94,9 +94,15 @@ public class AvvikService {
     oppdater(new RegistrerReturRequest(journalpost.hentJournalpostIdLong(), returDato, tilleggsOpplysninger));
   }
 
-  public void trekkJournalpost(AvvikshendelseIntern avvikshendelseIntern){
+  public void trekkJournalpost(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
     // Journalfør på GENERELL_SAK og feilfør sakstilknytning
-    oppdater(avvikshendelseIntern.toKnyttTilGenerellSakRequest());
+    if (journalpost.getBruker() == null){
+      throw new AvvikNotSupportedException("Kan ikke trekke journalpost uten bruker");
+    }
+    if (journalpost.getTema() == null){
+      throw new AvvikNotSupportedException("Kan ikke trekke journalpost uten tilhørende fagområde");
+    }
+    oppdater(avvikshendelseIntern.toKnyttTilGenerellSakRequest(journalpost.getTema(), journalpost.getBruker()));
     dokarkivConsumer.ferdigstill(new FerdigstillJournalpostRequest(avvikshendelseIntern.getJournalpostId(), avvikshendelseIntern.getSaksbehandlersEnhet()));
     dokarkivConsumer.feilregistrerSakstilknytning(avvikshendelseIntern.getJournalpostId());
   }

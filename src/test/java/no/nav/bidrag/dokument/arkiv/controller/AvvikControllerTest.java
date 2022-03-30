@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import java.io.IOException;
 import java.util.Map;
 import no.nav.bidrag.commons.web.EnhetFilter;
+import no.nav.bidrag.dokument.arkiv.dto.OppgaveType;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.dto.AvvikType;
 import no.nav.bidrag.dokument.dto.Avvikshendelse;
@@ -214,18 +215,19 @@ public class AvvikControllerTest extends AbstractControllerTest {
   }
 
   @Test
-  @DisplayName("skal utføre avvik FEILFORE_SAK")
-  void skalSendeAvvikFeilfor() throws IOException {
+  @DisplayName("skal utføre avvik ENDRE_FAGOMRADE når journalpost journalført")
+  void skalSendeAvvikEndreFagomradeNarJournalpostJournalfort() throws IOException, JSONException {
     // given
     var xEnhet = "1234";
+    var nyttFagomrade = "FAR";
     var journalpostIdFraJson = 201028011L;
-    var avvikHendelse = createAvvikHendelse(AvvikType.FEILFORE_SAK, Map.of());
+    var avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, Map.of("fagomrade", nyttFagomrade));
 
     stubs.mockSafResponseHentJournalpost(journalpostJournalfortSafResponse, HttpStatus.OK);
     stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
     stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson);
-    stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson);
-    stubs.mockDokarkivFeilregistrerRequest("feilregistrerSakstilknytning", journalpostIdFraJson);
+    stubs.mockOpprettOppgave(HttpStatus.OK);
+    stubs.mockDokarkivFeilregistrerRequest(journalpostIdFraJson);
 
     // when
     var headersMedEnhet = new HttpHeaders();
@@ -243,7 +245,43 @@ public class AvvikControllerTest extends AbstractControllerTest {
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
-        () -> stubs.verifyStub.dokarkivFeilregistrerKalt("feilregistrerSakstilknytning", journalpostIdFraJson),
+        () -> stubs.verifyStub.oppgaveOpprettKalt(OppgaveType.VUR_KONS_YTE.name()),
+        () -> stubs.verifyStub.dokarkivFeilregistrerKalt(journalpostIdFraJson),
+        () -> verify(kafkaTemplateMock).send(eq(topicJournalpost), eq("JOARK-" + journalpostIdFraJson), any())
+    );
+  }
+
+  @Test
+  @DisplayName("skal utføre avvik FEILFORE_SAK")
+  void skalSendeAvvikFeilfor() throws IOException {
+    // given
+    var xEnhet = "1234";
+    var journalpostIdFraJson = 201028011L;
+    var avvikHendelse = createAvvikHendelse(AvvikType.FEILFORE_SAK, Map.of());
+
+    stubs.mockSafResponseHentJournalpost(journalpostJournalfortSafResponse, HttpStatus.OK);
+    stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
+    stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson);
+    stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson);
+    stubs.mockDokarkivFeilregistrerRequest(journalpostIdFraJson);
+
+    // when
+    var headersMedEnhet = new HttpHeaders();
+    headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
+    var overforEnhetResponse = httpHeaderTestRestTemplate.exchange(
+        initUrl() + "/journal/JOARK-" + journalpostIdFraJson + "/avvik",
+        HttpMethod.POST,
+        new HttpEntity<>(avvikHendelse, headersMedEnhet),
+        BehandleAvvikshendelseResponse.class
+    );
+
+    // then
+    assertAll(
+        () -> assertThat(overforEnhetResponse)
+            .extracting(ResponseEntity::getStatusCode)
+            .as("statusCode")
+            .isEqualTo(HttpStatus.OK),
+        () -> stubs.verifyStub.dokarkivFeilregistrerKalt(journalpostIdFraJson),
         () -> verify(kafkaTemplateMock).send(eq(topicJournalpost), eq("JOARK-" + journalpostIdFraJson), any())
     );
   }
@@ -259,7 +297,9 @@ public class AvvikControllerTest extends AbstractControllerTest {
 
     stubs.mockSafResponseHentJournalpost(responseJournalpostJson, HttpStatus.OK);
     stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
-    stubs.mockDokarkivFeilregistrerRequest("settStatusUtg(.*)r", journalpostIdFraJson);
+    stubs.mockDokarkivFeilregistrerRequest(journalpostIdFraJson);
+    stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson);
+    stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson);
     // when
     var headersMedEnhet = new HttpHeaders();
     headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
@@ -276,7 +316,9 @@ public class AvvikControllerTest extends AbstractControllerTest {
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
-        () -> stubs.verifyStub.dokarkivFeilregistrerKalt("settStatusUtg(.*)r", journalpostIdFraJson),
+        () -> stubs.verifyStub.dokarkivFeilregistrerKalt(journalpostIdFraJson),
+        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "GENERELL_SAK"),
+        () -> stubs.verifyStub.dokarkivFerdigstillKalt(journalpostIdFraJson),
         () -> verify(kafkaTemplateMock).send(eq(topicJournalpost), eq("JOARK-" + journalpostIdFraJson), any())
     );
   }

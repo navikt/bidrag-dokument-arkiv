@@ -29,7 +29,7 @@ public class OppgaveConsumer extends AbstractConsumer {
 
     var responseEntity = restTemplate.exchange(pathMedParametre, HttpMethod.GET, null, OppgaveSokResponse.class);
 
-    LOGGER.info("Response: {}, HttpStatus: {}", responseEntity.getBody(), responseEntity.getStatusCode());
+    LOGGER.debug("Response: {}, HttpStatus: {}", responseEntity.getBody(), responseEntity.getStatusCode());
 
     return responseEntity.getBody();
 
@@ -37,9 +37,12 @@ public class OppgaveConsumer extends AbstractConsumer {
 
   public long opprett(OpprettOppgaveRequest opprettOppgaveRequest) {
 
+    LOGGER.debug("oppretter oppgave: " + opprettOppgaveRequest);
+    LOGGER.info("oppretter oppgave med type {} og journalpostid {}", opprettOppgaveRequest.getOppgavetype(), opprettOppgaveRequest.getJournalpostId());
+
     var oppgaveResponse = restTemplate.postForEntity("/", opprettOppgaveRequest, OppgaveResponse.class);
 
-    LOGGER.info("oppgaveResponse: " + oppgaveResponse);
+    LOGGER.debug("oppgaveResponse: " + oppgaveResponse);
 
     return Optional.of(oppgaveResponse)
         .map(ResponseEntity::getBody)

@@ -128,14 +128,14 @@ public class Stubs {
     );
   }
 
-  public void mockDokarkivFeilregistrerRequest(String path, Long journalpostId) {
+  public void mockDokarkivFeilregistrerRequest(Long journalpostId) {
     stubFor(
         patch(
-            urlMatching(
+            urlEqualTo(
                 "/dokarkiv" + String.format(
                     DokarkivConsumer.URL_JOURNALPOSTAPI_V1_FEILREGISTRER,
                     journalpostId
-                ) + "/" + path
+                ) + "/feilregistrerSakstilknytning"
             )
         ).willReturn(
             aClosedJsonResponse()
@@ -370,12 +370,12 @@ public class Stubs {
       dokarkivFerdigstillKalt(1, journalpostId);
     }
 
-    public void dokarkivFeilregistrerKalt(String path, Long journalpostId) {
+    public void dokarkivFeilregistrerKalt(Long journalpostId) {
       verify(
           patchRequestedFor(urlMatching("/dokarkiv" + String.format(
               DokarkivConsumer.URL_JOURNALPOSTAPI_V1_FEILREGISTRER,
               journalpostId
-          ) + "/" + path))
+          ) + "/feilregistrerSakstilknytning"))
       );
     }
 

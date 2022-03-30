@@ -110,14 +110,15 @@ data class OpprettVurderKonsekvensYtelseOppgaveRequest(
     private var journalpost: Journalpost,
     override var tema: String,
     var aktoerId: String,
-    var saksbehandlerMedEnhet: SaksbehandlerMedEnhet, private var kommentar: String):
+    private var saksbehandlerMedEnhet: SaksbehandlerMedEnhet,
+    private var kommentar: String?):
     OpprettOppgaveRequest(
         journalpostId = journalpost.journalpostId!!,
         oppgavetype = OppgaveType.VUR_KONS_YTE,
         prioritet = Prioritet.NORM.name,
         tildeltEnhetsnr = journalpost.journalforendeEnhet,
         opprettetAvEnhetsnr = saksbehandlerMedEnhet.enhetsnummer!!,
-        beskrivelse = lagVurderKonskevensYtelseOppgaveTittel(journalpost.tittel!!, kommentar)
+        beskrivelse = lagVurderKonskevensYtelseOppgaveTittel(journalpost.tittel!!, kommentar?:"")
     )
 
 
