@@ -498,3 +498,10 @@ enum class JournalpostType(var dekode: String) {
     I("Inngående dokument"),
     U("Utgående dokument")
 }
+
+enum class MottaksKanal {
+    NAV_NO,
+    NAV_NO_CHAT,
+    NAV_NO_UINNLOGGET,
+    SKAN_IM
+}

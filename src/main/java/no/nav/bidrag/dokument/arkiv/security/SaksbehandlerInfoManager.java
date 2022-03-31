@@ -11,6 +11,7 @@ public class SaksbehandlerInfoManager {
 
   private final BidragOrganisasjonConsumer bidragOrganisasjonConsumer;
   private final OidcTokenManager oidcTokenManager;
+
   public SaksbehandlerInfoManager(BidragOrganisasjonConsumer bidragOrganisasjonConsumer,
       OidcTokenManager oidcTokenManager) {
     this.bidragOrganisasjonConsumer = bidragOrganisasjonConsumer;
@@ -40,7 +41,6 @@ public class SaksbehandlerInfoManager {
     } catch (Exception e){
       return Optional.empty();
     }
-
   }
 
 }
