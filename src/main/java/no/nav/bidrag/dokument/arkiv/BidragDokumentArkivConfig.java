@@ -42,6 +42,7 @@ public class BidragDokumentArkivConfig {
   public static final String ISSUER_ISSO = "isso";
   public static final String ISSUER_STS = "sts";
   public static final String PROFILE_LIVE = "live";
+  public static final String PROFILE_KAFKA_TEST = "kafka_test";
   public static final String PROFILE_TEST = "test";
 
   @Bean

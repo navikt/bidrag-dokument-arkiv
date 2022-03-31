@@ -7,19 +7,29 @@ DOKDISTFORDELING_URL: http://dokdistfordeling
 BIDRAG_ORGANISASJON_URL: http://organisasjon
 SRV_BD_ARKIV_AUTH: secret
 NAIS_APP_NAME: test
-TOPIC_JOURNALPOST: topic.journalpost
-TOPIC_JOURNALFOERING: jfhendelse.topic
+TOPIC_JOURNALPOST: topic_journalpost
+TOPIC_JOURNALFOERING: topic_joark
 FEATURE_ENABLED: KAFKA_ARBEIDSFLYT
 AZURE_OPENID_CONFIG_ISSUER: http://aad
 
+KAFKA_BROKERS: localhost:9092
+KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+
 spring.kafka:
-  properties:
-    schema:
-      registry.url: http://unused-dummy-url
-    security.protocol: PLAINTEXT
-  consumer:
-    group-id: test
-    auto-offset-reset: earliest
+    bootstrap-servers: ${KAFKA_BROKERS}
+    properties:
+      specific.avro.reader: true
+      security.protocol: PLAINTEXT
+      schema.registry.url: mock://testUrl
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.deserializer.value.delegate.class: io.confluent.kafka.serializers.KafkaAvroDeserializer
+      auto-offset-reset: earliest
+      enableAutoCommit: false
+    listener:
+      ackMode: RECORD
 
 logging.level.root: INFO
 logging.level.wiremock.org: INFO
