@@ -60,6 +60,8 @@ public class HendelseListener {
       LOGGER.debug("Journalpost er opprettet av NKS. Stopper videre behandling");
       return;
     }
+
+    LOGGER.debug("Mottok journalføringshendelse {}", journalfoeringHendelseRecord);
     behandleJournalforingHendelse(journalfoeringHendelseRecord);
   }
 
@@ -73,14 +75,15 @@ public class HendelseListener {
     behandleHendelse(journalfoeringHendelseRecord);
   }
 
-  private void behandleHendelse(JournalfoeringHendelseRecord journalfoeringHendelseRecord){
-      var journalpostId = journalfoeringHendelseRecord.getJournalpostId();
+  private void behandleHendelse(JournalfoeringHendelseRecord record){
+      var journalpostId = record.getJournalpostId();
       var journalpost = hentJournalpost(journalpostId);
       if (erOpprettetAvNKS(journalpost)){
         LOGGER.info("Journalpost er opprettet av NKS opprettetAvNavn={}. Stopper videre behandling", journalpost.getOpprettetAvNavn());
         return;
       }
 
+      LOGGER.info("Behandler journalføringshendelse {} med journalpostId={}, kanal={}, journalpostStatus={} og tema={}", record.getHendelsesType(), record.getJournalpostId(), record.getMottaksKanal(), record.getJournalpostStatus(), record.getTemaNytt());
       behandleJournalpostFraHendelse(journalpost);
   }
 
