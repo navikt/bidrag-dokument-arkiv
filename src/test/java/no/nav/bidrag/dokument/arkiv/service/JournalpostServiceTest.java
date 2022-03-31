@@ -20,6 +20,7 @@ import no.nav.bidrag.dokument.arkiv.dto.Bruker;
 import no.nav.bidrag.dokument.arkiv.dto.Dokument;
 import no.nav.bidrag.dokument.arkiv.dto.DokumentoversiktFagsakQueryResponse;
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus;
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostType;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
@@ -79,7 +80,7 @@ class JournalpostServiceTest {
               () -> assertThat(bruker).extracting(Bruker::getId).as("aktor.ident").isEqualTo("123123"),
               () -> assertThat(bruker).extracting(Bruker::getType).as("aktor.tyoe").isEqualTo("FNR"),
               () -> assertThat(avsenderMottaker).extracting(AvsenderMottaker::getNavn).as("avsenders navn").isEqualTo("Draugen, Do"),
-              () -> assertThat(journalpost.getJournalposttype()).as("journalposttype").isEqualTo("N"),
+              () -> assertThat(journalpost.getJournalposttype()).as("journalposttype").isEqualTo(JournalpostType.N),
               () -> assertThat(journalpost.getTema()).as("tema").isEqualTo("BID"),
               () -> assertThat(journalpost.getTittel()).as("tittel").isEqualTo("Filosofens bidrag"),
               () -> assertThat(journalpost.getJournalforendeEnhet()).as("journalførende enhet").isEqualTo("4817"),

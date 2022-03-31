@@ -30,8 +30,8 @@ class Oppgavetema internal constructor(journalfoeringHendelseRecord: Journalfoer
     private val nytt: String
 
     init {
-        gammelt = journalfoeringHendelseRecord.temaGammelt.toString()
-        nytt = journalfoeringHendelseRecord.temaNytt.toString()
+        gammelt = journalfoeringHendelseRecord.temaGammelt ?: ""
+        nytt = journalfoeringHendelseRecord.temaNytt ?: ""
     }
 
     fun erOmhandlingAvBidrag(): Boolean {
