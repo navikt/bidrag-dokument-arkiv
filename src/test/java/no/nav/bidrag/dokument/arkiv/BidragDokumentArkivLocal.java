@@ -14,8 +14,6 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 
 @SpringBootApplication(exclude = { SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class })
 @EnableJwtTokenValidation(ignore = {"springfox.documentation.swagger.web.ApiResourceController"})
-@ComponentScan(excludeFilters = {@Filter(type = ASSIGNABLE_TYPE, value = BidragDokumentArkiv.class)})
-@EmbeddedKafka
 public class BidragDokumentArkivLocal {
   public static final String PROFILE_INTEGRATION= "integration";
 

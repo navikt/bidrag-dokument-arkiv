@@ -1,10 +1,13 @@
 package no.nav.bidrag.dokument.arkiv.kafka;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.bidrag.dokument.arkiv.FeatureToggle;
 import no.nav.bidrag.dokument.arkiv.FeatureToggle.Feature;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.Saksbehandler;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelseException;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelseIntern;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
@@ -57,7 +60,7 @@ public class HendelserProducer {
   }
 
   private JournalpostHendelse createJournalpostHendelse(Journalpost journalpost) {
-    var saksbehandler = saksbehandlerInfoManager.hentSaksbehandler();
+    var saksbehandler = saksbehandlerInfoManager.hentSaksbehandler().orElse(new Saksbehandler("ukjent", "kunne ikke hente saksbehandler"));
     return new JournalpostHendelseIntern(journalpost, saksbehandler).hentJournalpostHendelse();
   }
 
@@ -66,10 +69,12 @@ public class HendelserProducer {
     try {
       var message = objectMapper.writeValueAsString(journalpostHendelse);
       if (!featureToggle.isFeatureEnabled(Feature.KAFKA_ARBEIDSFLYT)) {
-        LOGGER.info("Sender ikke hendelse {} da feature toggle KAFKA_ARBEIDSFLYT ikke er skrudd på", message);
+        LOGGER.info("Sender ikke hendelse med journalpostId={} da feature toggle KAFKA_ARBEIDSFLYT ikke er skrudd på", journalpostHendelse.getJournalpostId());
+        SECURE_LOGGER.info("Sender ikke hendelse {} da feature toggle KAFKA_ARBEIDSFLYT ikke er skrudd på", message);
         return;
       }
-      LOGGER.info("Publiserer hendelse {}", message);
+      SECURE_LOGGER.info("Publiserer hendelse {}", message);
+      LOGGER.info("Publiserer hendelse med journalpostId={}", journalpostHendelse.getJournalpostId());
       kafkaTemplate.send(topic, journalpostHendelse.getJournalpostId(), message);
     } catch (JsonProcessingException e) {
       throw new JournalpostHendelseException(e.getMessage(), e);

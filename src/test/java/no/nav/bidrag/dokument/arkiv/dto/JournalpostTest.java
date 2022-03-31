@@ -46,7 +46,7 @@ class JournalpostTest {
         () -> assertThat(journalpost.getJournalforendeEnhet()).as("journalforendeEnhet").isEqualTo("0104"),
         () -> assertThat(journalpost.getJournalfortAvNavn()).as("journalfortAvNavn").isEqualTo("Terkelsen, Karin"),
         () -> assertThat(journalpost.getJournalpostId()).as("journalpostId").isEqualTo("203915975"),
-        () -> assertThat(journalpost.getJournalposttype()).as("journalposttype").isEqualTo("I"),
+        () -> assertThat(journalpost.getJournalposttype()).as("journalposttype").isEqualTo(JournalpostType.I),
         () -> assertThat(journalpost.getJournalstatus()).as("journalstatus").isEqualTo(JournalStatus.JOURNALFOERT),
         () -> assertThat(journalpost.getRelevanteDatoer()).as("relevanteDater").isEqualTo(List.of(
             new DatoType("2010-12-16T00:00", "DATO_JOURNALFOERT"),
@@ -98,7 +98,7 @@ class JournalpostTest {
   void skalHenteDistribuertAdresse() throws IOException {
     var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
     journalpost.setJournalstatus(JournalStatus.FERDIGSTILT);
-    journalpost.setJournalposttype("U");
+    journalpost.setJournalposttype(JournalpostType.U);
     var adresse = journalpost.getTilleggsopplysninger().hentAdresseDo();
 
     assertAll(
@@ -117,7 +117,7 @@ class JournalpostTest {
   void skalHenteJournalpostStatusJournalfortForNotat() throws IOException {
     var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
     journalpost.setJournalstatus(JournalStatus.FERDIGSTILT);
-    journalpost.setJournalposttype("N");
+    journalpost.setJournalposttype(JournalpostType.N);
     journalpost.getTilleggsopplysninger().setDistribusjonBestillt();
 
     assertAll(
@@ -131,7 +131,7 @@ class JournalpostTest {
   void skalHenteJournalpostStatusEkspedertNarDistribuert() throws IOException {
     var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
     journalpost.setJournalstatus(JournalStatus.FERDIGSTILT);
-    journalpost.setJournalposttype("U");
+    journalpost.setJournalposttype(JournalpostType.U);
     journalpost.getTilleggsopplysninger().setDistribusjonBestillt();
 
     assertAll(
@@ -144,7 +144,7 @@ class JournalpostTest {
   void skalHenteAvvikForMottattOgInngaaende() {
     var journalpost = new Journalpost();
     journalpost.setJournalstatus(JournalStatus.MOTTATT);
-    journalpost.setJournalposttype("I");
+    journalpost.setJournalposttype(JournalpostType.I);
     var avvikListe = journalpost.tilAvvik();
     assertThat(avvikListe).hasSize(3);
     assertThat(avvikListe).contains(AvvikType.OVERFOR_TIL_ANNEN_ENHET);
@@ -157,7 +157,7 @@ class JournalpostTest {
   void skalHenteAvvikForFERDIGSTILT_Utgaaende() {
     var journalpost = new Journalpost();
     journalpost.setJournalstatus(JournalStatus.FERDIGSTILT);
-    journalpost.setJournalposttype("U");
+    journalpost.setJournalposttype(JournalpostType.U);
     journalpost.setSak(new Sak(""));
     var avvikListe = journalpost.tilAvvik();
     assertThat(avvikListe).hasSize(2);
@@ -170,7 +170,7 @@ class JournalpostTest {
   void skalHenteAvvikFEILFORE_SAKHvisIkkeFeilfort() {
     var journalpost = new Journalpost();
     journalpost.setJournalstatus(JournalStatus.JOURNALFOERT);
-    journalpost.setJournalposttype("I");
+    journalpost.setJournalposttype(JournalpostType.I);
     journalpost.setSak(new Sak(""));
     var avvikListe = journalpost.tilAvvik();
     assertThat(avvikListe).hasSize(2);
@@ -182,7 +182,7 @@ class JournalpostTest {
   void skalHenteAvvikHvisStatusFeilregistrert() {
     var journalpost = new Journalpost();
     journalpost.setJournalstatus(JournalStatus.FEILREGISTRERT);
-    journalpost.setJournalposttype("I");
+    journalpost.setJournalposttype(JournalpostType.I);
     journalpost.setSak(new Sak(""));
     var avvikListe = journalpost.tilAvvik();
     assertThat(avvikListe).hasSize(1);

@@ -62,14 +62,10 @@ spring.kafka:
           location: ${KAFKA_TRUSTSTORE_PATH}
           password: ${KAFKA_CREDSTORE_PASSWORD}
     consumer:
-      group-id: ${NAIS_APP_NAME}
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       properties:
         spring.deserializer.value.delegate.class: io.confluent.kafka.serializers.KafkaAvroDeserializer
-        max.poll.interval.ms: 50000
-        retry.backoff.ms: 5000
-        reconnect.backoff.ms: 8000
       enableAutoCommit: false
     listener:
       ackMode: RECORD

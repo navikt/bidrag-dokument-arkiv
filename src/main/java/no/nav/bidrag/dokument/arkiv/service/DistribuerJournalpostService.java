@@ -32,10 +32,7 @@ public class DistribuerJournalpostService {
 
   public DistribuerJournalpostResponse distribuerJournalpost(Long journalpostId, String batchId, DistribuerJournalpostRequestInternal distribuerJournalpostRequest){
     var adresse = distribuerJournalpostRequest.getAdresse();
-    if (adresse != null){
-      SECURE_LOGGER.info("Forsøker å distribuere journalpost {} med foreslått adresse {}", journalpostId, adresse);
-    }
-
+    
     var journalpostOptional = journalpostService.hentJournalpost(journalpostId);
     if (journalpostOptional.isEmpty()){
       throw new JournalpostIkkeFunnetException(String.format("Fant ingen journalpost med id %s", journalpostId));

@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
 import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -54,7 +55,7 @@ data class Journalpost(
     var journalforendeEnhet: String? = null,
     var journalfortAvNavn: String? = null,
     var journalpostId: String? = null,
-    var journalposttype: String? = null,
+    var journalposttype: JournalpostType? = null,
     var kanal: String? = null,
     var journalstatus: JournalStatus? = null,
     var relevanteDatoer: List<DatoType> = emptyList(),
@@ -62,6 +63,9 @@ data class Journalpost(
     var tema: String? = null,
     var antallRetur: Int? = null,
     var tittel: String? = null,
+    var behandlingstema: String? = null,
+    var opprettetAvNavn: String? = null,
+    var eksternReferanseId: String? = null,
     var tilknyttedeSaker: List<String> = emptyList(),
     var tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger()
 ) {
@@ -101,7 +105,7 @@ data class Journalpost(
     fun harJournalforendeEnhetLik(enhet: String) = journalforendeEnhet == enhet
     fun hentJournalpostIdLong() = journalpostId?.toLong()
     fun hentJournalpostIdMedPrefix() = "JOARK-"+journalpostId
-    fun hentJournalpostType() = if (journalposttype == "N") "X" else journalposttype
+    fun hentJournalpostType() = if (journalposttype == JournalpostType.N) "X" else journalposttype?.name
     fun hentDatoJournalfort(): LocalDate? {
         val journalfort = relevanteDatoer
             .find { it.datotype == DATO_JOURNALFORT }
@@ -200,10 +204,11 @@ data class Journalpost(
     fun isStatusFeilregistrert(): Boolean = journalstatus == JournalStatus.FEILREGISTRERT
     fun isStatusMottatt(): Boolean = journalstatus == JournalStatus.MOTTATT
     fun isStatusFerdigsstilt(): Boolean = journalstatus == JournalStatus.FERDIGSTILT
+    fun isStatusJournalfort(): Boolean = journalstatus == JournalStatus.JOURNALFOERT
     fun isStatusEkspedert(): Boolean = journalstatus == JournalStatus.EKSPEDERT
     fun kanTilknytteSaker(): Boolean = journalstatus == JournalStatus.JOURNALFOERT || journalstatus == JournalStatus.FERDIGSTILT || journalstatus == JournalStatus.EKSPEDERT
-    fun isInngaaendeDokument(): Boolean = journalposttype == "I"
-    fun isUtgaaendeDokument(): Boolean = journalposttype == "U"
+    fun isInngaaendeDokument(): Boolean = journalposttype == JournalpostType.I
+    fun isUtgaaendeDokument(): Boolean = journalposttype == JournalpostType.U
 
     fun tilJournalpostResponse(): JournalpostResponse {
         val journalpost = tilJournalpostDto()
@@ -372,6 +377,8 @@ data class Bruker(
     fun tilAktorDto(): AktorDto {
         return if (id != null) AktorDto(id!!, type ?: BrukerType.FNR.name) else throw JournalpostDataException("ingen id i $this")
     }
+
+    @JsonIgnore
     fun isAktoerId(): Boolean {
         return this.type == BrukerType.AKTOERID.name
     }
@@ -453,4 +460,17 @@ data class TilknyttetJournalpost(
 
 fun returDetaljerDOListDoToMap(returDetaljerLog: List<ReturDetaljerLogDO>): Map<String, String>{
     return mapOf("nokkel" to RETUR_DETALJER_KEY, "verdi" to jacksonObjectMapper().registerModule(JavaTimeModule()).writeValueAsString(returDetaljerLog))
+}
+
+enum class JournalpostType(var dekode: String) {
+    N("Notat"),
+    I("Inngående dokument"),
+    U("Utgående dokument")
+}
+
+enum class MottaksKanal {
+    NAV_NO,
+    NAV_NO_CHAT,
+    NAV_NO_UINNLOGGET,
+    SKAN_IM
 }
