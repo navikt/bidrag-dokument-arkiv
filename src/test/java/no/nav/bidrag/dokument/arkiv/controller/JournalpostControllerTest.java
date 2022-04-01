@@ -2,6 +2,7 @@ package no.nav.bidrag.dokument.arkiv.controller;
 
 import static no.nav.bidrag.dokument.arkiv.stubs.Stubs.SAKSNUMMER_JOURNALPOST;
 import static no.nav.bidrag.dokument.arkiv.stubs.TestDataKt.createDistribuerTilAdresse;
+import static no.nav.bidrag.dokument.arkiv.stubs.TestDataKt.createOppgaveDataWithSaksnummer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
@@ -16,6 +17,8 @@ import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsTidspunkt;
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsType;
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.JournalstatusDto;
+import no.nav.bidrag.dokument.arkiv.dto.OppgaveData;
+import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.dto.AktorDto;
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest;
@@ -350,6 +353,7 @@ class JournalpostControllerTest extends AbstractControllerTest {
     var xEnhet = "1234";
     var saksnummer1 = "200000";
     var saksnummer2 = "200001";
+    var saksnummer3 = "200003";
     var journalpostIdFraJson = 201028011L;
     var headersMedEnhet = new HttpHeaders();
     headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
@@ -358,14 +362,16 @@ class JournalpostControllerTest extends AbstractControllerTest {
     endreJournalpostCommand.setSkalJournalfores(true);
     endreJournalpostCommand.setTilknyttSaker(Arrays.asList(saksnummer1, saksnummer2));
 
-    stubs.mockSokOppgave();
+    stubs.mockSokOppgave(new OppgaveSokResponse(1, List.of(createOppgaveDataWithSaksnummer(saksnummer3))), HttpStatus.OK);
     stubs.mockOpprettOppgave(HttpStatus.OK);
+    stubs.mockOppdaterOppgave(HttpStatus.OK);
     stubs.mockSafResponseHentJournalpost(HttpStatus.OK);
     stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK);
     stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
     stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson);
     stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson);
     stubs.mockDokarkivProxyTilknyttRequest(journalpostIdFraJson);
+    stubs.mockBidragOrganisasjonSaksbehandler();
 
     // when
     var oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
@@ -386,7 +392,8 @@ class JournalpostControllerTest extends AbstractControllerTest {
         () -> stubs.verifyStub.dokarkivProxyTilknyttSakerKalt(journalpostIdFraJson, saksnummer2, "\"journalfoerendeEnhet\":\"4806\""),
         () -> stubs.verifyStub.oppgaveSokKalt(new Pair<>("tema", "BID"), new Pair<>("saksreferanse", saksnummer1), new Pair<>("saksreferanse", saksnummer2)),
         () -> stubs.verifyStub.oppgaveOpprettKalt("\"oppgavetype\":\"BEH_SAK\"", "\"saksreferanse\":\"200000\""),
-        () -> stubs.verifyStub.oppgaveOpprettKalt("\"oppgavetype\":\"BEH_SAK\"", "\"saksreferanse\":\"200001\"")
+        () -> stubs.verifyStub.oppgaveOpprettKalt("\"oppgavetype\":\"BEH_SAK\"", "\"saksreferanse\":\"200001\""),
+        () -> stubs.verifyStub.oppgaveOppdaterKalt(1,"Nytt dokument")
     );
   }
 

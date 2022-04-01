@@ -78,8 +78,8 @@ data class EndreForNyttDokumentRequest(private var oppgaveData: OppgaveData,
         tema = journalpost.tema,
         versjon = oppgaveData.versjon,
         beskrivelse = "--- ${LocalDateTime.now().format(NORSK_TIDSSTEMPEL_FORMAT)} $saksbehandlersInfo ---\r\n" +
-                "${lagDokumentOppgaveTittelForEndring("Nytt dokument", journalpost.tittel!!, journalpost.hentDatoRegistrert()!!)}\r\n\r\n" +
-                "$oppgaveData.beskrivelse"
+                "${lagDokumentOppgaveTittelForEndring("Nytt dokument", journalpost.tittel!!, journalpost.hentDatoRegistrert() ?: journalpost.hentDatoDokument()!!)}\r\n\r\n" +
+                "${oppgaveData.beskrivelse}"
 )
 
 @Suppress("unused") // used by jackson...

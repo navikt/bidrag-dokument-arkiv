@@ -147,6 +147,13 @@ data class Journalpost(
         return registrert?.somDato()
     }
 
+    fun hentDatoDokument(): LocalDate? {
+        val registrert = relevanteDatoer
+            .find { it.datotype == DATO_DOKUMENT }
+
+        return registrert?.somDato()
+    }
+
     fun hentDatoRetur(): LocalDate? {
         val returDato = relevanteDatoer.find { it.datotype == DATO_RETUR }
         return returDato?.somDato()

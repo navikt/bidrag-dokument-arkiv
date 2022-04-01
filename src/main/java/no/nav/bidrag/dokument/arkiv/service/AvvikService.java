@@ -11,6 +11,7 @@ import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.RegistrerReturRequest;
 import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
+import no.nav.bidrag.dokument.arkiv.model.AvvikDetaljException;
 import no.nav.bidrag.dokument.arkiv.model.AvvikNotSupportedException;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.FeilforSakFeiletException;
@@ -60,7 +61,7 @@ public class AvvikService {
       case OVERFOR_TIL_ANNEN_ENHET -> oppdater(avvikshendelseIntern.toOverforEnhetRequest());
       case ENDRE_FAGOMRADE -> endreFagomrade(journalpost, avvikshendelseIntern);
       case TREKK_JOURNALPOST -> trekkJournalpost(journalpost, avvikshendelseIntern);
-      case FEILFORE_SAK -> feilforSak(avvikshendelseIntern);
+      case FEILFORE_SAK -> feilregistrerSakstilknytning(avvikshendelseIntern);
       case REGISTRER_RETUR -> registrerRetur(journalpost, avvikshendelseIntern);
       default -> throw new AvvikNotSupportedException("Avvik %s ikke støttet".formatted(avvikshendelseIntern.getAvvikstype()));
     }
@@ -77,7 +78,7 @@ public class AvvikService {
   public void endreFagomrade(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
     if (journalpost.isInngaaendeDokument() && journalpost.isStatusJournalfort()){
       oppgaveService.opprettOverforJournalpostOppgave(journalpost, avvikshendelseIntern.getNyttFagomrade(), avvikshendelseIntern.getBeskrivelse());
-      feilforSak(avvikshendelseIntern);
+      feilregistrerSakstilknytning(avvikshendelseIntern);
     } else {
       oppdater(avvikshendelseIntern.toEndreFagomradeRequest());
     }
@@ -95,19 +96,32 @@ public class AvvikService {
   }
 
   public void trekkJournalpost(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
-    // Journalfør på GENERELL_SAK og feilfør sakstilknytning
-    if (journalpost.getBruker() == null){
-      throw new AvvikNotSupportedException("Kan ikke trekke journalpost uten bruker");
-    }
-    if (journalpost.getTema() == null){
-      throw new AvvikNotSupportedException("Kan ikke trekke journalpost uten tilhørende fagområde");
-    }
-    oppdater(avvikshendelseIntern.toKnyttTilGenerellSakRequest(journalpost.getTema(), journalpost.getBruker()));
+    // Journalfør på GENERELL_SAK og kanskje feilfør sakstilknytning
+    validateTrue(journalpost.getBruker() != null, new AvvikDetaljException("Kan ikke trekke journalpost uten bruker"));
+    validateTrue(journalpost.getTema() != null, new AvvikDetaljException("Kan ikke trekke journalpost uten tilhørende fagområde"));
+
+    knyttTilGenerellSak(avvikshendelseIntern, journalpost);
+    leggTilBegrunnelsePaaTittel(avvikshendelseIntern, journalpost);
+
     dokarkivConsumer.ferdigstill(new FerdigstillJournalpostRequest(avvikshendelseIntern.getJournalpostId(), avvikshendelseIntern.getSaksbehandlersEnhet()));
-    dokarkivConsumer.feilregistrerSakstilknytning(avvikshendelseIntern.getJournalpostId());
+
+    if (avvikshendelseIntern.getSkalFeilregistreres()){
+      feilregistrerSakstilknytning(avvikshendelseIntern);
+    }
   }
 
-  public void feilforSak(AvvikshendelseIntern avvikshendelseIntern){
+  public void knyttTilGenerellSak(AvvikshendelseIntern avvikshendelseIntern, Journalpost journalpost){
+    oppdater(avvikshendelseIntern.toKnyttTilGenerellSakRequest(journalpost.getTema(), journalpost.getBruker()));
+  }
+
+  public void leggTilBegrunnelsePaaTittel(AvvikshendelseIntern avvikshendelseIntern, Journalpost journalpost){
+    if (Strings.isNotEmpty(avvikshendelseIntern.getBeskrivelse())){
+      validateTrue(avvikshendelseIntern.getBeskrivelse().length() < 100, new AvvikDetaljException("Beskrivelse kan ikke være lengre enn 100 tegn"));
+      oppdater(avvikshendelseIntern.toLeggTilBegrunnelsePaaTittelRequest(journalpost.getTittel()));
+    }
+  }
+
+  public void feilregistrerSakstilknytning(AvvikshendelseIntern avvikshendelseIntern){
     var httpResponse = dokarkivConsumer.feilregistrerSakstilknytning(avvikshendelseIntern.getJournalpostId());
     if (!httpResponse.is2xxSuccessful()){
       throw new FeilforSakFeiletException(String.format("Feilregistrer sakstilknytning feilet for journalpostId %s", avvikshendelseIntern.getJournalpostId()));
@@ -125,5 +139,11 @@ public class AvvikService {
 
   public Boolean erGyldigAvviksBehandling(Journalpost journalpost, AvvikType avvikType){
     return journalpost.tilAvvik().contains(avvikType);
+  }
+
+  public void validateTrue(Boolean expression, RuntimeException throwable){
+    if (!expression){
+      throw throwable;
+    }
   }
 }

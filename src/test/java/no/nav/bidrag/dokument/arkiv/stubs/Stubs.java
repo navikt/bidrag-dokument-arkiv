@@ -291,6 +291,15 @@ public class Stubs {
       );
   }
 
+  public void mockOppdaterOppgave(HttpStatus status) {
+    stubFor(
+        patch(urlMatching("/oppgave/.*")).willReturn(
+            aClosedJsonResponse()
+                .withStatus(status.value())
+        )
+    );
+  }
+
   public void mockPersonResponse(PersonResponse personResponse, HttpStatus status) {
     try {
       stubFor(
@@ -315,6 +324,12 @@ public class Stubs {
       var requestPattern = postRequestedFor(urlMatching("/oppgave/.*"));
       Arrays.stream(contains).forEach(contain -> requestPattern.withRequestBody(new ContainsPattern(contain)));
       verify(requestPattern);
+    }
+
+    public void oppgaveOppdaterKalt(Integer count, String... contains){
+      var requestPattern = patchRequestedFor(urlMatching("/oppgave/.*"));
+      Arrays.stream(contains).forEach(contain -> requestPattern.withRequestBody(new ContainsPattern(contain)));
+      verify(count, requestPattern);
     }
     public void oppgaveSokIkkeKalt(){
       verify(0, getRequestedFor(urlMatching("/oppgave/.*")));
@@ -401,6 +416,14 @@ public class Stubs {
 
     public void dokarkivFeilregistrerKalt(Long journalpostId) {
       verify(
+          patchRequestedFor(urlMatching("/dokarkiv" + String.format(
+              DokarkivConsumer.URL_JOURNALPOSTAPI_V1_FEILREGISTRER,
+              journalpostId
+          ) + "/feilregistrerSakstilknytning"))
+      );
+    }
+    public void dokarkivFeilregistrerIkkeKalt(Long journalpostId) {
+      verify(0,
           patchRequestedFor(urlMatching("/dokarkiv" + String.format(
               DokarkivConsumer.URL_JOURNALPOSTAPI_V1_FEILREGISTRER,
               journalpostId

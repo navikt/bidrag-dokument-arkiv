@@ -7,6 +7,7 @@ import no.nav.bidrag.dokument.arkiv.dto.Dokument
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostType
+import no.nav.bidrag.dokument.arkiv.dto.OppgaveData
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 
@@ -74,4 +75,8 @@ fun opprettSafResponse(
         tittel = tittel,
         sak = sak
     )
+}
+
+fun createOppgaveDataWithSaksnummer(saksnummer: String): OppgaveData{
+    return OppgaveData(saksreferanse = saksnummer, id=2, versjon = 1, beskrivelse = "")
 }
