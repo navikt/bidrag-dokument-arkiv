@@ -1,5 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +20,7 @@ import no.nav.bidrag.dokument.arkiv.model.FeilforSakFeiletException;
 import no.nav.bidrag.dokument.arkiv.model.OppdaterJournalpostFeiletException;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.model.UgyldigAvvikException;
+import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager;
 import no.nav.bidrag.dokument.dto.AvvikType;
 import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse;
 import no.nav.bidrag.dokument.dto.JournalpostIkkeFunnetException;
@@ -34,11 +37,13 @@ public class AvvikService {
   public final HendelserProducer hendelserProducer;
   public final OppgaveService oppgaveService;
   private final DokarkivConsumer dokarkivConsumer;
+  private final SaksbehandlerInfoManager saksbehandlerInfoManager;
 
-  public AvvikService(ResourceByDiscriminator<JournalpostService> journalpostService, HendelserProducer hendelserProducer, OppgaveService oppgaveService, ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers) {
+  public AvvikService(ResourceByDiscriminator<JournalpostService> journalpostService, HendelserProducer hendelserProducer, OppgaveService oppgaveService, ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers, SaksbehandlerInfoManager saksbehandlerInfoManager) {
     this.journalpostService = journalpostService.get(Discriminator.REGULAR_USER);
     this.hendelserProducer = hendelserProducer;
     this.oppgaveService = oppgaveService;
+    this.saksbehandlerInfoManager = saksbehandlerInfoManager;
     this.dokarkivConsumer = dokarkivConsumers.get(Discriminator.REGULAR_USER);
   }
 
@@ -67,6 +72,7 @@ public class AvvikService {
     }
 
     hendelserProducer.publishJournalpostUpdated(journalpost.hentJournalpostIdLong());
+    SECURE_LOGGER.info("Avvik {} ble utført på journalpost {} av bruker {} og enhet {} med beskrivelse {}", avvikshendelseIntern.getAvvikstype(), avvikshendelseIntern.getJournalpostId(), saksbehandlerInfoManager.hentSaksbehandlerBrukerId(), avvikshendelseIntern.getSaksbehandlersEnhet(), avvikshendelseIntern.getBeskrivelse());
 
     return Optional.of(new BehandleAvvikshendelseResponse(avvikshendelseIntern.getAvvikstype()));
   }

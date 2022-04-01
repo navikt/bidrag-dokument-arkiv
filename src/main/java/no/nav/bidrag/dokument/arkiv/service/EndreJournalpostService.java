@@ -67,16 +67,16 @@ public class EndreJournalpostService {
 
   public void opprettBehandleDokumentOppgaveVedJournalforing(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost) {
     if (endreJournalpostCommand.skalJournalfores()) {
-      behandleDokument(journalpost);
+      opprettBehandleDokumentOppgave(journalpost);
     }
   }
 
-  private void behandleDokument(Journalpost journalpost) {
+  private void opprettBehandleDokumentOppgave(Journalpost journalpost) {
     if (journalpost.isInngaaendeDokument() && journalpost.hasSak()) {
       try {
         oppgaveService.behandleDokument(journalpost);
       } catch (HttpStatusCodeException e) {
-        LOGGER.warn("Feil oppstod i oppgave v1 ved behandling av oppgave, {}: {}", e.getClass().getSimpleName(), e.getMessage());
+        LOGGER.error("Det oppstod feil ved opprettelse av behandle dokument for journapost {}", journalpost.getJournalpostId(), e);
       }
     }
   }
