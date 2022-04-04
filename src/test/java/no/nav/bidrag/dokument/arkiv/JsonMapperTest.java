@@ -11,11 +11,13 @@ import java.util.Map;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostType;
 import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.query.DokumentoversiktFagsakQuery;
 import no.nav.bidrag.dokument.arkiv.query.JournalpostQuery;
 import no.nav.bidrag.dokument.dto.EndreDokument;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
+import no.nav.security.token.support.spring.test.EnableMockOAuth2Server;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,7 @@ import org.springframework.test.context.ActiveProfiles;
 @ActiveProfiles(PROFILE_TEST)
 @DisplayName("Mapping av json verdier")
 @SpringBootTest(classes = BidragDokumentArkivLocal.class)
+@EnableMockOAuth2Server
 class JsonMapperTest {
 
   @Autowired
@@ -35,7 +38,7 @@ class JsonMapperTest {
   void skalMappeOppdaterJournalpostTilJson() {
     var journalpost = new Journalpost();
     journalpost.setJournalstatus(JournalStatus.MOTTATT);
-    journalpost.setJournalposttype("I");
+    journalpost.setJournalposttype(JournalpostType.I);
     var endreDokument = new EndreDokument();
     endreDokument.setTittel("Tittelen på dokument");
     endreDokument.setDokId(55555);

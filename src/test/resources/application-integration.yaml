@@ -5,8 +5,25 @@ DOKARKIV_PROXY_URL: http://localhost:${wiremock.server.port}/dokarkivproxy
 ACCESS_TOKEN_URL: http://localhost:${wiremock.server.port}/sts
 BIDRAG_PERSON_URL: http://localhost:${wiremock.server.port}/person
 BIDRAG_ORGANISASJON_URL: http://localhost:${wiremock.server.port}/organisasjon
-
+AZURE_OPENID_CONFIG_ISSUER: http://localhost:${mock-oauth2-server.port}/aad
+SRVBIDRAG_USERNAME: srvbidrag
+SRVBIDRAG_PASSWORD: bareForTest
 no.nav.security.jwt:
+  sts:
+    properties:
+      url: ${ACCESS_TOKEN_URL}
+      username: ${SRVBIDRAG_USERNAME}
+      password: ${SRVBIDRAG_PASSWORD}
+  client:
+    registration:
+      pdl:
+        token-endpoint-url: ${AZURE_OPENID_CONFIG_ISSUER}
+        grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
+        scope: api://pdl/.default
+        authentication:
+          client-id: id
+          client-secret: secret
+          client-auth-method: client_secret_post
   issuer.isso:
     discovery_url: http://localhost:${mock-oauth2-server.port}/isso/.well-known/openid-configuration
     accepted_audience: aud-localhost

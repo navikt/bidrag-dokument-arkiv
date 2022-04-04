@@ -1,5 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.hendelser;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_KAFKA_TEST;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TEST;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -15,12 +16,13 @@ import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.Bruker;
 import no.nav.bidrag.dokument.arkiv.dto.GeografiskTilknytningResponse;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.MottaksKanal;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerInfoResponse;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelseListener;
-import no.nav.bidrag.dokument.arkiv.kafka.HendelsesType;
-import no.nav.bidrag.dokument.arkiv.kafka.MottaksKanal;
+import no.nav.bidrag.dokument.arkiv.model.HendelsesType;
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord;
+import no.nav.security.token.support.spring.test.EnableMockOAuth2Server;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +36,8 @@ import org.springframework.test.context.ActiveProfiles;
     properties = { "FEATURE_ENABLED=NONE" },
     classes = BidragDokumentArkivLocal.class
 )
-@ActiveProfiles(PROFILE_TEST)
+@EnableMockOAuth2Server
+@ActiveProfiles({PROFILE_TEST, PROFILE_KAFKA_TEST})
 public class FeatureToggleTest {
   @MockBean
   private KafkaTemplate<String, String> kafkaTemplateMock;

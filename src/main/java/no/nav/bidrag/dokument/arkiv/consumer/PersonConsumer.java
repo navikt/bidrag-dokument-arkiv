@@ -8,6 +8,7 @@ import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.web.client.RestTemplate;
 
 public class PersonConsumer {
@@ -23,9 +24,9 @@ public class PersonConsumer {
     return new HttpResponse<>(personResponse);
   }
 
-  public void leggTilSikkerhet(HttpHeaderRestTemplate.ValueGenerator valueGenerator) {
+  public void leggTilInterceptor(ClientHttpRequestInterceptor requestInterceptor) {
     if (restTemplate instanceof HttpHeaderRestTemplate) {
-      ((HttpHeaderRestTemplate) restTemplate).addHeaderGenerator(HttpHeaders.AUTHORIZATION, valueGenerator);
+      restTemplate.getInterceptors().add(requestInterceptor);
     }
   }
 }

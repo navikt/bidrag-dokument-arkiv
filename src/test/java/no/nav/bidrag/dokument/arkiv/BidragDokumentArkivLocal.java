@@ -5,15 +5,15 @@ import static org.springframework.context.annotation.FilterType.ASSIGNABLE_TYPE;
 
 import no.nav.security.token.support.spring.api.EnableJwtTokenValidation;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = { SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class })
 @EnableJwtTokenValidation(ignore = {"springfox.documentation.swagger.web.ApiResourceController"})
-@ComponentScan(excludeFilters = {@Filter(type = ASSIGNABLE_TYPE, value = BidragDokumentArkiv.class)})
-@EmbeddedKafka
 public class BidragDokumentArkivLocal {
   public static final String PROFILE_INTEGRATION= "integration";
 

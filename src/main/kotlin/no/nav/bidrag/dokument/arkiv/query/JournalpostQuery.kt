@@ -25,6 +25,9 @@ data class JournalpostQuery(val journalpostId: Long) : GraphQuery() {
               journalforendeEnhet
               journalfortAvNavn
               journalpostId
+              behandlingstema
+              opprettetAvNavn
+              eksternReferanseId
               kanal
               antallRetur
               journalposttype

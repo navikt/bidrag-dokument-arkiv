@@ -8,12 +8,9 @@ import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TES
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Optional;
-import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig;
+import no.nav.bidrag.commons.security.service.SecurityTokenService;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker;
 import no.nav.bidrag.dokument.arkiv.dto.Bruker;
@@ -23,50 +20,41 @@ import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.model.SafException;
-import no.nav.bidrag.dokument.arkiv.security.OidcTokenGenerator;
-import no.nav.bidrag.dokument.arkiv.security.TokenForBasicAuthenticationGenerator;
-import no.nav.security.token.support.core.context.TokenValidationContext;
-import no.nav.security.token.support.core.jwt.JwtToken;
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 
-@ActiveProfiles(PROFILE_TEST)
+@ActiveProfiles({PROFILE_TEST})
 @DisplayName("SafConsumer")
 @SpringBootTest(
     classes = {BidragDokumentArkivLocal.class},
-    properties = {"SAF_GRAPHQL_URL=http://localhost:12345/query"},
-    webEnvironment = WebEnvironment.DEFINED_PORT
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
-@AutoConfigureWireMock(port = 12345)
+@AutoConfigureWireMock(port = 0)
 @EnableMockOAuth2Server
+@Disabled
 class SafConsumerTest {
 
-  @MockBean
-  private OidcTokenGenerator oidcTokenGenerator;
-  @MockBean
-  private TokenForBasicAuthenticationGenerator tokenForBasicAuthenticationGenerator;
   @Autowired
   private ResourceByDiscriminator<SafConsumer> safConsumers;
 
+  @MockBean
+  SecurityTokenService securityTokenService;
+
   @BeforeEach
   void mockTokenValidation() {
-    var tokenValidationContextMock = mock(TokenValidationContext.class);
-    var jwtTokenMock = mock(JwtToken.class);
-
-    when(oidcTokenGenerator.getBearerToken()).thenReturn("token");
-    when(tokenForBasicAuthenticationGenerator.generateToken()).thenReturn("token");
-    when(tokenValidationContextMock.getJwtTokenAsOptional(BidragDokumentArkivConfig.ISSUER_ISSO)).thenReturn(Optional.of(jwtTokenMock));
-    when(jwtTokenMock.getTokenAsString()).thenReturn("A very secure token");
+    when(securityTokenService.serviceUserAuthTokenInterceptor()).thenReturn((request, body, execution) -> execution.execute(request, body));
+    when(securityTokenService.authTokenInterceptor()).thenReturn((request, body, execution) -> execution.execute(request, body));
+    when(securityTokenService.navConsumerTokenInterceptor()).thenReturn((request, body, execution) -> execution.execute(request, body));
   }
 
   @Test
@@ -83,7 +71,7 @@ class SafConsumerTest {
   }
 
   private void stubEmptyQueryResult() {
-    stubFor(post(urlEqualTo("/query/"))
+    stubFor(post(urlEqualTo("/saf/"))
         .willReturn(aResponse().withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
             .withStatus(200)
             .withBody(String.join(
@@ -284,31 +272,5 @@ class SafConsumerTest {
       assertThat(e.getMessage()).isEqualTo("Fant ikke journalpost i fagarkivet. journalpostId=910536260");
       assertThat(e.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
     }
-  }
-
-  @Test
-  @DisplayName("skal generere Nav-Consumer-Token header ved query kall")
-  void skalLeggeTokenBlantHeaders() {
-    // gitt
-    stubEmptyQueryResult();
-
-    // når
-    safConsumers.get(Discriminator.REGULAR_USER).finnJournalposter("101", "BID");
-
-    // så
-    verify(oidcTokenGenerator).getBearerToken();
-  }
-
-  @Test
-  @DisplayName("skal generere Nav-Consumer-Token header ved query kall")
-  void skalLeggeServiceBrukerTokenBlantHeaders() {
-    // gitt
-    stubEmptyQueryResult();
-
-    // når
-    safConsumers.get(Discriminator.SERVICE_USER).finnJournalposter("101", "BID");
-
-    // så
-    verify(tokenForBasicAuthenticationGenerator).generateToken();
   }
 }

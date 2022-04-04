@@ -7,6 +7,10 @@ metadata:
     team: bidrag
 spec:
   image: {{ image }}
+  azure:
+    application:
+      enabled: true
+  webproxy: true
   secureLogs:
     enabled: true
   kafka:
