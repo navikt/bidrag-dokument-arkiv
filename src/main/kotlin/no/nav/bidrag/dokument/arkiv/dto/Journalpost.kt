@@ -105,6 +105,7 @@ data class Journalpost(
     }
     fun isSentralPrint() = hentKanal() == Kanal.SENTRAL_UTSKRIFT
     fun harJournalforendeEnhetLik(enhet: String) = journalforendeEnhet == enhet
+    fun hasTemaLik(likTema: String) = tema == likTema
     fun hentJournalpostIdLong() = journalpostId?.toLong()
     fun hentJournalpostIdMedPrefix() = "JOARK-"+journalpostId
     fun hentJournalpostType() = if (journalposttype == JournalpostType.N) "X" else journalposttype?.name
@@ -206,7 +207,8 @@ data class Journalpost(
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
         if (!isStatusMottatt() && hasSak() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.FEILFORE_SAK)
-        if (!isUtgaaendeDokument() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.ENDRE_FAGOMRADE)
+        if (isInngaaendeDokument() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.ENDRE_FAGOMRADE)
+        if (isInngaaendeDokument() && isStatusJournalfort()) avvikTypeList.add(AvvikType.SEND_TIL_FAGOMRADE)
         return avvikTypeList;
     }
 

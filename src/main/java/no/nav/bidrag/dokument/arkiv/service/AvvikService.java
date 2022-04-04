@@ -65,6 +65,7 @@ public class AvvikService {
     switch (avvikshendelseIntern.getAvvikstype()){
       case OVERFOR_TIL_ANNEN_ENHET -> oppdater(avvikshendelseIntern.toOverforEnhetRequest());
       case ENDRE_FAGOMRADE -> endreFagomrade(journalpost, avvikshendelseIntern);
+      case SEND_TIL_FAGOMRADE -> sendTilFagomrade(journalpost, avvikshendelseIntern);
       case TREKK_JOURNALPOST -> trekkJournalpost(journalpost, avvikshendelseIntern);
       case FEILFORE_SAK -> feilregistrerSakstilknytning(avvikshendelseIntern);
       case REGISTRER_RETUR -> registrerRetur(journalpost, avvikshendelseIntern);
@@ -77,14 +78,22 @@ public class AvvikService {
     return Optional.of(new BehandleAvvikshendelseResponse(avvikshendelseIntern.getAvvikstype()));
   }
 
-  public void kopierTilAnnenFagomrade(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
-    oppgaveService.opprettOverforJournalpostOppgave(journalpost, avvikshendelseIntern.getNyttFagomrade(), avvikshendelseIntern.getBeskrivelse());
+  public void sendTilFagomrade(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
+    if (!journalpost.hasTemaLik(avvikshendelseIntern.getNyttFagomrade())) {
+      oppgaveService.opprettOverforJournalpostOppgave(journalpost, avvikshendelseIntern.getNyttFagomrade(), avvikshendelseIntern.getBeskrivelse());
+    }
+  }
+
+  public void sendTilFagomradeOgFeilregistrer(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
+    if (!journalpost.hasTemaLik(avvikshendelseIntern.getNyttFagomrade())){
+      sendTilFagomrade(journalpost, avvikshendelseIntern);
+      feilregistrerSakstilknytning(avvikshendelseIntern);
+    }
   }
 
   public void endreFagomrade(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
     if (journalpost.isInngaaendeDokument() && journalpost.isStatusJournalfort()){
-      oppgaveService.opprettOverforJournalpostOppgave(journalpost, avvikshendelseIntern.getNyttFagomrade(), avvikshendelseIntern.getBeskrivelse());
-      feilregistrerSakstilknytning(avvikshendelseIntern);
+      sendTilFagomradeOgFeilregistrer(journalpost, avvikshendelseIntern);
     } else {
       oppdater(avvikshendelseIntern.toEndreFagomradeRequest());
     }
