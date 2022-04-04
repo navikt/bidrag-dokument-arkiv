@@ -206,7 +206,7 @@ data class Journalpost(
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
         if (!isStatusMottatt() && hasSak() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.FEILFORE_SAK)
-        if (!isUtgaaendeDokument()) avvikTypeList.add(AvvikType.ENDRE_FAGOMRADE)
+        if (!isUtgaaendeDokument() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.ENDRE_FAGOMRADE)
         return avvikTypeList;
     }
 
