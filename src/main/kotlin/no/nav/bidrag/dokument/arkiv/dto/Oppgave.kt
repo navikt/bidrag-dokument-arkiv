@@ -118,6 +118,7 @@ data class OpprettVurderDokumentOppgaveRequest(
         prioritet = Prioritet.NORM.name,
         tildeltEnhetsnr = journalpost.journalforendeEnhet,
         opprettetAvEnhetsnr = saksbehandlerMedEnhet.enhetsnummer,
+        fristFerdigstillelse = LocalDate.now().plusDays(1).toString(),
         beskrivelse = lagVurderDokumentOppgaveBeskrivelse(saksbehandlerMedEnhet, journalpost.dokumenter[0].brevkode, journalpost.tittel!!, kommentar, journalpost.hentDatoRegistrert() ?: LocalDate.now())
     )
 
