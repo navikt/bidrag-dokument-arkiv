@@ -246,7 +246,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
-        () -> stubs.verifyStub.oppgaveOpprettKalt(OppgaveType.VUR_KONS_YTE.name()),
+        () -> stubs.verifyStub.oppgaveOpprettKalt(OppgaveType.VUR.name()),
         () -> stubs.verifyStub.dokarkivFeilregistrerKalt(journalpostIdFraJson),
         () -> verify(kafkaTemplateMock).send(eq(topicJournalpost), eq("JOARK-" + journalpostIdFraJson), any())
     );

@@ -10,7 +10,7 @@ import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveData;
 import no.nav.bidrag.dokument.arkiv.dto.OpprettBehandleDokumentOppgaveRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OpprettOppgaveRequest;
-import no.nav.bidrag.dokument.arkiv.dto.OpprettVurderKonsekvensYtelseOppgaveRequest;
+import no.nav.bidrag.dokument.arkiv.dto.OpprettVurderDokumentOppgaveRequest;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.arkiv.dto.Saksbehandler;
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerMedEnhet;
@@ -18,7 +18,6 @@ import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.OppgaveSokParametre;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager;
-import no.nav.bidrag.dokument.dto.JournalpostBeskrivelseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +40,7 @@ public class OppgaveService {
 
   public void opprettOverforJournalpostOppgave(Journalpost journalpost, String tema, String kommentar) {
     var aktorId = hentAktorId(journalpost.hentGjelderId());
-    opprettOppgave(new OpprettVurderKonsekvensYtelseOppgaveRequest(
+    opprettOppgave(new OpprettVurderDokumentOppgaveRequest(
         journalpost,
         tema,
         aktorId,

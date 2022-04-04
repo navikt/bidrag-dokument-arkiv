@@ -106,7 +106,7 @@ sealed class OpprettOppgaveRequest(
 }
 
 @Suppress("unused") // påkrevd felt som brukes av jackson men som ikke brukes aktivt
-data class OpprettVurderKonsekvensYtelseOppgaveRequest(
+data class OpprettVurderDokumentOppgaveRequest(
     private var journalpost: Journalpost,
     override var tema: String,
     var aktoerId: String,
@@ -114,11 +114,11 @@ data class OpprettVurderKonsekvensYtelseOppgaveRequest(
     private var kommentar: String?):
     OpprettOppgaveRequest(
         journalpostId = journalpost.journalpostId!!,
-        oppgavetype = OppgaveType.VUR_KONS_YTE,
+        oppgavetype = OppgaveType.VUR,
         prioritet = Prioritet.NORM.name,
         tildeltEnhetsnr = journalpost.journalforendeEnhet,
-        opprettetAvEnhetsnr = saksbehandlerMedEnhet.enhetsnummer!!,
-        beskrivelse = lagVurderKonskevensYtelseOppgaveTittel(journalpost.tittel!!, kommentar?:"")
+        opprettetAvEnhetsnr = saksbehandlerMedEnhet.enhetsnummer,
+        beskrivelse = lagVurderDokumentOppgaveBeskrivelse(saksbehandlerMedEnhet, journalpost.dokumenter[0].brevkode, journalpost.tittel!!, kommentar, journalpost.hentDatoRegistrert() ?: LocalDate.now())
     )
 
 
@@ -145,14 +145,20 @@ internal fun lagDokumentOppgaveTittelForEndring(oppgaveNavn: String, dokumentbes
 internal fun lagDokumentOppgaveTittel(oppgaveNavn: String, dokumentbeskrivelse: String, dokumentdato: LocalDate) =
     "$oppgaveNavn ($dokumentbeskrivelse) mottatt ${dokumentdato.format(NORSK_DATO_FORMAT)}"
 
-internal fun lagVurderKonskevensYtelseOppgaveTittel(dokumentbeskrivelse: String, kommentar: String): String {
-    return "--- ${LocalDate.now().format(NORSK_DATO_FORMAT)} - Opprettet av Bidrag ---\n Journalpost ($dokumentbeskrivelse) - $kommentar"
+internal fun lagVurderDokumentOppgaveBeskrivelse(saksbehandlerMedEnhet: SaksbehandlerMedEnhet, brevKode: String?, dokumentTittel: String?, kommentar: String?, regDato: LocalDate): String {
+    var description = "--- ${LocalDate.now().format(NORSK_DATO_FORMAT)} ${saksbehandlerMedEnhet.hentSaksbehandlerInfo()} ---\n $brevKode $dokumentTittel"
+    if (kommentar != null){
+        description += "\n\n $kommentar"
+    }
+    description += "\n\n Reg.dato: ${regDato.format(NORSK_DATO_FORMAT)}"
+    return description
 }
 
 
 enum class OppgaveType {
     BEH_SAK,
-    VUR_KONS_YTE
+    VUR_KONS_YTE,
+    VUR
 }
 
 enum class Prioritet {

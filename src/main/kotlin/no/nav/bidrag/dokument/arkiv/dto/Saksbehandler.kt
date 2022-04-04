@@ -8,8 +8,11 @@ data class Saksbehandler(
     fun hentIdentMedNavn() = "$ident - $navn"
     fun hentSaksbehandlerInfo(journalforendeEnhet: String) = "$navn ($ident - $journalforendeEnhet)"
     fun tilEnhet(enhetsnummer: String?): SaksbehandlerMedEnhet {
-        return SaksbehandlerMedEnhet(this, enhetsnummer)
+        return SaksbehandlerMedEnhet(this, enhetsnummer?:"9999")
     }
 }
 
-data class SaksbehandlerMedEnhet(val saksbehandler: Saksbehandler, val enhetsnummer: String?)
+data class SaksbehandlerMedEnhet(val saksbehandler: Saksbehandler, val enhetsnummer: String){
+    fun hentSaksbehandlerInfo() = saksbehandler.hentSaksbehandlerInfo(enhetsnummer)
+
+}
