@@ -1,7 +1,13 @@
 package no.nav.bidrag.dokument.arkiv.aop;
 
 import no.nav.bidrag.dokument.arkiv.model.HttpStatusException;
+import no.nav.bidrag.dokument.arkiv.model.JournalIkkeFunnetException;
+import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
+import no.nav.bidrag.dokument.arkiv.model.KnyttTilSakManglerTemaException;
+import no.nav.bidrag.dokument.arkiv.model.OppdaterJournalpostFeiletFunksjoneltException;
+import no.nav.bidrag.dokument.arkiv.model.UgyldigAvvikException;
 import no.nav.bidrag.dokument.arkiv.model.ViolationException;
+import no.nav.security.token.support.spring.validation.interceptor.JwtTokenUnauthorizedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -39,6 +45,17 @@ public class HttpStatusRestControllerAdvice {
   }
 
   @ResponseBody
+  @ExceptionHandler(JwtTokenUnauthorizedException.class)
+  public ResponseEntity<?> handleUnauthorizedException(Exception exception) {
+    LOGGER.warn(exception.getMessage());
+
+    return ResponseEntity
+        .status(HttpStatus.UNAUTHORIZED)
+        .header(HttpHeaders.WARNING, exception.getMessage())
+        .build();
+  }
+
+  @ResponseBody
   @ExceptionHandler
   public ResponseEntity<?> handleIllegalArgumentException(IllegalArgumentException illegalArgumentException) {
     LOGGER.warn(illegalArgumentException.getMessage());
@@ -59,6 +76,29 @@ public class HttpStatusRestControllerAdvice {
         .header(HttpHeaders.WARNING, httpStatusException.getMessage())
         .build();
   }
+
+  @ResponseBody
+  @ExceptionHandler({KnyttTilSakManglerTemaException.class, OppdaterJournalpostFeiletFunksjoneltException.class, UgyldigAvvikException.class})
+  public ResponseEntity<?> ugyldigInput(Exception exception) {
+    LOGGER.warn(exception.getMessage());
+
+    return ResponseEntity
+        .status(HttpStatus.BAD_REQUEST)
+        .header(HttpHeaders.WARNING, exception.getMessage())
+        .build();
+  }
+
+  @ResponseBody
+  @ExceptionHandler({JournalIkkeFunnetException.class, JournalpostIkkeFunnetException.class})
+  public ResponseEntity<?> journalpostIkkeFunnet(Exception exception) {
+    LOGGER.warn(exception.getMessage());
+
+    return ResponseEntity
+        .status(HttpStatus.NOT_FOUND)
+        .header(HttpHeaders.WARNING, exception.getMessage())
+        .build();
+  }
+
 
   @ResponseBody
   @ExceptionHandler

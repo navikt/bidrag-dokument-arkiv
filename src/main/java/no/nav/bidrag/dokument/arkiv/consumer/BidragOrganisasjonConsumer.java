@@ -4,7 +4,6 @@ import static no.nav.bidrag.dokument.arkiv.CacheConfig.GEOGRAFISK_ENHET_CACHE;
 import static no.nav.bidrag.dokument.arkiv.CacheConfig.SAKSBEHANDLERINFO_CACHE;
 
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
-import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.dto.GeografiskTilknytningResponse;
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerInfoResponse;
 import org.springframework.cache.annotation.Cacheable;
@@ -21,14 +20,13 @@ public class BidragOrganisasjonConsumer {
   }
 
   @Cacheable(GEOGRAFISK_ENHET_CACHE)
-  public HttpResponse<GeografiskTilknytningResponse> hentGeografiskEnhet(String personId){
+  public GeografiskTilknytningResponse hentGeografiskEnhet(String personId){
       var response = restTemplate.exchange(String.format(ARBEIDSFORDELING_URL, personId), HttpMethod.GET, null, GeografiskTilknytningResponse.class);
-      return new HttpResponse<>(response);
+      return response.getBody();
   }
 
   @Cacheable(SAKSBEHANDLERINFO_CACHE)
-  public HttpResponse<SaksbehandlerInfoResponse> hentSaksbehandlerInfo(String saksbehandlerIdent){
-    var response = restTemplate.exchange(String.format(SAKSBEHANDLER_INFO, saksbehandlerIdent), HttpMethod.GET, null, SaksbehandlerInfoResponse.class);
-    return new HttpResponse<>(response);
+  public SaksbehandlerInfoResponse hentSaksbehandlerInfo(String saksbehandlerIdent){
+    return restTemplate.exchange(String.format(SAKSBEHANDLER_INFO, saksbehandlerIdent), HttpMethod.GET, null, SaksbehandlerInfoResponse.class).getBody();
   }
 }

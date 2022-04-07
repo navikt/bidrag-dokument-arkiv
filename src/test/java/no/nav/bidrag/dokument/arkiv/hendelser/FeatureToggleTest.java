@@ -58,9 +58,9 @@ public class FeatureToggleTest {
     var brukerId = "555555";
     var jfEnhet = "4833";
     mockSafResponse(journalpostId, brukerId,"AKTOERID", jfEnhet);
-    when(dokarkivConsumer.endre(any())).thenReturn(HttpResponse.from(HttpStatus.OK, new OppdaterJournalpostResponse(journalpostId)));
-    when(organisasjonConsumer.hentGeografiskEnhet(any())).thenReturn(HttpResponse.from(HttpStatus.OK, new GeografiskTilknytningResponse("4806", "navn")));
-    when(organisasjonConsumer.hentSaksbehandlerInfo(any())).thenReturn(HttpResponse.from(HttpStatus.OK, new SaksbehandlerInfoResponse("123213", "navn")));
+    when(dokarkivConsumer.endre(any())).thenReturn(new OppdaterJournalpostResponse(journalpostId));
+    when(organisasjonConsumer.hentGeografiskEnhet(any())).thenReturn(new GeografiskTilknytningResponse("4806", "navn"));
+    when(organisasjonConsumer.hentSaksbehandlerInfo(any())).thenReturn(new SaksbehandlerInfoResponse("123213", "navn"));
     JournalfoeringHendelseRecord record = new JournalfoeringHendelseRecord();
     record.setJournalpostId(journalpostId);
     record.setHendelsesType(HendelsesType.JOURNALPOST_MOTTATT.getHendelsesType());

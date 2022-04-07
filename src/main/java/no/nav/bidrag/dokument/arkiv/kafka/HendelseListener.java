@@ -40,8 +40,11 @@ public class HendelseListener {
   private final DokarkivConsumer dokarkivConsumer;
   private final JournalpostService journalpostService;
 
-  public HendelseListener(HendelserProducer producer, MeterRegistry registry,
-      BidragOrganisasjonConsumer bidragOrganisasjonConsumer, ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers,
+  public HendelseListener(
+      HendelserProducer producer,
+      MeterRegistry registry,
+      BidragOrganisasjonConsumer bidragOrganisasjonConsumer,
+      ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers,
       ResourceByDiscriminator<JournalpostService> journalpostServices) {
     this.producer = producer;
     this.meterRegistry = registry;
@@ -89,7 +92,9 @@ public class HendelseListener {
   }
 
   private void behandleJournalpostFraHendelse(Journalpost journalpost){
-    oppdaterJournalpostMedPersonGeografiskEnhet(journalpost);
+    if (journalpost.isStatusMottatt()){
+      oppdaterJournalpostMedPersonGeografiskEnhet(journalpost);
+    }
     producer.publishJournalpostUpdated(journalpost);
   }
 
@@ -98,19 +103,11 @@ public class HendelseListener {
       return null;
     }
 
-    var response = bidragOrganisasjonConsumer.hentGeografiskEnhet(personId);
-    if (!response.is2xxSuccessful() && response.fetchBody().isEmpty()){
-      return null;
-    }
-    return response.fetchBody().get().getEnhetIdent();
+    return bidragOrganisasjonConsumer.hentGeografiskEnhet(personId).getEnhetIdent();
   }
 
   private Journalpost hentJournalpost(Long journalpostId){
-    var journalpostOptional = journalpostService.hentJournalpostMedAktorId(journalpostId);
-    if (journalpostOptional.isEmpty()) {
-      throw new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId));
-    }
-    return journalpostOptional.get();
+    return journalpostService.hentJournalpostMedAktorId(journalpostId).orElseThrow(()->new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId)));
   }
 
   private String hentBrukerId(Journalpost journalpost){
@@ -123,14 +120,11 @@ public class HendelseListener {
   private void oppdaterJournalpostMedPersonGeografiskEnhet(Journalpost journalpost){
     var brukerId = hentBrukerId(journalpost);
     var geografiskEnhet = hentGeografiskEnhet(brukerId);
-    if (geografiskEnhet != null && journalpost.isStatusMottatt() && !journalpost.harJournalforendeEnhetLik(geografiskEnhet)){
+    if (geografiskEnhet != null && !journalpost.harJournalforendeEnhetLik(geografiskEnhet)){
       LOGGER.info("Oppdaterer journalpost {} enhet fra {} til {}", journalpost.getJournalpostId(), journalpost.getJournalforendeEnhet(), geografiskEnhet);
-      var response = dokarkivConsumer.endre(new OverforEnhetRequest(journalpost.hentJournalpostIdLong(), geografiskEnhet));
-      if (response.is2xxSuccessful()) {
-        journalpost.setJournalforendeEnhet(geografiskEnhet);
-      }
+      dokarkivConsumer.endre(new OverforEnhetRequest(journalpost.hentJournalpostIdLong(), geografiskEnhet));
+      journalpost.setJournalforendeEnhet(geografiskEnhet);
     }
-
   }
 
   private boolean erOpprettetAvNKS(JournalfoeringHendelseRecord record) {
