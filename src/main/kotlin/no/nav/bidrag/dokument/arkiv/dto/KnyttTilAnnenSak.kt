@@ -1,16 +1,19 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
+import no.nav.bidrag.dokument.arkiv.model.KnyttTilSakFeiletException
+
 data class KnyttTilAnnenSakRequest(
     var fagsakId: String,
     var journalfoerendeEnhet: String,
     var bruker: KnyttTilBruker,
     var tema: String
 ){
-    constructor(saksnummer: String, journalpost: Journalpost) : this(
+    constructor(saksnummer: String, journalpost: Journalpost) : this(saksnummer, journalpost, null)
+    constructor(saksnummer: String, journalpost: Journalpost, tema: String?) : this(
         fagsakId = saksnummer,
         journalfoerendeEnhet = journalpost.journalforendeEnhet ?: "",
         bruker = KnyttTilBruker(journalpost.bruker?.id, journalpost.bruker?.type),
-        tema = journalpost.tema ?: ""
+        tema = tema?: journalpost.tema ?: throw KnyttTilSakFeiletException("Kunne ikke knytte journalpost til annen sak. Journalpost mangler tema. ")
     )
     var sakstype: String = "FAGSAK"
     var fagsaksystem: String = "BISYS"

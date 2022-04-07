@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.bidrag.dokument.arkiv.model.JournalpostDataException
+import no.nav.bidrag.dokument.arkiv.model.ViolationException
 import no.nav.bidrag.dokument.arkiv.utils.DateUtils
 import no.nav.bidrag.dokument.arkiv.utils.JsonMapper.fromJsonString
 import no.nav.bidrag.dokument.arkiv.utils.JsonMapper.toJsonString
@@ -104,6 +105,7 @@ data class Journalpost(
     }
     fun isSentralPrint() = hentKanal() == Kanal.SENTRAL_UTSKRIFT
     fun harJournalforendeEnhetLik(enhet: String) = journalforendeEnhet == enhet
+    fun isTemaEqualTo(likTema: String) = tema == likTema
     fun hentJournalpostIdLong() = journalpostId?.toLong()
     fun hentJournalpostIdMedPrefix() = "JOARK-"+journalpostId
     fun hentJournalpostType() = if (journalposttype == JournalpostType.N) "X" else journalposttype?.name
@@ -216,6 +218,7 @@ data class Journalpost(
     fun isStatusMottatt(): Boolean = journalstatus == JournalStatus.MOTTATT
     fun isStatusFerdigsstilt(): Boolean = journalstatus == JournalStatus.FERDIGSTILT
     fun isStatusJournalfort(): Boolean = journalstatus == JournalStatus.JOURNALFOERT
+    fun isInngaaendeJournalfort(): Boolean = isInngaaendeDokument() && isStatusJournalfort()
     fun isStatusEkspedert(): Boolean = journalstatus == JournalStatus.EKSPEDERT
     fun kanTilknytteSaker(): Boolean = journalstatus == JournalStatus.JOURNALFOERT || journalstatus == JournalStatus.FERDIGSTILT || journalstatus == JournalStatus.EKSPEDERT
     fun isInngaaendeDokument(): Boolean = journalposttype == JournalpostType.I
@@ -246,6 +249,10 @@ data class Journalpost(
     private fun erTilknyttetSak(saksnummer: String?) = sak?.fagsakId == saksnummer
     fun hentAvsenderNavn() = avsenderMottaker?.navn
     fun erIkkeTilknyttetSakNarOppgitt(saksnummer: String?) = if (saksnummer == null) false else !erTilknyttetSak(saksnummer)
+    fun kanJournalfores(journalpost: Journalpost): Boolean{
+        return journalpost.isStatusMottatt() && journalpost.hasSak();
+    }
+
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -448,7 +455,6 @@ data class EndreJournalpostCommandIntern(
     val enhet: String?,
     val endreAdresse: DistribuertTilAdresseDo?
 ) {
-    constructor(endreAdresse: DistribuertTilAdresseDo): this(EndreJournalpostCommand(), null, endreAdresse)
     constructor(endreJournalpostCommand: EndreJournalpostCommand, enhet: String): this(endreJournalpostCommand, enhet, null)
     fun skalJournalfores() = endreJournalpostCommand.skalJournalfores
     fun hentAvsenderNavn(journalpost: Journalpost) = endreJournalpostCommand.avsenderNavn ?: journalpost.hentAvsenderNavn()
@@ -459,6 +465,29 @@ data class EndreJournalpostCommandIntern(
     fun hentFagomrade() = endreJournalpostCommand.fagomrade
     fun hentGjelder() = endreJournalpostCommand.gjelder
     fun hentGjelderType() = if (endreJournalpostCommand.gjelderType != null) endreJournalpostCommand.gjelderType!! else "FNR"
+
+    fun sjekkGyldigEndring(journalpost: Journalpost){
+        val violations = mutableListOf<String>()
+
+        if (skalJournalfores()){
+            if (!journalpost.isStatusMottatt()){
+                violations.add("Journalpost med journalstatus ${journalpost.journalstatus} kan ikke journalføres")
+            }
+            if (!journalpost.hasSak() && endreJournalpostCommand.tilknyttSaker.isEmpty()){
+                violations.add("Kan ikke registrere journalpost uten sak")
+            }
+            if (journalpost.bruker == null && endreJournalpostCommand.manglerGjelder()) {
+                violations.add("Kan ikke registrere journalpost når det mangler gjelder")
+            }
+        } else if (journalpost.isStatusMottatt()){
+            if (endreJournalpostCommand.tilknyttSaker.size > 1){
+                violations.add("Kan ikke lagre journalpost med flere saker uten å journalføre")
+            }
+        }
+        if (violations.isNotEmpty()) {
+            throw ViolationException(violations)
+        }
+    }
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)

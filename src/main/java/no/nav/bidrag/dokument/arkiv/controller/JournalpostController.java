@@ -23,6 +23,7 @@ import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.service.AvvikService;
 import no.nav.bidrag.dokument.arkiv.service.DistribuerJournalpostService;
+import no.nav.bidrag.dokument.arkiv.service.EndreJournalpostService;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.bidrag.dokument.dto.AvvikType;
 import no.nav.bidrag.dokument.dto.Avvikshendelse;
@@ -60,11 +61,15 @@ public class JournalpostController {
   public static final String ROOT_JOURNAL = "/journal";
 
   private final JournalpostService journalpostService;
+  private final EndreJournalpostService endreJournalpostService;
   private final AvvikService avvikService;
   private final DistribuerJournalpostService distribuerJournalpostService;
 
-  public JournalpostController(ResourceByDiscriminator<JournalpostService> journalpostService, AvvikService avvikService, DistribuerJournalpostService distribuerJournalpostService) {
+  public JournalpostController(ResourceByDiscriminator<JournalpostService> journalpostService,
+      EndreJournalpostService endreJournalpostService, AvvikService avvikService,
+      DistribuerJournalpostService distribuerJournalpostService) {
     this.journalpostService = journalpostService.get(Discriminator.REGULAR_USER);
+    this.endreJournalpostService = endreJournalpostService;
     this.avvikService = avvikService;
     this.distribuerJournalpostService = distribuerJournalpostService;
   }
@@ -238,7 +243,7 @@ public class JournalpostController {
           .build();
     }
 
-    var endreJournalpostHttpResponse = journalpostService.endre(
+    var endreJournalpostHttpResponse = endreJournalpostService.endre(
         Long.valueOf(kildesystemIdenfikator.hentJournalpostId()), new EndreJournalpostCommandIntern(endreJournalpostCommand, enhet)
     );
 
