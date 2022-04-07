@@ -6,17 +6,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.Bruker;
 import no.nav.bidrag.dokument.arkiv.dto.BrukerType;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
-import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostDistribusjonsInfoRequest;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.arkiv.dto.Sak;
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost;
-import no.nav.bidrag.dokument.arkiv.model.LagreJournalpostFeiletException;
 import no.nav.bidrag.dokument.arkiv.model.PersonException;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
 import org.slf4j.Logger;
@@ -29,12 +26,10 @@ public class JournalpostService {
 
   private final SafConsumer safConsumer;
   private final PersonConsumer personConsumer;
-  private final DokarkivConsumer dokarkivConsumer;
 
-  public JournalpostService(SafConsumer safConsumer, PersonConsumer personConsumer, DokarkivConsumer dokarkivConsumer) {
+  public JournalpostService(SafConsumer safConsumer, PersonConsumer personConsumer) {
     this.safConsumer = safConsumer;
     this.personConsumer = personConsumer;
-    this.dokarkivConsumer = dokarkivConsumer;
   }
 
   public Optional<Journalpost> hentJournalpost(Long journalpostId) {
@@ -59,16 +54,6 @@ public class JournalpostService {
         .map((this::konverterAktoerIdTilFnr))
         .map(Journalpost::tilJournalpostDto)
         .collect(Collectors.toList());
-  }
-
-  public void oppdaterJournalpostDistribusjonBestiltStatus(Long journalpostId, Journalpost journalpost){
-    var request = new OppdaterJournalpostDistribusjonsInfoRequest(journalpostId, journalpost);
-    var oppdatertJournalpostResponse = dokarkivConsumer.endre(request);
-    oppdatertJournalpostResponse.fetchBody().ifPresent(response -> LOGGER.info("endret: {}", response));
-
-    if (!oppdatertJournalpostResponse.is2xxSuccessful()){
-      throw new LagreJournalpostFeiletException(String.format("Lagre journalpost feilet for journalpostid %s", journalpostId));
-    }
   }
 
   private Optional<Journalpost> hentJournalpost(Long journalpostId, String saksnummer) {

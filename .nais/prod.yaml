@@ -16,7 +16,7 @@ env:
   DOKDISTFORDELING_URL: https://dokdistfordeling.nais.adeo.no
   SAF_GRAPHQL_URL: https://saf.nais.adeo.no/graphql
   OPPGAVE_URL: https://oppgave.nais.adeo.no/api/v1/oppgaver
-  oppgave_clientid: prod-fss.oppgavehandtering.oppgave
+  OPPGAVE_SCOPE: prod-fss.oppgavehandtering.oppgave
   TOPIC_JOURNALPOST: bidrag.journalpost
   TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering
   BIDRAG_PERSON_URL: https://bidrag-person.nais.adeo.no

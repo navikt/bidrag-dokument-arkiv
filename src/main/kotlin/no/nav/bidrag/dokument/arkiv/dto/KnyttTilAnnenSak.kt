@@ -1,6 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
-import no.nav.bidrag.dokument.arkiv.model.KnyttTilSakFeiletException
+import no.nav.bidrag.dokument.arkiv.model.KnyttTilSakManglerTemaException
 
 data class KnyttTilAnnenSakRequest(
     var fagsakId: String,
@@ -13,7 +13,7 @@ data class KnyttTilAnnenSakRequest(
         fagsakId = saksnummer,
         journalfoerendeEnhet = journalpost.journalforendeEnhet ?: "",
         bruker = KnyttTilBruker(journalpost.bruker?.id, journalpost.bruker?.type),
-        tema = tema?: journalpost.tema ?: throw KnyttTilSakFeiletException("Kunne ikke knytte journalpost til annen sak. Journalpost mangler tema. ")
+        tema = tema?: journalpost.tema ?: throw KnyttTilSakManglerTemaException("Kunne ikke knytte journalpost til annen sak. Journalpost mangler tema. ")
     )
     var sakstype: String = "FAGSAK"
     var fagsaksystem: String = "BISYS"

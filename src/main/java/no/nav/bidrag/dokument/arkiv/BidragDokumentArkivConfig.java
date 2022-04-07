@@ -31,14 +31,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RootUriTemplateHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.retry.annotation.EnableRetry;
 
 @Configuration
 @EnableSecurityConfiguration
+@EnableRetry
 public class BidragDokumentArkivConfig {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BidragDokumentArkivConfig.class);
@@ -125,7 +126,7 @@ public class BidragDokumentArkivConfig {
       ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers,
       DokarkivProxyConsumer dokarkivProxyConsumer,
       OppgaveService oppgaveService,
-      @Lazy HendelserProducer hendelserProducer
+      HendelserProducer hendelserProducer
   ) {
     return new EndreJournalpostService(
         journalpostServices.get(Discriminator.REGULAR_USER),
@@ -136,17 +137,14 @@ public class BidragDokumentArkivConfig {
   @Bean
   public ResourceByDiscriminator<JournalpostService> journalpostServices(
       ResourceByDiscriminator<SafConsumer> safConsumers,
-      ResourceByDiscriminator<PersonConsumer> personConsumers,
-      ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers
+      ResourceByDiscriminator<PersonConsumer> personConsumers
   ) {
     var journalpostServiceRegularUser = new JournalpostService(
         safConsumers.get(Discriminator.REGULAR_USER),
-        personConsumers.get(Discriminator.REGULAR_USER),
-        dokarkivConsumers.get(Discriminator.REGULAR_USER));
+        personConsumers.get(Discriminator.REGULAR_USER));
     var journalpostServiceServiceUser = new JournalpostService(
         safConsumers.get(Discriminator.SERVICE_USER),
-        personConsumers.get(Discriminator.SERVICE_USER),
-        dokarkivConsumers.get(Discriminator.SERVICE_USER));
+        personConsumers.get(Discriminator.SERVICE_USER));
     var journalpostServices = new HashMap<Discriminator, JournalpostService>();
     journalpostServices.put(Discriminator.REGULAR_USER, journalpostServiceRegularUser);
     journalpostServices.put(Discriminator.SERVICE_USER, journalpostServiceServiceUser);

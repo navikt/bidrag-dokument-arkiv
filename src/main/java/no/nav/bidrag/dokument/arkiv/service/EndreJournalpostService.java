@@ -11,6 +11,9 @@ import no.nav.bidrag.dokument.arkiv.dto.JournalStatus;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilAnnenSakRequest;
 import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostDistribusjonsInfoRequest;
+import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.Sak;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
@@ -29,8 +32,11 @@ public class EndreJournalpostService {
   private final OppgaveService oppgaveService;
   private final HendelserProducer hendelserProducer;
 
-  public EndreJournalpostService(JournalpostService journalpostService, DokarkivConsumer dokarkivConsumer,
-      DokarkivProxyConsumer dokarkivProxyConsumer, OppgaveService oppgaveService,
+  public EndreJournalpostService(
+      JournalpostService journalpostService,
+      DokarkivConsumer dokarkivConsumer,
+      DokarkivProxyConsumer dokarkivProxyConsumer,
+      OppgaveService oppgaveService,
       HendelserProducer hendelserProducer) {
     this.journalpostService = journalpostService;
     this.dokarkivConsumer = dokarkivConsumer;
@@ -55,19 +61,23 @@ public class EndreJournalpostService {
     return HttpResponse.from(HttpStatus.OK);
   }
 
-  private void lagreJournalpost(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
-    var oppdaterJournalpostRequest = new LagreJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost);
-
-    dokarkivConsumer.endre(oppdaterJournalpostRequest);
-
-    if (Objects.nonNull(oppdaterJournalpostRequest.getSak())){
-      journalpost.setSak(new Sak(oppdaterJournalpostRequest.getSak().getFagsakId()));
-    }
+  public OppdaterJournalpostResponse lagreJournalpost(OppdaterJournalpostRequest oppdaterJournalpostRequest){
+    return dokarkivConsumer.endre(oppdaterJournalpostRequest);
   }
 
   public void opprettBehandleDokumentOppgaveVedJournalforing(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost) {
     if (endreJournalpostCommand.skalJournalfores()) {
       opprettBehandleDokumentOppgave(journalpost);
+    }
+  }
+
+  private void lagreJournalpost(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
+    var oppdaterJournalpostRequest = new LagreJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost);
+
+    lagreJournalpost(oppdaterJournalpostRequest);
+
+    if (Objects.nonNull(oppdaterJournalpostRequest.getSak())){
+      journalpost.setSak(new Sak(oppdaterJournalpostRequest.getSak().getFagsakId()));
     }
   }
 
@@ -115,5 +125,9 @@ public class EndreJournalpostService {
     var journalforRequest = new FerdigstillJournalpostRequest(journalpostId, endreJournalpostCommand.getEnhet());
     dokarkivConsumer.ferdigstill(journalforRequest);
     LOGGER.info("Journalpost med id {} er ferdigstillt", journalpostId);
+  }
+
+  public void oppdaterJournalpostDistribusjonBestiltStatus(Long journalpostId, Journalpost journalpost){
+    lagreJournalpost(new OppdaterJournalpostDistribusjonsInfoRequest(journalpostId, journalpost));
   }
 }

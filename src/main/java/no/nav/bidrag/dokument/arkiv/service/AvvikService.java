@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.AvvikshendelseIntern;
-import no.nav.bidrag.dokument.arkiv.dto.JournalStatus;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.RegistrerReturRequest;
@@ -13,10 +12,7 @@ import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
 import no.nav.bidrag.dokument.arkiv.model.AvvikNotSupportedException;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
-import no.nav.bidrag.dokument.arkiv.model.FeilforSakFeiletException;
-import no.nav.bidrag.dokument.arkiv.model.OppdaterJournalpostFeiletException;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
-import no.nav.bidrag.dokument.arkiv.model.TrekkJournalpostFeiletException;
 import no.nav.bidrag.dokument.arkiv.model.UgyldigAvvikException;
 import no.nav.bidrag.dokument.dto.AvvikType;
 import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse;
@@ -85,19 +81,11 @@ public class AvvikService {
   }
 
   public void feilforSak(AvvikshendelseIntern avvikshendelseIntern){
-    var httpResponse = dokarkivConsumer.feilregistrerSakstilknytning(avvikshendelseIntern.getJournalpostId());
-    if (!httpResponse.is2xxSuccessful()){
-      throw new FeilforSakFeiletException(String.format("Feilregistrer sakstilknytning feilet for journalpostId %s", avvikshendelseIntern.getJournalpostId()));
-    }
+    dokarkivConsumer.feilregistrerSakstilknytning(avvikshendelseIntern.getJournalpostId());
   }
 
   public void oppdater(OppdaterJournalpostRequest oppdaterJournalpostRequest) {
-    var oppdatertJournalpostResponse = dokarkivConsumer.endre(oppdaterJournalpostRequest);
-    if (!oppdatertJournalpostResponse.is2xxSuccessful()){
-      throw new OppdaterJournalpostFeiletException(String.format("Oppdater journalpost feilet for journapostId %s", oppdaterJournalpostRequest.hentJournalpostId()));
-    }
-
-    oppdatertJournalpostResponse.fetchBody().ifPresent(response -> LOGGER.info("endret: {}", response));
+    dokarkivConsumer.endre(oppdaterJournalpostRequest);
   }
 
   public Boolean erGyldigAvviksBehandling(Journalpost journalpost, AvvikType avvikType){

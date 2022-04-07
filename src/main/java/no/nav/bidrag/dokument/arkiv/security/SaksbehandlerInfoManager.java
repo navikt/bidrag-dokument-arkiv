@@ -32,11 +32,7 @@ public class SaksbehandlerInfoManager {
       if (saksbehandlerIdent == null){
         return Optional.empty();
       }
-      var response = bidragOrganisasjonConsumer.hentSaksbehandlerInfo(saksbehandlerIdent);
-      if (!response.is2xxSuccessful() && response.fetchBody().isEmpty()){
-        return Optional.empty();
-      }
-      var saksbehandlerNavn = response.fetchBody().isEmpty() ? saksbehandlerIdent : response.fetchBody().get().getNavn();
+      var saksbehandlerNavn = bidragOrganisasjonConsumer.hentSaksbehandlerInfo(saksbehandlerIdent).getNavn();
       return Optional.of(new Saksbehandler(saksbehandlerIdent, saksbehandlerNavn));
     } catch (Exception e){
       return Optional.empty();
