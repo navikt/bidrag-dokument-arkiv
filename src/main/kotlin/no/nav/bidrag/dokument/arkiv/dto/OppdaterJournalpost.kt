@@ -54,13 +54,8 @@ data class LagreJournalpostRequest(private var journalpostId: Long, private var 
         }
     }
 
-    fun updateValuesForMottattJournalpost(){
-        val journalpostSak = if (journalpost.hasSak()) journalpost.sak?.fagsakId else null
-        val saksnummer = if (journalpostSak == null && endreJournalpostCommand.harEnTilknyttetSak()) {
-            endreJournalpostCommand.hentTilknyttetSak()
-        } else {
-            journalpostSak
-        }
+    private fun updateValuesForMottattJournalpost(){
+        val saksnummer = if (endreJournalpostCommand.harEnTilknyttetSak()) endreJournalpostCommand.hentTilknyttetSak() else null
         sak = if (saksnummer != null) Sak(saksnummer) else null
 
         bruker = if (endreJournalpostCommand.hentGjelder()!=null) Bruker(endreJournalpostCommand.hentGjelder(), endreJournalpostCommand.hentGjelderType()) else Bruker()
