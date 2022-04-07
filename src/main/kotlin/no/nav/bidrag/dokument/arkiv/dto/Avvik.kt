@@ -32,6 +32,7 @@ data class AvvikshendelseIntern(
     val nyttFagomrade: String get() = detaljer[AvvikDetaljer.FAGOMRADE] ?: throw AvvikDetaljException(AvvikDetaljer.FAGOMRADE)
     val utsendingsKanal: String get() = detaljer[AvvikDetaljer.UTSENDINGSKANAL] ?: throw AvvikDetaljException(AvvikDetaljer.UTSENDINGSKANAL)
     val skalFeilregistreres: Boolean get() = (detaljer[AvvikDetaljer.FEILREGISTRER] ?: "false").toBoolean()
+    val isBidragFagomrade: Boolean get() = nyttFagomrade == Fagomrade.BID.name || nyttFagomrade == Fagomrade.FAR.name
 
     constructor(avvikshendelse: Avvikshendelse, opprettetAvEnhetsnummer: String, journalpostId: Long) : this(
         avvikstype = AvvikType.valueOf(avvikshendelse.avvikType),

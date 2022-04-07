@@ -6,21 +6,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.Bruker;
 import no.nav.bidrag.dokument.arkiv.dto.BrukerType;
-import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
-import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostDistribusjonsInfoRequest;
-import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.arkiv.dto.Sak;
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost;
-import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
 import no.nav.bidrag.dokument.arkiv.model.LagreJournalpostFeiletException;
 import no.nav.bidrag.dokument.arkiv.model.PersonException;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
@@ -115,7 +110,7 @@ public class JournalpostService {
     return journalpost.map(this::konverterAktoerIdTilFnr);
   }
 
-  private List<Journalpost> finnJournalposterForSaksnummer(String saksnummer, String fagomrade) {
+  public List<Journalpost> finnJournalposterForSaksnummer(String saksnummer, String fagomrade) {
     return safConsumer.finnJournalposter(saksnummer, fagomrade);
   }
 

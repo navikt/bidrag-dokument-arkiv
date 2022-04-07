@@ -277,7 +277,7 @@ class JournalpostControllerTest extends AbstractControllerTest {
   @Test
   @DisplayName("skal hente journalposter for en bidragssak")
   void skalHenteJournalposterForEnBidragssak() throws IOException {
-    stubs.mockSafResponseDokumentOversiktFagsak(HttpStatus.OK);
+    stubs.mockSafResponseDokumentOversiktFagsak();
     stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
 
     var jouralposterResponseEntity = httpHeaderTestRestTemplate.exchange(

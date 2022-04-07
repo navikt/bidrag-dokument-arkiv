@@ -48,7 +48,23 @@ public class DokarkivConsumer extends AbstractConsumer{
   }
 
   public HttpResponse<Void> feilregistrerSakstilknytning(Long journalpostId) {
-    var oppdaterJoarnalpostApiUrl = String.format(URL_JOURNALPOSTAPI_V1_FEILREGISTRER + "/feilregistrerSakstilknytning", journalpostId);
+    try {
+      var oppdaterJoarnalpostApiUrl = String.format(URL_JOURNALPOSTAPI_V1_FEILREGISTRER + "/feilregistrerSakstilknytning", journalpostId);
+      var response = restTemplate.exchange(oppdaterJoarnalpostApiUrl, HttpMethod.PATCH, null, Void.class);
+      return new HttpResponse<>(response);
+    } catch (HttpStatusCodeException e){
+      var erSakstilknytningAlleredeFeilregistrert = e.getStatusCode().equals(HttpStatus.BAD_REQUEST);
+      if (erSakstilknytningAlleredeFeilregistrert){
+        return HttpResponse.from(HttpStatus.OK);
+      }
+      throw e;
+    }
+
+  }
+
+
+  public HttpResponse<Void> opphevFeilregistrerSakstilknytning(Long journalpostId) {
+    var oppdaterJoarnalpostApiUrl = String.format(URL_JOURNALPOSTAPI_V1_FEILREGISTRER + "/opphevFeilregistrertSakstilknytning", journalpostId);
     var response = restTemplate.exchange(oppdaterJoarnalpostApiUrl, HttpMethod.PATCH, null, Void.class);
     return new HttpResponse<>(response);
   }

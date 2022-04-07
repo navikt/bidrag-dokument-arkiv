@@ -99,10 +99,15 @@ public class EndreJournalpostService {
     }
   }
 
-  private void tilknyttTilSak(String saksnummer, Journalpost journalpost){
-    KnyttTilAnnenSakRequest knyttTilAnnenSakRequest = new KnyttTilAnnenSakRequest(saksnummer, journalpost);
+  public void tilknyttTilSak(String saksnummer, Journalpost journalpost){
+    tilknyttTilSak(saksnummer, null, journalpost);
+  }
+
+  public void tilknyttTilSak(String saksnummer, String tema, Journalpost journalpost){
+    KnyttTilAnnenSakRequest knyttTilAnnenSakRequest = new KnyttTilAnnenSakRequest(saksnummer, journalpost, tema);
     LOGGER.info("Tilknytter sak {} til journalpost {}", saksnummer, journalpost.getJournalpostId());
-    dokarkivProxyConsumer.knyttTilSak(journalpost.hentJournalpostIdLong(), knyttTilAnnenSakRequest);
+    var response = dokarkivProxyConsumer.knyttTilSak(journalpost.hentJournalpostIdLong(), knyttTilAnnenSakRequest);
+    LOGGER.info("Opprettet journalpost med id {} med tema {} og saksnummer {}", response.getNyJournalpostId(), tema, saksnummer);
     journalpost.leggTilTilknyttetSak(saksnummer);
   }
 

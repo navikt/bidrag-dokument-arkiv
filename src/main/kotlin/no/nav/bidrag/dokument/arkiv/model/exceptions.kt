@@ -49,6 +49,7 @@ abstract class EndreJournalpostFeiletException(message: String) : HttpStatusExce
     override val status: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR
 }
 
+class KnyttTilSakFeiletException(message: String) : EndreJournalpostFeiletException(message)
 class LagreJournalpostFeiletException(message: String) : EndreJournalpostFeiletException(message)
 class FerdigstillFeiletException(message: String) : EndreJournalpostFeiletException(message)
 

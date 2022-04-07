@@ -125,3 +125,7 @@ enum class BrukerIdType {
 enum class Fagsaksystem {
     FS38, FS36, UFM, OEBS, OB36, AO01, AO11, IT01, PP01, K9, BISYS, BA, EF, KONT
 }
+
+enum class Fagomrade {
+    BID, FAR
+}

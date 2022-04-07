@@ -105,7 +105,7 @@ data class Journalpost(
     }
     fun isSentralPrint() = hentKanal() == Kanal.SENTRAL_UTSKRIFT
     fun harJournalforendeEnhetLik(enhet: String) = journalforendeEnhet == enhet
-    fun hasTemaLik(likTema: String) = tema == likTema
+    fun isTemaEqualTo(likTema: String) = tema == likTema
     fun hentJournalpostIdLong() = journalpostId?.toLong()
     fun hentJournalpostIdMedPrefix() = "JOARK-"+journalpostId
     fun hentJournalpostType() = if (journalposttype == JournalpostType.N) "X" else journalposttype?.name
@@ -209,7 +209,7 @@ data class Journalpost(
         if (!isStatusMottatt() && hasSak() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.FEILFORE_SAK)
         if (isInngaaendeDokument() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.ENDRE_FAGOMRADE)
         if (isInngaaendeDokument() && isStatusJournalfort()) avvikTypeList.add(AvvikType.SEND_TIL_FAGOMRADE)
-        return avvikTypeList;
+        return avvikTypeList
     }
 
     fun hasMottakerId(): Boolean = avsenderMottaker?.id != null
@@ -219,6 +219,7 @@ data class Journalpost(
     fun isStatusMottatt(): Boolean = journalstatus == JournalStatus.MOTTATT
     fun isStatusFerdigsstilt(): Boolean = journalstatus == JournalStatus.FERDIGSTILT
     fun isStatusJournalfort(): Boolean = journalstatus == JournalStatus.JOURNALFOERT
+    fun isInngaaendeJournalfort(): Boolean = isInngaaendeDokument() && isStatusJournalfort()
     fun isStatusEkspedert(): Boolean = journalstatus == JournalStatus.EKSPEDERT
     fun kanTilknytteSaker(): Boolean = journalstatus == JournalStatus.JOURNALFOERT || journalstatus == JournalStatus.FERDIGSTILT || journalstatus == JournalStatus.EKSPEDERT
     fun isInngaaendeDokument(): Boolean = journalposttype == JournalpostType.I
