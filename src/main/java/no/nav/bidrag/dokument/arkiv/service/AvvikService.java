@@ -185,12 +185,7 @@ public class AvvikService {
   }
 
   public void oppdater(OppdaterJournalpostRequest oppdaterJournalpostRequest) {
-    var oppdatertJournalpostResponse = dokarkivConsumer.endre(oppdaterJournalpostRequest);
-    if (!oppdatertJournalpostResponse.is2xxSuccessful()){
-      throw new OppdaterJournalpostFeiletException(String.format("Oppdater journalpost feilet for journapostId %s", oppdaterJournalpostRequest.hentJournalpostId()));
-    }
-
-    oppdatertJournalpostResponse.fetchBody().ifPresent(response -> LOGGER.info("endret: {}", response));
+    dokarkivConsumer.endre(oppdaterJournalpostRequest);
   }
 
   public Boolean erGyldigAvviksBehandling(Journalpost journalpost, AvvikType avvikType){
