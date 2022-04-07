@@ -225,7 +225,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
     stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
     stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson);
     stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson);
-    stubs.mockDokarkivFeilregistrerRequest("feilregistrerSakstilknytning", journalpostIdFraJson);
+    stubs.mockDokarkivFeilregistrerRequest(journalpostIdFraJson);
 
     // when
     var headersMedEnhet = new HttpHeaders();
@@ -243,7 +243,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
-        () -> stubs.verifyStub.dokarkivFeilregistrerKalt("feilregistrerSakstilknytning", journalpostIdFraJson),
+        () -> stubs.verifyStub.dokarkivFeilregistrerKalt(journalpostIdFraJson),
         () -> verify(kafkaTemplateMock).send(eq(topicJournalpost), eq("JOARK-" + journalpostIdFraJson), any())
     );
   }
@@ -259,7 +259,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
 
     stubs.mockSafResponseHentJournalpost(responseJournalpostJson, HttpStatus.OK);
     stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
-    stubs.mockDokarkivFeilregistrerRequest("settStatusUtg(.*)r", journalpostIdFraJson);
+    stubs.mockDokarkivFeilregistrerRequest( journalpostIdFraJson);
     // when
     var headersMedEnhet = new HttpHeaders();
     headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
@@ -276,7 +276,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
-        () -> stubs.verifyStub.dokarkivFeilregistrerKalt("settStatusUtg(.*)r", journalpostIdFraJson),
+        () -> stubs.verifyStub.dokarkivFeilregistrerKalt(journalpostIdFraJson),
         () -> verify(kafkaTemplateMock).send(eq(topicJournalpost), eq("JOARK-" + journalpostIdFraJson), any())
     );
   }

@@ -9,12 +9,13 @@ import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import java.util.concurrent.TimeUnit
 
 internal class JournalpostKafkdaEventProducerTest: BaseKafkaHendelseTest() {
 
-    private var stubs = Stubs()
-
+    @Autowired
+    lateinit var stubs: Stubs
     @Test
     @DisplayName("skal publisere journalpost hendelser")
     fun skalPublisereJournalpostHendelser() {

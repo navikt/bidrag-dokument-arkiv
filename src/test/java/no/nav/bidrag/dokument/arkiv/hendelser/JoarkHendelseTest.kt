@@ -49,7 +49,8 @@ class JoarkHendelseTest {
     @Autowired
     lateinit var objectMapper: ObjectMapper
 
-    private var stubs = Stubs()
+    @Autowired
+    lateinit var stubs: Stubs
 
     @Value("\${TOPIC_JOURNALPOST}")
     lateinit var topicJournalpost: String

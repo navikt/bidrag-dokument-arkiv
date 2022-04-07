@@ -4,11 +4,12 @@ import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
 import static no.nav.bidrag.dokument.arkiv.dto.DistribusjonKt.validerAdresse;
 import static no.nav.bidrag.dokument.arkiv.dto.DistribusjonKt.validerKanDistribueres;
 
+import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokdistFordelingConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal;
 import no.nav.bidrag.dokument.arkiv.dto.DistribuertTilAdresseDo;
-import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.LagreAdresseRequest;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
@@ -22,10 +23,13 @@ import org.springframework.stereotype.Service;
 public class DistribuerJournalpostService {
   private static final Logger LOGGER = LoggerFactory.getLogger(DistribuerJournalpostService.class);
 
+  private final DokarkivConsumer dokarkivConsumer;
   private final JournalpostService journalpostService;
   private final DokdistFordelingConsumer dokdistFordelingConsumer;
 
-  public DistribuerJournalpostService(ResourceByDiscriminator<JournalpostService> journalpostServices, DokdistFordelingConsumer dokdistFordelingConsumer) {
+  public DistribuerJournalpostService(ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers,
+      ResourceByDiscriminator<JournalpostService> journalpostServices, DokdistFordelingConsumer dokdistFordelingConsumer) {
+    this.dokarkivConsumer = dokarkivConsumers.get(Discriminator.REGULAR_USER);
     this.journalpostService = journalpostServices.get(Discriminator.REGULAR_USER);
     this.dokdistFordelingConsumer = dokdistFordelingConsumer;
   }
@@ -72,7 +76,7 @@ public class DistribuerJournalpostService {
 
   public void lagreAdresse(Long journalpostId, DistribuertTilAdresseDo distribuertTilAdresseDo, Journalpost journalpost){
     if (distribuertTilAdresseDo != null){
-      journalpostService.lagreJournalpost(journalpostId, new EndreJournalpostCommandIntern(distribuertTilAdresseDo), journalpost);
+      dokarkivConsumer.endre(new LagreAdresseRequest(journalpostId, distribuertTilAdresseDo, journalpost));
     }
   }
 }

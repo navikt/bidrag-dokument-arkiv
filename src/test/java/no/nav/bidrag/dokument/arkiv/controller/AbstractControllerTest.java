@@ -40,7 +40,6 @@ public abstract class AbstractControllerTest {
   protected String responseJournalpostIngenSakerJson = "journalpostSafIngenSakerResponse.json";
   protected String journalpostSafNotFoundResponse = "journalpostSafNotFoundResponse.json";
   protected String journalpostJournalfortSafResponse = "journalpostJournalfortSafResponse.json";
-  protected Stubs stubs = new Stubs();
 
   @LocalServerPort
   protected int port;
@@ -48,6 +47,8 @@ public abstract class AbstractControllerTest {
   protected String contextPath;
   @Autowired
   protected HttpHeaderTestRestTemplate httpHeaderTestRestTemplate;
+  @Autowired
+  protected Stubs stubs;
   @MockBean
   protected KafkaTemplate<String, String> kafkaTemplateMock;
   @Value("${TOPIC_JOURNALPOST}")
