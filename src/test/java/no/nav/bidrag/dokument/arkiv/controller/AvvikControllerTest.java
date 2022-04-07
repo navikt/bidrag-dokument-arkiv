@@ -15,6 +15,7 @@ import no.nav.bidrag.dokument.dto.AvvikType;
 import no.nav.bidrag.dokument.dto.Avvikshendelse;
 import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse;
 import org.json.JSONException;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpEntity;
@@ -249,6 +250,7 @@ public class AvvikControllerTest extends AbstractControllerTest {
 
   @Test
   @DisplayName("skal utføre avvik TREKK_JOURNALPOST")
+  @Disabled
   void skalUtforeAvvikTrekkJournalpost() throws IOException {
     // given
     var xEnhet = "1234";

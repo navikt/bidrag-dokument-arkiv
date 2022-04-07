@@ -19,13 +19,13 @@ public class DokarkivProxyConsumer {
     this.restTemplate = restTemplate;
   }
 
-  public HttpResponse<KnyttTilAnnenSakResponse> knyttTilSak(Long journalpostId, KnyttTilAnnenSakRequest knyttTilAnnenSakRequest) {
+  public KnyttTilAnnenSakResponse knyttTilSak(Long journalpostId, KnyttTilAnnenSakRequest knyttTilAnnenSakRequest) {
     var oppdaterJoarnalpostApiUrl = String.format(URL_KNYTT_TIL_ANNEN_SAK, journalpostId);
     var oppdaterJournalpostResponseEntity = restTemplate.exchange(
         oppdaterJoarnalpostApiUrl, HttpMethod.PUT, new HttpEntity<>(knyttTilAnnenSakRequest), KnyttTilAnnenSakResponse.class
     );
 
-    return new HttpResponse<>(oppdaterJournalpostResponseEntity);
+    return oppdaterJournalpostResponseEntity.getBody();
   }
 
   public void leggTilInterceptor(ClientHttpRequestInterceptor requestInterceptor) {

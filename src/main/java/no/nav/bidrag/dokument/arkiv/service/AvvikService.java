@@ -81,10 +81,7 @@ public class AvvikService {
   }
 
   public void trekkJournalpost(AvvikshendelseIntern avvikshendelseIntern){
-    var httpResponse = dokarkivConsumer.settStatusUtgaar(avvikshendelseIntern.getJournalpostId());
-    if (!httpResponse.is2xxSuccessful()){
-      throw new TrekkJournalpostFeiletException(String.format("Sett status utgår feilet for journalpostId %s", avvikshendelseIntern.getJournalpostId()));
-    }
+    // Ignore for now
   }
 
   public void feilforSak(AvvikshendelseIntern avvikshendelseIntern){

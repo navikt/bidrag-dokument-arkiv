@@ -1,39 +1,43 @@
 package no.nav.bidrag.dokument.arkiv.consumer;
 
-import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
-import no.nav.bidrag.dokument.arkiv.dto.OppdaterDistribusjonsInfoRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import no.nav.bidrag.dokument.arkiv.model.OppdaterJournalpostFeiletFunksjoneltException;
+import no.nav.bidrag.dokument.arkiv.model.OppdaterJournalpostFeiletTekniskException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.client.ClientHttpRequestInterceptor;
-import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
-public class DokarkivConsumer {
-  private static final Logger LOGGER = LoggerFactory.getLogger(DokarkivConsumer.class);
+public class DokarkivConsumer extends AbstractConsumer{
 
   public static final String URL_JOURNALPOSTAPI_V1 = "/rest/journalpostapi/v1/journalpost";
   public static final String URL_JOURNALPOSTAPI_V1_FEILREGISTRER = "/rest/journalpostapi/v1/journalpost/%s/feilregistrer";
 
-  private final RestTemplate restTemplate;
-
   public DokarkivConsumer(RestTemplate restTemplate) {
-    this.restTemplate = restTemplate;
+    super(restTemplate);
   }
 
   public HttpResponse<OppdaterJournalpostResponse> endre(OppdaterJournalpostRequest oppdaterJournalpostRequest) {
     var oppdaterJoarnalpostApiUrl = URL_JOURNALPOSTAPI_V1 + '/' + oppdaterJournalpostRequest.hentJournalpostId();
-    var oppdaterJournalpostResponseEntity = restTemplate.exchange(
-        oppdaterJoarnalpostApiUrl, HttpMethod.PUT, new HttpEntity<>(oppdaterJournalpostRequest), OppdaterJournalpostResponse.class
-    );
+    try {
+      var oppdaterJournalpostResponseEntity = restTemplate.exchange(
+          oppdaterJoarnalpostApiUrl, HttpMethod.PUT, new HttpEntity<>(oppdaterJournalpostRequest), OppdaterJournalpostResponse.class
+      );
 
-    return new HttpResponse<>(oppdaterJournalpostResponseEntity);
+      return new HttpResponse<>(oppdaterJournalpostResponseEntity);
+    } catch (HttpStatusCodeException e){
+      var status = e.getStatusCode();
+      var errorMessage = parseErrorMessage(e);
+      if (HttpStatus.BAD_REQUEST.equals(status) || HttpStatus.NOT_FOUND.equals(status)){
+        throw new OppdaterJournalpostFeiletFunksjoneltException(String.format("Oppdatering av journalpost %s feilet med status %s og feilmelding: %s", oppdaterJournalpostRequest.hentJournalpostId(), e.getStatusCode(), errorMessage));
+      }
+      throw new OppdaterJournalpostFeiletTekniskException(String.format("Oppdatering av journalpost %s feilet med status %s og feilmelding: %s", oppdaterJournalpostRequest.hentJournalpostId(), e.getStatusCode(), errorMessage), e);
+    }
+
   }
 
   public HttpResponse<Void> ferdigstill(FerdigstillJournalpostRequest ferdigstillJournalpostRequest) {
@@ -43,39 +47,26 @@ public class DokarkivConsumer {
 
   }
 
-  public HttpResponse<Void> settStatusUtgaar(Long journalpostId) {
-    var oppdaterJoarnalpostApiUrl = String.format(URL_JOURNALPOSTAPI_V1_FEILREGISTRER + "/settStatusUtgår", journalpostId);
-    var response = restTemplate.exchange(oppdaterJoarnalpostApiUrl, HttpMethod.PATCH, null, Void.class);
-    return new HttpResponse<>(response);
-  }
-
   public HttpResponse<Void> feilregistrerSakstilknytning(Long journalpostId) {
-    var oppdaterJoarnalpostApiUrl = String.format(URL_JOURNALPOSTAPI_V1_FEILREGISTRER + "/feilregistrerSakstilknytning", journalpostId);
-    var response = restTemplate.exchange(oppdaterJoarnalpostApiUrl, HttpMethod.PATCH, null, Void.class);
-    return new HttpResponse<>(response);
-  }
-
-  public HttpResponse<Void> oppdaterDistribusjonsInfo(Long journalpostId, boolean settStatusEkspedert, String utsendingsKanal) {
-    var endpoint = URL_JOURNALPOSTAPI_V1 + "/%s";
-    var oppdaterJoarnalpostApiUrl = String.format(endpoint + "/oppdaterDistribusjonsinfo", journalpostId);
-    var request = new OppdaterDistribusjonsInfoRequest(settStatusEkspedert, utsendingsKanal);
     try {
-      var response = restTemplate.exchange(oppdaterJoarnalpostApiUrl, HttpMethod.PATCH, new HttpEntity<>(request), Void.class);
+      var oppdaterJoarnalpostApiUrl = String.format(URL_JOURNALPOSTAPI_V1_FEILREGISTRER + "/feilregistrerSakstilknytning", journalpostId);
+      var response = restTemplate.exchange(oppdaterJoarnalpostApiUrl, HttpMethod.PATCH, null, Void.class);
       return new HttpResponse<>(response);
-    } catch (HttpClientErrorException clientErrorException){
-      // Antar at status allerede er satt til ekspedert. Ignorer feil for å gjøre kallet idempotent
-      if (clientErrorException.getStatusCode() == HttpStatus.BAD_REQUEST && clientErrorException.getResponseBodyAsString().contains("Kan ikke ekspedere journalpost med status E")){
-        LOGGER.warn("Sett status til EKSPEDERT for journalpost {} feilet med melding {}", journalpostId, clientErrorException.getResponseBodyAsString());
+    } catch (HttpStatusCodeException e){
+      var erSakstilknytningAlleredeFeilregistrert = e.getStatusCode().equals(HttpStatus.BAD_REQUEST);
+      if (erSakstilknytningAlleredeFeilregistrert){
         return HttpResponse.from(HttpStatus.OK);
       }
-      throw clientErrorException;
+      throw e;
     }
+
   }
 
-  public void leggTilInterceptor(ClientHttpRequestInterceptor requestInterceptor) {
-    if (restTemplate instanceof HttpHeaderRestTemplate) {
-      restTemplate.getInterceptors().add(requestInterceptor);
-    }
+
+  public HttpResponse<Void> opphevFeilregistrerSakstilknytning(Long journalpostId) {
+    var oppdaterJoarnalpostApiUrl = String.format(URL_JOURNALPOSTAPI_V1_FEILREGISTRER + "/opphevFeilregistrertSakstilknytning", journalpostId);
+    var response = restTemplate.exchange(oppdaterJoarnalpostApiUrl, HttpMethod.PATCH, null, Void.class);
+    return new HttpResponse<>(response);
   }
 
 }

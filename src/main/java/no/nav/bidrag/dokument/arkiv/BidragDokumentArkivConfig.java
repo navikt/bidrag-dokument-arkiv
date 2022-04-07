@@ -14,12 +14,15 @@ import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivProxyConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokdistFordelingConsumer;
+import no.nav.bidrag.dokument.arkiv.consumer.OppgaveConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
+import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
+import no.nav.bidrag.dokument.arkiv.service.OppgaveService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -54,6 +57,17 @@ public class BidragDokumentArkivConfig {
     httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.safQraphiQlUrl));
     httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
     return new SafConsumer(httpHeaderRestTemplate);
+  }
+
+  @Bean
+  @Scope("prototype")
+  public OppgaveConsumer baseOppgaveConsumer(
+      @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
+      EnvironmentProperties environmentProperties
+  ) {
+    httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.oppgaveUrl));
+    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
+    return new OppgaveConsumer(httpHeaderRestTemplate);
   }
 
   @Bean
@@ -93,6 +107,18 @@ public class BidragDokumentArkivConfig {
   }
 
   @Bean
+  public OppgaveService oppgaveService(
+      ResourceByDiscriminator<PersonConsumer> personConsumers,
+      ResourceByDiscriminator<OppgaveConsumer> oppgaveConsumers,
+      SaksbehandlerInfoManager saksbehandlerInfoManager
+  ) {
+    return new OppgaveService(
+        personConsumers,
+        oppgaveConsumers,
+        saksbehandlerInfoManager);
+  }
+
+  @Bean
   public ResourceByDiscriminator<JournalpostService> journalpostServices(
       ResourceByDiscriminator<SafConsumer> safConsumers,
       ResourceByDiscriminator<PersonConsumer> personConsumers,
@@ -129,6 +155,20 @@ public class BidragDokumentArkivConfig {
     var safConsumers = new HashMap<Discriminator, SafConsumer>();
     safConsumers.put(Discriminator.REGULAR_USER, safConsumerRegularUser);
     safConsumers.put(Discriminator.SERVICE_USER, safConsumerServiceUser);
+    return new ResourceByDiscriminator<>(safConsumers);
+  }
+
+  @Bean
+  public ResourceByDiscriminator<OppgaveConsumer> oppgaveConsumers(
+      OppgaveConsumer oppgaveConsumerRegularUser,
+      OppgaveConsumer oppgaveConsumerServiceUser,
+      SecurityTokenService securityTokenService
+  ) {
+    oppgaveConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor("oppgave"));
+    oppgaveConsumerServiceUser.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor("oppgave"));
+    var safConsumers = new HashMap<Discriminator, OppgaveConsumer>();
+    safConsumers.put(Discriminator.REGULAR_USER, oppgaveConsumerRegularUser);
+    safConsumers.put(Discriminator.SERVICE_USER, oppgaveConsumerServiceUser);
     return new ResourceByDiscriminator<>(safConsumers);
   }
 
@@ -213,12 +253,14 @@ public class BidragDokumentArkivConfig {
       @Value("${DOKARKIV_PROXY_URL}") String dokarkivProxyUrl,
       @Value("${BIDRAG_PERSON_URL}") String bidragPersonUrl,
       @Value("${SAF_GRAPHQL_URL}") String safQraphiQlUrl,
+      @Value("${OPPGAVE_URL}") String oppgaveUrl,
       @Value("${SRV_BD_ARKIV_AUTH}") String secretForServiceUser,
       @Value("${ACCESS_TOKEN_URL}") String securityTokenUrl,
       @Value("${BIDRAG_ORGANISASJON_URL}") String bidragOrganisasjonUrl,
       @Value("${NAIS_APP_NAME}") String naisAppName
   ) {
-    var environmentProperties = new EnvironmentProperties(dokdistFordelingUrl, dokarkivUrl, dokarkivProxyUrl, safQraphiQlUrl, secretForServiceUser, securityTokenUrl,
+    var environmentProperties = new EnvironmentProperties(dokdistFordelingUrl, dokarkivUrl, dokarkivProxyUrl, safQraphiQlUrl, oppgaveUrl,
+        secretForServiceUser, securityTokenUrl,
         naisAppName, bidragPersonUrl, bidragOrganisasjonUrl);
     LOGGER.info(String.format("> Environment: %s", environmentProperties));
 
@@ -232,6 +274,7 @@ public class BidragDokumentArkivConfig {
     public final String dokarkivProxyUrl;
     public final String bidragPersonUrl;
     public final String safQraphiQlUrl;
+    public final String oppgaveUrl;
     public final String secretForServiceUser;
     public final String securityTokenUrl;
     public final String bidragOrganisasjonUrl;
@@ -239,11 +282,12 @@ public class BidragDokumentArkivConfig {
 
     public EnvironmentProperties(
         String dokdistFordelingUrl,
-        String dokarkivUrl, String dokarkivProxyUrl, String safQraphiQlUrl, String secretForServiceUser,
+        String dokarkivUrl, String dokarkivProxyUrl, String safQraphiQlUrl, String oppgaveUrl, String secretForServiceUser,
         String securityTokenUrl, String naisAppName, String bidragPersonUrl, String bidragOrganisasjonUrl
     ) {
       this.dokdistFordelingUrl = dokdistFordelingUrl;
       this.dokarkivProxyUrl = dokarkivProxyUrl;
+      this.oppgaveUrl = oppgaveUrl;
       this.bidragPersonUrl = bidragPersonUrl;
       this.dokarkivUrl = dokarkivUrl;
       this.safQraphiQlUrl = safQraphiQlUrl;

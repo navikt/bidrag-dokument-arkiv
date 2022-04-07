@@ -69,6 +69,7 @@ data class Journalpost(
     var tilknyttedeSaker: List<String> = emptyList(),
     var tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger()
 ) {
+    fun hentGjelderId(): String? = bruker?.id
     fun hentJournalStatus(): String? {
         return when(journalstatus){
                 JournalStatus.MOTTATT -> JournalstatusDto.MOTTAKSREGISTRERT
@@ -145,18 +146,28 @@ data class Journalpost(
         return registrert?.somDato()
     }
 
+    fun hentDatoDokument(): LocalDate? {
+        val registrert = relevanteDatoer
+            .find { it.datotype == DATO_DOKUMENT }
+
+        return registrert?.somDato()
+    }
+
     fun hentDatoRetur(): LocalDate? {
         val returDato = relevanteDatoer.find { it.datotype == DATO_RETUR }
         return returDato?.somDato()
     }
 
-    fun hentTilknyttetSaker(): List<String> {
+    fun hentTilknyttetSaker(): Set<String> {
         val saksnummer = sak?.fagsakId
-        val saksnummerList = if (saksnummer != null) mutableListOf(saksnummer) else mutableListOf()
+        val saksnummerList = if (saksnummer != null) mutableSetOf(saksnummer) else mutableSetOf()
         saksnummerList.addAll(tilknyttedeSaker)
         return saksnummerList
     }
 
+    fun leggTilTilknyttetSak(tilknyttetSak: String) {
+        tilknyttedeSaker = tilknyttedeSaker + listOf(tilknyttetSak)
+    }
     fun hentBrevkodeDto(): KodeDto? = if (hentBrevkode()!=null) KodeDto(kode = hentBrevkode()) else null
 
     fun hentHoveddokument(): Dokument? = if (dokumenter.isNotEmpty()) dokumenter[0] else null
