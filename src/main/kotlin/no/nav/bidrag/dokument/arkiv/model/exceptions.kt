@@ -2,6 +2,8 @@ package no.nav.bidrag.dokument.arkiv.model
 
 import org.springframework.http.HttpStatus
 
+class ViolationException(violations: MutableList<String>) : RuntimeException("Ugyldige data: ${violations.joinToString(", ")}")
+
 abstract class HttpStatusException(message: String, throwable: Throwable? = null) : RuntimeException(message, throwable) {
     abstract val status: HttpStatus
 }
@@ -47,6 +49,7 @@ abstract class EndreJournalpostFeiletException(message: String) : HttpStatusExce
     override val status: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR
 }
 
+class KnyttTilSakFeiletException(message: String) : EndreJournalpostFeiletException(message)
 class LagreJournalpostFeiletException(message: String) : EndreJournalpostFeiletException(message)
 class FerdigstillFeiletException(message: String) : EndreJournalpostFeiletException(message)
 
@@ -56,3 +59,6 @@ class FeilforSakFeiletException(message: String) : AvvikFeiletException(message)
 
 class DistribusjonFeiletFunksjoneltException(message: String): FunksjonellFeilException(message)
 class DistribusjonFeiletTekniskException(message: String, throwable: Throwable): TekniskFeilException(message, throwable)
+
+class OppdaterJournalpostFeiletFunksjoneltException(message: String): FunksjonellFeilException(message)
+class OppdaterJournalpostFeiletTekniskException(message: String, throwable: Throwable): TekniskFeilException(message, throwable)
