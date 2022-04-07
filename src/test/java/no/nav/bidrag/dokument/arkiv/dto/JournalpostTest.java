@@ -173,7 +173,7 @@ class JournalpostTest {
     journalpost.setJournalposttype(JournalpostType.I);
     journalpost.setSak(new Sak(""));
     var avvikListe = journalpost.tilAvvik();
-    assertThat(avvikListe).hasSize(2);
+    assertThat(avvikListe).hasSize(3);
     assertThat(avvikListe).contains(AvvikType.FEILFORE_SAK);
   }
 
@@ -185,7 +185,7 @@ class JournalpostTest {
     journalpost.setJournalposttype(JournalpostType.I);
     journalpost.setSak(new Sak(""));
     var avvikListe = journalpost.tilAvvik();
-    assertThat(avvikListe).hasSize(1);
+    assertThat(avvikListe).hasSize(0);
     assertThat(avvikListe).doesNotContain(AvvikType.FEILFORE_SAK);
   }
 
