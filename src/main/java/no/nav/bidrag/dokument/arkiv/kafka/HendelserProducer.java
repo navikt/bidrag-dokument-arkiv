@@ -1,5 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.kafka;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_AND_REGULAR_LOGGER;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -70,10 +71,10 @@ public class HendelserProducer {
       var message = objectMapper.writeValueAsString(journalpostHendelse);
       if (!featureToggle.isFeatureEnabled(Feature.KAFKA_ARBEIDSFLYT)) {
         LOGGER.info("Sender ikke hendelse med journalpostId={} da feature toggle KAFKA_ARBEIDSFLYT ikke er skrudd på", journalpostHendelse.getJournalpostId());
-        SECURE_LOGGER.info("Sender ikke hendelse {} da feature toggle KAFKA_ARBEIDSFLYT ikke er skrudd på", message);
+        SECURE_AND_REGULAR_LOGGER.info("Sender ikke hendelse {} da feature toggle KAFKA_ARBEIDSFLYT ikke er skrudd på", message);
         return;
       }
-      SECURE_LOGGER.info("Publiserer hendelse {}", message);
+      SECURE_AND_REGULAR_LOGGER.info("Publiserer hendelse {}", message);
       LOGGER.info("Publiserer hendelse med journalpostId={}", journalpostHendelse.getJournalpostId());
       kafkaTemplate.send(topic, journalpostHendelse.getJournalpostId(), message);
     } catch (JsonProcessingException e) {
