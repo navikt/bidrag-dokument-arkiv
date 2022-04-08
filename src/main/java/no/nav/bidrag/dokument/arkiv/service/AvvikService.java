@@ -18,7 +18,6 @@ import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
 import no.nav.bidrag.dokument.arkiv.model.AvvikDetaljException;
 import no.nav.bidrag.dokument.arkiv.model.AvvikNotSupportedException;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
-import no.nav.bidrag.dokument.arkiv.model.OppdaterJournalpostFeiletException;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.model.UgyldigAvvikException;
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager;
@@ -32,7 +31,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AvvikService {
-  private static final Logger LOGGER = LoggerFactory.getLogger(AvvikService.class);
 
   public final JournalpostService journalpostService;
   public final HendelserProducer hendelserProducer;
