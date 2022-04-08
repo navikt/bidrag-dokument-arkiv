@@ -61,7 +61,7 @@ public class HendelserProducer {
   }
 
   private JournalpostHendelse createJournalpostHendelse(Journalpost journalpost) {
-    var saksbehandler = saksbehandlerInfoManager.hentSaksbehandler().orElse(new Saksbehandler("ukjent", "kunne ikke hente saksbehandler"));
+    var saksbehandler = saksbehandlerInfoManager.hentSaksbehandler().orElse(new Saksbehandler("bidrag-dokument-arkiv", "bidrag-dokument-arkiv"));
     return new JournalpostHendelseIntern(journalpost, saksbehandler).hentJournalpostHendelse();
   }
 
@@ -71,7 +71,7 @@ public class HendelserProducer {
       var message = objectMapper.writeValueAsString(journalpostHendelse);
       if (!featureToggle.isFeatureEnabled(Feature.KAFKA_ARBEIDSFLYT)) {
         LOGGER.info("Sender ikke hendelse med journalpostId={} da feature toggle KAFKA_ARBEIDSFLYT ikke er skrudd på", journalpostHendelse.getJournalpostId());
-        SECURE_AND_REGULAR_LOGGER.info("Sender ikke hendelse {} da feature toggle KAFKA_ARBEIDSFLYT ikke er skrudd på", message);
+        SECURE_LOGGER.info("Sender ikke hendelse {} da feature toggle KAFKA_ARBEIDSFLYT ikke er skrudd på", message);
         return;
       }
       SECURE_AND_REGULAR_LOGGER.info("Publiserer hendelse {}", message);
