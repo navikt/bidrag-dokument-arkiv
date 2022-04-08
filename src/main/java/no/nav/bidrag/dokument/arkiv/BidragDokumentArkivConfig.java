@@ -157,8 +157,8 @@ public class BidragDokumentArkivConfig {
       SafConsumer safConsumerServiceUser,
       SecurityTokenService securityTokenService
   ) {
-    safConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor());
-    safConsumerServiceUser.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor());
+    safConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor("saf"));
+    safConsumerServiceUser.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor("saf"));
     var safConsumers = new HashMap<Discriminator, SafConsumer>();
     safConsumers.put(Discriminator.REGULAR_USER, safConsumerRegularUser);
     safConsumers.put(Discriminator.SERVICE_USER, safConsumerServiceUser);
@@ -214,9 +214,9 @@ public class BidragDokumentArkivConfig {
       DokarkivConsumer dokarkivConsumerServiceUser,
       SecurityTokenService securityTokenService
   ) {
-    dokarkivConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor());
+    dokarkivConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor("dokarkiv"));
     dokarkivConsumerRegularUser.leggTilInterceptor(securityTokenService.navConsumerTokenInterceptor());
-    dokarkivConsumerServiceUser.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor());
+    dokarkivConsumerServiceUser.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor("dokarkiv"));
     var dokarkivConsumers = new HashMap<Discriminator, DokarkivConsumer>();
     dokarkivConsumers.put(Discriminator.REGULAR_USER, dokarkivConsumerRegularUser);
     dokarkivConsumers.put(Discriminator.SERVICE_USER, dokarkivConsumerServiceUser);

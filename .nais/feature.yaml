@@ -18,6 +18,8 @@ env:
   SAF_GRAPHQL_URL: https://saf-q1.dev.adeo.no/graphql
   OPPGAVE_URL: https://oppgave.nais.preprod.local/api/v1/oppgaver
   OPPGAVE_SCOPE: dev-fss.oppgavehandtering.oppgave-q1
+  SAF_SCOPE: dev-fss.teamdokumenthandtering.saf
+  DOKARKIV_SCOPE: dev-fss.teamdokumenthandtering.dokarkiv-q1
   TOPIC_JOURNALPOST: bidrag.journalpost-feature
   TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering-q1
   BIDRAG_PERSON_URL: https://bidrag-person-feature.dev.adeo.no
