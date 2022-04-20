@@ -69,13 +69,6 @@ open class OppgaveData(
     }
 }
 
-data class EndreTemaRequest(private var oppgaveData: OppgaveData, private var nyttTema: String):
-    OppgaveData(
-        id = oppgaveData.id,
-        tema = nyttTema,
-        versjon = oppgaveData.versjon
-    )
-
 data class EndreForNyttDokumentRequest(private var oppgaveData: OppgaveData,
                                        private var saksbehandlersInfo: String,
                                        private var journalpost: Journalpost,
@@ -164,9 +157,7 @@ internal fun lagVurderDokumentOppgaveBeskrivelse(saksbehandlerMedEnhet: Saksbeha
 
 
 enum class OppgaveType {
-    JFR,
     BEH_SAK,
-    VUR_KONS_YTE,
     VUR
 }
 

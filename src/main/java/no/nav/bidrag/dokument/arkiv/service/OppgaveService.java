@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import no.nav.bidrag.dokument.arkiv.consumer.OppgaveConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.EndreForNyttDokumentRequest;
-import no.nav.bidrag.dokument.arkiv.dto.EndreTemaRequest;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveData;
 import no.nav.bidrag.dokument.arkiv.dto.OpprettBehandleDokumentOppgaveRequest;
