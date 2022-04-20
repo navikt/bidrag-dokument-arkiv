@@ -14,7 +14,7 @@ spec:
   accessPolicy:
     inbound:
       rules:
-      {{#each azure_access_inbound}}
+      {{#each azureAccessInbound}}
          - application: {{this.application}}
            namespace: {{this.namespace}}
            cluster: {{this.cluster}}

@@ -27,7 +27,7 @@ env:
     FEATURE_ENABLED: KAFKA_ARBEIDSFLYT
 vault:
   kvPath: dev
-azure_access_inbound:
+azureAccessInbound:
   - application: bidrag-dokument
     namespace: bidrag
     cluster: dev-fss

@@ -28,7 +28,7 @@ env:
   JAVA_OPTS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
 vault:
   kvPath: dev
-azure_access_inbound:
+azureAccessInbound:
   - application: bidrag-dokument-feature
     namespace: bidrag
     cluster: dev-fss
