@@ -12,7 +12,6 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 @SpringBootApplication(exclude = { SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class })
 public class BidragDokumentArkiv {
   public static final Logger SECURE_LOGGER = LoggerFactory.getLogger("secureLogger");
-  public static final Logger SECURE_AND_REGULAR_LOGGER = LoggerFactory.getLogger("secureAndRegularLogger");
 
   public static void main(String... args) {
 
