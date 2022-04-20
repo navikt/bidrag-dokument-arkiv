@@ -132,7 +132,6 @@ public class AvvikService {
       endreFagomradeJournalfortJournalpost(journalpost, avvikshendelseIntern);
     } else {
       oppdater(avvikshendelseIntern.toEndreFagomradeRequest());
-//      oppgaveService.oppdaterTemaJournalforingsoppgaver(journalpost.hentJournalpostIdLong(), journalpost.getTema(), avvikshendelseIntern.getNyttFagomrade());
     }
   }
 

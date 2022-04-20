@@ -211,8 +211,6 @@ class AvvikControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost(opprettSafResponse())
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
-//        stubs.mockSokOppgave(OppgaveSokResponse(1, listOf(createOppgaveDataWithJournalpostId(JOURNALPOST_ID.toString()))), HttpStatus.OK)
-//        stubs.mockOppdaterOppgave(HttpStatus.OK)
 
         val overforEnhetResponse = sendAvvikRequest(xEnhet, JOURNALPOST_ID, avvikHendelse)
 
@@ -225,8 +223,6 @@ class AvvikControllerTest : AbstractControllerTest() {
                     .isEqualTo(HttpStatus.OK)
             },
             { stubs.verifyStub.dokarkivOppdaterKalt(JOURNALPOST_ID, String.format("\"tema\":\"%s\"", nyttFagomrade)) },
-//            { stubs.verifyStub.oppgaveSokKalt(Pair("tema", "BID"), Pair("journalpostId", JOURNALPOST_ID.toString())) },
-//            { stubs.verifyStub.oppgaveOppdaterKalt(1, nyttFagomrade ) },
             {
                 Mockito.verify(kafkaTemplateMock).send(
                     ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(

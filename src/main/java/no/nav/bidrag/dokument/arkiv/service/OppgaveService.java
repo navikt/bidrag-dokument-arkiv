@@ -41,21 +41,6 @@ public class OppgaveService {
     this.saksbehandlerInfoManager = saksbehandlerInfoManager;
   }
 
-  public void oppdaterTemaJournalforingsoppgaver(Long journalpostId, String temaFoer, String temaEtter) {
-    var oppgaverForNyttTema = finnJournalforingsoppgaverForJournalpostOgTema(journalpostId, temaEtter);
-    if (!oppgaverForNyttTema.isEmpty()){
-      // Oppgaver lukkes i bidrag-arbeidsflyt
-      LOGGER.warn("Endrer ikke tema på JFR oppgaver fra {} til {} for journalpost {} da det allerede finnes oppgaver på samme tema", journalpostId, temaFoer, temaEtter);
-      return;
-    }
-
-    var oppgaver = finnJournalforingsoppgaverForJournalpostOgTema(journalpostId, temaFoer);
-    oppgaver.forEach(oppgaveData -> {
-        oppgaveConsumers.get(Discriminator.SERVICE_USER).patchOppgave(new EndreTemaRequest(oppgaveData, temaEtter));
-        LOGGER.info("Endret tema på oppgave {} fra {} til {}", oppgaveData.getId(), temaFoer, temaEtter);
-    });
-  }
-
   public void opprettOverforJournalpostOppgave(Journalpost journalpost, String tema, String kommentar) {
     var aktorId = hentAktorId(journalpost.hentGjelderId());
     opprettOppgave(new OpprettVurderDokumentOppgaveRequest(
@@ -142,15 +127,6 @@ public class OppgaveService {
 
   private String notNull(String fagomrade) {
     return fagomrade != null ? fagomrade : "BID";
-  }
-
-  private List<OppgaveData> finnJournalforingsoppgaverForJournalpostOgTema(Long journalpostId, String fagomrade) {
-    var parametre = new OppgaveSokParametre()
-        .leggTilFagomrade(notNull(fagomrade))
-        .leggTilJournalpostId(journalpostId)
-        .brukJournalforingOppgaveType();
-
-    return oppgaveConsumers.get(Discriminator.SERVICE_USER).finnOppgaver(parametre).getOppgaver();
   }
 
   private List<OppgaveData> finnBehandlingsoppgaverForSaker(Set<String> saksnumre, String fagomrade) {
