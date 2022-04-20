@@ -83,7 +83,7 @@ public class HendelseListener {
       var journalpostId = record.getJournalpostId();
       var journalpost = hentJournalpost(journalpostId);
       if (erOpprettetAvNKS(journalpost)){
-        LOGGER.info("Journalpost er opprettet av NKS opprettetAvNavn={}. Stopper videre behandling", journalpost.getOpprettetAvNavn());
+        LOGGER.info("Journalpost er opprettet av NKS. Stopper videre behandling");
         return;
       }
 

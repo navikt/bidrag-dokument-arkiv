@@ -1,11 +1,14 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
+
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import no.nav.bidrag.dokument.arkiv.consumer.OppgaveConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.EndreForNyttDokumentRequest;
+import no.nav.bidrag.dokument.arkiv.dto.EndreTemaRequest;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveData;
 import no.nav.bidrag.dokument.arkiv.dto.OpprettBehandleDokumentOppgaveRequest;
@@ -36,6 +39,21 @@ public class OppgaveService {
     this.personConsumers = personConsumers;
     this.oppgaveConsumers = oppgaveConsumers;
     this.saksbehandlerInfoManager = saksbehandlerInfoManager;
+  }
+
+  public void oppdaterTemaJournalforingsoppgaver(Long journalpostId, String temaFoer, String temaEtter) {
+    var oppgaverForNyttTema = finnJournalforingsoppgaverForJournalpostOgTema(journalpostId, temaEtter);
+    if (!oppgaverForNyttTema.isEmpty()){
+      // Oppgaver lukkes i bidrag-arbeidsflyt
+      LOGGER.warn("Endrer ikke tema på JFR oppgaver fra {} til {} for journalpost {} da det allerede finnes oppgaver på samme tema", journalpostId, temaFoer, temaEtter);
+      return;
+    }
+
+    var oppgaver = finnJournalforingsoppgaverForJournalpostOgTema(journalpostId, temaFoer);
+    oppgaver.forEach(oppgaveData -> {
+        oppgaveConsumers.get(Discriminator.SERVICE_USER).patchOppgave(new EndreTemaRequest(oppgaveData, temaEtter));
+        LOGGER.info("Endret tema på oppgave {} fra {} til {}", oppgaveData.getId(), temaFoer, temaEtter);
+    });
   }
 
   public void opprettOverforJournalpostOppgave(Journalpost journalpost, String tema, String kommentar) {
@@ -92,9 +110,9 @@ public class OppgaveService {
 
     for (var oppgaveData : oppgaverMedBeskrivelse) {
       var request = new EndreForNyttDokumentRequest(oppgaveData, saksbehandlerInfo, journalpost, enhet);
-      LOGGER.info("Oppgave (id: {}) har beskrivelse: {}", oppgaveData.getId(), request.getBeskrivelse());
-
       oppgaveConsumers.get(Discriminator.SERVICE_USER).patchOppgave(request);
+      LOGGER.info("Endret beskrivelse for oppgave {}", oppgaveData.getId());
+      SECURE_LOGGER.info("Endret beskrivelse for oppgave {} med beskrivelse: {}", oppgaveData.getId(), request.getBeskrivelse());
     }
   }
 
@@ -124,6 +142,15 @@ public class OppgaveService {
 
   private String notNull(String fagomrade) {
     return fagomrade != null ? fagomrade : "BID";
+  }
+
+  private List<OppgaveData> finnJournalforingsoppgaverForJournalpostOgTema(Long journalpostId, String fagomrade) {
+    var parametre = new OppgaveSokParametre()
+        .leggTilFagomrade(notNull(fagomrade))
+        .leggTilJournalpostId(journalpostId)
+        .brukJournalforingOppgaveType();
+
+    return oppgaveConsumers.get(Discriminator.SERVICE_USER).finnOppgaver(parametre).getOppgaver();
   }
 
   private List<OppgaveData> finnBehandlingsoppgaverForSaker(Set<String> saksnumre, String fagomrade) {

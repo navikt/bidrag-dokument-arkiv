@@ -25,8 +25,6 @@ import no.nav.bidrag.dokument.dto.AvvikType;
 import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse;
 import no.nav.bidrag.dokument.dto.JournalpostIkkeFunnetException;
 import org.apache.logging.log4j.util.Strings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -134,6 +132,7 @@ public class AvvikService {
       endreFagomradeJournalfortJournalpost(journalpost, avvikshendelseIntern);
     } else {
       oppdater(avvikshendelseIntern.toEndreFagomradeRequest());
+//      oppgaveService.oppdaterTemaJournalforingsoppgaver(journalpost.hentJournalpostIdLong(), journalpost.getTema(), avvikshendelseIntern.getNyttFagomrade());
     }
   }
 

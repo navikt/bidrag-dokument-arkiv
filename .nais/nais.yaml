@@ -11,6 +11,14 @@ spec:
     application:
       enabled: true
   webproxy: true
+  accessPolicy:
+    inbound:
+      rules:
+      {{#each azure_access_inbound}}
+         - application: {{this.application}}
+           namespace: {{this.namespace}}
+           cluster: {{this.cluster}}
+      {{/each}}
   secureLogs:
     enabled: true
   kafka:

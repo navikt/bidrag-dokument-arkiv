@@ -4,18 +4,15 @@ package no.nav.bidrag.dokument.arkiv.controller
 import no.nav.bidrag.commons.web.EnhetFilter
 import no.nav.bidrag.dokument.arkiv.dto.Dokument
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
+import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveType
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_ID
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
-import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_2_ID
-import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_2_TITTEL
-import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_3_ID
-import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_3_TITTEL
 import no.nav.bidrag.dokument.arkiv.stubs.JOURNALPOST_ID
-import no.nav.bidrag.dokument.arkiv.stubs.JOURNALPOST_ID_2
 import no.nav.bidrag.dokument.arkiv.stubs.JOURNALPOST_ID_3
 import no.nav.bidrag.dokument.arkiv.stubs.NY_JOURNALPOST_ID_KNYTT_TIL_SAK
+import no.nav.bidrag.dokument.arkiv.stubs.createOppgaveDataWithJournalpostId
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.dokument.dto.AvvikType
 import no.nav.bidrag.dokument.dto.Avvikshendelse
@@ -214,6 +211,8 @@ class AvvikControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost(opprettSafResponse())
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
+//        stubs.mockSokOppgave(OppgaveSokResponse(1, listOf(createOppgaveDataWithJournalpostId(JOURNALPOST_ID.toString()))), HttpStatus.OK)
+//        stubs.mockOppdaterOppgave(HttpStatus.OK)
 
         val overforEnhetResponse = sendAvvikRequest(xEnhet, JOURNALPOST_ID, avvikHendelse)
 
@@ -226,6 +225,8 @@ class AvvikControllerTest : AbstractControllerTest() {
                     .isEqualTo(HttpStatus.OK)
             },
             { stubs.verifyStub.dokarkivOppdaterKalt(JOURNALPOST_ID, String.format("\"tema\":\"%s\"", nyttFagomrade)) },
+//            { stubs.verifyStub.oppgaveSokKalt(Pair("tema", "BID"), Pair("journalpostId", JOURNALPOST_ID.toString())) },
+//            { stubs.verifyStub.oppgaveOppdaterKalt(1, nyttFagomrade ) },
             {
                 Mockito.verify(kafkaTemplateMock).send(
                     ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(

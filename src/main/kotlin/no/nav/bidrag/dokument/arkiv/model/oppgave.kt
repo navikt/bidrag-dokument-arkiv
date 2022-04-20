@@ -13,6 +13,10 @@ internal data class OppgaveSokParametre(private val parametre: StringBuilder = S
         return leggTilParameter(PARAMETER_OPPGAVE_TYPE, OppgaveType.BEH_SAK)
     }
 
+    fun brukJournalforingOppgaveType(): OppgaveSokParametre {
+        return leggTilParameter(PARAMETER_OPPGAVE_TYPE, OppgaveType.JFR)
+    }
+
     fun brukVurderKonsYtelseSomOppgaveType(): OppgaveSokParametre {
         return leggTilParameter(PARAMETER_OPPGAVE_TYPE, OppgaveType.VUR_KONS_YTE)
     }
