@@ -99,11 +99,7 @@ public class HendelseListener {
   }
 
   private String hentGeografiskEnhet(String personId){
-    if (Strings.isNullOrEmpty(personId)){
-      return null;
-    }
-
-    return bidragOrganisasjonConsumer.hentGeografiskEnhet(personId).getEnhetIdent();
+    return bidragOrganisasjonConsumer.hentGeografiskEnhet(personId, null);
   }
 
   private Journalpost hentJournalpost(Long journalpostId){

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
+import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.AvvikshendelseIntern;
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
@@ -35,15 +36,18 @@ public class AvvikService {
   public final EndreJournalpostService endreJournalpostService;
   public final OppgaveService oppgaveService;
   private final DokarkivConsumer dokarkivConsumer;
+  private final BidragOrganisasjonConsumer bidragOrganisasjonConsumer;
   private final SaksbehandlerInfoManager saksbehandlerInfoManager;
 
   public AvvikService(ResourceByDiscriminator<JournalpostService> journalpostService, HendelserProducer hendelserProducer,
       EndreJournalpostService endreJournalpostService, OppgaveService oppgaveService,
-      ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers, SaksbehandlerInfoManager saksbehandlerInfoManager) {
+      ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers,
+      BidragOrganisasjonConsumer bidragOrganisasjonConsumer, SaksbehandlerInfoManager saksbehandlerInfoManager) {
     this.journalpostService = journalpostService.get(Discriminator.REGULAR_USER);
     this.hendelserProducer = hendelserProducer;
     this.endreJournalpostService = endreJournalpostService;
     this.oppgaveService = oppgaveService;
+    this.bidragOrganisasjonConsumer = bidragOrganisasjonConsumer;
     this.saksbehandlerInfoManager = saksbehandlerInfoManager;
     this.dokarkivConsumer = dokarkivConsumers.get(Discriminator.REGULAR_USER);
   }
@@ -88,11 +92,13 @@ public class AvvikService {
       throw new UgyldigAvvikException("Kan ikke sende journalpost mellom FAR og BID tema.");
     }
 
-    oppgaveService.opprettOverforJournalpostOppgave(journalpost, avvikshendelseIntern.getNyttFagomrade(), avvikshendelseIntern.getBeskrivelse());
+    var journalforendeEnhet = bidragOrganisasjonConsumer.hentGeografiskEnhet(journalpost.hentGjelderId(), avvikshendelseIntern.getNyttFagomrade());
+    var nyJournalpostId = endreJournalpostService.tilknyttTilGenerellSak(avvikshendelseIntern.getNyttFagomrade(), journalpost);
+    oppgaveService.opprettOverforJournalpostOppgave(journalpost, nyJournalpostId, journalforendeEnhet, avvikshendelseIntern.getNyttFagomrade(), avvikshendelseIntern.getBeskrivelse());
 
   }
 
-  private void knyttTilSakEllerOpphevEksisterendeFeilregistrertSakstilknytning(AvvikshendelseIntern avvikshendelseIntern, Journalpost journalpost){
+  private void knyttTilSakPaaNyFagomrade(AvvikshendelseIntern avvikshendelseIntern, Journalpost journalpost){
     var saksnummer = journalpost.getSak().getFagsakId();
     hentFeilregistrerteDupliserteJournalposterMedSakOgTema(saksnummer, avvikshendelseIntern.getNyttFagomrade(), journalpost)
         .findFirst()
@@ -119,7 +125,7 @@ public class AvvikService {
     }
 
     if (avvikshendelseIntern.isBidragFagomrade()){
-      knyttTilSakEllerOpphevEksisterendeFeilregistrertSakstilknytning(avvikshendelseIntern, journalpost);
+      knyttTilSakPaaNyFagomrade(avvikshendelseIntern, journalpost);
     } else {
       sendTilFagomrade(journalpost, avvikshendelseIntern);
     }
@@ -131,7 +137,8 @@ public class AvvikService {
     if (journalpost.isInngaaendeJournalfort()){
       endreFagomradeJournalfortJournalpost(journalpost, avvikshendelseIntern);
     } else {
-      oppdater(avvikshendelseIntern.toEndreFagomradeRequest());
+      var journalforendeEnhet = bidragOrganisasjonConsumer.hentGeografiskEnhet(journalpost.hentGjelderId(), avvikshendelseIntern.getNyttFagomrade());
+      oppdater(avvikshendelseIntern.toEndreFagomradeRequest(journalforendeEnhet));
     }
   }
 

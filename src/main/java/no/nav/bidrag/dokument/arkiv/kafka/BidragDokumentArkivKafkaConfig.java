@@ -1,5 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.kafka;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.bidrag.dokument.arkiv.FeatureToggle;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
@@ -47,7 +49,7 @@ public class BidragDokumentArkivKafkaConfig {
       var offset = rec.offset();
       var topic =  rec.topic();
       var partition =  rec.topic();
-      LOGGER.error("Kafka melding med nøkkel {}, partition {} og topic {} feilet på offset {}. Melding som feilet: {}", key, partition, topic, offset, value, e);
+      SECURE_LOGGER.error("Kafka melding med nøkkel {}, partition {} og topic {} feilet på offset {}. Melding som feilet: {}", key, partition, topic, offset, value, e);
     }, new ExponentialBackOff());
   }
 }

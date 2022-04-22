@@ -206,8 +206,10 @@ class AvvikControllerTest : AbstractControllerTest() {
     fun skalSendeAvvikEndreFagomrade() {
         // given
         val xEnhet = "1234"
+        val geografiskEnhet = "1234"
         val nyttFagomrade = "FAR"
         val avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, java.util.Map.of("fagomrade", nyttFagomrade))
+        stubs.mockOrganisasjonGeografiskTilknytning(geografiskEnhet)
         stubs.mockSafResponseHentJournalpost(opprettSafResponse())
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
@@ -343,9 +345,13 @@ class AvvikControllerTest : AbstractControllerTest() {
     fun skalSendeAvvikEndreFagomradeNarJournalpostJournalfort() {
         // given
         val xEnhet = "1234"
+        val geografiskEnhet = "1234"
         val nyttFagomrade = "AAP"
         val journalpostIdFraJson = 201028011L
+        val nyJournalpostId = 301028011L
         val avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, java.util.Map.of("fagomrade", nyttFagomrade))
+        stubs.mockOrganisasjonGeografiskTilknytning(geografiskEnhet)
+        stubs.mockDokarkivProxyTilknyttRequest(journalpostIdFraJson, nyJournalpostId)
         stubs.mockSafResponseHentJournalpost(journalpostJournalfortSafResponse, HttpStatus.OK)
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
@@ -362,7 +368,7 @@ class AvvikControllerTest : AbstractControllerTest() {
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.OK)
             },
-            { stubs.verifyStub.oppgaveOpprettKalt(OppgaveType.VUR.name) },
+            { stubs.verifyStub.oppgaveOpprettKalt(OppgaveType.VUR.name, nyJournalpostId.toString()) },
             { stubs.verifyStub.dokarkivFeilregistrerKalt(journalpostIdFraJson) },
             {
                 Mockito.verify(kafkaTemplateMock).send(

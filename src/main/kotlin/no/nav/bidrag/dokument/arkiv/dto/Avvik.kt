@@ -44,16 +44,16 @@ data class AvvikshendelseIntern(
     )
 
     fun toOverforEnhetRequest() = OverforEnhetRequest(journalpostId, enhetsnummerNytt)
-    fun toEndreFagomradeRequest() = toEndreFagomradeRequest(journalpostId)
-    fun toEndreFagomradeRequest(journalpostId: Long) = EndreFagomradeRequest(journalpostId, nyttFagomrade)
-    fun toKnyttTilGenerellSakRequest(fagomrade: String, bruker: Bruker) = KnyttTilGenerellSakRequest(journalpostId, OppdaterJournalpostRequest.Bruker(bruker.id, bruker.type), fagomrade)
+    fun toEndreFagomradeRequest(journalforendeEnhet: String) = toEndreFagomradeRequest(journalpostId, journalforendeEnhet)
+    fun toEndreFagomradeRequest(journalpostId: Long, journalforendeEnhet: String) = EndreFagomradeRequest(journalpostId, nyttFagomrade, journalforendeEnhet)
+    fun toKnyttTilGenerellSakRequest(fagomrade: String, bruker: Bruker) = EndreKnyttTilGenerellSakRequest(journalpostId, OppdaterJournalpostRequest.Bruker(bruker.id, bruker.type), fagomrade)
     fun toLeggTilBegrunnelsePaaTittelRequest(tittel: String) = EndreTittelRequest(journalpostId, "$tittel ($beskrivelse)")
 }
 
 data class OverforEnhetRequest(private var journalpostId: Long, override var journalfoerendeEnhet: String?): OppdaterJournalpostRequest(journalpostId)
-data class EndreFagomradeRequest(private var journalpostId: Long, override var tema: String?): OppdaterJournalpostRequest(journalpostId)
+data class EndreFagomradeRequest(private var journalpostId: Long, override var tema: String?, override var journalfoerendeEnhet: String?): OppdaterJournalpostRequest(journalpostId)
 data class EndreTittelRequest(private var journalpostId: Long, override var tittel: String?): OppdaterJournalpostRequest(journalpostId)
-data class KnyttTilGenerellSakRequest(private var journalpostId: Long, override var bruker: Bruker?, override var tema: String?, override var sak: Sak? = GenerellSak()): OppdaterJournalpostRequest(journalpostId)
+data class EndreKnyttTilGenerellSakRequest(private var journalpostId: Long, override var bruker: Bruker?, override var tema: String?, override var sak: Sak? = GenerellSak()): OppdaterJournalpostRequest(journalpostId)
 data class InngaaendeTilUtgaaendeRequest(private var journalpostId: Long, override var tema: String?): OppdaterJournalpostRequest(journalpostId)
 data class RegistrerReturRequest(private var journalpostId: Long, private var _datoRetur: LocalDate, private var _tilleggsopplysninger: TilleggsOpplysninger?): OppdaterJournalpostRequest(journalpostId) {
     init {

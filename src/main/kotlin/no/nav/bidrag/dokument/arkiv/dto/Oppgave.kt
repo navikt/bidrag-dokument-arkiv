@@ -84,11 +84,11 @@ data class EndreForNyttDokumentRequest(private var oppgaveData: OppgaveData,
 
 @Suppress("unused") // used by jackson...
 sealed class OpprettOppgaveRequest(
-    var journalpostId: String,
+    open var journalpostId: String,
     var oppgavetype: OppgaveType,
     var opprettetAvEnhetsnr: String = "9999",
     open var prioritet: String = Prioritet.HOY.name,
-    var tildeltEnhetsnr: String? = "4833",
+    open var tildeltEnhetsnr: String? = "4833",
     open var tema: String = "BID",
     var aktivDato: String = LocalDate.now().format(DateTimeFormatter.ofPattern("YYYY-MM-dd")),
     var saksreferanse: String? = null,
@@ -108,15 +108,17 @@ sealed class OpprettOppgaveRequest(
 @Suppress("unused") // påkrevd felt som brukes av jackson men som ikke brukes aktivt
 data class OpprettVurderDokumentOppgaveRequest(
     private var journalpost: Journalpost,
+    override var journalpostId: String,
+    override var tildeltEnhetsnr: String?,
     override var tema: String,
     var aktoerId: String,
     private var saksbehandlerMedEnhet: SaksbehandlerMedEnhet,
-    private var kommentar: String?):
+    private var kommentar: String?
+):
     OpprettOppgaveRequest(
-        journalpostId = journalpost.journalpostId!!,
+        journalpostId = journalpostId,
         oppgavetype = OppgaveType.VUR,
         prioritet = Prioritet.NORM.name,
-        tildeltEnhetsnr = journalpost.journalforendeEnhet,
         opprettetAvEnhetsnr = saksbehandlerMedEnhet.enhetsnummer,
         fristFerdigstillelse = LocalDate.now().plusDays(1).toString(),
         beskrivelse = lagVurderDokumentOppgaveBeskrivelse(saksbehandlerMedEnhet, journalpost.dokumenter[0].brevkode, journalpost.tittel!!, kommentar, journalpost.hentDatoRegistrert() ?: LocalDate.now())
