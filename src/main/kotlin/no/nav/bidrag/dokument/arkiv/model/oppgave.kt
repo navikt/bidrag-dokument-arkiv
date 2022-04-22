@@ -13,16 +13,8 @@ internal data class OppgaveSokParametre(private val parametre: StringBuilder = S
         return leggTilParameter(PARAMETER_OPPGAVE_TYPE, OppgaveType.BEH_SAK)
     }
 
-    fun brukVurderKonsYtelseSomOppgaveType(): OppgaveSokParametre {
-        return leggTilParameter(PARAMETER_OPPGAVE_TYPE, OppgaveType.VUR_KONS_YTE)
-    }
-
     fun leggTilFagomrade(fagomrade: String): OppgaveSokParametre {
         return leggTilParameter(PARAMETER_TEMA, fagomrade)
-    }
-
-    fun leggTilJournalpostId(journalpostId: Long): OppgaveSokParametre {
-        return leggTilParameter(PARAMETER_JOURNALPOST_ID, journalpostId)
     }
 
     fun leggTilSaksreferanse(saksnummer: String?) {

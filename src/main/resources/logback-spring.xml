@@ -13,6 +13,9 @@
         <arguments/>
         <stackTrace/>
       </providers>
+      <jsonGeneratorDecorator class="net.logstash.logback.mask.MaskingJsonGeneratorDecorator">
+        <valueMasker class="no.nav.bidrag.commons.logging.SensitiveLogMasker"/>
+      </jsonGeneratorDecorator>
     </encoder>
   </appender>
 

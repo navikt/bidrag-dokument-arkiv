@@ -26,3 +26,7 @@ env:
   FEATURE_ENABLED: NONE
 vault:
   kvPath: prod
+azureAccessInbound:
+  - application: bidrag-dokument
+    namespace: bidrag
+    cluster: prod-fss

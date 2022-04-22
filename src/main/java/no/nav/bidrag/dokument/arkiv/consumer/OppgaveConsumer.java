@@ -1,5 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.consumer;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
+
 import java.util.Optional;
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveData;
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveResponse;
@@ -22,23 +24,18 @@ public class OppgaveConsumer extends AbstractConsumer {
   public OppgaveSokResponse finnOppgaver(OppgaveSokParametre parametre) {
     var pathMedParametre = parametre.hentParametreForApneOppgaverSortertSynkendeEtterFrist();
     LOGGER.info("søk opp åpne oppgaver med {}", pathMedParametre);
-
-    var responseEntity = restTemplate.exchange(pathMedParametre, HttpMethod.GET, null, OppgaveSokResponse.class);
-
-    LOGGER.debug("Response: {}, HttpStatus: {}", responseEntity.getBody(), responseEntity.getStatusCode());
-
-    return responseEntity.getBody();
+    return restTemplate.exchange(pathMedParametre, HttpMethod.GET, null, OppgaveSokResponse.class).getBody();
 
   }
 
   public long opprett(OpprettOppgaveRequest opprettOppgaveRequest) {
 
-    LOGGER.debug("oppretter oppgave: " + opprettOppgaveRequest);
+    SECURE_LOGGER.debug("oppretter oppgave: " + opprettOppgaveRequest);
     LOGGER.info("oppretter oppgave med type {} og journalpostid {}", opprettOppgaveRequest.getOppgavetype(), opprettOppgaveRequest.getJournalpostId());
 
     var oppgaveResponse = restTemplate.postForEntity("/", opprettOppgaveRequest, OppgaveResponse.class);
 
-    LOGGER.debug("oppgaveResponse: " + oppgaveResponse);
+    SECURE_LOGGER.debug("oppgaveResponse: " + oppgaveResponse);
 
     return Optional.of(oppgaveResponse)
         .map(ResponseEntity::getBody)

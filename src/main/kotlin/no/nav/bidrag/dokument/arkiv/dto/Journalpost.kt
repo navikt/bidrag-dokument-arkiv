@@ -204,11 +204,12 @@ data class Journalpost(
     fun tilAvvik(): List<AvvikType> {
         val avvikTypeList = mutableListOf<AvvikType>()
         if (isUtgaaendeDokument() && (isStatusFerdigsstilt() || isStatusEkspedert())) avvikTypeList.add(AvvikType.REGISTRER_RETUR)
-        if (isStatusMottatt() && isInngaaendeDokument()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
+        if (isStatusMottatt()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
         if (!isStatusMottatt() && hasSak() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.FEILFORE_SAK)
-        if (!isUtgaaendeDokument()) avvikTypeList.add(AvvikType.ENDRE_FAGOMRADE)
-        return avvikTypeList;
+        if (isInngaaendeDokument() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.ENDRE_FAGOMRADE)
+        if (isInngaaendeDokument() && isStatusJournalfort()) avvikTypeList.add(AvvikType.SEND_TIL_FAGOMRADE)
+        return avvikTypeList
     }
 
     fun hasMottakerId(): Boolean = avsenderMottaker?.id != null

@@ -122,3 +122,6 @@ fun opprettDokumentOversiktfagsakResponse(): List<Journalpost>{
 fun createOppgaveDataWithSaksnummer(saksnummer: String): OppgaveData{
     return OppgaveData(saksreferanse = saksnummer, id=2, versjon = 1, beskrivelse = "")
 }
+fun createOppgaveDataWithJournalpostId(journalpostId: String): OppgaveData{
+    return OppgaveData(journalpostId = journalpostId, id=2, versjon = 1, beskrivelse = "")
+}

@@ -1,5 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
+
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -38,10 +40,12 @@ public class OppgaveService {
     this.saksbehandlerInfoManager = saksbehandlerInfoManager;
   }
 
-  public void opprettOverforJournalpostOppgave(Journalpost journalpost, String tema, String kommentar) {
+  public void opprettOverforJournalpostOppgave(Journalpost journalpost, String journalpostId, String tildeltEnhetsnr, String tema, String kommentar) {
     var aktorId = hentAktorId(journalpost.hentGjelderId());
     opprettOppgave(new OpprettVurderDokumentOppgaveRequest(
         journalpost,
+        journalpostId,
+        tildeltEnhetsnr,
         tema,
         aktorId,
         hentSaksbehandlerMedEnhet(journalpost),
@@ -92,9 +96,9 @@ public class OppgaveService {
 
     for (var oppgaveData : oppgaverMedBeskrivelse) {
       var request = new EndreForNyttDokumentRequest(oppgaveData, saksbehandlerInfo, journalpost, enhet);
-      LOGGER.info("Oppgave (id: {}) har beskrivelse: {}", oppgaveData.getId(), request.getBeskrivelse());
-
       oppgaveConsumers.get(Discriminator.SERVICE_USER).patchOppgave(request);
+      LOGGER.info("Endret beskrivelse for oppgave {}", oppgaveData.getId());
+      SECURE_LOGGER.info("Endret beskrivelse for oppgave {} med beskrivelse: {}", oppgaveData.getId(), request.getBeskrivelse());
     }
   }
 

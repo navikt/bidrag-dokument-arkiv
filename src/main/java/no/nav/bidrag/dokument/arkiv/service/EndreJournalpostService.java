@@ -3,6 +3,7 @@ package no.nav.bidrag.dokument.arkiv.service;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import no.nav.bidrag.commons.web.HttpResponse;
+import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivProxyConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
@@ -10,6 +11,8 @@ import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilAnnenSakRequest;
+import no.nav.bidrag.dokument.arkiv.dto.KnyttTilGenerellSakRequest;
+import no.nav.bidrag.dokument.arkiv.dto.KnyttTilSakRequest;
 import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostDistribusjonsInfoRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
@@ -29,6 +32,7 @@ public class EndreJournalpostService {
   private final JournalpostService journalpostService;
   private final DokarkivConsumer dokarkivConsumer;
   private final DokarkivProxyConsumer dokarkivProxyConsumer;
+  private final BidragOrganisasjonConsumer bidragOrganisasjonConsumer;
   private final OppgaveService oppgaveService;
   private final HendelserProducer hendelserProducer;
 
@@ -36,11 +40,12 @@ public class EndreJournalpostService {
       JournalpostService journalpostService,
       DokarkivConsumer dokarkivConsumer,
       DokarkivProxyConsumer dokarkivProxyConsumer,
-      OppgaveService oppgaveService,
+      BidragOrganisasjonConsumer bidragOrganisasjonConsumer, OppgaveService oppgaveService,
       HendelserProducer hendelserProducer) {
     this.journalpostService = journalpostService;
     this.dokarkivConsumer = dokarkivConsumer;
     this.dokarkivProxyConsumer = dokarkivProxyConsumer;
+    this.bidragOrganisasjonConsumer = bidragOrganisasjonConsumer;
     this.oppgaveService = oppgaveService;
     this.hendelserProducer = hendelserProducer;
   }
@@ -57,7 +62,7 @@ public class EndreJournalpostService {
     tilknyttSakerTilJournalfoertJournalpost(endreJournalpostCommand, journalpost);
     opprettBehandleDokumentOppgaveVedJournalforing(endreJournalpostCommand, journalpost);
 
-    hendelserProducer.publishJournalpostUpdated(journalpostId);
+    hendelserProducer.publishJournalpostUpdated(journalpostId, endreJournalpostCommand.getEnhet());
     return HttpResponse.from(HttpStatus.OK);
   }
 
@@ -114,17 +119,23 @@ public class EndreJournalpostService {
   }
 
   public void tilknyttTilSak(String saksnummer, String tema, Journalpost journalpost){
-    KnyttTilAnnenSakRequest knyttTilAnnenSakRequest = new KnyttTilAnnenSakRequest(saksnummer, journalpost, tema);
-    LOGGER.info("Tilknytter sak {} til journalpost {}", saksnummer, journalpost.getJournalpostId());
+    KnyttTilAnnenSakRequest knyttTilAnnenSakRequest = new KnyttTilSakRequest(saksnummer, journalpost, tema);
     var response = dokarkivProxyConsumer.knyttTilSak(journalpost.hentJournalpostIdLong(), knyttTilAnnenSakRequest);
-    LOGGER.info("Opprettet journalpost med id {} med tema {} og saksnummer {}", response.getNyJournalpostId(), tema, saksnummer);
+    LOGGER.info("Tilknyttet journalpost {} til sak {} med ny journalpostId {} og tema {}",journalpost.getJournalpostId(), saksnummer, response.getNyJournalpostId(), tema);
     journalpost.leggTilTilknyttetSak(saksnummer);
+  }
+
+  public String tilknyttTilGenerellSak(String tema, Journalpost journalpost){
+    KnyttTilGenerellSakRequest knyttTilGenerellSakRequest = new KnyttTilGenerellSakRequest(journalpost, tema);
+    var response = dokarkivProxyConsumer.knyttTilSak(journalpost.hentJournalpostIdLong(), knyttTilGenerellSakRequest);
+    LOGGER.info("Tilknyttet journalpost {} til GENERELL_SAK med ny journalpostId {} og tema {}",journalpost.getJournalpostId(), response.getNyJournalpostId(), tema);
+    return response.getNyJournalpostId();
   }
 
   private void journalfoerJournalpost(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand){
     var journalforRequest = new FerdigstillJournalpostRequest(journalpostId, endreJournalpostCommand.getEnhet());
     dokarkivConsumer.ferdigstill(journalforRequest);
-    LOGGER.info("Journalpost med id {} er ferdigstillt", journalpostId);
+    LOGGER.info("Journalpost med id {} er journalført", journalpostId);
   }
 
   public void oppdaterJournalpostDistribusjonBestiltStatus(Long journalpostId, Journalpost journalpost){

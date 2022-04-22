@@ -83,7 +83,7 @@ public class HendelseListener {
       var journalpostId = record.getJournalpostId();
       var journalpost = hentJournalpost(journalpostId);
       if (erOpprettetAvNKS(journalpost)){
-        LOGGER.info("Journalpost er opprettet av NKS opprettetAvNavn={}. Stopper videre behandling", journalpost.getOpprettetAvNavn());
+        LOGGER.info("Journalpost er opprettet av NKS. Stopper videre behandling");
         return;
       }
 
@@ -99,11 +99,7 @@ public class HendelseListener {
   }
 
   private String hentGeografiskEnhet(String personId){
-    if (Strings.isNullOrEmpty(personId)){
-      return null;
-    }
-
-    return bidragOrganisasjonConsumer.hentGeografiskEnhet(personId).getEnhetIdent();
+    return bidragOrganisasjonConsumer.hentGeografiskEnhet(personId, null);
   }
 
   private Journalpost hentJournalpost(Long journalpostId){
