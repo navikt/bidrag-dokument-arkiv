@@ -62,7 +62,7 @@ public class EndreJournalpostService {
     tilknyttSakerTilJournalfoertJournalpost(endreJournalpostCommand, journalpost);
     opprettBehandleDokumentOppgaveVedJournalforing(endreJournalpostCommand, journalpost);
 
-    hendelserProducer.publishJournalpostUpdated(journalpostId);
+    hendelserProducer.publishJournalpostUpdated(journalpostId, endreJournalpostCommand.getEnhet());
     return HttpResponse.from(HttpStatus.OK);
   }
 
@@ -120,24 +120,22 @@ public class EndreJournalpostService {
 
   public void tilknyttTilSak(String saksnummer, String tema, Journalpost journalpost){
     KnyttTilAnnenSakRequest knyttTilAnnenSakRequest = new KnyttTilSakRequest(saksnummer, journalpost, tema);
-    LOGGER.info("Tilknytter sak {} til journalpost {}", saksnummer, journalpost.getJournalpostId());
     var response = dokarkivProxyConsumer.knyttTilSak(journalpost.hentJournalpostIdLong(), knyttTilAnnenSakRequest);
-    LOGGER.info("Opprettet journalpost med id {} med tema {} og saksnummer {}", response.getNyJournalpostId(), tema, saksnummer);
+    LOGGER.info("Tilknyttet journalpost {} til sak {} med ny journalpostId {} og tema {}",journalpost.getJournalpostId(), saksnummer, response.getNyJournalpostId(), tema);
     journalpost.leggTilTilknyttetSak(saksnummer);
   }
 
   public String tilknyttTilGenerellSak(String tema, Journalpost journalpost){
     KnyttTilGenerellSakRequest knyttTilGenerellSakRequest = new KnyttTilGenerellSakRequest(journalpost, tema);
-    LOGGER.info("Tilknytter til GENERELL_SAK for journalpost {}", journalpost.getJournalpostId());
     var response = dokarkivProxyConsumer.knyttTilSak(journalpost.hentJournalpostIdLong(), knyttTilGenerellSakRequest);
-    LOGGER.info("Opprettet journalpost med id {} med tema {} knyttet til GENERELL_SAK", response.getNyJournalpostId(), tema);
+    LOGGER.info("Tilknyttet journalpost {} til GENERELL_SAK med ny journalpostId {} og tema {}",journalpost.getJournalpostId(), response.getNyJournalpostId(), tema);
     return response.getNyJournalpostId();
   }
 
   private void journalfoerJournalpost(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand){
     var journalforRequest = new FerdigstillJournalpostRequest(journalpostId, endreJournalpostCommand.getEnhet());
     dokarkivConsumer.ferdigstill(journalforRequest);
-    LOGGER.info("Journalpost med id {} er ferdigstillt", journalpostId);
+    LOGGER.info("Journalpost med id {} er journalført", journalpostId);
   }
 
   public void oppdaterJournalpostDistribusjonBestiltStatus(Long journalpostId, Journalpost journalpost){

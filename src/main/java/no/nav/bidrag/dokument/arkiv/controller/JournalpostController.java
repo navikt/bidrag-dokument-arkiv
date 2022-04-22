@@ -4,6 +4,7 @@ import static no.nav.bidrag.commons.KildesystemIdenfikator.PREFIX_BIDRAG_COMPLET
 import static no.nav.bidrag.commons.KildesystemIdenfikator.PREFIX_JOARK;
 import static no.nav.bidrag.commons.KildesystemIdenfikator.PREFIX_JOARK_COMPLETE;
 import static no.nav.bidrag.commons.web.WebUtil.initHttpHeadersWith;
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -132,7 +133,8 @@ public class JournalpostController {
       @RequestBody Avvikshendelse avvikshendelse,
       @RequestHeader(EnhetFilter.X_ENHET_HEADER) String enhet
   ) {
-    LOGGER.info("opprett /journal/{}/avvik: {}", journalpostId, avvikshendelse);
+    LOGGER.info("Behandle avvik for journalpost {}", journalpostId);
+    SECURE_LOGGER.info("Behandle avvik for journalpost {}: {}", journalpostId, avvikshendelse);
 
     KildesystemIdenfikator kildesystemIdenfikator = new KildesystemIdenfikator(journalpostId);
     if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix()) {
@@ -225,7 +227,8 @@ public class JournalpostController {
       @PathVariable String joarkJournalpostId,
       @RequestHeader(EnhetFilter.X_ENHET_HEADER) String enhet
   ) {
-    LOGGER.info("api: put /journal/{}, body: {}", joarkJournalpostId, endreJournalpostCommand);
+    LOGGER.info("Mottatt oppdater journalpost {} kall", joarkJournalpostId);
+    SECURE_LOGGER.info("Oppdater journalpost {} med body: {}", joarkJournalpostId, endreJournalpostCommand);
     KildesystemIdenfikator kildesystemIdenfikator = new KildesystemIdenfikator(joarkJournalpostId);
 
     if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix() ||

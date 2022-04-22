@@ -40,28 +40,29 @@ public class HendelserProducer {
     this.saksbehandlerInfoManager = saksbehandlerInfoManager;
   }
 
-  public void publishJournalpostUpdated(Long journalpostId){
-    var journalpostHendelse = createJournalpostHendelse(journalpostId);
+  public void publishJournalpostUpdated(Long journalpostId, String saksbehandlersEnhet){
+    var journalpostHendelse = createJournalpostHendelse(journalpostId, saksbehandlersEnhet);
     publish(journalpostHendelse);
   }
 
   public void publishJournalpostUpdated(Journalpost journalpost){
-    var journalpostHendelse = createJournalpostHendelse(journalpost);
+    var journalpostHendelse = createJournalpostHendelse(journalpost, "9999");
     publish(journalpostHendelse);
   }
 
-  private JournalpostHendelse createJournalpostHendelse(Long journalpostId) {
+  private JournalpostHendelse createJournalpostHendelse(Long journalpostId, String saksbehandlersEnhet) {
     var journalpostOptional = journalpostService.hentJournalpostMedAktorId(journalpostId);
     if (journalpostOptional.isEmpty()) {
       throw new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId));
     }
     var journalpost = journalpostOptional.get();
-    return createJournalpostHendelse(journalpost);
+    return createJournalpostHendelse(journalpost, saksbehandlersEnhet);
   }
 
-  private JournalpostHendelse createJournalpostHendelse(Journalpost journalpost) {
+  private JournalpostHendelse createJournalpostHendelse(Journalpost journalpost, String saksbehandlersEnhet) {
     var saksbehandler = saksbehandlerInfoManager.hentSaksbehandler().orElse(new Saksbehandler("bidrag-dokument-arkiv", "bidrag-dokument-arkiv"));
-    return new JournalpostHendelseIntern(journalpost, saksbehandler).hentJournalpostHendelse();
+    var saksbehandlerMedEnhet = saksbehandler.tilEnhet(saksbehandlersEnhet);
+    return new JournalpostHendelseIntern(journalpost, saksbehandlerMedEnhet).hentJournalpostHendelse();
   }
 
   @Retryable(value = Exception.class, maxAttempts = 10, backoff = @Backoff(delay = 1000, maxDelay = 12000, multiplier = 2.0))

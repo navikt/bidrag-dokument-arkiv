@@ -77,7 +77,7 @@ public class AvvikService {
       default -> throw new AvvikNotSupportedException("Avvik %s ikke støttet".formatted(avvikshendelseIntern.getAvvikstype()));
     }
 
-    hendelserProducer.publishJournalpostUpdated(journalpost.hentJournalpostIdLong());
+    hendelserProducer.publishJournalpostUpdated(journalpost.hentJournalpostIdLong(), avvikshendelseIntern.getSaksbehandlersEnhet());
     SECURE_LOGGER.info("Avvik {} ble utført på journalpost {} av bruker {} og enhet {} med beskrivelse {}", avvikshendelseIntern.getAvvikstype(), avvikshendelseIntern.getJournalpostId(), saksbehandlerInfoManager.hentSaksbehandlerBrukerId(), avvikshendelseIntern.getSaksbehandlersEnhet(), avvikshendelseIntern.getBeskrivelse());
 
     return Optional.of(new BehandleAvvikshendelseResponse(avvikshendelseIntern.getAvvikstype()));
@@ -95,10 +95,9 @@ public class AvvikService {
     var journalforendeEnhet = bidragOrganisasjonConsumer.hentGeografiskEnhet(journalpost.hentGjelderId(), avvikshendelseIntern.getNyttFagomrade());
     var nyJournalpostId = endreJournalpostService.tilknyttTilGenerellSak(avvikshendelseIntern.getNyttFagomrade(), journalpost);
     oppgaveService.opprettOverforJournalpostOppgave(journalpost, nyJournalpostId, journalforendeEnhet, avvikshendelseIntern.getNyttFagomrade(), avvikshendelseIntern.getBeskrivelse());
-
   }
 
-  private void knyttTilSakPaaNyFagomrade(AvvikshendelseIntern avvikshendelseIntern, Journalpost journalpost){
+  private void knyttTilSakPaaNyttFagomrade(AvvikshendelseIntern avvikshendelseIntern, Journalpost journalpost){
     var saksnummer = journalpost.getSak().getFagsakId();
     hentFeilregistrerteDupliserteJournalposterMedSakOgTema(saksnummer, avvikshendelseIntern.getNyttFagomrade(), journalpost)
         .findFirst()
@@ -125,7 +124,7 @@ public class AvvikService {
     }
 
     if (avvikshendelseIntern.isBidragFagomrade()){
-      knyttTilSakPaaNyFagomrade(avvikshendelseIntern, journalpost);
+      knyttTilSakPaaNyttFagomrade(avvikshendelseIntern, journalpost);
     } else {
       sendTilFagomrade(journalpost, avvikshendelseIntern);
     }
@@ -154,7 +153,7 @@ public class AvvikService {
   }
 
   public void trekkJournalpost(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
-    // Journalfør på GENERELL_SAK og kanskje feilfør sakstilknytning
+    // Journalfør på GENERELL_SAK og feilfør sakstilknytning
     validateTrue(journalpost.getBruker() != null, new AvvikDetaljException("Kan ikke trekke journalpost uten bruker"));
     validateTrue(journalpost.getTema() != null, new AvvikDetaljException("Kan ikke trekke journalpost uten tilhørende fagområde"));
 
@@ -163,9 +162,7 @@ public class AvvikService {
 
     dokarkivConsumer.ferdigstill(new FerdigstillJournalpostRequest(avvikshendelseIntern.getJournalpostId(), avvikshendelseIntern.getSaksbehandlersEnhet()));
 
-    if (avvikshendelseIntern.getSkalFeilregistreres()){
-      feilregistrerSakstilknytning(avvikshendelseIntern.getJournalpostId());
-    }
+    feilregistrerSakstilknytning(avvikshendelseIntern.getJournalpostId());
   }
 
   public void knyttTilGenerellSak(AvvikshendelseIntern avvikshendelseIntern, Journalpost journalpost){
