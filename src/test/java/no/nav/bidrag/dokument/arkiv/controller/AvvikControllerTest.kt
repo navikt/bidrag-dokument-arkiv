@@ -418,52 +418,12 @@ class AvvikControllerTest : AbstractControllerTest() {
     @Test
     @DisplayName("skal utføre avvik TREKK_JOURNALPOST")
     @Throws(IOException::class)
-    fun skalUtforeAvvikTrekkJournalpost() {
-        // given
-        val xEnhet = "1234"
-        val journalpostIdFraJson = 201028011L
-        val avvikHendelse = createAvvikHendelse(AvvikType.TREKK_JOURNALPOST, java.util.Map.of())
-        avvikHendelse.beskrivelse = "grunnen er sann"
-        stubs.mockSafResponseHentJournalpost(responseJournalpostJson, HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
-        stubs.mockDokarkivFeilregistrerRequest(journalpostIdFraJson)
-        stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
-        stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson)
-
-        val overforEnhetResponse = sendAvvikRequest(xEnhet, journalpostIdFraJson, avvikHendelse)
-
-        // then
-        assertAll(
-            {
-                Assertions.assertThat(overforEnhetResponse)
-                    .extracting { it.statusCode }
-                    .`as`("statusCode")
-                    .isEqualTo(HttpStatus.OK)
-            },
-            { stubs.verifyStub.dokarkivFeilregistrerIkkeKalt(journalpostIdFraJson) },
-            { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "GENERELL_SAK") },
-            { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "Filosofens bidrag (grunnen er sann)") },
-            { stubs.verifyStub.dokarkivFerdigstillKalt(journalpostIdFraJson) },
-            {
-                Mockito.verify(kafkaTemplateMock).send(
-                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
-                        "JOARK-$journalpostIdFraJson"
-                    ), ArgumentMatchers.any()
-                )
-            }
-        )
-    }
-
-    @Test
-    @DisplayName("skal utføre avvik TREKK_JOURNALPOST")
-    @Throws(IOException::class)
     fun skalUtforeAvvikTrekkJournalpostOgFeilregistrere() {
         // given
         val xEnhet = "1234"
         val journalpostIdFraJson = 201028011L
         val avvikHendelse = createAvvikHendelse(AvvikType.TREKK_JOURNALPOST, java.util.Map.of())
         val detaljer: MutableMap<String, String> = HashMap()
-        detaljer["feilregistrer"] = "true"
         avvikHendelse.detaljer = detaljer
         stubs.mockSafResponseHentJournalpost(responseJournalpostJson, HttpStatus.OK)
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
