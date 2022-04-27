@@ -235,14 +235,21 @@ public class Stubs {
   }
 
   public void mockSafResponseHentJournalpost(Journalpost journalpost) {
+    mockSafResponseHentJournalpost(journalpost, null, null);
+  }
+
+  public void mockSafResponseHentJournalpost(Journalpost journalpost, String scenarioState, String nextScenario) {
     try {
       stubFor(
-          post(urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query journalpost")).willReturn(
+          post(urlEqualTo("/saf/"))
+              .inScenario("Saf response")
+              .whenScenarioStateIs(scenarioState == null ? Scenario.STARTED : scenarioState)
+              .withRequestBody(new ContainsPattern("query journalpost")).willReturn(
               aClosedJsonResponse()
                   .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                   .withStatus(HttpStatus.OK.value())
                   .withBody("{\"data\":{\"journalpost\": %s }}".formatted(objectMapper.writeValueAsString(journalpost)))
-          )
+          ).willSetStateTo(nextScenario)
       );
     } catch (JsonProcessingException e) {
       fail(e.getMessage());
@@ -250,20 +257,14 @@ public class Stubs {
   }
 
   public void mockSafResponseHentJournalpost(String filename, HttpStatus status) {
-    mockSafResponseHentJournalpost(filename, status, null, null);
-  }
-
-  public void mockSafResponseHentJournalpost(String filename, HttpStatus status, String scenarioState, String nextScenarioState) {
     stubFor(
         post(urlEqualTo("/saf/"))
-            .inScenario("SAF response")
-            .whenScenarioStateIs(scenarioState == null ? Scenario.STARTED : scenarioState)
             .withRequestBody(new ContainsPattern("query journalpost"))
             .willReturn(aClosedJsonResponse()
                   .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                   .withStatus(status.value())
                   .withBodyFile("json/" + filename)
-            ).willSetStateTo(nextScenarioState)
+            )
     );
   }
 

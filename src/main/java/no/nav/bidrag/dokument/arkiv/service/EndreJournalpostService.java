@@ -32,7 +32,6 @@ public class EndreJournalpostService {
   private final JournalpostService journalpostService;
   private final DokarkivConsumer dokarkivConsumer;
   private final DokarkivProxyConsumer dokarkivProxyConsumer;
-  private final BidragOrganisasjonConsumer bidragOrganisasjonConsumer;
   private final OppgaveService oppgaveService;
   private final HendelserProducer hendelserProducer;
 
@@ -40,12 +39,11 @@ public class EndreJournalpostService {
       JournalpostService journalpostService,
       DokarkivConsumer dokarkivConsumer,
       DokarkivProxyConsumer dokarkivProxyConsumer,
-      BidragOrganisasjonConsumer bidragOrganisasjonConsumer, OppgaveService oppgaveService,
+      OppgaveService oppgaveService,
       HendelserProducer hendelserProducer) {
     this.journalpostService = journalpostService;
     this.dokarkivConsumer = dokarkivConsumer;
     this.dokarkivProxyConsumer = dokarkivProxyConsumer;
-    this.bidragOrganisasjonConsumer = bidragOrganisasjonConsumer;
     this.oppgaveService = oppgaveService;
     this.hendelserProducer = hendelserProducer;
   }
@@ -143,6 +141,7 @@ public class EndreJournalpostService {
   }
 
   private Journalpost hentJournalpost(Long journalpostId){
+    LOGGER.info("Henter jouranlpost {}", journalpostId);
     return journalpostService.hentJournalpost(journalpostId).orElseThrow(
         () -> new JournalpostIkkeFunnetException("Kunne ikke finne journalpost med id: " + journalpostId)
     );
