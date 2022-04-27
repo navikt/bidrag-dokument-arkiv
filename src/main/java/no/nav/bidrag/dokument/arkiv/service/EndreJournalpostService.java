@@ -51,14 +51,14 @@ public class EndreJournalpostService {
   }
 
   public HttpResponse<Void> endre(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand) {
-    var journalpost = journalpostService.hentJournalpost(journalpostId).orElseThrow(
-        () -> new JournalpostIkkeFunnetException("Kunne ikke finne journalpost med id: " + journalpostId)
-    );
+    var journalpost = hentJournalpost(journalpostId);
 
     endreJournalpostCommand.sjekkGyldigEndring(journalpost);
 
     lagreJournalpost(journalpostId, endreJournalpostCommand, journalpost);
     journalfoerJournalpostNarMottaksregistrert(endreJournalpostCommand, journalpost);
+
+    journalpost = hentJournalpost(journalpostId);
     tilknyttSakerTilJournalfoertJournalpost(endreJournalpostCommand, journalpost);
     opprettBehandleDokumentOppgaveVedJournalforing(endreJournalpostCommand, journalpost);
 
@@ -70,7 +70,7 @@ public class EndreJournalpostService {
     return dokarkivConsumer.endre(oppdaterJournalpostRequest);
   }
 
-  public void opprettBehandleDokumentOppgaveVedJournalforing(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost) {
+  private void opprettBehandleDokumentOppgaveVedJournalforing(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost) {
     if (endreJournalpostCommand.skalJournalfores()) {
       opprettBehandleDokumentOppgave(journalpost);
     }
@@ -140,5 +140,11 @@ public class EndreJournalpostService {
 
   public void oppdaterJournalpostDistribusjonBestiltStatus(Long journalpostId, Journalpost journalpost){
     lagreJournalpost(new OppdaterJournalpostDistribusjonsInfoRequest(journalpostId, journalpost));
+  }
+
+  private Journalpost hentJournalpost(Long journalpostId){
+    return journalpostService.hentJournalpost(journalpostId).orElseThrow(
+        () -> new JournalpostIkkeFunnetException("Kunne ikke finne journalpost med id: " + journalpostId)
+    );
   }
 }

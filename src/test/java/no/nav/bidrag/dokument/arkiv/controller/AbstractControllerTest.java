@@ -40,6 +40,7 @@ public abstract class AbstractControllerTest {
   protected String responseJournalpostIngenSakerJson = "journalpostSafIngenSakerResponse.json";
   protected String journalpostSafNotFoundResponse = "journalpostSafNotFoundResponse.json";
   protected String journalpostJournalfortSafResponse = "journalpostJournalfortSafResponse.json";
+  protected String journalpostJournalfort2SafResponse = "journalpostJournalfortSafResponse2.json";
 
   @LocalServerPort
   protected int port;

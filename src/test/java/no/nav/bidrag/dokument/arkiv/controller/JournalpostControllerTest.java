@@ -303,7 +303,7 @@ class JournalpostControllerTest extends AbstractControllerTest {
     // given
 
     var xEnhet = "1234";
-    var sak = "5276661";
+    var sak = "200000";
     var journalpostIdFraJson = 201028011L;
     var headersMedEnhet = new HttpHeaders();
     headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
@@ -314,7 +314,8 @@ class JournalpostControllerTest extends AbstractControllerTest {
 
     stubs.mockSokOppgave();
     stubs.mockOpprettOppgave(HttpStatus.OK);
-    stubs.mockSafResponseHentJournalpost(HttpStatus.OK);
+    stubs.mockSafResponseHentJournalpost(responseJournalpostJson, HttpStatus.OK, null, "AFTER");
+    stubs.mockSafResponseHentJournalpost(journalpostJournalfort2SafResponse, HttpStatus.OK, "AFTER", null);
     stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK);
     stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
     stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson);
@@ -334,7 +335,7 @@ class JournalpostControllerTest extends AbstractControllerTest {
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
-        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, String.format("\"fagsakId\":\"%s\"", "5276661")),
+        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, String.format("\"fagsakId\":\"%s\"", "200000")),
         () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "\"fagsaksystem\":\"BISYS\""),
         () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "\"sakstype\":\"FAGSAK\""),
         () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "\"bruker\":{\"id\":\"06127412345\",\"idType\":\"FNR\"}"),
@@ -360,12 +361,14 @@ class JournalpostControllerTest extends AbstractControllerTest {
 
     var endreJournalpostCommand = createEndreJournalpostCommand();
     endreJournalpostCommand.setSkalJournalfores(true);
+    endreJournalpostCommand.setGjelder("12333333333");
     endreJournalpostCommand.setTilknyttSaker(Arrays.asList(saksnummer1, saksnummer2));
 
     stubs.mockSokOppgave(new OppgaveSokResponse(1, List.of(createOppgaveDataWithSaksnummer(saksnummer3))), HttpStatus.OK);
     stubs.mockOpprettOppgave(HttpStatus.OK);
     stubs.mockOppdaterOppgave(HttpStatus.OK);
-    stubs.mockSafResponseHentJournalpost(HttpStatus.OK);
+    stubs.mockSafResponseHentJournalpost(responseJournalpostJson, HttpStatus.OK, null, "AFTER");
+    stubs.mockSafResponseHentJournalpost(journalpostJournalfort2SafResponse, HttpStatus.OK, "AFTER", null);
     stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK);
     stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
     stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson);
@@ -389,7 +392,7 @@ class JournalpostControllerTest extends AbstractControllerTest {
             .isEqualTo(HttpStatus.OK),
         () -> stubs.verifyStub.dokarkivFerdigstillKalt(journalpostIdFraJson),
         () -> stubs.verifyStub.dokarkivProxyTilknyttSakerIkkeKalt(journalpostIdFraJson, saksnummer1),
-        () -> stubs.verifyStub.dokarkivProxyTilknyttSakerKalt(journalpostIdFraJson, saksnummer2, "\"journalfoerendeEnhet\":\"4806\""),
+        () -> stubs.verifyStub.dokarkivProxyTilknyttSakerKalt(journalpostIdFraJson, saksnummer2, "\"journalfoerendeEnhet\":\"4806\"", "\"bruker\":{\"id\":\"1421414123124\",\"idType\":\"FNR\"}"),
         () -> stubs.verifyStub.oppgaveSokKalt(new Pair<>("tema", "BID"), new Pair<>("saksreferanse", saksnummer1), new Pair<>("saksreferanse", saksnummer2)),
         () -> stubs.verifyStub.oppgaveOpprettKalt("\"oppgavetype\":\"BEH_SAK\"", "\"saksreferanse\":\"200000\""),
         () -> stubs.verifyStub.oppgaveOpprettKalt("\"oppgavetype\":\"BEH_SAK\"", "\"saksreferanse\":\"200001\""),

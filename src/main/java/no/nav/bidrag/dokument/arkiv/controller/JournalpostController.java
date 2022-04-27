@@ -133,8 +133,8 @@ public class JournalpostController {
       @RequestBody Avvikshendelse avvikshendelse,
       @RequestHeader(EnhetFilter.X_ENHET_HEADER) String enhet
   ) {
-    LOGGER.info("Behandle avvik for journalpost {}", journalpostId);
-    SECURE_LOGGER.info("Behandle avvik for journalpost {}: {}", journalpostId, avvikshendelse);
+    LOGGER.info("Behandle avvik {} for journalpost {}", avvikshendelse.getAvvikType(), journalpostId);
+    SECURE_LOGGER.info("Behandle avvik {} for journalpost {}: {}", avvikshendelse.getAvvikType(), journalpostId, avvikshendelse);
 
     KildesystemIdenfikator kildesystemIdenfikator = new KildesystemIdenfikator(journalpostId);
     if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix()) {
