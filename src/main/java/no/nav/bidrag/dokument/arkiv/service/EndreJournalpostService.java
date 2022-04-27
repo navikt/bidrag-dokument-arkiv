@@ -32,7 +32,6 @@ public class EndreJournalpostService {
   private final JournalpostService journalpostService;
   private final DokarkivConsumer dokarkivConsumer;
   private final DokarkivProxyConsumer dokarkivProxyConsumer;
-  private final BidragOrganisasjonConsumer bidragOrganisasjonConsumer;
   private final OppgaveService oppgaveService;
   private final HendelserProducer hendelserProducer;
 
@@ -40,25 +39,24 @@ public class EndreJournalpostService {
       JournalpostService journalpostService,
       DokarkivConsumer dokarkivConsumer,
       DokarkivProxyConsumer dokarkivProxyConsumer,
-      BidragOrganisasjonConsumer bidragOrganisasjonConsumer, OppgaveService oppgaveService,
+      OppgaveService oppgaveService,
       HendelserProducer hendelserProducer) {
     this.journalpostService = journalpostService;
     this.dokarkivConsumer = dokarkivConsumer;
     this.dokarkivProxyConsumer = dokarkivProxyConsumer;
-    this.bidragOrganisasjonConsumer = bidragOrganisasjonConsumer;
     this.oppgaveService = oppgaveService;
     this.hendelserProducer = hendelserProducer;
   }
 
   public HttpResponse<Void> endre(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand) {
-    var journalpost = journalpostService.hentJournalpost(journalpostId).orElseThrow(
-        () -> new JournalpostIkkeFunnetException("Kunne ikke finne journalpost med id: " + journalpostId)
-    );
+    var journalpost = hentJournalpost(journalpostId);
 
     endreJournalpostCommand.sjekkGyldigEndring(journalpost);
 
     lagreJournalpost(journalpostId, endreJournalpostCommand, journalpost);
     journalfoerJournalpostNarMottaksregistrert(endreJournalpostCommand, journalpost);
+
+    journalpost = hentJournalpost(journalpostId);
     tilknyttSakerTilJournalfoertJournalpost(endreJournalpostCommand, journalpost);
     opprettBehandleDokumentOppgaveVedJournalforing(endreJournalpostCommand, journalpost);
 
@@ -70,7 +68,7 @@ public class EndreJournalpostService {
     return dokarkivConsumer.endre(oppdaterJournalpostRequest);
   }
 
-  public void opprettBehandleDokumentOppgaveVedJournalforing(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost) {
+  private void opprettBehandleDokumentOppgaveVedJournalforing(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost) {
     if (endreJournalpostCommand.skalJournalfores()) {
       opprettBehandleDokumentOppgave(journalpost);
     }
@@ -140,5 +138,12 @@ public class EndreJournalpostService {
 
   public void oppdaterJournalpostDistribusjonBestiltStatus(Long journalpostId, Journalpost journalpost){
     lagreJournalpost(new OppdaterJournalpostDistribusjonsInfoRequest(journalpostId, journalpost));
+  }
+
+  private Journalpost hentJournalpost(Long journalpostId){
+    LOGGER.info("Henter jouranlpost {}", journalpostId);
+    return journalpostService.hentJournalpost(journalpostId).orElseThrow(
+        () -> new JournalpostIkkeFunnetException("Kunne ikke finne journalpost med id: " + journalpostId)
+    );
   }
 }

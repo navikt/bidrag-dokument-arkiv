@@ -55,7 +55,6 @@ public class OppgaveService {
 
   public void behandleDokument(Journalpost journalpost) {
     var oppgaver = finnBehandlingsoppgaverForSaker(journalpost.hentTilknyttetSaker(), journalpost.getTema());
-
     if (!oppgaver.isEmpty()) {
       endreSamtOpprettBehandlingsoppgaver(journalpost, oppgaver, journalpost.getJournalforendeEnhet());
     } else {
@@ -92,7 +91,7 @@ public class OppgaveService {
         .orElse(String.format(
             "Ingen informasjon for saksbehandler (%s, %s)", saksbehandlerInfoManager.hentSaksbehandlerBrukerId(), journalpost.getJournalforendeEnhet()
         ));
-    LOGGER.info("Antall behandle dokument oppgaver: {}", oppgaverMedBeskrivelse.size());
+    LOGGER.info("Antall behandle dokument oppgaver som skal oppdateres: {}", oppgaverMedBeskrivelse.size());
 
     for (var oppgaveData : oppgaverMedBeskrivelse) {
       var request = new EndreForNyttDokumentRequest(oppgaveData, saksbehandlerInfo, journalpost, enhet);
