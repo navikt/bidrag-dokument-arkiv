@@ -23,6 +23,7 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 public class DokdistFordelingConsumer {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(DokarkivConsumer.class);
 
   private final RestTemplate restTemplate;
@@ -34,37 +35,48 @@ public class DokdistFordelingConsumer {
   }
 
 
-  public DistribuerJournalpostResponse distribuerJournalpost(Journalpost journalpost, String batchId, DistribuerTilAdresse adresse){
-      var journalpostId = journalpost.hentJournalpostIdLong();
-      var request = new DokDistDistribuerJournalpostRequest(journalpostId, journalpost.hentBrevkode(), journalpost.hentTittel(), adresse, batchId);
-      LOGGER.info("Bestiller distribusjon for journalpost {} med distribusjonstype {} og distribusjonstidspunkt {}{}",
-          request.getJournalpostId(),
-          request.getDistribusjonstype(),
-          request.getDistribusjonstidspunkt(),
-          Strings.isNotEmpty(batchId) ? String.format(" og batchId %s", batchId) : ""
-      );
+  public DistribuerJournalpostResponse distribuerJournalpost(Journalpost journalpost, String batchId, DistribuerTilAdresse adresse) {
+    var journalpostId = journalpost.hentJournalpostIdLong();
+    var request = new DokDistDistribuerJournalpostRequest(journalpostId, journalpost.hentBrevkode(), journalpost.hentTittel(), adresse, batchId);
+    LOGGER.info("Bestiller distribusjon for journalpost {} med distribusjonstype {} og distribusjonstidspunkt {}{}",
+        request.getJournalpostId(),
+        request.getDistribusjonstype(),
+        request.getDistribusjonstidspunkt(),
+        Strings.isNotEmpty(batchId) ? String.format(" og batchId %s", batchId) : ""
+    );
 
-      try {
-        var response = new HttpResponse<>(restTemplate.exchange("/rest/v1/distribuerjournalpost", HttpMethod.POST, new HttpEntity<>(request), DokDistDistribuerJournalpostResponse.class));
-        var responseBody = response.getResponseEntity().getBody();
-        if (!response.is2xxSuccessful() || responseBody == null){
-          return null;
-        }
-        return responseBody.toDistribuerJournalpostResponse(journalpostId);
-      } catch (HttpStatusCodeException e){
-          var status = e.getStatusCode();
-          var errorMessage = parseErrorMessage(e);
-          if (HttpStatus.BAD_REQUEST.equals(status) || HttpStatus.NOT_FOUND.equals(status)){
-             throw new DistribusjonFeiletFunksjoneltException(String.format("Distribusjon feilet for JOARK journalpost %s med status %s og feilmelding: %s", journalpostId, e.getStatusCode(), errorMessage));
-          }
-          throw new DistribusjonFeiletTekniskException(String.format("Distribusjon feilet teknisk for JOARK journalpost %s med status %s og feilmelding: %s", journalpostId, e.getStatusCode(), errorMessage), e);
+    try {
+      var response = new HttpResponse<>(restTemplate.exchange("/rest/v1/distribuerjournalpost", HttpMethod.POST, new HttpEntity<>(request),
+          DokDistDistribuerJournalpostResponse.class));
+      var responseBody = response.getResponseEntity().getBody();
+      if (!response.is2xxSuccessful() || responseBody == null) {
+        return null;
       }
+      return responseBody.toDistribuerJournalpostResponse(journalpostId);
+    } catch (HttpStatusCodeException e) {
+      var status = e.getStatusCode();
+      var errorMessage = parseErrorMessage(e);
+      if (HttpStatus.CONFLICT.equals(status)) {
+        LOGGER.info("Distribusjon er allerede bestillt for journalpost {}. Fortsetter behandling.", journalpostId);
+        return new DistribuerJournalpostResponse(journalpostId.toString(), null);
+      }
+
+      if (HttpStatus.BAD_REQUEST.equals(status) || HttpStatus.NOT_FOUND.equals(status)) {
+        throw new DistribusjonFeiletFunksjoneltException(
+            String.format("Distribusjon feilet for JOARK journalpost %s med status %s og feilmelding: %s", journalpostId, e.getStatusCode(),
+                errorMessage));
+      }
+
+      throw new DistribusjonFeiletTekniskException(
+          String.format("Distribusjon feilet teknisk for JOARK journalpost %s med status %s og feilmelding: %s", journalpostId, e.getStatusCode(),
+              errorMessage), e);
+    }
   }
 
-  private String parseErrorMessage(HttpStatusCodeException e){
+  private String parseErrorMessage(HttpStatusCodeException e) {
     try {
       var jsonNode = objectMapper.readValue(e.getResponseBodyAsString(), JsonNode.class);
-      if (jsonNode.has("message")){
+      if (jsonNode.has("message")) {
         return jsonNode.get("message").asText();
       }
       return e.getMessage();
