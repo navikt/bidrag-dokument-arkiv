@@ -15,7 +15,6 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -57,8 +56,8 @@ public class DokdistFordelingConsumer {
       var status = e.getStatusCode();
       var errorMessage = parseErrorMessage(e);
       if (HttpStatus.CONFLICT.equals(status)) {
-        LOGGER.info("Distribusjon er allerede bestillt for journalpost {}. Fortsetter behandling.", journalpostId);
-        return new DistribuerJournalpostResponse(journalpostId.toString(), null);
+        LOGGER.warn("Distribusjon er allerede bestillt for journalpost {}. Fortsetter behandling.", journalpostId);
+        return conflictExceptionToResponse(journalpostId, e);
       }
 
       if (HttpStatus.BAD_REQUEST.equals(status) || HttpStatus.NOT_FOUND.equals(status)) {
@@ -70,6 +69,15 @@ public class DokdistFordelingConsumer {
       throw new DistribusjonFeiletTekniskException(
           String.format("Distribusjon feilet teknisk for JOARK journalpost %s med status %s og feilmelding: %s", journalpostId, e.getStatusCode(),
               errorMessage), e);
+    }
+  }
+
+  private DistribuerJournalpostResponse conflictExceptionToResponse(Long journalpostId, HttpStatusCodeException e){
+    try {
+      var response = objectMapper.readValue(e.getResponseBodyAsString(), DokDistDistribuerJournalpostResponse.class);
+      return response.toDistribuerJournalpostResponse(journalpostId);
+    } catch (Exception ex) {
+      return new DistribuerJournalpostResponse(journalpostId.toString(), null);
     }
   }
 
