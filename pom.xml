@@ -28,7 +28,7 @@
     <apache-avro-version>1.11.0</apache-avro-version>
     <bidrag-commons.version>0.7.4</bidrag-commons.version>
     <bidrag-commons-test.version>0.2.2</bidrag-commons-test.version>
-    <bidrag-dokument-dto.version>1.4.5</bidrag-dokument-dto.version>
+    <bidrag-dokument-dto.version>1.5.0</bidrag-dokument-dto.version>
     <bidrag-tilgangskontroll.version>1.9.21</bidrag-tilgangskontroll.version>
     <commons-codec.version>1.15</commons-codec.version>
     <graphq-dgs-client.version>4.9.22</graphq-dgs-client.version>
