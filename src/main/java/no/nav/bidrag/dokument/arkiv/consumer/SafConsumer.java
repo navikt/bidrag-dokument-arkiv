@@ -33,6 +33,10 @@ public class SafConsumer {
     this.restTemplate = restTemplate;
   }
 
+  public ResponseEntity<byte[]> hentDokument(Long journalpostId, Long dokumentReferanse){
+      return this.restTemplate.exchange(String.format("/rest/hentdokument/%s/%s/ARKIV", journalpostId, dokumentReferanse), HttpMethod.GET, HttpEntity.EMPTY, byte[].class);
+  }
+
   public Journalpost hentJournalpost(Long journalpostId) {
     return consumeEnkelJournalpostQuery(new JournalpostQuery(journalpostId));
   }
@@ -63,7 +67,7 @@ public class SafConsumer {
   private GraphQLResponse consumeQuery(GraphQuery query, NotFoundException notFoundException) {
     var queryString = query.getQuery();
     var graphQLClient = new CustomGraphQLClient("", (url, headers, body) -> {
-      ResponseEntity<String> exchange = restTemplate.exchange("/", HttpMethod.POST, new HttpEntity<>(body), String.class);
+      ResponseEntity<String> exchange = restTemplate.exchange("/graphql", HttpMethod.POST, new HttpEntity<>(body), String.class);
       return new HttpResponse(exchange.getStatusCodeValue(), exchange.getBody());
     });
 

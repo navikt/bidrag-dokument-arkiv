@@ -241,7 +241,7 @@ public class Stubs {
   public void mockSafResponseHentJournalpost(Journalpost journalpost, String scenarioState, String nextScenario) {
     try {
       stubFor(
-          post(urlEqualTo("/saf/"))
+          post(urlEqualTo("/saf/graphql"))
               .inScenario("Saf response")
               .whenScenarioStateIs(scenarioState == null ? Scenario.STARTED : scenarioState)
               .withRequestBody(new ContainsPattern("query journalpost")).willReturn(
@@ -258,7 +258,7 @@ public class Stubs {
 
   public void mockSafResponseHentJournalpost(String filename, HttpStatus status) {
     stubFor(
-        post(urlEqualTo("/saf/"))
+        post(urlEqualTo("/saf/graphql"))
             .withRequestBody(new ContainsPattern("query journalpost"))
             .willReturn(aClosedJsonResponse()
                   .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
@@ -270,7 +270,7 @@ public class Stubs {
 
   public void mockSafResponseTilknyttedeJournalposter(HttpStatus httpStatus) {
     stubFor(
-        post(urlEqualTo("/saf/"))
+        post(urlEqualTo("/saf/graphql"))
             .withRequestBody(new ContainsPattern("query tilknyttedeJournalposter")).willReturn(
                 aClosedJsonResponse()
                     .withStatus(httpStatus.value())
@@ -286,7 +286,7 @@ public class Stubs {
   public void mockSafResponseDokumentOversiktFagsak(List<Journalpost> response) {
     try {
       stubFor(
-          post(urlEqualTo("/saf/"))
+          post(urlEqualTo("/saf/graphql"))
               .withRequestBody(new ContainsPattern("query dokumentoversiktFagsak")).willReturn(
                   aClosedJsonResponse()
                       .withStatus(HttpStatus.OK.value())
@@ -502,13 +502,13 @@ public class Stubs {
 
     public void harEnSafKallEtterHentJournalpost() {
       verify(
-          postRequestedFor(urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query journalpost"))
+          postRequestedFor(urlEqualTo("/saf/graphql")).withRequestBody(new ContainsPattern("query journalpost"))
       );
     }
 
     public void harSafEnKallEtterDokumentOversiktFagsak() {
       verify(
-          postRequestedFor(urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query dokumentoversiktFagsak"))
+          postRequestedFor(urlEqualTo("/saf/graphql")).withRequestBody(new ContainsPattern("query dokumentoversiktFagsak"))
       );
     }
 
@@ -522,7 +522,7 @@ public class Stubs {
 
     private void harEnSafKallEtterTilknyttedeJournalposter(Integer times) {
       verify(exactly(times),
-          postRequestedFor(urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query tilknyttedeJournalposter"))
+          postRequestedFor(urlEqualTo("/saf/graphql")).withRequestBody(new ContainsPattern("query tilknyttedeJournalposter"))
       );
     }
   }
