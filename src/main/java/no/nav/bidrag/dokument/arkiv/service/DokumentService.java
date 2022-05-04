@@ -14,6 +14,8 @@ import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.dto.JournalpostIkkeFunnetException;
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -39,7 +41,11 @@ public class DokumentService {
     if (Objects.isNull(dokumentReferanse)) {
         return hentAlleDokumenter(journalpostId);
     }
-    return safConsumer.hentDokument(journalpostId, Long.valueOf(dokumentReferanse));
+    var response =  safConsumer.hentDokument(journalpostId, Long.valueOf(dokumentReferanse));
+    return ResponseEntity.ok()
+        .contentType(MediaType.APPLICATION_PDF)
+        .header(HttpHeaders.CONTENT_DISPOSITION, response.getHeaders().getContentDisposition().toString())
+        .body(changePagesizeToA4(response.getBody()));
   }
 
   public ResponseEntity<byte[]> hentAlleDokumenter(Long journalpostId){
@@ -53,11 +59,30 @@ public class DokumentService {
       return ResponseEntity.ok()
           .contentType(MediaType.APPLICATION_PDF)
           .header(HttpHeaders.CONTENT_DISPOSITION, String.format("inline; filename=%s", mergedFileName))
-          .body(byteFile);
+          .body(changePagesizeToA4(byteFile));
     } catch (Exception e){
       LOGGER.error("Det skjedde en feil ved henting av dokument for journalpost {}", journalpostId, e);
       return ResponseEntity.internalServerError().build();
     }
+  }
+
+  private byte[] changePagesizeToA4(byte[] documentByteData){
+    var tempFile = new File("/tmp/tmpfile.pdf");
+    try {
+      PDDocument document = PDDocument.load(documentByteData);
+      document.getPages().forEach((page)-> {
+        page.setCropBox(PDRectangle.A4);
+        page.setMediaBox(PDRectangle.A4);
+      });
+      document.save(tempFile);
+      return fileToByte(tempFile);
+    } catch (IOException e) {
+      LOGGER.error("Det skjedde en feil ved oppdatering av dokumentsider til A4", e);
+      return documentByteData;
+    } finally {
+      tempFile.delete();
+    }
+
   }
 
   private void mergeAlleDokumenter(Long journalpostId, List<Dokument> dokumentList, String mergedFileName) throws IOException {
