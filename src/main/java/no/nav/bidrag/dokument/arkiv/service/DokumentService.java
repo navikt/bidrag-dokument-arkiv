@@ -49,7 +49,7 @@ public class DokumentService {
     var mergedFileNameTmp = "/tmp/"+mergedFileName;
     try {
       mergeAlleDokumenter(journalpostId, journalpost.getDokumenter(), mergedFileNameTmp);
-      var byteFile = getByteDataAndDeleteFile(mergedFileName);
+      var byteFile = getByteDataAndDeleteFile(mergedFileNameTmp);
       return ResponseEntity.ok()
           .contentType(MediaType.APPLICATION_PDF)
           .header(HttpHeaders.CONTENT_DISPOSITION, String.format("inline; filename=%s", mergedFileName))
