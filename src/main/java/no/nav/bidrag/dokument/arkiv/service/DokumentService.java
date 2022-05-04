@@ -45,14 +45,15 @@ public class DokumentService {
   public ResponseEntity<byte[]> hentAlleDokumenter(Long journalpostId){
     Journalpost journalpost = journalpostService.hentJournalpost(journalpostId)
         .orElseThrow(() -> new JournalpostIkkeFunnetException("Fant ikke journalpost med id lik " + journalpostId));
-
+    var mergedFileName = String.format("%s_ARKIV.pdf", journalpostId);
+    var mergedFileNameTmp = "/tmp/"+mergedFileName;
     try {
-      var mergedFileName = String.format("%s_ARKIV.pdf", journalpostId);
-      mergeAlleDokumenter(journalpostId, journalpost.getDokumenter(), mergedFileName);
+      mergeAlleDokumenter(journalpostId, journalpost.getDokumenter(), mergedFileNameTmp);
+      var byteFile = getByteDataAndDeleteFile(mergedFileName);
       return ResponseEntity.ok()
           .contentType(MediaType.APPLICATION_PDF)
           .header(HttpHeaders.CONTENT_DISPOSITION, String.format("inline; filename=%s", mergedFileName))
-          .body(fileToByte(new File(mergedFileName)));
+          .body(byteFile);
     } catch (Exception e){
       LOGGER.error("Det skjedde en feil ved henting av dokument for journalpost {}", journalpostId, e);
       return ResponseEntity.internalServerError().build();
@@ -69,6 +70,15 @@ public class DokumentService {
       dokumentInputStream.close();
     }
     mergedDocument.mergeDocuments(MemoryUsageSetting.setupTempFileOnly());
+  }
+
+  private byte[] getByteDataAndDeleteFile(String filename) throws IOException {
+    var file = new File(filename);
+    try {
+      return fileToByte(new File(filename));
+    } finally {
+      file.delete();
+    }
   }
 
   private byte[] fileToByte(File file) throws IOException {
