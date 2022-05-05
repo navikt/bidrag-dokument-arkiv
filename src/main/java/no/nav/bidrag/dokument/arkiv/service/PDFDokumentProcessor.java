@@ -2,6 +2,8 @@ package no.nav.bidrag.dokument.arkiv.service;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -19,22 +21,24 @@ public class PDFDokumentProcessor {
   private PDDocument originalDocument;
   private PDDocument convertedDocument;
   private PDFRenderer pdfRenderer;
-
   public byte[] konverterAlleSiderTilA4(byte[] dokumentFil) {
+    var tempFile = new File("/tmp/tmpfile.pdf");
     try (PDDocument originalDocument = PDDocument.load(dokumentFil);) {
       this.originalDocument = originalDocument;
       this.convertedDocument = new PDDocument();
       this.pdfRenderer = new PDFRenderer(originalDocument);
       processPages();
-      ByteArrayOutputStream documentByteStream = new ByteArrayOutputStream();
+
       this.convertedDocument.setAllSecurityToBeRemoved(true);
-      this.convertedDocument.save(documentByteStream);
+      this.convertedDocument.save(tempFile);
       this.convertedDocument.close();
       this.originalDocument.close();
-      return documentByteStream.toByteArray();
+      return fileToByte(tempFile);
     } catch (Exception e) {
       LOGGER.error("Det skjedde en feil ved konverting av PDF dokument til A4", e);
       return dokumentFil;
+    } finally {
+      tempFile.delete();
     }
   }
 
@@ -78,4 +82,11 @@ public class PDFDokumentProcessor {
     return Math.abs(val1-val2)<margin;
   }
 
+  private byte[] fileToByte(File file) throws IOException {
+    FileInputStream inputStream = new FileInputStream(file);
+    byte[] byteArray = new byte[(int)file.length()];
+    inputStream.read(byteArray);
+    inputStream.close();
+    return byteArray;
+  }
 }
