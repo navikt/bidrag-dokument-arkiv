@@ -37,6 +37,9 @@ public class DokumentService {
     this.safConsumer = safConsumers.get(Discriminator.REGULAR_USER);
   }
 
+  public ResponseEntity<byte[]> hentDokument2(Long journalpostId, String dokumentReferanse){
+    return safConsumer.hentDokument(journalpostId, Long.valueOf(dokumentReferanse));
+  }
   public ResponseEntity<byte[]> hentDokument(Long journalpostId, String dokumentReferanse, boolean resizeToA4) {
     ResponseEntity<byte[]> response = hentDokument(journalpostId, dokumentReferanse);
 

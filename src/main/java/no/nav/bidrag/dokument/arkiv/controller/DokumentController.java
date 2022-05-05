@@ -1,6 +1,5 @@
 package no.nav.bidrag.dokument.arkiv.controller;
 
-import static no.nav.bidrag.commons.KildesystemIdenfikator.PREFIX_JOARK;
 import static no.nav.bidrag.commons.web.WebUtil.initHttpHeadersWith;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,7 +30,7 @@ public class DokumentController {
     this.dokumentService = dokumentService;
   }
 
-  @GetMapping(value = {"/dokument/{journalpostId}/{dokumentreferanse}", "/dokument/{journalpostId}"})
+  @GetMapping(value = {"/dokument/{journalpostId}/{dokumentreferanse}"})
   @Operation(
       security = {@SecurityRequirement(name = "bearer-key")},
       summary = "Henter dokument fra Joark for journalpostid og dokumentreferanse. Hvis bare journalpostId er oppgitt så returneres alle dokumentene (hoveddokument og vedlegg) som ett dokument. "
@@ -42,16 +41,12 @@ public class DokumentController {
       @ApiResponse(responseCode = "403", description = "Sikkerhetstoken er ikke gyldig", content = @Content(schema = @Schema(hidden = true))),
       @ApiResponse(responseCode = "404", description = "Fant ikke journalpost emed oppgitt dokumentreferanse", content = @Content(schema = @Schema(hidden = true)))
   })
-  public ResponseEntity<byte[]> hentDokument(
-      @PathVariable String journalpostId,
-      @PathVariable(required = false) String dokumentreferanse,
-      @RequestParam(required = false) boolean resizeToA4
-  ){
+  public ResponseEntity<byte[]> hentDokument(@PathVariable String journalpostId, @PathVariable String dokumentreferanse){
     KildesystemIdenfikator kildesystemIdenfikator = new KildesystemIdenfikator(journalpostId);
     if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix()) {
       return new ResponseEntity<>(initHttpHeadersWith(HttpHeaders.WARNING, "Ugyldig prefix på journalpostId"), HttpStatus.BAD_REQUEST);
     }
 
-    return dokumentService.hentDokument(kildesystemIdenfikator.hentJournalpostIdLong(), dokumentreferanse, true);
+    return dokumentService.hentDokument2(kildesystemIdenfikator.hentJournalpostIdLong(), dokumentreferanse);
   }
 }
