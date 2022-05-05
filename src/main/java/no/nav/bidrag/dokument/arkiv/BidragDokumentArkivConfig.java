@@ -204,7 +204,7 @@ public class BidragDokumentArkivConfig {
 
     DokarkivProxyConsumer dokarkivProxyConsumer = new DokarkivProxyConsumer(httpHeaderRestTemplate);
     dokarkivProxyConsumer.leggTilInterceptor(securityTokenService.authTokenInterceptor());
-    dokarkivProxyConsumer.leggTilInterceptor(securityTokenService.navConsumerTokenInterceptor());
+    dokarkivProxyConsumer.leggTilInterceptor(securityTokenService.navConsumerTokenInterceptor(true));
     return dokarkivProxyConsumer;
   }
 
@@ -215,7 +215,7 @@ public class BidragDokumentArkivConfig {
       SecurityTokenService securityTokenService
   ) {
     dokarkivConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor("dokarkiv"));
-    dokarkivConsumerRegularUser.leggTilInterceptor(securityTokenService.navConsumerTokenInterceptor());
+    dokarkivConsumerRegularUser.leggTilInterceptor(securityTokenService.navConsumerTokenInterceptor(true));
     dokarkivConsumerServiceUser.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor("dokarkiv"));
     var dokarkivConsumers = new HashMap<Discriminator, DokarkivConsumer>();
     dokarkivConsumers.put(Discriminator.REGULAR_USER, dokarkivConsumerRegularUser);
