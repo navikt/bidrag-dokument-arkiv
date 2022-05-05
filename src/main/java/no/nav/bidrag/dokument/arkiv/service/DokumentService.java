@@ -37,17 +37,26 @@ public class DokumentService {
     this.safConsumer = safConsumers.get(Discriminator.REGULAR_USER);
   }
 
-  public ResponseEntity<byte[]> hentDokument(Long journalpostId, String dokumentReferanse) {
-    if (Objects.isNull(dokumentReferanse)) {
-        return hentAlleDokumenter(journalpostId);
+  public ResponseEntity<byte[]> hentDokument(Long journalpostId, String dokumentReferanse, boolean resizeToA4) {
+    ResponseEntity<byte[]> response = hentDokument(journalpostId, dokumentReferanse);
+
+    if (resizeToA4){
+      return ResponseEntity.ok()
+          .contentType(MediaType.APPLICATION_PDF)
+          .header(HttpHeaders.CONTENT_DISPOSITION, response.getHeaders().getContentDisposition().toString())
+          .body(new PDFDokumentProcessor().konverterAlleSiderTilA4(response.getBody()));
     }
-    var response =  safConsumer.hentDokument(journalpostId, Long.valueOf(dokumentReferanse));
-    return ResponseEntity.ok()
-        .contentType(MediaType.APPLICATION_PDF)
-        .header(HttpHeaders.CONTENT_DISPOSITION, response.getHeaders().getContentDisposition().toString())
-        .body(changePagesizeToA4(response.getBody()));
+
+    return response;
   }
 
+  private ResponseEntity<byte[]> hentDokument(Long journalpostId, String dokumentReferanse){
+    if (Objects.isNull(dokumentReferanse)) {
+      return hentAlleDokumenter(journalpostId);
+    }
+
+    return safConsumer.hentDokument(journalpostId, Long.valueOf(dokumentReferanse));
+  }
   public ResponseEntity<byte[]> hentAlleDokumenter(Long journalpostId){
     Journalpost journalpost = journalpostService.hentJournalpost(journalpostId)
         .orElseThrow(() -> new JournalpostIkkeFunnetException("Fant ikke journalpost med id lik " + journalpostId));
@@ -55,34 +64,14 @@ public class DokumentService {
     var mergedFileNameTmp = "/tmp/"+mergedFileName;
     try {
       mergeAlleDokumenter(journalpostId, journalpost.getDokumenter(), mergedFileNameTmp);
-      var byteFile = getByteDataAndDeleteFile(mergedFileNameTmp);
       return ResponseEntity.ok()
           .contentType(MediaType.APPLICATION_PDF)
           .header(HttpHeaders.CONTENT_DISPOSITION, String.format("inline; filename=%s", mergedFileName))
-          .body(changePagesizeToA4(byteFile));
+          .body(getByteDataAndDeleteFile(mergedFileNameTmp));
     } catch (Exception e){
       LOGGER.error("Det skjedde en feil ved henting av dokument for journalpost {}", journalpostId, e);
       return ResponseEntity.internalServerError().build();
     }
-  }
-
-  private byte[] changePagesizeToA4(byte[] documentByteData){
-    var tempFile = new File("/tmp/tmpfile.pdf");
-    try {
-      PDDocument document = PDDocument.load(documentByteData);
-      document.getPages().forEach((page)-> {
-        page.setCropBox(PDRectangle.A4);
-        page.setMediaBox(PDRectangle.A4);
-      });
-      document.save(tempFile);
-      return fileToByte(tempFile);
-    } catch (IOException e) {
-      LOGGER.error("Det skjedde en feil ved oppdatering av dokumentsider til A4", e);
-      return documentByteData;
-    } finally {
-      tempFile.delete();
-    }
-
   }
 
   private void mergeAlleDokumenter(Long journalpostId, List<Dokument> dokumentList, String mergedFileName) throws IOException {

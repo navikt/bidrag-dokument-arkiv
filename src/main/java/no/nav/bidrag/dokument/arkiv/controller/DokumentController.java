@@ -44,13 +44,14 @@ public class DokumentController {
   })
   public ResponseEntity<byte[]> hentDokument(
       @PathVariable String journalpostId,
-      @PathVariable(required = false) String dokumentreferanse
+      @PathVariable(required = false) String dokumentreferanse,
+      @RequestParam(required = false) boolean resizeToA4
   ){
     KildesystemIdenfikator kildesystemIdenfikator = new KildesystemIdenfikator(journalpostId);
     if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix()) {
       return new ResponseEntity<>(initHttpHeadersWith(HttpHeaders.WARNING, "Ugyldig prefix på journalpostId"), HttpStatus.BAD_REQUEST);
     }
 
-    return dokumentService.hentDokument(kildesystemIdenfikator.hentJournalpostIdLong(), dokumentreferanse);
+    return dokumentService.hentDokument(kildesystemIdenfikator.hentJournalpostIdLong(), dokumentreferanse, true);
   }
 }
