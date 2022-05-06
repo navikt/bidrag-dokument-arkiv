@@ -18,7 +18,6 @@ import no.nav.bidrag.dokument.arkiv.query.GraphQuery;
 import no.nav.bidrag.dokument.arkiv.query.JournalpostQuery;
 import no.nav.bidrag.dokument.arkiv.query.TilknyttedeJournalposterQuery;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
