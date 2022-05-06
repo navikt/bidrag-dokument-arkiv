@@ -15,7 +15,7 @@ env:
     DOKARKIV_URL: https://dokarkiv-q2.dev.adeo.no/
     DOKARKIV_PROXY_URL: https://dokarkivproxy-q2.dev.intern.nav.no
     DOKDISTFORDELING_URL: https://dokdistfordeling-q2.dev.adeo.no
-    SAF_GRAPHQL_URL: https://saf-q2.dev.adeo.no/graphql
+    SAF_URL: https://saf-q2.dev.adeo.no
     OPPGAVE_URL: https://oppgave-q2.nais.preprod.local/api/v1/oppgaver
     OPPGAVE_SCOPE: dev-fss.oppgavehandtering.oppgave
     SAF_SCOPE: dev-fss.teamdokumenthandtering.saf
