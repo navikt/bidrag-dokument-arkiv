@@ -85,7 +85,7 @@ public class JournalpostService {
         .filter(Objects::nonNull)
         .filter(fagsakId -> !Objects.equals(fagsakId, journalpostFagsakId)).toList();
     var sakerNoDuplicates = new HashSet<>(saker).stream().toList();
-    LOGGER.info("Fant {} saker for journalpost {}. Journalposten har {} saker etter fjerning av duplikater", saker.size() + 1, journalpost.getJournalpostId(), sakerNoDuplicates.size() + 1);
+    LOGGER.info("Fant {} saker for journalpost {}", saker.size() + 1, journalpost.getJournalpostId());
     journalpost.setTilknyttedeSaker(sakerNoDuplicates);
     return journalpost;
   }

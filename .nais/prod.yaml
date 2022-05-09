@@ -14,7 +14,7 @@ env:
   DOKARKIV_URL: https://dokarkiv.nais.adeo.no/
   DOKARKIV_PROXY_URL:  https://dokarkivproxy.intern.nav.no
   DOKDISTFORDELING_URL: https://dokdistfordeling.nais.adeo.no
-  SAF_GRAPHQL_URL: https://saf.nais.adeo.no/graphql
+  SAF_URL: https://saf.nais.adeo.no
   OPPGAVE_URL: https://oppgave.nais.adeo.no/api/v1/oppgaver
   OPPGAVE_SCOPE: prod-fss.oppgavehandtering.oppgave
   SAF_SCOPE: prod-fss.teamdokumenthandtering.saf
@@ -26,3 +26,7 @@ env:
   FEATURE_ENABLED: NONE
 vault:
   kvPath: prod
+azureAccessInbound:
+  - application: bidrag-dokument
+    namespace: bidrag
+    cluster: prod-fss

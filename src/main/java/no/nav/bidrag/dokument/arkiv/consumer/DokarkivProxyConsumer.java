@@ -4,6 +4,7 @@ import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilAnnenSakRequest;
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilAnnenSakResponse;
+import no.nav.bidrag.dokument.arkiv.dto.KnyttTilGenerellSakRequest;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpRequestInterceptor;

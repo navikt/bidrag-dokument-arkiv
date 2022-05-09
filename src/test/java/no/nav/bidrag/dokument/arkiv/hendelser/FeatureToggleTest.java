@@ -59,7 +59,7 @@ public class FeatureToggleTest {
     var jfEnhet = "4833";
     mockSafResponse(journalpostId, brukerId,"AKTOERID", jfEnhet);
     when(dokarkivConsumer.endre(any())).thenReturn(new OppdaterJournalpostResponse(journalpostId));
-    when(organisasjonConsumer.hentGeografiskEnhet(any())).thenReturn(new GeografiskTilknytningResponse("4806", "navn"));
+    when(organisasjonConsumer.hentGeografiskEnhet(any(), any())).thenReturn("4806");
     when(organisasjonConsumer.hentSaksbehandlerInfo(any())).thenReturn(new SaksbehandlerInfoResponse("123213", "navn"));
     JournalfoeringHendelseRecord record = new JournalfoeringHendelseRecord();
     record.setJournalpostId(journalpostId);

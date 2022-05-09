@@ -12,6 +12,8 @@ import no.nav.bidrag.dokument.arkiv.utils.DateUtils
 import no.nav.bidrag.dokument.arkiv.utils.JsonMapper.fromJsonString
 import no.nav.bidrag.dokument.arkiv.utils.JsonMapper.toJsonString
 import no.nav.bidrag.dokument.dto.AktorDto
+import no.nav.bidrag.dokument.dto.AvsenderMottakerDto
+import no.nav.bidrag.dokument.dto.AvsenderMottakerDtoIdType
 import no.nav.bidrag.dokument.dto.AvvikType
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 import no.nav.bidrag.dokument.dto.DokumentDto
@@ -70,6 +72,7 @@ data class Journalpost(
     var tilknyttedeSaker: List<String> = emptyList(),
     var tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger()
 ) {
+
     fun hentGjelderId(): String? = bruker?.id
     fun hentJournalStatus(): String? {
         return when(journalstatus){
@@ -179,6 +182,15 @@ data class Journalpost(
         @Suppress("UNCHECKED_CAST")
         return JournalpostDto(
             avsenderNavn = avsenderMottaker?.navn,
+            avsenderMottaker = if (avsenderMottaker != null) AvsenderMottakerDto(
+                navn = avsenderMottaker!!.navn,
+                ident = avsenderMottaker!!.id,
+                type = when(avsenderMottaker!!.type){
+                        AvsenderMottakerIdType.FNR -> AvsenderMottakerDtoIdType.FNR
+                        AvsenderMottakerIdType.ORGNR -> AvsenderMottakerDtoIdType.ORGNR
+                        else -> AvsenderMottakerDtoIdType.UKJENT
+                }
+            ) else null,
             dokumenter = dokumenter.stream().map { dok -> dok?.tilDokumentDto(hentJournalpostType()) }.collect(toList()) as List<DokumentDto>,
             dokumentDato = hentDokumentDato(),
             ekspedertDato = hentEkspedertDato(),
@@ -204,11 +216,12 @@ data class Journalpost(
     fun tilAvvik(): List<AvvikType> {
         val avvikTypeList = mutableListOf<AvvikType>()
         if (isUtgaaendeDokument() && (isStatusFerdigsstilt() || isStatusEkspedert())) avvikTypeList.add(AvvikType.REGISTRER_RETUR)
-        if (isStatusMottatt() && isInngaaendeDokument()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
+        if (isStatusMottatt()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
         if (!isStatusMottatt() && hasSak() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.FEILFORE_SAK)
-        if (!isUtgaaendeDokument()) avvikTypeList.add(AvvikType.ENDRE_FAGOMRADE)
-        return avvikTypeList;
+        if (isInngaaendeDokument() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.ENDRE_FAGOMRADE)
+        if (isInngaaendeDokument() && isStatusJournalfort()) avvikTypeList.add(AvvikType.SEND_TIL_FAGOMRADE)
+        return avvikTypeList
     }
 
     fun hasMottakerId(): Boolean = avsenderMottaker?.id != null
