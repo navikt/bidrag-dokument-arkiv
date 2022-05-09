@@ -70,7 +70,7 @@ public class AvvikService {
     switch (avvikshendelseIntern.getAvvikstype()){
       case OVERFOR_TIL_ANNEN_ENHET -> oppdater(avvikshendelseIntern.toOverforEnhetRequest());
       case ENDRE_FAGOMRADE -> endreFagomrade(journalpost, avvikshendelseIntern);
-      case SEND_TIL_FAGOMRADE -> sendTilFagomrade(journalpost, avvikshendelseIntern);
+      case SEND_TIL_FAGOMRADE -> onlyLogging();
       case TREKK_JOURNALPOST -> trekkJournalpost(journalpost, avvikshendelseIntern);
       case FEILFORE_SAK -> feilregistrerSakstilknytning(avvikshendelseIntern.getJournalpostId());
       case REGISTRER_RETUR -> registrerRetur(journalpost, avvikshendelseIntern);
@@ -81,6 +81,13 @@ public class AvvikService {
     SECURE_LOGGER.info("Avvik {} ble utført på journalpost {} av bruker {} og enhet {} med beskrivelse {} - avvik {}", avvikshendelseIntern.getAvvikstype(), avvikshendelseIntern.getJournalpostId(), saksbehandlerInfoManager.hentSaksbehandlerBrukerId(), avvikshendelseIntern.getSaksbehandlersEnhet(), avvikshendelseIntern.getBeskrivelse(), avvikshendelseIntern);
 
     return Optional.of(new BehandleAvvikshendelseResponse(avvikshendelseIntern.getAvvikstype()));
+  }
+
+  /**
+   * Used when avvikshåndtering is not triggering any action but only used for logging
+   */
+  public void onlyLogging(){
+    // noop
   }
 
   public void sendTilFagomrade(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
