@@ -4,7 +4,6 @@ import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_KAFKA_TEST;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_LIVE;
 
-import com.google.common.base.Strings;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.util.Optional;
 import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
@@ -16,7 +15,7 @@ import no.nav.bidrag.dokument.arkiv.dto.OverforEnhetRequest;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.HendelsesType;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
-import no.nav.bidrag.dokument.arkiv.model.Oppgavetema;
+import no.nav.bidrag.dokument.arkiv.model.JournalpostTema;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord;
@@ -55,17 +54,19 @@ public class HendelseListener {
 
   @KafkaListener(groupId = "bidrag-dokument-arkiv", topics = "${TOPIC_JOURNALFOERING}")
   public void listen(@Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
-    Oppgavetema oppgavetema = new Oppgavetema(journalfoeringHendelseRecord);
-    if (!oppgavetema.erOmhandlingAvBidrag()) {
+    JournalpostTema journalpostTema = new JournalpostTema(journalfoeringHendelseRecord);
+    if (!journalpostTema.erOmhandlingAvBidrag()) {
       LOGGER.debug("Oppgavetema omhandler ikke bidrag");
       return;
     }
+
+    SECURE_LOGGER.info("Mottok journalføringshendelse {}", journalfoeringHendelseRecord);
+
     if (erOpprettetAvNKS(journalfoeringHendelseRecord)){
       LOGGER.debug("Journalpost er opprettet av NKS. Stopper videre behandling");
       return;
     }
 
-    SECURE_LOGGER.debug("Mottok journalføringshendelse {}", journalfoeringHendelseRecord);
     behandleJournalforingHendelse(journalfoeringHendelseRecord);
   }
 
