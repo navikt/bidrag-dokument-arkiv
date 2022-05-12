@@ -60,7 +60,6 @@ public class HendelseListener {
       return;
     }
 
-    SECURE_LOGGER.info("Mottok journalføringshendelse {}", journalfoeringHendelseRecord);
 
     if (erOpprettetAvNKS(journalfoeringHendelseRecord)){
       LOGGER.debug("Journalpost er opprettet av NKS. Stopper videre behandling");
@@ -84,10 +83,11 @@ public class HendelseListener {
       var journalpostId = record.getJournalpostId();
       var journalpost = hentJournalpost(journalpostId);
       if (erOpprettetAvNKS(journalpost)){
-        LOGGER.info("Journalpost er opprettet av NKS. Stopper videre behandling");
+        LOGGER.info("Journalpost {} er opprettet av NKS. Stopper videre behandling", record.getJournalpostId());
         return;
       }
 
+      SECURE_LOGGER.info("Behandler journalføringshendelse {}", record);
       LOGGER.info("Behandler journalføringshendelse {} med journalpostId={}, kanal={}, journalpostStatus={} og tema={}", record.getHendelsesType(), record.getJournalpostId(), record.getMottaksKanal(), record.getJournalpostStatus(), record.getTemaNytt());
       behandleJournalpostFraHendelse(journalpost);
   }

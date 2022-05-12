@@ -60,7 +60,10 @@ public class EndreJournalpostService {
     tilknyttSakerTilJournalfoertJournalpost(endreJournalpostCommand, journalpost);
     opprettBehandleDokumentOppgaveVedJournalforing(endreJournalpostCommand, journalpost);
 
-    hendelserProducer.publishJournalpostUpdated(journalpostId, endreJournalpostCommand.getEnhet());
+    if (journalpost.isInngaaendeDokument()){
+      hendelserProducer.publishJournalpostUpdated(journalpostId, endreJournalpostCommand.getEnhet());
+    }
+
     return HttpResponse.from(HttpStatus.OK);
   }
 

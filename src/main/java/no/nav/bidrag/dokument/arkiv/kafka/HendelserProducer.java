@@ -69,11 +69,6 @@ public class HendelserProducer {
   private void publish(JournalpostHendelse journalpostHendelse){
     try {
       var message = objectMapper.writeValueAsString(journalpostHendelse);
-      if (!featureToggle.isFeatureEnabled(Feature.KAFKA_ARBEIDSFLYT)) {
-        LOGGER.info("Sender ikke hendelse med journalpostId={} da feature toggle KAFKA_ARBEIDSFLYT ikke er skrudd på", journalpostHendelse.getJournalpostId());
-        SECURE_LOGGER.info("Sender ikke hendelse {} da feature toggle KAFKA_ARBEIDSFLYT ikke er skrudd på", message);
-        return;
-      }
       SECURE_LOGGER.info("Publiserer hendelse {}", message);
       LOGGER.info("Publiserer hendelse med journalpostId={}", journalpostHendelse.getJournalpostId());
       kafkaTemplate.send(topic, journalpostHendelse.getJournalpostId(), message);
