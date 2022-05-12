@@ -23,6 +23,7 @@ import no.nav.bidrag.dokument.arkiv.kafka.HendelseListener;
 import no.nav.bidrag.dokument.arkiv.model.HendelsesType;
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord;
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,7 @@ public class FeatureToggleTest {
   @MockBean
   private BidragOrganisasjonConsumer organisasjonConsumer;
   @Test
+  @Disabled
   @DisplayName("skal ignorere hendelse hvis hendelse ikke er enablet")
   void shouldIgnoreWhenHendelseWhenFeatureToggleIsOff() {
     var journalpostId = 123213L;
