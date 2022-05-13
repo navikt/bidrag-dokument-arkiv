@@ -3,7 +3,6 @@ package no.nav.bidrag.dokument.arkiv.kafka;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import no.nav.bidrag.dokument.arkiv.FeatureToggle;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager;
@@ -29,7 +28,6 @@ public class BidragDokumentArkivKafkaConfig {
       ObjectMapper objectMapper,
       SaksbehandlerInfoManager saksbehandlerInfoManager,
       @Value("${TOPIC_JOURNALPOST}") String topic,
-      FeatureToggle featureToggle,
       ResourceByDiscriminator<JournalpostService> journalpostServices
   ) {
     return new HendelserProducer(
@@ -37,7 +35,7 @@ public class BidragDokumentArkivKafkaConfig {
         kafkaTemplate,
         objectMapper,
         topic,
-        featureToggle, saksbehandlerInfoManager
+        saksbehandlerInfoManager
     );
   }
 
