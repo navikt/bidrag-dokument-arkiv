@@ -55,7 +55,7 @@ public class HendelseListener {
   @KafkaListener(groupId = "bidrag-dokument-arkiv", topics = "${TOPIC_JOURNALFOERING}")
   public void listen(@Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
     JournalpostTema journalpostTema = new JournalpostTema(journalfoeringHendelseRecord);
-    if ("JournalpostMottatt".equals(journalfoeringHendelseRecord.getHendelsesType())){
+    if ("JournalpostMottatt".equals(journalfoeringHendelseRecord.getHendelsesType()) && "NAV_NO".equals(journalfoeringHendelseRecord.getMottaksKanal())){
       var journalpost = hentJournalpost(journalfoeringHendelseRecord.getJournalpostId());
       SECURE_LOGGER.info("DEBUG: Mottok journalføringshendelse {}, journalførendeEnhet {}", journalfoeringHendelseRecord, journalpost.getJournalforendeEnhet());
     }
