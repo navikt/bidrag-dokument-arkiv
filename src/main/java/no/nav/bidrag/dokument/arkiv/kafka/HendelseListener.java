@@ -56,7 +56,8 @@ public class HendelseListener {
   public void listen(@Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
     JournalpostTema journalpostTema = new JournalpostTema(journalfoeringHendelseRecord);
     if ("JournalpostMottatt".equals(journalfoeringHendelseRecord.getHendelsesType())){
-      SECURE_LOGGER.info("DEBUG: Mottok journalføringshendelse {}", journalfoeringHendelseRecord);
+      var journalpost = hentJournalpost(journalfoeringHendelseRecord.getJournalpostId());
+      SECURE_LOGGER.info("DEBUG: Mottok journalføringshendelse {}, journalførendeEnhet {}", journalfoeringHendelseRecord, journalpost.getJournalforendeEnhet());
     }
 
     if (!journalpostTema.erOmhandlingAvBidrag()) {
