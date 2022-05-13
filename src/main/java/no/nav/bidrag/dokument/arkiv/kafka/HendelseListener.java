@@ -88,9 +88,8 @@ public class HendelseListener {
         return;
       }
 
-      loggHendelseEndringer(record);
       SECURE_LOGGER.info("Behandler journalføringshendelse {}", record);
-      LOGGER.info("Behandler journalføringshendelse {} med journalpostId={}, kanal={}, journalpostStatus={} og tema={}", record.getHendelsesType(), record.getJournalpostId(), record.getMottaksKanal(), record.getJournalpostStatus(), record.getTemaNytt());
+      LOGGER.info("Behandler journalføringshendelse {} med journalpostId={}, kanal={}, journalpostStatus={}, temaNytt={} og temaGammelt={}", record.getHendelsesType(), record.getJournalpostId(), record.getMottaksKanal(), record.getJournalpostStatus(), record.getTemaNytt(), record.getTemaGammelt());
       behandleJournalpostFraHendelse(journalpost);
   }
 
@@ -123,12 +122,6 @@ public class HendelseListener {
       LOGGER.info("Oppdaterer journalpost {} enhet fra {} til {}", journalpost.getJournalpostId(), journalpost.getJournalforendeEnhet(), geografiskEnhet);
       dokarkivConsumer.endre(new OverforEnhetRequest(journalpost.hentJournalpostIdLong(), geografiskEnhet));
       journalpost.setJournalforendeEnhet(geografiskEnhet);
-    }
-  }
-
-  private void loggHendelseEndringer(JournalfoeringHendelseRecord record){
-    if (new JournalpostTema(record).erEndretFraBidragTilAnnet()){
-      LOGGER.info("Journalpost {} endret tema fra {} til {}", record.getJournalpostId(), record.getTemaGammelt(), record.getTemaGammelt());
     }
   }
 

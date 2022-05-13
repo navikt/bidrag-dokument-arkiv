@@ -4,8 +4,6 @@ import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import no.nav.bidrag.dokument.arkiv.FeatureToggle;
-import no.nav.bidrag.dokument.arkiv.FeatureToggle.Feature;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.Saksbehandler;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelseException;
@@ -26,17 +24,15 @@ public class HendelserProducer {
   private final ObjectMapper objectMapper;
   private final JournalpostService journalpostService;
   private final String topic;
-  private final FeatureToggle featureToggle;
   private final SaksbehandlerInfoManager saksbehandlerInfoManager;
 
   public HendelserProducer(JournalpostService journalpostService, KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper,
       String topic,
-      FeatureToggle featureToggle, SaksbehandlerInfoManager saksbehandlerInfoManager) {
+      SaksbehandlerInfoManager saksbehandlerInfoManager) {
     this.kafkaTemplate = kafkaTemplate;
     this.objectMapper = objectMapper;
     this.journalpostService = journalpostService;
     this.topic = topic;
-    this.featureToggle = featureToggle;
     this.saksbehandlerInfoManager = saksbehandlerInfoManager;
   }
 
