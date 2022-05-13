@@ -1,26 +1,22 @@
 package no.nav.bidrag.dokument.arkiv.controller;
 
-import static no.nav.bidrag.dokument.arkiv.stubs.Stubs.SAKSNUMMER_JOURNALPOST;
 import static no.nav.bidrag.dokument.arkiv.stubs.TestDataKt.createDistribuerTilAdresse;
-import static no.nav.bidrag.dokument.arkiv.stubs.TestDataKt.createOppgaveDataWithSaksnummer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import kotlin.Pair;
 import no.nav.bidrag.commons.web.EnhetFilter;
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsTidspunkt;
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsType;
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.JournalstatusDto;
-import no.nav.bidrag.dokument.arkiv.dto.OppgaveData;
-import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.dto.AktorDto;
+import no.nav.bidrag.dokument.dto.AvsenderMottakerDto;
+import no.nav.bidrag.dokument.dto.AvsenderMottakerDtoIdType;
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest;
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse;
 import no.nav.bidrag.dokument.dto.EndreDokument;
@@ -162,6 +158,8 @@ class JournalpostControllerTest extends AbstractControllerTest {
 
     assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
         () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
+        () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getAvsenderNavn).isEqualTo("Test testenesen"),
+        () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getAvsenderMottaker).isEqualTo(new AvsenderMottakerDto("Test testenesen", "213123213213", AvsenderMottakerDtoIdType.FNR)),
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getInnhold).isEqualTo("Filosofens bidrag"),
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getJournalpostId).isEqualTo("JOARK-" + journalpostIdFraJson),
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getGjelderAktor).extracting(AktorDto::getIdent).isEqualTo(PERSON_IDENT),

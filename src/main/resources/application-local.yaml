@@ -7,7 +7,7 @@ DOKDISTFORDELING_URL: https://dokdistfordeling-q1.dev.adeo.no
 DOKARKIV_PROXY_URL: https://dokarkivproxy-q1.dev.intern.nav.no
 BIDRAG_PERSON_URL: https://bidrag-person-feature.dev.adeo.no
 BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon-feature.dev.adeo.no
-SAF_GRAPHQL_URL: https://saf-q1.dev.adeo.no/graphql
+SAF_URL: https://saf-q1.dev.adeo.no
 NAIS_APP_NAME: bidrag-dokument-arkiv-feature
 TOPIC_JOURNALPOST: bidrag-journalpost
 TOPIC_JOURNALFOERING: joark-hendelse
