@@ -60,6 +60,7 @@ public class HendelseListener {
       return;
     }
 
+    SECURE_LOGGER.info("Mottok journalføringshendelse {}", journalfoeringHendelseRecord);
 
     if (erOpprettetAvNKS(journalfoeringHendelseRecord)){
       LOGGER.debug("Journalpost er opprettet av NKS. Stopper videre behandling");
@@ -87,6 +88,7 @@ public class HendelseListener {
         return;
       }
 
+      loggHendelseEndringer(record);
       SECURE_LOGGER.info("Behandler journalføringshendelse {}", record);
       LOGGER.info("Behandler journalføringshendelse {} med journalpostId={}, kanal={}, journalpostStatus={} og tema={}", record.getHendelsesType(), record.getJournalpostId(), record.getMottaksKanal(), record.getJournalpostStatus(), record.getTemaNytt());
       behandleJournalpostFraHendelse(journalpost);
@@ -121,6 +123,12 @@ public class HendelseListener {
       LOGGER.info("Oppdaterer journalpost {} enhet fra {} til {}", journalpost.getJournalpostId(), journalpost.getJournalforendeEnhet(), geografiskEnhet);
       dokarkivConsumer.endre(new OverforEnhetRequest(journalpost.hentJournalpostIdLong(), geografiskEnhet));
       journalpost.setJournalforendeEnhet(geografiskEnhet);
+    }
+  }
+
+  private void loggHendelseEndringer(JournalfoeringHendelseRecord record){
+    if (new JournalpostTema(record).erEndretFraBidragTilAnnet()){
+      LOGGER.info("Journalpost {} endret tema fra {} til {}", record.getJournalpostId(), record.getTemaGammelt(), record.getTemaGammelt());
     }
   }
 

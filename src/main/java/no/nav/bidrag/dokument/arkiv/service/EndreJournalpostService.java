@@ -3,7 +3,6 @@ package no.nav.bidrag.dokument.arkiv.service;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import no.nav.bidrag.commons.web.HttpResponse;
-import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivProxyConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
@@ -60,11 +59,15 @@ public class EndreJournalpostService {
     tilknyttSakerTilJournalfoertJournalpost(endreJournalpostCommand, journalpost);
     opprettBehandleDokumentOppgaveVedJournalforing(endreJournalpostCommand, journalpost);
 
+    publiserJournalpostEndretHendelse(journalpost, journalpostId, endreJournalpostCommand);
+
+    return HttpResponse.from(HttpStatus.OK);
+  }
+
+  private void publiserJournalpostEndretHendelse(Journalpost journalpost, Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand){
     if (journalpost.isInngaaendeDokument()){
       hendelserProducer.publishJournalpostUpdated(journalpostId, endreJournalpostCommand.getEnhet());
     }
-
-    return HttpResponse.from(HttpStatus.OK);
   }
 
   public OppdaterJournalpostResponse lagreJournalpost(OppdaterJournalpostRequest oppdaterJournalpostRequest){

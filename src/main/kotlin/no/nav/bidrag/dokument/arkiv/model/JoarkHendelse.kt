@@ -37,4 +37,8 @@ class JournalpostTema internal constructor(journalfoeringHendelseRecord: Journal
     fun erOmhandlingAvBidrag(): Boolean {
         return BEHANDLINGSTEMA_BIDRAG == gammelt || BEHANDLINGSTEMA_BIDRAG == nytt || BEHANDLINGSTEMA_FAR == gammelt || BEHANDLINGSTEMA_FAR == nytt
     }
+
+    fun erEndretFraBidragTilAnnet(): Boolean {
+        return erOmhandlingAvBidrag() && (BEHANDLINGSTEMA_FAR != nytt && BEHANDLINGSTEMA_BIDRAG != nytt)
+    }
 }
