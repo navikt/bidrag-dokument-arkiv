@@ -1,5 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -128,6 +130,11 @@ public class JournalpostService {
     if (!personResponse.is2xxSuccessful()) {
       throw new PersonException("Det skjedde en feil ved henting av person", HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return personResponse.getResponseEntity().getBody();
+    var response =  personResponse.getResponseEntity().getBody();
+    if (Objects.isNull(response)){
+      SECURE_LOGGER.error("Fant ingen person med id {}", personId);
+      return new PersonResponse(personId, personId);
+    }
+    return response;
   }
 }
