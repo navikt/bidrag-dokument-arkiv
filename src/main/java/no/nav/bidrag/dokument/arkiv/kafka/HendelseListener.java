@@ -55,7 +55,6 @@ public class HendelseListener {
   @KafkaListener(groupId = "bidrag-dokument-arkiv", topics = "${TOPIC_JOURNALFOERING}")
   public void listen(@Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
     JournalpostTema journalpostTema = new JournalpostTema(journalfoeringHendelseRecord);
-
     if (!journalpostTema.erOmhandlingAvBidrag()) {
       LOGGER.debug("Oppgavetema omhandler ikke bidrag");
       return;
