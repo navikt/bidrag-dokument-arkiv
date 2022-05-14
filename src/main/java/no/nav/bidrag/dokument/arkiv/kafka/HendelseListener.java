@@ -9,6 +9,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import java.util.Optional;
 import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
+import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker;
 import no.nav.bidrag.dokument.arkiv.dto.Bruker;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.MottaksKanal;
@@ -96,7 +97,7 @@ public class HendelseListener {
   }
 
   private void behandleJournalpostFraHendelse(Journalpost journalpost){
-    if (journalpost.isStatusMottatt()){
+    if (journalpost.isStatusMottatt() && journalpost.isTemaBidrag()){
       oppdaterJournalpostMedPersonGeografiskEnhet(journalpost);
     }
     producer.publishJournalpostUpdated(journalpost);
@@ -117,16 +118,19 @@ public class HendelseListener {
   }
 
   private String hentBrukerId(Journalpost journalpost){
-    return  Optional.of(journalpost)
-        .map((Journalpost::getBruker))
+    return Optional.of(journalpost)
+        .map(Journalpost::getBruker)
         .map(Bruker::getId)
-        .orElse(null);
+        .orElseGet(()->Optional.of(journalpost)
+            .map(Journalpost::getAvsenderMottaker)
+            .map(AvsenderMottaker::getId)
+            .orElse(null));
   }
 
   private void oppdaterJournalpostMedPersonGeografiskEnhet(Journalpost journalpost){
     var brukerId = hentBrukerId(journalpost);
     var geografiskEnhet = hentGeografiskEnhet(brukerId);
-    if (geografiskEnhet != null && !journalpost.harJournalforendeEnhetLik(geografiskEnhet)){
+    if (!journalpost.harJournalforendeEnhetLik(geografiskEnhet)){
       LOGGER.info("Oppdaterer journalpost {} enhet fra {} til {}", journalpost.getJournalpostId(), journalpost.getJournalforendeEnhet(), geografiskEnhet);
       dokarkivConsumer.endre(new OverforEnhetRequest(journalpost.hentJournalpostIdLong(), geografiskEnhet));
       journalpost.setJournalforendeEnhet(geografiskEnhet);
