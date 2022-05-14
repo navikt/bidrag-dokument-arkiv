@@ -20,7 +20,7 @@ public class BidragOrganisasjonConsumer {
     this.restTemplate = restTemplate;
   }
 
-  @Cacheable(GEOGRAFISK_ENHET_CACHE)
+  @Cacheable(value = GEOGRAFISK_ENHET_CACHE, unless="#result == null")
   public String hentGeografiskEnhet(String personId, String tema){
       if (Strings.isEmpty(personId)){
         return null;
@@ -30,7 +30,7 @@ public class BidragOrganisasjonConsumer {
         arbeidsfordelingUrl = arbeidsfordelingUrl+"?tema="+tema;
       }
       var response = restTemplate.exchange(arbeidsfordelingUrl, HttpMethod.GET, null, GeografiskTilknytningResponse.class);
-      return response.getBody().getEnhetIdent();
+      return response.getBody() == null ? null : response.getBody().getEnhetIdent();
   }
 
 

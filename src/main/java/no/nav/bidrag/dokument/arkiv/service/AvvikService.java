@@ -142,8 +142,7 @@ public class AvvikService {
     if (journalpost.isInngaaendeJournalfort()){
       endreFagomradeJournalfortJournalpost(journalpost, avvikshendelseIntern);
     } else {
-      var journalforendeEnhet = bidragOrganisasjonConsumer.hentGeografiskEnhet(journalpost.hentGjelderId(), avvikshendelseIntern.getNyttFagomrade());
-      oppdater(avvikshendelseIntern.toEndreFagomradeRequest(journalforendeEnhet));
+      oppdater(avvikshendelseIntern.toEndreFagomradeRequest());
     }
   }
 

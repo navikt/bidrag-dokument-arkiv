@@ -4,6 +4,7 @@ import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_KAFKA_TEST;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_LIVE;
 
+import com.google.common.base.Strings;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.util.Optional;
 import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
@@ -32,6 +33,7 @@ public class HendelseListener {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HendelseListener.class);
   private static final String HENDELSE_COUNTER_NAME = "joark_hendelse";
+  private static final String DEFAULT_ENHET = "4833";
 
   private final MeterRegistry meterRegistry;
   private final HendelserProducer producer;
@@ -101,7 +103,13 @@ public class HendelseListener {
   }
 
   private String hentGeografiskEnhet(String personId){
-    return bidragOrganisasjonConsumer.hentGeografiskEnhet(personId, null);
+    var geografiskEnhet = bidragOrganisasjonConsumer.hentGeografiskEnhet(personId, null);
+    if (Strings.isNullOrEmpty(geografiskEnhet)){
+      LOGGER.warn("Fant ingen geografisk enhet for person, bruker enhet {}", DEFAULT_ENHET);
+      SECURE_LOGGER.warn("Fant ingen geografisk enhet for person {}, bruker enhet {}", personId, DEFAULT_ENHET);
+      return DEFAULT_ENHET;
+    }
+    return geografiskEnhet;
   }
 
   private Journalpost hentJournalpost(Long journalpostId){

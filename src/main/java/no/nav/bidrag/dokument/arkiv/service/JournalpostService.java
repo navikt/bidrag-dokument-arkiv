@@ -132,7 +132,7 @@ public class JournalpostService {
     }
     var response =  personResponse.getResponseEntity().getBody();
     if (Objects.isNull(response)){
-      SECURE_LOGGER.error("Fant ingen person med id {}", personId);
+      LOGGER.error("Fant ingen person med id {}", personId);
       return new PersonResponse(personId, personId);
     }
     return response;
