@@ -63,7 +63,8 @@ public class HendelseListener {
       return;
     }
 
-    SECURE_LOGGER.debug("Mottok journalføringshendelse {}", journalfoeringHendelseRecord);
+    SECURE_LOGGER.info("Mottok journalføringshendelse {}", journalfoeringHendelseRecord);
+    debugOrganisasjon(journalfoeringHendelseRecord);
 
     if (erOpprettetAvNKS(journalfoeringHendelseRecord)){
       LOGGER.debug("Journalpost er opprettet av NKS. Stopper videre behandling");
@@ -71,6 +72,17 @@ public class HendelseListener {
     }
 
     behandleJournalforingHendelse(journalfoeringHendelseRecord);
+  }
+
+  private void debugOrganisasjon(JournalfoeringHendelseRecord record){
+    try {
+      var journalpost = hentJournalpost(record.getJournalpostId());
+      var brukerId = hentBrukerId(journalpost);
+      var geografiskEnhet = hentGeografiskEnhet(brukerId);
+      SECURE_LOGGER.info("Hentet geografisk enhet {} for person {} og journalpost {} med jfrEnhet {}", geografiskEnhet, brukerId, journalpost.getJournalpostId(), journalpost.getJournalforendeEnhet());
+    } catch (Exception e){
+      LOGGER.warn("Det skjedde en feil", e);
+    }
   }
 
   private void behandleJournalforingHendelse(@Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
