@@ -24,6 +24,7 @@ env:
   TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering-q1
   BIDRAG_PERSON_URL: https://bidrag-person-feature.dev.adeo.no
   BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon-feature.dev.adeo.no
+  ORGANISASJON_SCOPE: dev-fss.bidrag.bidrag-organisasjon-feature
   JAVA_OPTS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
 vault:
   kvPath: dev

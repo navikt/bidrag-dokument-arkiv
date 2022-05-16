@@ -101,7 +101,7 @@ public class AvvikService {
 
     var journalforendeEnhet = bidragOrganisasjonConsumer.hentGeografiskEnhet(journalpost.hentGjelderId(), avvikshendelseIntern.getNyttFagomrade());
     var nyJournalpostId = endreJournalpostService.tilknyttTilGenerellSak(avvikshendelseIntern.getNyttFagomrade(), journalpost);
-    oppgaveService.opprettOverforJournalpostOppgave(journalpost, nyJournalpostId, journalforendeEnhet, avvikshendelseIntern.getNyttFagomrade(), avvikshendelseIntern.getBeskrivelse());
+    oppgaveService.opprettVurderDokumentOppgave(journalpost, nyJournalpostId, journalforendeEnhet, avvikshendelseIntern.getNyttFagomrade(), avvikshendelseIntern.getBeskrivelse());
   }
 
   private void knyttTilSakPaaNyttFagomrade(AvvikshendelseIntern avvikshendelseIntern, Journalpost journalpost){
@@ -142,8 +142,7 @@ public class AvvikService {
     if (journalpost.isInngaaendeJournalfort()){
       endreFagomradeJournalfortJournalpost(journalpost, avvikshendelseIntern);
     } else {
-      var journalforendeEnhet = bidragOrganisasjonConsumer.hentGeografiskEnhet(journalpost.hentGjelderId(), avvikshendelseIntern.getNyttFagomrade());
-      oppdater(avvikshendelseIntern.toEndreFagomradeRequest(journalforendeEnhet));
+      oppdater(avvikshendelseIntern.toEndreFagomradeRequest());
     }
   }
 
