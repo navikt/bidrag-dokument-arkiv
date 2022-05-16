@@ -31,7 +31,7 @@
     <bidrag-dokument-dto.version>1.5.0</bidrag-dokument-dto.version>
     <bidrag-tilgangskontroll.version>1.9.21</bidrag-tilgangskontroll.version>
     <commons-codec.version>1.15</commons-codec.version>
-    <graphq-dgs-client.version>4.9.24</graphq-dgs-client.version>
+    <graphq-dgs-client.version>4.9.25</graphq-dgs-client.version>
     <joark-hendelse.version>67a9be4476b63b7247cfacfaf821ab656bd2a952</joark-hendelse.version>
     <kafka-avro-serializer.version>6.2.1</kafka-avro-serializer.version>
     <logback-encoder.version>7.1.1</logback-encoder.version>
