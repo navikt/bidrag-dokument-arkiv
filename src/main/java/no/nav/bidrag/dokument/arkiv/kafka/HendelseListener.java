@@ -102,7 +102,7 @@ public class HendelseListener {
   }
 
   private String hentGeografiskEnhet(String personId){
-    var geografiskEnhet = bidragOrganisasjonConsumer.hentGeografiskEnhet(personId, null);
+    var geografiskEnhet = bidragOrganisasjonConsumer.hentGeografiskEnhet(personId);
     if (Strings.isNullOrEmpty(geografiskEnhet)){
       LOGGER.warn("Fant ingen geografisk enhet for person, bruker enhet {}", DEFAULT_ENHET);
       SECURE_LOGGER.warn("Fant ingen geografisk enhet for person {}, bruker enhet {}", personId, DEFAULT_ENHET);
