@@ -12,6 +12,7 @@ import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 
 
+var X_ENHET_HEADER = "1234"
 var BRUKER_ENHET = "4899"
 var JOURNALPOST_ID = 123213213L
 var JOURNALPOST_ID_2 = 55513213L
@@ -54,7 +55,7 @@ fun createDistribuerTilAdresse(): DistribuerTilAdresse {
 fun opprettSafResponse(
     journalpostId: String = JOURNALPOST_ID.toString(),
     avsenderMottaker: AvsenderMottaker = AvsenderMottaker(AVSENDER_NAVN, AVSENDER_ID),
-    bruker: Bruker = Bruker(BRUKER_AKTOER_ID, BRUKER_TYPE_AKTOERID),
+    bruker: Bruker? = Bruker(BRUKER_AKTOER_ID, BRUKER_TYPE_AKTOERID),
     dokumenter: List<Dokument> = listOf(
         Dokument(
             dokumentInfoId = DOKUMENT_1_ID,
@@ -67,7 +68,7 @@ fun opprettSafResponse(
     journalstatus: JournalStatus = JournalStatus.MOTTATT,
     relevanteDatoer: List<DatoType> = listOf(DATO_DOKUMENT),
     tema: String = "BID",
-    sak: Sak = Sak("5276661")
+    sak: Sak? = Sak("5276661")
 ): Journalpost {
     return Journalpost(
         avsenderMottaker = avsenderMottaker,

@@ -12,6 +12,8 @@ import no.nav.bidrag.dokument.arkiv.utils.DateUtils
 import no.nav.bidrag.dokument.arkiv.utils.JsonMapper.fromJsonString
 import no.nav.bidrag.dokument.arkiv.utils.JsonMapper.toJsonString
 import no.nav.bidrag.dokument.dto.AktorDto
+import no.nav.bidrag.dokument.dto.AvsenderMottakerDto
+import no.nav.bidrag.dokument.dto.AvsenderMottakerDtoIdType
 import no.nav.bidrag.dokument.dto.AvvikType
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 import no.nav.bidrag.dokument.dto.DokumentDto
@@ -70,6 +72,7 @@ data class Journalpost(
     var tilknyttedeSaker: List<String> = emptyList(),
     var tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger()
 ) {
+
     fun hentGjelderId(): String? = bruker?.id
     fun hentJournalStatus(): String? {
         return when(journalstatus){
@@ -179,6 +182,15 @@ data class Journalpost(
         @Suppress("UNCHECKED_CAST")
         return JournalpostDto(
             avsenderNavn = avsenderMottaker?.navn,
+            avsenderMottaker = if (avsenderMottaker != null) AvsenderMottakerDto(
+                navn = avsenderMottaker!!.navn,
+                ident = avsenderMottaker!!.id,
+                type = when(avsenderMottaker!!.type){
+                        AvsenderMottakerIdType.FNR -> AvsenderMottakerDtoIdType.FNR
+                        AvsenderMottakerIdType.ORGNR -> AvsenderMottakerDtoIdType.ORGNR
+                        else -> AvsenderMottakerDtoIdType.UKJENT
+                }
+            ) else null,
             dokumenter = dokumenter.stream().map { dok -> dok?.tilDokumentDto(hentJournalpostType()) }.collect(toList()) as List<DokumentDto>,
             dokumentDato = hentDokumentDato(),
             ekspedertDato = hentEkspedertDato(),
@@ -217,6 +229,7 @@ data class Journalpost(
     fun hasSak(): Boolean = sak != null
     fun isStatusFeilregistrert(): Boolean = journalstatus == JournalStatus.FEILREGISTRERT
     fun isStatusMottatt(): Boolean = journalstatus == JournalStatus.MOTTATT
+    fun isTemaBidrag(): Boolean = tema == "BID" || tema == "FAR"
     fun isStatusFerdigsstilt(): Boolean = journalstatus == JournalStatus.FERDIGSTILT
     fun isStatusJournalfort(): Boolean = journalstatus == JournalStatus.JOURNALFOERT
     fun isInngaaendeJournalfort(): Boolean = isInngaaendeDokument() && isStatusJournalfort()

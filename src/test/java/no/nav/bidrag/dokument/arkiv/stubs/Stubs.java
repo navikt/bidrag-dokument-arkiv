@@ -22,6 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.ContainsPattern;
+import com.github.tomakehurst.wiremock.stubbing.Scenario;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -234,14 +235,21 @@ public class Stubs {
   }
 
   public void mockSafResponseHentJournalpost(Journalpost journalpost) {
+    mockSafResponseHentJournalpost(journalpost, null, null);
+  }
+
+  public void mockSafResponseHentJournalpost(Journalpost journalpost, String scenarioState, String nextScenario) {
     try {
       stubFor(
-          post(urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query journalpost")).willReturn(
+          post(urlEqualTo("/saf/graphql"))
+              .inScenario("Saf response")
+              .whenScenarioStateIs(scenarioState == null ? Scenario.STARTED : scenarioState)
+              .withRequestBody(new ContainsPattern("query journalpost")).willReturn(
               aClosedJsonResponse()
                   .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                   .withStatus(HttpStatus.OK.value())
                   .withBody("{\"data\":{\"journalpost\": %s }}".formatted(objectMapper.writeValueAsString(journalpost)))
-          )
+          ).willSetStateTo(nextScenario)
       );
     } catch (JsonProcessingException e) {
       fail(e.getMessage());
@@ -250,18 +258,19 @@ public class Stubs {
 
   public void mockSafResponseHentJournalpost(String filename, HttpStatus status) {
     stubFor(
-        post(urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query journalpost")).willReturn(
-            aClosedJsonResponse()
-                .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                .withStatus(status.value())
-                .withBodyFile("json/" + filename)
-        )
+        post(urlEqualTo("/saf/graphql"))
+            .withRequestBody(new ContainsPattern("query journalpost"))
+            .willReturn(aClosedJsonResponse()
+                  .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                  .withStatus(status.value())
+                  .withBodyFile("json/" + filename)
+            )
     );
   }
 
   public void mockSafResponseTilknyttedeJournalposter(HttpStatus httpStatus) {
     stubFor(
-        post(urlEqualTo("/saf/"))
+        post(urlEqualTo("/saf/graphql"))
             .withRequestBody(new ContainsPattern("query tilknyttedeJournalposter")).willReturn(
                 aClosedJsonResponse()
                     .withStatus(httpStatus.value())
@@ -277,7 +286,7 @@ public class Stubs {
   public void mockSafResponseDokumentOversiktFagsak(List<Journalpost> response) {
     try {
       stubFor(
-          post(urlEqualTo("/saf/"))
+          post(urlEqualTo("/saf/graphql"))
               .withRequestBody(new ContainsPattern("query dokumentoversiktFagsak")).willReturn(
                   aClosedJsonResponse()
                       .withStatus(HttpStatus.OK.value())
@@ -352,7 +361,13 @@ public class Stubs {
   public static class VerifyStub {
 
     public void bidragOrganisasjonGeografiskTilknytningKalt(){
-      verify(getRequestedFor(urlPathMatching("/organisasjon/bidrag-organisasjon/arbeidsfordeling/enhetsliste/geografisktilknytning/.*")));
+      bidragOrganisasjonGeografiskTilknytningKalt(null);
+    }
+
+    public void bidragOrganisasjonGeografiskTilknytningKalt(String ident){
+      verify(getRequestedFor(urlPathMatching(
+          String.format("/organisasjon/bidrag-organisasjon/arbeidsfordeling/enhetsliste/geografisktilknytning/%s", ident == null ? ".*" : ident))));
+
     }
 
     public void oppgaveOpprettKalt(String... contains){
@@ -493,13 +508,13 @@ public class Stubs {
 
     public void harEnSafKallEtterHentJournalpost() {
       verify(
-          postRequestedFor(urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query journalpost"))
+          postRequestedFor(urlEqualTo("/saf/graphql")).withRequestBody(new ContainsPattern("query journalpost"))
       );
     }
 
     public void harSafEnKallEtterDokumentOversiktFagsak() {
       verify(
-          postRequestedFor(urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query dokumentoversiktFagsak"))
+          postRequestedFor(urlEqualTo("/saf/graphql")).withRequestBody(new ContainsPattern("query dokumentoversiktFagsak"))
       );
     }
 
@@ -513,7 +528,7 @@ public class Stubs {
 
     private void harEnSafKallEtterTilknyttedeJournalposter(Integer times) {
       verify(exactly(times),
-          postRequestedFor(urlEqualTo("/saf/")).withRequestBody(new ContainsPattern("query tilknyttedeJournalposter"))
+          postRequestedFor(urlEqualTo("/saf/graphql")).withRequestBody(new ContainsPattern("query tilknyttedeJournalposter"))
       );
     }
   }

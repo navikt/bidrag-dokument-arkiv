@@ -1,26 +1,22 @@
 package no.nav.bidrag.dokument.arkiv.controller;
 
-import static no.nav.bidrag.dokument.arkiv.stubs.Stubs.SAKSNUMMER_JOURNALPOST;
 import static no.nav.bidrag.dokument.arkiv.stubs.TestDataKt.createDistribuerTilAdresse;
-import static no.nav.bidrag.dokument.arkiv.stubs.TestDataKt.createOppgaveDataWithSaksnummer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import kotlin.Pair;
 import no.nav.bidrag.commons.web.EnhetFilter;
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsTidspunkt;
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsType;
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.JournalstatusDto;
-import no.nav.bidrag.dokument.arkiv.dto.OppgaveData;
-import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.dto.AktorDto;
+import no.nav.bidrag.dokument.dto.AvsenderMottakerDto;
+import no.nav.bidrag.dokument.dto.AvsenderMottakerDtoIdType;
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest;
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse;
 import no.nav.bidrag.dokument.dto.EndreDokument;
@@ -162,6 +158,8 @@ class JournalpostControllerTest extends AbstractControllerTest {
 
     assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
         () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
+        () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getAvsenderNavn).isEqualTo("Test testenesen"),
+        () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getAvsenderMottaker).isEqualTo(new AvsenderMottakerDto("Test testenesen", "213123213213", AvsenderMottakerDtoIdType.FNR)),
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getInnhold).isEqualTo("Filosofens bidrag"),
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getJournalpostId).isEqualTo("JOARK-" + journalpostIdFraJson),
         () -> assertThat(journalpost).isNotNull().extracting(JournalpostDto::getGjelderAktor).extracting(AktorDto::getIdent).isEqualTo(PERSON_IDENT),
@@ -298,106 +296,6 @@ class JournalpostControllerTest extends AbstractControllerTest {
   }
 
   @Test
-  @DisplayName("skal endre og journalføre journalpost")
-  void skalEndreOgJournalforeJournalpost() throws IOException, JSONException {
-    // given
-
-    var xEnhet = "1234";
-    var sak = "5276661";
-    var journalpostIdFraJson = 201028011L;
-    var headersMedEnhet = new HttpHeaders();
-    headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
-
-    var endreJournalpostCommand = createEndreJournalpostCommand();
-    endreJournalpostCommand.setSkalJournalfores(true);
-    endreJournalpostCommand.setTilknyttSaker(Arrays.asList(sak));
-
-    stubs.mockSokOppgave();
-    stubs.mockOpprettOppgave(HttpStatus.OK);
-    stubs.mockSafResponseHentJournalpost(HttpStatus.OK);
-    stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK);
-    stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
-    stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson);
-    stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson);
-
-    // when
-    var oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
-        initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
-        HttpMethod.PATCH,
-        new HttpEntity<>(endreJournalpostCommand, headersMedEnhet),
-        JournalpostDto.class
-    );
-
-    // then
-    assertAll(
-        () -> assertThat(oppdaterJournalpostResponseEntity)
-            .extracting(ResponseEntity::getStatusCode)
-            .as("statusCode")
-            .isEqualTo(HttpStatus.OK),
-        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, String.format("\"fagsakId\":\"%s\"", "5276661")),
-        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "\"fagsaksystem\":\"BISYS\""),
-        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "\"sakstype\":\"FAGSAK\""),
-        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "\"bruker\":{\"id\":\"06127412345\",\"idType\":\"FNR\"}"),
-        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,
-            "\"dokumenter\":[{\"dokumentInfoId\":\"1\",\"tittel\":\"In a galazy far far away\",\"brevkode\":\"BLABLA\"}]"),
-        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "\"avsenderMottaker\":{\"navn\":\"Dauden, Svarte\"}"),
-        () -> stubs.verifyStub.dokarkivFerdigstillKalt(journalpostIdFraJson),
-        () -> stubs.verifyStub.oppgaveSokKalt(new Pair<>("tema", "BID"), new Pair<>("saksreferanse", sak)),
-        () -> stubs.verifyStub.oppgaveOpprettKalt("\"oppgavetype\":\"BEH_SAK\"")
-    );
-  }
-
-  @Test
-  @DisplayName("skal endre og journalføre journalpost med flere saker")
-  void skalEndreOgJournalforeJournalpostMedFlereSaker() throws IOException, JSONException {
-    var xEnhet = "1234";
-    var saksnummer1 = "200000";
-    var saksnummer2 = "200001";
-    var saksnummer3 = "200003";
-    var journalpostIdFraJson = 201028011L;
-    var headersMedEnhet = new HttpHeaders();
-    headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
-
-    var endreJournalpostCommand = createEndreJournalpostCommand();
-    endreJournalpostCommand.setSkalJournalfores(true);
-    endreJournalpostCommand.setTilknyttSaker(Arrays.asList(saksnummer1, saksnummer2));
-
-    stubs.mockSokOppgave(new OppgaveSokResponse(1, List.of(createOppgaveDataWithSaksnummer(saksnummer3))), HttpStatus.OK);
-    stubs.mockOpprettOppgave(HttpStatus.OK);
-    stubs.mockOppdaterOppgave(HttpStatus.OK);
-    stubs.mockSafResponseHentJournalpost(HttpStatus.OK);
-    stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK);
-    stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
-    stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson);
-    stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson);
-    stubs.mockDokarkivProxyTilknyttRequest(journalpostIdFraJson);
-    stubs.mockBidragOrganisasjonSaksbehandler();
-
-    // when
-    var oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
-        initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
-        HttpMethod.PATCH,
-        new HttpEntity<>(endreJournalpostCommand, headersMedEnhet),
-        JournalpostDto.class
-    );
-
-    // then
-    assertAll(
-        () -> assertThat(oppdaterJournalpostResponseEntity)
-            .extracting(ResponseEntity::getStatusCode)
-            .as("statusCode")
-            .isEqualTo(HttpStatus.OK),
-        () -> stubs.verifyStub.dokarkivFerdigstillKalt(journalpostIdFraJson),
-        () -> stubs.verifyStub.dokarkivProxyTilknyttSakerIkkeKalt(journalpostIdFraJson, saksnummer1),
-        () -> stubs.verifyStub.dokarkivProxyTilknyttSakerKalt(journalpostIdFraJson, saksnummer2, "\"journalfoerendeEnhet\":\"4806\""),
-        () -> stubs.verifyStub.oppgaveSokKalt(new Pair<>("tema", "BID"), new Pair<>("saksreferanse", saksnummer1), new Pair<>("saksreferanse", saksnummer2)),
-        () -> stubs.verifyStub.oppgaveOpprettKalt("\"oppgavetype\":\"BEH_SAK\"", "\"saksreferanse\":\"200000\""),
-        () -> stubs.verifyStub.oppgaveOpprettKalt("\"oppgavetype\":\"BEH_SAK\"", "\"saksreferanse\":\"200001\""),
-        () -> stubs.verifyStub.oppgaveOppdaterKalt(1,"Nytt dokument")
-    );
-  }
-
-  @Test
   @DisplayName("skal endre utgaaende journalpost retur detaljer")
   void skalEndreUtgaaendeJournalpostReturDetaljer() throws IOException, JSONException {
     var xEnhet = "1234";
@@ -436,88 +334,6 @@ class JournalpostControllerTest extends AbstractControllerTest {
             + "{\"nokkel\":\"retur0_2020-11-15\",\"verdi\":\"Ny beskrivelse 1\"},"
             + "{\"nokkel\":\"retur0_2020-12-14\",\"verdi\":\"Beskrivelse av retur mer tekst for å teste lengre verdier\"},"
             + "{\"nokkel\":\"retur0_2020-10-10\",\"verdi\":\"Ny beskrivelse 2\"}]")
-    );
-  }
-
-  @Test
-  @DisplayName("skal endre journalført journalpost med flere saker")
-  void skalEndreJournalfortJournalpostMedFlereSaker() throws IOException, JSONException {
-    var xEnhet = "1234";
-    var existingSaksnummer = SAKSNUMMER_JOURNALPOST;
-    var newSaksnummer = "200000";
-    var journalpostIdFraJson = 201028011L;
-    var headersMedEnhet = new HttpHeaders();
-    headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
-
-    var endreJournalpostCommand = createEndreJournalpostCommand();
-    endreJournalpostCommand.setSkalJournalfores(false);
-    endreJournalpostCommand.setTilknyttSaker(Arrays.asList(existingSaksnummer, newSaksnummer));
-    endreJournalpostCommand.setDokumentDato(LocalDate.of(2020, 2, 3));
-
-    stubs.mockSafResponseHentJournalpost("journalpostJournalfortSafResponse.json", HttpStatus.OK);
-    stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK);
-    stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
-    stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson);
-    stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson);
-    stubs.mockDokarkivProxyTilknyttRequest(journalpostIdFraJson);
-
-    // when
-    var oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
-        initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
-        HttpMethod.PATCH,
-        new HttpEntity<>(endreJournalpostCommand, headersMedEnhet),
-        JournalpostDto.class
-    );
-
-    // then
-    assertAll(
-        () -> assertThat(oppdaterJournalpostResponseEntity)
-            .extracting(ResponseEntity::getStatusCode)
-            .as("statusCode")
-            .isEqualTo(HttpStatus.OK),
-        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "\"tittel\":\"So Tired\""),
-        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "\"avsenderMottaker\":{\"navn\":\"Dauden, Svarte\"}"),
-        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "\"datoMottatt\":\"2020-02-03\""),
-        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,
-            "\"dokumenter\":[{\"dokumentInfoId\":\"1\",\"tittel\":\"In a galazy far far away\",\"brevkode\":\"BLABLA\"}]"),
-        () -> stubs.verifyStub.dokarkivProxyTilknyttSakerKalt(journalpostIdFraJson, newSaksnummer, "\"journalfoerendeEnhet\":\"4806\""),
-        () -> stubs.verifyStub.dokarkivProxyTilknyttSakerIkkeKalt(journalpostIdFraJson, existingSaksnummer)
-    );
-  }
-
-  @Test
-  @DisplayName("skal endre journalpost uten journalføring")
-  void skalEndreJournalpostUtenJournalforing() throws IOException, JSONException {
-    // given
-    var xEnhet = "1234";
-    var journalpostIdFraJson = 201028011L;
-    var headersMedEnhet = new HttpHeaders();
-    headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
-
-    var endreJournalpostCommand = createEndreJournalpostCommand();
-
-    stubs.mockSafResponseHentJournalpost(HttpStatus.OK);
-    stubs.mockPersonResponse(new PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK);
-    stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson);
-
-    // when
-    var oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
-        initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
-        HttpMethod.PATCH,
-        new HttpEntity<>(endreJournalpostCommand, headersMedEnhet),
-        JournalpostDto.class
-    );
-
-    // then
-    assertAll(
-        () -> assertThat(oppdaterJournalpostResponseEntity)
-            .extracting(ResponseEntity::getStatusCode)
-            .as("statusCode")
-            .isEqualTo(HttpStatus.OK),
-        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, ""),
-        () -> stubs.verifyStub.dokarkivFerdigstillIkkeKalt(journalpostIdFraJson),
-        () -> stubs.verifyStub.oppgaveOpprettIkkeKalt(),
-        () -> stubs.verifyStub.oppgaveSokIkkeKalt()
     );
   }
 

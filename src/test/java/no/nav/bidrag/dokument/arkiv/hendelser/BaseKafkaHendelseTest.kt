@@ -2,6 +2,7 @@ package no.nav.bidrag.dokument.arkiv.hendelser
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig
+import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_KAFKA_TEST
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TEST
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal
@@ -15,6 +16,7 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.DisplayName
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
@@ -34,6 +36,7 @@ import java.util.Collections
 @AutoConfigureWireMock(port = 0)
 @EmbeddedKafka(partitions = 1, brokerProperties = ["listeners=PLAINTEXT://localhost:9092", "port=9092"], topics = ["topic_joark", "topic_journalpost"])
 abstract class BaseKafkaHendelseTest {
+    private val LOGGER = LoggerFactory.getLogger(BaseKafkaHendelseTest::class.java)
 
     @Autowired
     lateinit var embeddedKafkaBroker: EmbeddedKafkaBroker
@@ -58,6 +61,7 @@ abstract class BaseKafkaHendelseTest {
             Assertions.assertThat(singleRecord).isNotNull
             objectMapper.readValue(singleRecord.value(), JournalpostHendelse::class.java)
         } catch (e: Exception) {
+            LOGGER.error("Det skjedde en feil ved lesing av kafka melding", e)
             null
         }
 
