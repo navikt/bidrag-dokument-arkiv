@@ -59,7 +59,7 @@ data class LagreJournalpostRequest(private var journalpostId: Long, private var 
         sak = if (saksnummer != null) Sak(saksnummer) else null
 
         bruker = if (endreJournalpostCommand.hentGjelder()!=null) Bruker(endreJournalpostCommand.hentGjelder(), endreJournalpostCommand.hentGjelderType()) else null
-        tema = if (endreJournalpostCommand.hentFagomrade() != null) endreJournalpostCommand.hentFagomrade() else null
+        tema = if (endreJournalpostCommand.hentFagomrade() != null) endreJournalpostCommand.hentFagomrade() else journalpost.tema
     }
 }
 
