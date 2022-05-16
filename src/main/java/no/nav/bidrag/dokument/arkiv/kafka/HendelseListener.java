@@ -90,7 +90,7 @@ public class HendelseListener {
         LOGGER.info("Journalpost {} er opprettet av NKS. Stopper videre behandling", record.getJournalpostId());
         return;
       }
-      LOGGER.info("Behandler journalføringshendelse {} med journalpostId={}, journalforendeEnhet={}, kanal={}, journalpostStatus={}, temaNytt={} og temaGammelt={}", record.getHendelsesType(), record.getJournalpostId(), journalpost.getJournalforendeEnhet(), record.getMottaksKanal(), record.getJournalpostStatus(), record.getTemaNytt(), record.getTemaGammelt());
+      LOGGER.info("Behandler journalføringshendelse {} med journalpostId={}, journalforendeEnhet={}, kanal={}, journalpostStatus={}, temaGammelt={} og temaNytt={}", record.getHendelsesType(), record.getJournalpostId(), journalpost.getJournalforendeEnhet(), record.getMottaksKanal(), record.getJournalpostStatus(), record.getTemaGammelt(), record.getTemaNytt());
       behandleJournalpostFraHendelse(journalpost);
   }
 
