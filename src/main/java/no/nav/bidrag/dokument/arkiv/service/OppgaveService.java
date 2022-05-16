@@ -40,7 +40,7 @@ public class OppgaveService {
     this.saksbehandlerInfoManager = saksbehandlerInfoManager;
   }
 
-  public void opprettOverforJournalpostOppgave(Journalpost journalpost, String journalpostId, String tildeltEnhetsnr, String tema, String kommentar) {
+  public void opprettVurderDokumentOppgave(Journalpost journalpost, String journalpostId, String tildeltEnhetsnr, String tema, String kommentar) {
     var aktorId = hentAktorId(journalpost.hentGjelderId());
     opprettOppgave(new OpprettVurderDokumentOppgaveRequest(
         journalpost,

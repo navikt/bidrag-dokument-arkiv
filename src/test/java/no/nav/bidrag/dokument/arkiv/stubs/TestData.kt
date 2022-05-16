@@ -55,7 +55,7 @@ fun createDistribuerTilAdresse(): DistribuerTilAdresse {
 fun opprettSafResponse(
     journalpostId: String = JOURNALPOST_ID.toString(),
     avsenderMottaker: AvsenderMottaker = AvsenderMottaker(AVSENDER_NAVN, AVSENDER_ID),
-    bruker: Bruker = Bruker(BRUKER_AKTOER_ID, BRUKER_TYPE_AKTOERID),
+    bruker: Bruker? = Bruker(BRUKER_AKTOER_ID, BRUKER_TYPE_AKTOERID),
     dokumenter: List<Dokument> = listOf(
         Dokument(
             dokumentInfoId = DOKUMENT_1_ID,

@@ -101,7 +101,7 @@ public class AvvikService {
 
     var journalforendeEnhet = bidragOrganisasjonConsumer.hentGeografiskEnhet(journalpost.hentGjelderId(), avvikshendelseIntern.getNyttFagomrade());
     var nyJournalpostId = endreJournalpostService.tilknyttTilGenerellSak(avvikshendelseIntern.getNyttFagomrade(), journalpost);
-    oppgaveService.opprettOverforJournalpostOppgave(journalpost, nyJournalpostId, journalforendeEnhet, avvikshendelseIntern.getNyttFagomrade(), avvikshendelseIntern.getBeskrivelse());
+    oppgaveService.opprettVurderDokumentOppgave(journalpost, nyJournalpostId, journalforendeEnhet, avvikshendelseIntern.getNyttFagomrade(), avvikshendelseIntern.getBeskrivelse());
   }
 
   private void knyttTilSakPaaNyttFagomrade(AvvikshendelseIntern avvikshendelseIntern, Journalpost journalpost){

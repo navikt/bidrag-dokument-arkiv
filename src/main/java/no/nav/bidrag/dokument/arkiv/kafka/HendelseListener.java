@@ -121,7 +121,7 @@ public class HendelseListener {
     return Optional.of(journalpost)
         .map(Journalpost::getBruker)
         .map(Bruker::getId)
-        .orElseGet(()->Optional.of(journalpost)
+        .orElseGet(() -> Optional.of(journalpost)
             .map(Journalpost::getAvsenderMottaker)
             .map(AvsenderMottaker::getId)
             .orElse(null));
