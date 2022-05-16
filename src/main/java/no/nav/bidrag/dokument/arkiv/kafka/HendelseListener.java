@@ -79,7 +79,7 @@ public class HendelseListener {
         "hendelse_type", hendelsesType.toString(),
         "tema", journalfoeringHendelseRecord.getTemaNytt(),
         "kanal", journalfoeringHendelseRecord.getMottaksKanal()).increment();
-
+    SECURE_LOGGER.info("Behandler journalføringshendelse {}", journalfoeringHendelseRecord);
     behandleHendelse(journalfoeringHendelseRecord);
   }
 
@@ -90,9 +90,7 @@ public class HendelseListener {
         LOGGER.info("Journalpost {} er opprettet av NKS. Stopper videre behandling", record.getJournalpostId());
         return;
       }
-
-      SECURE_LOGGER.info("Behandler journalføringshendelse {}", record);
-      LOGGER.info("Behandler journalføringshendelse {} med journalpostId={}, kanal={}, journalpostStatus={}, temaNytt={} og temaGammelt={}", record.getHendelsesType(), record.getJournalpostId(), record.getMottaksKanal(), record.getJournalpostStatus(), record.getTemaNytt(), record.getTemaGammelt());
+      LOGGER.info("Behandler journalføringshendelse {} med journalpostId={}, journalforendeEnhet={}, kanal={}, journalpostStatus={}, temaNytt={} og temaGammelt={}", record.getHendelsesType(), journalpost.getJournalforendeEnhet(), record.getJournalpostId(), record.getMottaksKanal(), record.getJournalpostStatus(), record.getTemaNytt(), record.getTemaGammelt());
       behandleJournalpostFraHendelse(journalpost);
   }
 
