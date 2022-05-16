@@ -4,10 +4,12 @@ import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_KAFKA_TEST;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_LIVE;
 
+import com.google.common.base.Strings;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.util.Optional;
 import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
+import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker;
 import no.nav.bidrag.dokument.arkiv.dto.Bruker;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.MottaksKanal;
@@ -32,6 +34,7 @@ public class HendelseListener {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HendelseListener.class);
   private static final String HENDELSE_COUNTER_NAME = "joark_hendelse";
+  private static final String DEFAULT_ENHET = "4833";
 
   private final MeterRegistry meterRegistry;
   private final HendelserProducer producer;
@@ -60,7 +63,7 @@ public class HendelseListener {
       return;
     }
 
-    SECURE_LOGGER.info("Mottok journalføringshendelse {}", journalfoeringHendelseRecord);
+    SECURE_LOGGER.debug("Mottok journalføringshendelse {}", journalfoeringHendelseRecord);
 
     if (erOpprettetAvNKS(journalfoeringHendelseRecord)){
       LOGGER.debug("Journalpost er opprettet av NKS. Stopper videre behandling");
@@ -76,7 +79,7 @@ public class HendelseListener {
         "hendelse_type", hendelsesType.toString(),
         "tema", journalfoeringHendelseRecord.getTemaNytt(),
         "kanal", journalfoeringHendelseRecord.getMottaksKanal()).increment();
-
+    SECURE_LOGGER.info("Behandler journalføringshendelse {}", journalfoeringHendelseRecord);
     behandleHendelse(journalfoeringHendelseRecord);
   }
 
@@ -87,21 +90,25 @@ public class HendelseListener {
         LOGGER.info("Journalpost {} er opprettet av NKS. Stopper videre behandling", record.getJournalpostId());
         return;
       }
-
-      SECURE_LOGGER.info("Behandler journalføringshendelse {}", record);
-      LOGGER.info("Behandler journalføringshendelse {} med journalpostId={}, kanal={}, journalpostStatus={}, temaNytt={} og temaGammelt={}", record.getHendelsesType(), record.getJournalpostId(), record.getMottaksKanal(), record.getJournalpostStatus(), record.getTemaNytt(), record.getTemaGammelt());
+      LOGGER.info("Behandler journalføringshendelse {} med journalpostId={}, journalforendeEnhet={}, kanal={}, journalpostStatus={}, temaGammelt={} og temaNytt={}", record.getHendelsesType(), record.getJournalpostId(), journalpost.getJournalforendeEnhet(), record.getMottaksKanal(), record.getJournalpostStatus(), record.getTemaGammelt(), record.getTemaNytt());
       behandleJournalpostFraHendelse(journalpost);
   }
 
   private void behandleJournalpostFraHendelse(Journalpost journalpost){
-    if (journalpost.isStatusMottatt()){
+    if (journalpost.isStatusMottatt() && journalpost.isTemaBidrag()){
       oppdaterJournalpostMedPersonGeografiskEnhet(journalpost);
     }
     producer.publishJournalpostUpdated(journalpost);
   }
 
   private String hentGeografiskEnhet(String personId){
-    return bidragOrganisasjonConsumer.hentGeografiskEnhet(personId, null);
+    var geografiskEnhet = bidragOrganisasjonConsumer.hentGeografiskEnhet(personId);
+    if (Strings.isNullOrEmpty(geografiskEnhet)){
+      LOGGER.warn("Fant ingen geografisk enhet for person, bruker enhet {}", DEFAULT_ENHET);
+      SECURE_LOGGER.warn("Fant ingen geografisk enhet for person {}, bruker enhet {}", personId, DEFAULT_ENHET);
+      return DEFAULT_ENHET;
+    }
+    return geografiskEnhet;
   }
 
   private Journalpost hentJournalpost(Long journalpostId){
@@ -109,16 +116,19 @@ public class HendelseListener {
   }
 
   private String hentBrukerId(Journalpost journalpost){
-    return  Optional.of(journalpost)
-        .map((Journalpost::getBruker))
+    return Optional.of(journalpost)
+        .map(Journalpost::getBruker)
         .map(Bruker::getId)
-        .orElse(null);
+        .orElseGet(() -> Optional.of(journalpost)
+            .map(Journalpost::getAvsenderMottaker)
+            .map(AvsenderMottaker::getId)
+            .orElse(null));
   }
 
   private void oppdaterJournalpostMedPersonGeografiskEnhet(Journalpost journalpost){
     var brukerId = hentBrukerId(journalpost);
     var geografiskEnhet = hentGeografiskEnhet(brukerId);
-    if (geografiskEnhet != null && !journalpost.harJournalforendeEnhetLik(geografiskEnhet)){
+    if (!journalpost.harJournalforendeEnhetLik(geografiskEnhet)){
       LOGGER.info("Oppdaterer journalpost {} enhet fra {} til {}", journalpost.getJournalpostId(), journalpost.getJournalforendeEnhet(), geografiskEnhet);
       dokarkivConsumer.endre(new OverforEnhetRequest(journalpost.hentJournalpostIdLong(), geografiskEnhet));
       journalpost.setJournalforendeEnhet(geografiskEnhet);

@@ -229,6 +229,7 @@ data class Journalpost(
     fun hasSak(): Boolean = sak != null
     fun isStatusFeilregistrert(): Boolean = journalstatus == JournalStatus.FEILREGISTRERT
     fun isStatusMottatt(): Boolean = journalstatus == JournalStatus.MOTTATT
+    fun isTemaBidrag(): Boolean = tema == "BID" || tema == "FAR"
     fun isStatusFerdigsstilt(): Boolean = journalstatus == JournalStatus.FERDIGSTILT
     fun isStatusJournalfort(): Boolean = journalstatus == JournalStatus.JOURNALFOERT
     fun isInngaaendeJournalfort(): Boolean = isInngaaendeDokument() && isStatusJournalfort()

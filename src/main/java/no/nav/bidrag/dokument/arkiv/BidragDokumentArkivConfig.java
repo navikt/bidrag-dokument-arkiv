@@ -230,7 +230,7 @@ public class BidragDokumentArkivConfig {
       EnvironmentProperties environmentProperties
   ) {
     httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.bidragOrganisasjonUrl + "/bidrag-organisasjon"));
-    httpHeaderRestTemplate.getInterceptors().add(securityTokenService.serviceUserAuthTokenInterceptor());
+    httpHeaderRestTemplate.getInterceptors().add(securityTokenService.serviceUserAuthTokenInterceptor("bidrag-organisasjon"));
     return new BidragOrganisasjonConsumer(httpHeaderRestTemplate);
   }
 
