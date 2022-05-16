@@ -24,7 +24,7 @@ env:
     TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering
     BIDRAG_PERSON_URL: https://bidrag-person.dev.adeo.no
     BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon.dev.adeo.no
-    FEATURE_ENABLED: KAFKA_ARBEIDSFLYT
+    ORGANISASJON_SCOPE: dev-fss.bidrag.bidrag-organisasjon
 vault:
   kvPath: dev
 azureAccessInbound:

@@ -23,7 +23,7 @@ enum class HendelsesType(val hendelsesType: String) {
         }
     }
 }
-class Oppgavetema internal constructor(journalfoeringHendelseRecord: JournalfoeringHendelseRecord) {
+class JournalpostTema internal constructor(journalfoeringHendelseRecord: JournalfoeringHendelseRecord) {
     val BEHANDLINGSTEMA_BIDRAG = "BID"
     val BEHANDLINGSTEMA_FAR = "FAR"
     private val gammelt: String

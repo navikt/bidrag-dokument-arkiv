@@ -9,6 +9,7 @@ import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.MottaksKanal
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.kafka.HendelseListener
+import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.BRUKER_AKTOER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.BRUKER_ENHET
 import no.nav.bidrag.dokument.arkiv.stubs.BRUKER_FNR
@@ -62,6 +63,41 @@ class JoarkHendelseTest {
     }
 
     @Test
+    fun `skal oppdatere journalforende enhet hvis journalpost bare har avsendermottaker`() {
+        val journalpostId = 123213L
+        val expectedJoarkJournalpostId = "JOARK-$journalpostId"
+        val personEnhet = "4844"
+        stubs.mockSts()
+        stubs.mockSafResponseHentJournalpost(
+            opprettSafResponse(
+                journalpostId = journalpostId.toString(),
+                bruker = null,
+                journalstatus = JournalStatus.MOTTATT,
+                journalforendeEnhet = BRUKER_ENHET
+            )
+        )
+        stubs.mockDokarkivOppdaterRequest(journalpostId)
+        stubs.mockBidragOrganisasjonSaksbehandler()
+        stubs.mockOrganisasjonGeografiskTilknytning(personEnhet)
+
+        val record = createHendelseRecord(journalpostId)
+
+        hendelseListener.listen(record)
+        val jsonCaptor = ArgumentCaptor.forClass(String::class.java)
+        verify(kafkaTemplateMock).send(ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(expectedJoarkJournalpostId), jsonCaptor.capture())
+        val journalpostHendelse = objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
+
+        assertAll("JournalpostHendelse",
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId).isEqualTo(expectedJoarkJournalpostId) },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isEqualTo(personEnhet) },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isEqualTo(null) },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus).isEqualTo("M") },
+            { stubs.verifyStub.dokarkivOppdaterKalt(journalpostId, personEnhet) },
+            { stubs.verifyStub.bidragOrganisasjonGeografiskTilknytningKalt(AVSENDER_ID) }
+        )
+    }
+
+    @Test
     fun `skal oppdatere journalforende enhet hvis det ikke stemmer med person enhet`() {
         val journalpostId = 123213L
         val expectedJoarkJournalpostId = "JOARK-$journalpostId"
@@ -90,7 +126,8 @@ class JoarkHendelseTest {
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isEqualTo(personEnhet) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isEqualTo(BRUKER_AKTOER_ID) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus).isEqualTo("M") },
-            { stubs.verifyStub.dokarkivOppdaterKalt(journalpostId, personEnhet) }
+            { stubs.verifyStub.dokarkivOppdaterKalt(journalpostId, personEnhet) },
+            { stubs.verifyStub.bidragOrganisasjonGeografiskTilknytningKalt(BRUKER_AKTOER_ID) }
         )
     }
 

@@ -361,7 +361,13 @@ public class Stubs {
   public static class VerifyStub {
 
     public void bidragOrganisasjonGeografiskTilknytningKalt(){
-      verify(getRequestedFor(urlPathMatching("/organisasjon/bidrag-organisasjon/arbeidsfordeling/enhetsliste/geografisktilknytning/.*")));
+      bidragOrganisasjonGeografiskTilknytningKalt(null);
+    }
+
+    public void bidragOrganisasjonGeografiskTilknytningKalt(String ident){
+      verify(getRequestedFor(urlPathMatching(
+          String.format("/organisasjon/bidrag-organisasjon/arbeidsfordeling/enhetsliste/geografisktilknytning/%s", ident == null ? ".*" : ident))));
+
     }
 
     public void oppgaveOpprettKalt(String... contains){

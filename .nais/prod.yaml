@@ -23,7 +23,7 @@ env:
   TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering
   BIDRAG_PERSON_URL: https://bidrag-person.nais.adeo.no
   BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon.nais.adeo.no
-  FEATURE_ENABLED: NONE
+  ORGANISASJON_SCOPE: prod-fss.bidrag.bidrag-organisasjon
 vault:
   kvPath: prod
 azureAccessInbound:
