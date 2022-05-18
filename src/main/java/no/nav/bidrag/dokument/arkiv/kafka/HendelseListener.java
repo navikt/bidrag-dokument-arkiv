@@ -63,7 +63,7 @@ public class HendelseListener {
       return;
     }
 
-    SECURE_LOGGER.debug("Mottok journalføringshendelse {}", journalfoeringHendelseRecord);
+    SECURE_LOGGER.info("Mottok journalføringshendelse {}", journalfoeringHendelseRecord);
 
     if (erOpprettetAvNKS(journalfoeringHendelseRecord)){
       LOGGER.debug("Journalpost er opprettet av NKS. Stopper videre behandling");
@@ -90,7 +90,17 @@ public class HendelseListener {
         LOGGER.info("Journalpost {} er opprettet av NKS. Stopper videre behandling", record.getJournalpostId());
         return;
       }
-      LOGGER.info("Behandler journalføringshendelse {} med journalpostId={}, journalforendeEnhet={}, kanal={}, journalpostStatus={}, temaGammelt={} og temaNytt={}", record.getHendelsesType(), record.getJournalpostId(), journalpost.getJournalforendeEnhet(), record.getMottaksKanal(), record.getJournalpostStatus(), record.getTemaGammelt(), record.getTemaNytt());
+      var antallDokumenter = journalpost.getDokumenter().size();
+      LOGGER.info("Behandler journalføringshendelse {} med journalpostId={}, journalforendeEnhet={}, kanal={}, journalpostStatus={}, temaGammelt={}, temaNytt={} og antall dokumenter {}",
+          record.getHendelsesType(),
+          record.getJournalpostId(),
+          journalpost.getJournalforendeEnhet(),
+          record.getMottaksKanal(),
+          record.getJournalpostStatus(),
+          record.getTemaGammelt(),
+          record.getTemaNytt(),
+          antallDokumenter
+      );
       behandleJournalpostFraHendelse(journalpost);
   }
 
@@ -130,6 +140,7 @@ public class HendelseListener {
     var geografiskEnhet = hentGeografiskEnhet(brukerId);
     if (!journalpost.harJournalforendeEnhetLik(geografiskEnhet)){
       LOGGER.info("Oppdaterer journalpost {} enhet fra {} til {}", journalpost.getJournalpostId(), journalpost.getJournalforendeEnhet(), geografiskEnhet);
+      SECURE_LOGGER.info("Oppdaterer journalpost {} enhet fra {} til {} for person {}", journalpost.getJournalpostId(), journalpost.getJournalforendeEnhet(), geografiskEnhet, brukerId);
       dokarkivConsumer.endre(new OverforEnhetRequest(journalpost.hentJournalpostIdLong(), geografiskEnhet));
       journalpost.setJournalforendeEnhet(geografiskEnhet);
     }
