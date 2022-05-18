@@ -74,6 +74,7 @@ data class Journalpost(
 ) {
 
     fun hentGjelderId(): String? = bruker?.id
+    fun hentAvsenderMottakerId(): String? = avsenderMottaker?.id
     fun hentJournalStatus(): String? {
         return when(journalstatus){
                 JournalStatus.MOTTATT -> JournalstatusDto.MOTTAKSREGISTRERT

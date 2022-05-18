@@ -73,35 +73,36 @@ public class HendelseListener {
     behandleJournalforingHendelse(journalfoeringHendelseRecord);
   }
 
-  private void behandleJournalforingHendelse(@Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
-    var hendelsesType = HendelsesType.Companion.from(journalfoeringHendelseRecord.getHendelsesType()).orElse(HendelsesType.UKJENT);
-    this.meterRegistry.counter(HENDELSE_COUNTER_NAME,
-        "hendelse_type", hendelsesType.toString(),
-        "tema", journalfoeringHendelseRecord.getTemaNytt(),
-        "kanal", journalfoeringHendelseRecord.getMottaksKanal()).increment();
-    SECURE_LOGGER.info("Behandler journalføringshendelse {}", journalfoeringHendelseRecord);
-    behandleHendelse(journalfoeringHendelseRecord);
-  }
-
-  private void behandleHendelse(JournalfoeringHendelseRecord record){
+  private void behandleJournalforingHendelse(JournalfoeringHendelseRecord record){
       var journalpostId = record.getJournalpostId();
       var journalpost = hentJournalpost(journalpostId);
       if (erOpprettetAvNKS(journalpost)){
         LOGGER.info("Journalpost {} er opprettet av NKS. Stopper videre behandling", record.getJournalpostId());
         return;
       }
-      var antallDokumenter = journalpost.getDokumenter().size();
-      LOGGER.info("Behandler journalføringshendelse {} med journalpostId={}, journalforendeEnhet={}, kanal={}, journalpostStatus={}, temaGammelt={}, temaNytt={} og antall dokumenter {}",
-          record.getHendelsesType(),
-          record.getJournalpostId(),
-          journalpost.getJournalforendeEnhet(),
-          record.getMottaksKanal(),
-          record.getJournalpostStatus(),
-          record.getTemaGammelt(),
-          record.getTemaNytt(),
-          antallDokumenter
-      );
+
+      loggHendelse(record, journalpost);
       behandleJournalpostFraHendelse(journalpost);
+  }
+
+  private void loggHendelse(JournalfoeringHendelseRecord hendelseRecord, Journalpost journalpost){
+    var hendelsesType = HendelsesType.Companion.from(hendelseRecord.getHendelsesType()).orElse(HendelsesType.UKJENT);
+    this.meterRegistry.counter(HENDELSE_COUNTER_NAME,
+        "hendelse_type", hendelsesType.toString(),
+        "tema", hendelseRecord.getTemaNytt(),
+        "kanal", hendelseRecord.getMottaksKanal()).increment();
+    SECURE_LOGGER.info("Behandler journalføringshendelse {}, bruker={}, avsender={}", hendelseRecord, journalpost.hentGjelderId(), journalpost.hentAvsenderMottakerId());
+    var antallDokumenter = journalpost.getDokumenter().size();
+    LOGGER.info("Behandler journalføringshendelse {} med journalpostId={}, journalforendeEnhet={}, kanal={}, journalpostStatus={}, temaGammelt={}, temaNytt={} og antall dokumenter {}",
+        hendelseRecord.getHendelsesType(),
+        hendelseRecord.getJournalpostId(),
+        journalpost.getJournalforendeEnhet(),
+        hendelseRecord.getMottaksKanal(),
+        hendelseRecord.getJournalpostStatus(),
+        hendelseRecord.getTemaGammelt(),
+        hendelseRecord.getTemaNytt(),
+        antallDokumenter
+    );
   }
 
   private void behandleJournalpostFraHendelse(Journalpost journalpost){
