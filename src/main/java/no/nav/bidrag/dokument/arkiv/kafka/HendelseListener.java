@@ -88,31 +88,36 @@ public class HendelseListener {
   }
 
   private void loggHendelse(JournalfoeringHendelseRecord hendelseRecord, Journalpost journalpost){
-    var hendelsesType = HendelsesType.Companion.from(hendelseRecord.getHendelsesType()).orElse(HendelsesType.UKJENT);
-    this.meterRegistry.counter(HENDELSE_COUNTER_NAME,
-        "hendelse_type", hendelsesType.toString(),
-        "tema", hendelseRecord.getTemaNytt(),
-        "kanal", hendelseRecord.getMottaksKanal()).increment();
-    SECURE_LOGGER.info("Behandler journalføringshendelse {}, bruker={}, avsender={}, journalfortAvNavn={}, opprettetAvNavn={}, brevkoder={}",
-        hendelseRecord,
-        journalpost.hentGjelderId(),
-        journalpost.hentAvsenderMottakerId(),
-        journalpost.getJournalfortAvNavn(),
-        journalpost.getOpprettetAvNavn(),
-        journalpost.getDokumenter().stream().map(Dokument::getBrevkode).collect(Collectors.joining(","))
-    );
-    var antallDokumenter = journalpost.getDokumenter().size();
-    LOGGER.info("Behandler journalføringshendelse {} med journalpostId={}, journalforendeEnhet={}, kanal={}, journalpostStatus={}, temaGammelt={}, temaNytt={}, opprettetAvNavn={} og antall dokumenter {}",
-        hendelseRecord.getHendelsesType(),
-        hendelseRecord.getJournalpostId(),
-        journalpost.getJournalforendeEnhet(),
-        hendelseRecord.getMottaksKanal(),
-        hendelseRecord.getJournalpostStatus(),
-        hendelseRecord.getTemaGammelt(),
-        hendelseRecord.getTemaNytt(),
-        journalpost.getOpprettetAvNavn(),
-        antallDokumenter
-    );
+    try {
+      var hendelsesType = HendelsesType.Companion.from(hendelseRecord.getHendelsesType()).orElse(HendelsesType.UKJENT);
+      this.meterRegistry.counter(HENDELSE_COUNTER_NAME,
+          "hendelse_type", hendelsesType.toString(),
+          "tema", hendelseRecord.getTemaNytt(),
+          "kanal", hendelseRecord.getMottaksKanal()).increment();
+      SECURE_LOGGER.info("Behandler journalføringshendelse {}, bruker={}, avsender={}, journalfortAvNavn={}, opprettetAvNavn={}, brevkoder={}",
+          hendelseRecord,
+          journalpost.hentGjelderId(),
+          journalpost.hentAvsenderMottakerId(),
+          journalpost.getJournalfortAvNavn(),
+          journalpost.getOpprettetAvNavn(),
+          journalpost.getDokumenter().stream().map(Dokument::getBrevkode).collect(Collectors.joining(","))
+      );
+      var antallDokumenter = journalpost.getDokumenter().size();
+      LOGGER.info("Behandler journalføringshendelse {} med journalpostId={}, journalforendeEnhet={}, kanal={}, journalpostStatus={}, temaGammelt={}, temaNytt={}, opprettetAvNavn={} og antall dokumenter {}",
+          hendelseRecord.getHendelsesType(),
+          hendelseRecord.getJournalpostId(),
+          journalpost.getJournalforendeEnhet(),
+          hendelseRecord.getMottaksKanal(),
+          hendelseRecord.getJournalpostStatus(),
+          hendelseRecord.getTemaGammelt(),
+          hendelseRecord.getTemaNytt(),
+          journalpost.getOpprettetAvNavn(),
+          antallDokumenter
+      );
+    } catch (Exception e){
+      LOGGER.error("Det skjedde en feil ved logging av hendelse", e);
+    }
+
   }
 
   private void behandleJournalpostFraHendelse(Journalpost journalpost){
