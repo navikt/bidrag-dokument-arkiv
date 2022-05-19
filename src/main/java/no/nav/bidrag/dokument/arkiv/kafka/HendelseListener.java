@@ -7,10 +7,12 @@ import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_LIV
 import com.google.common.base.Strings;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker;
 import no.nav.bidrag.dokument.arkiv.dto.Bruker;
+import no.nav.bidrag.dokument.arkiv.dto.Dokument;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.MottaksKanal;
 import no.nav.bidrag.dokument.arkiv.dto.OverforEnhetRequest;
@@ -59,7 +61,7 @@ public class HendelseListener {
   public void listen(@Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
     JournalpostTema journalpostTema = new JournalpostTema(journalfoeringHendelseRecord);
     if (!journalpostTema.erOmhandlingAvBidrag()) {
-      LOGGER.debug("Oppgavetema omhandler ikke bidrag");
+      LOGGER.debug("JournalpostTema omhandler ikke bidrag");
       return;
     }
 
@@ -86,23 +88,36 @@ public class HendelseListener {
   }
 
   private void loggHendelse(JournalfoeringHendelseRecord hendelseRecord, Journalpost journalpost){
-    var hendelsesType = HendelsesType.Companion.from(hendelseRecord.getHendelsesType()).orElse(HendelsesType.UKJENT);
-    this.meterRegistry.counter(HENDELSE_COUNTER_NAME,
-        "hendelse_type", hendelsesType.toString(),
-        "tema", hendelseRecord.getTemaNytt(),
-        "kanal", hendelseRecord.getMottaksKanal()).increment();
-    SECURE_LOGGER.info("Behandler journalføringshendelse {}, bruker={}, avsender={}", hendelseRecord, journalpost.hentGjelderId(), journalpost.hentAvsenderMottakerId());
-    var antallDokumenter = journalpost.getDokumenter().size();
-    LOGGER.info("Behandler journalføringshendelse {} med journalpostId={}, journalforendeEnhet={}, kanal={}, journalpostStatus={}, temaGammelt={}, temaNytt={} og antall dokumenter {}",
-        hendelseRecord.getHendelsesType(),
-        hendelseRecord.getJournalpostId(),
-        journalpost.getJournalforendeEnhet(),
-        hendelseRecord.getMottaksKanal(),
-        hendelseRecord.getJournalpostStatus(),
-        hendelseRecord.getTemaGammelt(),
-        hendelseRecord.getTemaNytt(),
-        antallDokumenter
-    );
+    try {
+      var hendelsesType = HendelsesType.Companion.from(hendelseRecord.getHendelsesType()).orElse(HendelsesType.UKJENT);
+      this.meterRegistry.counter(HENDELSE_COUNTER_NAME,
+          "hendelse_type", hendelsesType.toString(),
+          "tema", hendelseRecord.getTemaNytt(),
+          "kanal", hendelseRecord.getMottaksKanal()).increment();
+      SECURE_LOGGER.info("Behandler journalføringshendelse {}, bruker={}, avsender={}, journalfortAvNavn={}, opprettetAvNavn={}, brevkoder={}",
+          hendelseRecord,
+          journalpost.hentGjelderId(),
+          journalpost.hentAvsenderMottakerId(),
+          journalpost.getJournalfortAvNavn(),
+          journalpost.getOpprettetAvNavn(),
+          journalpost.getDokumenter().stream().map(Dokument::getBrevkode).collect(Collectors.joining(","))
+      );
+      var antallDokumenter = journalpost.getDokumenter().size();
+      LOGGER.info("Behandler journalføringshendelse {} med journalpostId={}, journalforendeEnhet={}, kanal={}, journalpostStatus={}, temaGammelt={}, temaNytt={}, opprettetAvNavn={} og antall dokumenter {}",
+          hendelseRecord.getHendelsesType(),
+          hendelseRecord.getJournalpostId(),
+          journalpost.getJournalforendeEnhet(),
+          hendelseRecord.getMottaksKanal(),
+          hendelseRecord.getJournalpostStatus(),
+          hendelseRecord.getTemaGammelt(),
+          hendelseRecord.getTemaNytt(),
+          journalpost.getOpprettetAvNavn(),
+          antallDokumenter
+      );
+    } catch (Exception e){
+      LOGGER.error("Det skjedde en feil ved logging av hendelse", e);
+    }
+
   }
 
   private void behandleJournalpostFraHendelse(Journalpost journalpost){
