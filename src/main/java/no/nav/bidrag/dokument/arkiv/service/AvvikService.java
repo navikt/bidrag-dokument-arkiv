@@ -135,6 +135,7 @@ public class AvvikService {
       sendTilFagomrade(journalpost, avvikshendelseIntern);
     }
 
+    oppdater(avvikshendelseIntern.toEndreFagomradeJournalfortJournalpostRequest(journalpost));
     feilregistrerSakstilknytning(avvikshendelseIntern.getJournalpostId());
   }
 
