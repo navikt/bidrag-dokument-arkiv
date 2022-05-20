@@ -368,7 +368,7 @@ class AvvikControllerTest : AbstractControllerTest() {
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.OK)
             },
-            { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "\"tilleggsopplysninger\":[{\"nokkel\":\"something\",\"verdi\":\"something\"},{\"nokkel\":\"endretFagomrade\",\"verdi\":\"true\"}]") },
+            { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "\"tilleggsopplysninger\":[{\"nokkel\":\"something\",\"verdi\":\"something\"},{\"nokkel\":\"avvikEndretFagomrade\",\"verdi\":\"true\"}]") },
             { stubs.verifyStub.oppgaveOpprettKalt(OppgaveType.VUR.name, nyJournalpostId.toString()) },
             { stubs.verifyStub.dokarkivFeilregistrerKalt(journalpostIdFraJson) },
             {
