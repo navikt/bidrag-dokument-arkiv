@@ -147,11 +147,11 @@ public class HendelseListener {
 
   private String hentBrukerId(Journalpost journalpost){
     return Optional.of(journalpost)
-        .map(Journalpost::getBruker)
-        .map(Bruker::getId)
+        .map(Journalpost::getAvsenderMottaker)
+        .map(AvsenderMottaker::getId)
         .orElseGet(() -> Optional.of(journalpost)
-            .map(Journalpost::getAvsenderMottaker)
-            .map(AvsenderMottaker::getId)
+            .map(Journalpost::getBruker)
+            .map(Bruker::getId)
             .orElse(null));
   }
 
