@@ -46,7 +46,6 @@ data class AvvikshendelseIntern(
     fun toOverforEnhetRequest() = OverforEnhetRequest(journalpostId, enhetsnummerNytt)
     fun toEndreFagomradeRequest() = EndreFagomradeRequest(journalpostId, nyttFagomrade, "9999")
     fun toEndreFagomradeJournalfortJournalpostRequest(journalpost: Journalpost) = EndreFagomradeJournalfortJournalpostRequest(journalpostId, journalpost)
-    fun toOpphevEndretFagomradeJournalfortJournalpostRequest(journalpost: Journalpost) = OpphevEndreFagomradeJournalfortJournalpostRequest(journalpostId, journalpost)
     fun toKnyttTilGenerellSakRequest(fagomrade: String, bruker: Bruker) = EndreKnyttTilGenerellSakRequest(journalpostId, OppdaterJournalpostRequest.Bruker(bruker.id, bruker.type), fagomrade)
     fun toLeggTilBegrunnelsePaaTittelRequest(tittel: String) = EndreTittelRequest(journalpostId, "$tittel ($beskrivelse)")
 }
