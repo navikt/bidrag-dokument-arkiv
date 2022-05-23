@@ -92,7 +92,7 @@ fun opprettSafResponse(
 
 fun opprettDokumentOversiktfagsakResponse(): List<Journalpost>{
     val tilleggsopplysningerEndretFagomrade = TilleggsOpplysninger()
-    tilleggsopplysningerEndretFagomrade.setEndretFagomrade();
+    tilleggsopplysningerEndretFagomrade.setEndretTemaFlagg();
     return listOf(
         opprettSafResponse(
             journalpostId = JOURNALPOST_ID.toString(),

@@ -109,7 +109,10 @@ public class AvvikService {
     hentFeilregistrerteDupliserteJournalposterMedSakOgTema(saksnummer, avvikshendelseIntern.getNyttFagomrade(), journalpost)
         .findFirst()
         .ifPresentOrElse(
-          jp -> opphevFeilregistrerSakstilknytning(jp.getJournalpostId()),
+          jp -> {
+            opphevFeilregistrerSakstilknytning(jp.getJournalpostId());
+            oppdater(avvikshendelseIntern.toOpphevEndretFagomradeJournalfortJournalpostRequest(jp));
+          },
           () -> endreJournalpostService.tilknyttTilSak(saksnummer, avvikshendelseIntern.getNyttFagomrade(), journalpost)
         );
   }
