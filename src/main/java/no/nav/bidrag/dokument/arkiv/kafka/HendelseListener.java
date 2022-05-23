@@ -36,6 +36,7 @@ public class HendelseListener {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HendelseListener.class);
   private static final String HENDELSE_COUNTER_NAME = "joark_hendelse";
+  private static final String HENDELSE_NUMBER_OF_DOCS_COUNTER_NAME = "joark_antall_dokumenter";
   private static final String DEFAULT_ENHET = "4833";
 
   private final MeterRegistry meterRegistry;
@@ -79,7 +80,8 @@ public class HendelseListener {
       var journalpostId = record.getJournalpostId();
       var journalpost = hentJournalpost(journalpostId);
       if (erOpprettetAvNKS(journalpost)){
-        LOGGER.info("Journalpost {} er opprettet av NKS. Stopper videre behandling", record.getJournalpostId());
+        var brevKoder = journalpost.getDokumenter().stream().map(Dokument::getBrevkode).collect(Collectors.joining(","));
+        LOGGER.warn("Journalpost {} er opprettet av NKS. Stopper videre behandling. opprettetAvNavn={}, brevkoder={}", record.getJournalpostId(), journalpost.getOpprettetAvNavn(), brevKoder);
         return;
       }
 
@@ -114,6 +116,7 @@ public class HendelseListener {
           journalpost.getOpprettetAvNavn(),
           antallDokumenter
       );
+      this.meterRegistry.summary(HENDELSE_NUMBER_OF_DOCS_COUNTER_NAME).record(antallDokumenter);
     } catch (Exception e){
       LOGGER.error("Det skjedde en feil ved logging av hendelse", e);
     }
@@ -169,7 +172,7 @@ public class HendelseListener {
   private boolean erOpprettetAvNKS(Journalpost journalpost){
     var erKanalNavNoChat = MottaksKanal.NAV_NO_CHAT.name().equals(journalpost.getKanal());
     var opprettetAvSalesforce = "NKSsalesforce".equals(journalpost.getOpprettetAvNavn());
-    var brevkodeCRM = journalpost.getDokumenter().stream().anyMatch(dokument -> "CRM_MELDINGSKJEDE".equals(dokument.getBrevkode()));
+    var brevkodeCRM = journalpost.getDokumenter().stream().anyMatch(dokument -> "CRM_MELDINGSKJEDE".equals(dokument.getBrevkode()) || "CRM_CHAT".equals(dokument.getBrevkode()));
     return brevkodeCRM || opprettetAvSalesforce || erKanalNavNoChat;
   }
 }
