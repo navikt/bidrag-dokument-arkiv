@@ -1,7 +1,5 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
-import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -54,6 +52,7 @@ public class JournalpostService {
   public List<JournalpostDto> finnJournalposter(String saksnummer, String fagomrade) {
     return finnJournalposterForSaksnummer(saksnummer, fagomrade).stream()
         .map((this::konverterAktoerIdTilFnr))
+        .filter((jp)-> !jp.getTilleggsopplysninger().isEndretTema())
         .map(Journalpost::tilJournalpostDto)
         .collect(Collectors.toList());
   }

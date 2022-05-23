@@ -7,6 +7,7 @@ import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveType
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
+import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_ID
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
 import no.nav.bidrag.dokument.arkiv.stubs.JOURNALPOST_ID
@@ -265,6 +266,7 @@ class AvvikControllerTest : AbstractControllerTest() {
             { stubs.verifyStub.oppgaveOpprettIkkeKalt() },
             { stubs.verifyStub.dokarkivProxyTilknyttSakerKalt(JOURNALPOST_ID, "FAR") },
             { stubs.verifyStub.dokarkivFeilregistrerKalt(JOURNALPOST_ID) },
+            { stubs.verifyStub.dokarkivOppdaterKalt(JOURNALPOST_ID, "\"tilleggsopplysninger\":[{\"nokkel\":\"avvikEndretTema\",\"verdi\":\"true\"}]") },
             {
                 Mockito.verify(kafkaTemplateMock).send(
                     ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
@@ -283,6 +285,8 @@ class AvvikControllerTest : AbstractControllerTest() {
         val nyttFagomrade = "FAR"
         val avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, java.util.Map.of("fagomrade", nyttFagomrade))
 
+        val tilleggsOpplysninger = TilleggsOpplysninger();
+        tilleggsOpplysninger.setEndretTemaFlagg()
         stubs.mockSafResponseDokumentOversiktFagsak(listOf(
             opprettSafResponse(
                 journalpostId = JOURNALPOST_ID.toString(),
@@ -304,12 +308,14 @@ class AvvikControllerTest : AbstractControllerTest() {
                 )
                 ),
                 tema = "FAR",
-                journalstatus = JournalStatus.FEILREGISTRERT
+                journalstatus = JournalStatus.FEILREGISTRERT,
+                tilleggsopplysninger = tilleggsOpplysninger
             )
         ))
         stubs.mockSafResponseHentJournalpost(opprettSafResponse(journalstatus = JournalStatus.JOURNALFOERT))
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
+        stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID_3)
         stubs.mockOpprettOppgave(HttpStatus.OK)
         stubs.mockDokarkivProxyTilknyttRequest(JOURNALPOST_ID, JOURNALPOST_ID_3)
         stubs.mockDokarkivFeilregistrerRequest(JOURNALPOST_ID)
@@ -329,6 +335,7 @@ class AvvikControllerTest : AbstractControllerTest() {
             { stubs.verifyStub.dokarkivProxyTilknyttSakerIkkeKalt(JOURNALPOST_ID) },
             { stubs.verifyStub.dokarkivFeilregistrerKalt(JOURNALPOST_ID) },
             { stubs.verifyStub.dokarkivOpphevFeilregistrerKalt(JOURNALPOST_ID_3) },
+            { stubs.verifyStub.dokarkivOppdaterKalt(JOURNALPOST_ID_3, "\"tilleggsopplysninger\":[{\"nokkel\":\"avvikEndretTema\",\"verdi\":\"false\"}]") },
             {
                 Mockito.verify(kafkaTemplateMock).send(
                     ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
@@ -368,6 +375,7 @@ class AvvikControllerTest : AbstractControllerTest() {
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.OK)
             },
+            { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "\"tilleggsopplysninger\":[{\"nokkel\":\"something\",\"verdi\":\"something\"},{\"nokkel\":\"avvikEndretTema\",\"verdi\":\"true\"}]") },
             { stubs.verifyStub.oppgaveOpprettKalt(OppgaveType.VUR.name, nyJournalpostId.toString()) },
             { stubs.verifyStub.dokarkivFeilregistrerKalt(journalpostIdFraJson) },
             {

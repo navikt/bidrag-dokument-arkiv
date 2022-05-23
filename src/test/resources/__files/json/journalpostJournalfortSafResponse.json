@@ -30,7 +30,13 @@
       "tittel": "Filosofens bidrag",
       "sak": {
         "fagsakId": "5276661"
-      }
+      },
+      "tilleggsopplysninger": [
+        {
+          "nokkel": "something",
+          "verdi": "something"
+        }
+      ]
     }
   }
 }

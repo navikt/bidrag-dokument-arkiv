@@ -13,6 +13,7 @@ import no.nav.bidrag.dokument.arkiv.dto.AvvikshendelseIntern;
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.OpphevEndreFagomradeJournalfortJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.RegistrerReturRequest;
 import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
@@ -109,7 +110,10 @@ public class AvvikService {
     hentFeilregistrerteDupliserteJournalposterMedSakOgTema(saksnummer, avvikshendelseIntern.getNyttFagomrade(), journalpost)
         .findFirst()
         .ifPresentOrElse(
-          jp -> opphevFeilregistrerSakstilknytning(jp.getJournalpostId()),
+          jp -> {
+            opphevFeilregistrerSakstilknytning(jp.getJournalpostId());
+            oppdater(new OpphevEndreFagomradeJournalfortJournalpostRequest(jp.hentJournalpostIdLong(), jp));
+          },
           () -> endreJournalpostService.tilknyttTilSak(saksnummer, avvikshendelseIntern.getNyttFagomrade(), journalpost)
         );
   }
@@ -135,6 +139,7 @@ public class AvvikService {
       sendTilFagomrade(journalpost, avvikshendelseIntern);
     }
 
+    oppdater(avvikshendelseIntern.toEndreFagomradeJournalfortJournalpostRequest(journalpost));
     feilregistrerSakstilknytning(avvikshendelseIntern.getJournalpostId());
   }
 

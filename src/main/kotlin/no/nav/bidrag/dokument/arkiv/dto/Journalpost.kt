@@ -31,6 +31,7 @@ import java.util.stream.Collectors.toList
 const val RETUR_DETALJER_KEY = "retur"
 const val DISTRIBUERT_ADRESSE_KEY = "distAdresse"
 const val DISTRIBUSJON_BESTILT_KEY = "distribusjonBestilt"
+const val AVVIK_ENDRET_TEMA_KEY = "avvikEndretTema"
 const val JOURNALFORT_AV_KEY = "journalfortAv"
 private const val DATO_DOKUMENT = "DATO_DOKUMENT"
 private const val DATO_EKSPEDERT = "DATO_EKSPEDERT"
@@ -320,6 +321,20 @@ class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() 
 
     fun isDistribusjonBestilt(): Boolean{
         return this.any { it["nokkel"]?.contains(DISTRIBUSJON_BESTILT_KEY) ?: false }
+    }
+
+    fun setEndretTemaFlagg() {
+        this.removeAll{ it["nokkel"]?.contains(AVVIK_ENDRET_TEMA_KEY) ?: false}
+        this.add(mapOf("nokkel" to AVVIK_ENDRET_TEMA_KEY, "verdi" to "true"))
+    }
+
+    fun removeEndretTemaFlagg() {
+        this.removeAll{ it["nokkel"]?.contains(AVVIK_ENDRET_TEMA_KEY) ?: false}
+        this.add(mapOf("nokkel" to AVVIK_ENDRET_TEMA_KEY, "verdi" to "false"))
+    }
+
+    fun isEndretTema(): Boolean{
+        return this.filter { it["nokkel"]?.contains(AVVIK_ENDRET_TEMA_KEY) ?: false }.any { it["verdi"] == "true" }
     }
 
     fun addMottakerAdresse(adresseDo: DistribuertTilAdresseDo){
