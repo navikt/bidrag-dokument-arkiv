@@ -132,7 +132,7 @@ fun opprettDokumentOversiktfagsakResponse(): List<Journalpost>{
                     dokumentInfoId = DOKUMENT_4_ID
                 )
             ),
-            journalstatus = JournalStatus.JOURNALFOERT,
+            journalstatus = JournalStatus.FEILREGISTRERT,
             tema = "BID",
             tilleggsopplysninger = tilleggsopplysningerEndretFagomrade
 
