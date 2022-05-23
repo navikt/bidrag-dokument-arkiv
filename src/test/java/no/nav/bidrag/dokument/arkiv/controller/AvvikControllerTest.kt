@@ -287,7 +287,6 @@ class AvvikControllerTest : AbstractControllerTest() {
 
         val tilleggsOpplysninger = TilleggsOpplysninger();
         tilleggsOpplysninger.setEndretTemaFlagg()
-        tilleggsOpplysninger.setDistribusjonBestillt()
         stubs.mockSafResponseDokumentOversiktFagsak(listOf(
             opprettSafResponse(
                 journalpostId = JOURNALPOST_ID.toString(),
@@ -335,7 +334,7 @@ class AvvikControllerTest : AbstractControllerTest() {
             { stubs.verifyStub.dokarkivProxyTilknyttSakerIkkeKalt(JOURNALPOST_ID) },
             { stubs.verifyStub.dokarkivFeilregistrerKalt(JOURNALPOST_ID) },
             { stubs.verifyStub.dokarkivOpphevFeilregistrerKalt(JOURNALPOST_ID_3) },
-            { stubs.verifyStub.dokarkivOppdaterKalt(JOURNALPOST_ID, "\"tilleggsopplysninger\":[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}]") },
+            { stubs.verifyStub.dokarkivOppdaterKalt(JOURNALPOST_ID, "\"tilleggsopplysninger\":[{\"nokkel\":\"avvikEndretTema\",\"verdi\":\"false\"}]") },
             {
                 Mockito.verify(kafkaTemplateMock).send(
                     ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(

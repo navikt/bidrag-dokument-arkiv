@@ -330,10 +330,11 @@ class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() 
 
     fun removeEndretTemaFlagg() {
         this.removeAll{ it["nokkel"]?.contains(AVVIK_ENDRET_TEMA_KEY) ?: false}
+        this.add(mapOf("nokkel" to AVVIK_ENDRET_TEMA_KEY, "verdi" to "false"))
     }
 
     fun isEndretTema(): Boolean{
-        return this.any { it["nokkel"]?.contains(AVVIK_ENDRET_TEMA_KEY) ?: false }
+        return this.filter { it["nokkel"]?.contains(AVVIK_ENDRET_TEMA_KEY) ?: false }.any { it["verdi"] == "true" }
     }
 
     fun addMottakerAdresse(adresseDo: DistribuertTilAdresseDo){
