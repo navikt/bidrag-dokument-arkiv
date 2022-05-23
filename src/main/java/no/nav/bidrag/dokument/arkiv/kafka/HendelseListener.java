@@ -36,6 +36,7 @@ public class HendelseListener {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HendelseListener.class);
   private static final String HENDELSE_COUNTER_NAME = "joark_hendelse";
+  private static final String HENDELSE_NUMBER_OF_DOCS_COUNTER_NAME = "joark_antall_dokumenter";
   private static final String DEFAULT_ENHET = "4833";
 
   private final MeterRegistry meterRegistry;
@@ -115,6 +116,7 @@ public class HendelseListener {
           journalpost.getOpprettetAvNavn(),
           antallDokumenter
       );
+      this.meterRegistry.summary(HENDELSE_NUMBER_OF_DOCS_COUNTER_NAME).record(antallDokumenter);
     } catch (Exception e){
       LOGGER.error("Det skjedde en feil ved logging av hendelse", e);
     }
