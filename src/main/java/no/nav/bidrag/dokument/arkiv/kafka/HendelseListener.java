@@ -80,7 +80,8 @@ public class HendelseListener {
       var journalpostId = record.getJournalpostId();
       var journalpost = hentJournalpost(journalpostId);
       if (erOpprettetAvNKS(journalpost)){
-        LOGGER.info("Journalpost {} er opprettet av NKS. Stopper videre behandling", record.getJournalpostId());
+        var brevKoder = journalpost.getDokumenter().stream().map(Dokument::getBrevkode).collect(Collectors.joining(","));
+        LOGGER.warn("Journalpost {} er opprettet av NKS. Stopper videre behandling. opprettetAvNavn={}, brevkoder={}", record.getJournalpostId(), journalpost.getOpprettetAvNavn(), brevKoder);
         return;
       }
 
@@ -171,7 +172,7 @@ public class HendelseListener {
   private boolean erOpprettetAvNKS(Journalpost journalpost){
     var erKanalNavNoChat = MottaksKanal.NAV_NO_CHAT.name().equals(journalpost.getKanal());
     var opprettetAvSalesforce = "NKSsalesforce".equals(journalpost.getOpprettetAvNavn());
-    var brevkodeCRM = journalpost.getDokumenter().stream().anyMatch(dokument -> "CRM_MELDINGSKJEDE".equals(dokument.getBrevkode()));
+    var brevkodeCRM = journalpost.getDokumenter().stream().anyMatch(dokument -> "CRM_MELDINGSKJEDE".equals(dokument.getBrevkode()) || "CRM_CHAT".equals(dokument.getBrevkode()));
     return brevkodeCRM || opprettetAvSalesforce || erKanalNavNoChat;
   }
 }
