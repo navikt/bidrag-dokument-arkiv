@@ -66,12 +66,13 @@ public class HendelseListener {
       return;
     }
 
-    SECURE_LOGGER.info("Mottok journalføringshendelse {}", journalfoeringHendelseRecord);
 
     if (erOpprettetAvNKS(journalfoeringHendelseRecord)){
       LOGGER.debug("Journalpost er opprettet av NKS. Stopper videre behandling");
       return;
     }
+
+    SECURE_LOGGER.info("Mottok journalføringshendelse {}", journalfoeringHendelseRecord);
 
     behandleJournalforingHendelse(journalfoeringHendelseRecord);
   }
