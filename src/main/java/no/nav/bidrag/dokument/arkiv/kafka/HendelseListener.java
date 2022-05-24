@@ -62,6 +62,7 @@ public class HendelseListener {
     this.numberOfDocsDistribution = DistributionSummary.builder(HENDELSE_NUMBER_OF_DOCS_COUNTER_NAME)
         .percentilePrecision(1)
         .minimumExpectedValue(1D)
+        .publishPercentileHistogram()
         .description("Antall dokumenter som blir sendt inn via Ditt Nav/Skanning")
         .register(this.meterRegistry);
   }
