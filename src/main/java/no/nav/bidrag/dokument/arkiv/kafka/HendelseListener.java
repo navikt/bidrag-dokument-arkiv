@@ -60,9 +60,8 @@ public class HendelseListener {
     this.dokarkivConsumer = dokarkivConsumers.get(Discriminator.SERVICE_USER);
     this.journalpostService = journalpostServices.get(Discriminator.SERVICE_USER);
     this.numberOfDocsDistribution = DistributionSummary.builder(HENDELSE_NUMBER_OF_DOCS_COUNTER_NAME)
-        .percentilePrecision(1)
-        .minimumExpectedValue(1D)
         .publishPercentileHistogram()
+        .publishPercentiles(0.1, 0.3, 0.5, 0.95, 0.99)
         .description("Antall dokumenter som blir sendt inn via Ditt Nav/Skanning")
         .register(this.meterRegistry);
   }
