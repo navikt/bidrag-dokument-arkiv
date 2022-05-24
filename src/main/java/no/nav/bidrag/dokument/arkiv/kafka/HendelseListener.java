@@ -109,6 +109,7 @@ public class HendelseListener {
       this.meterRegistry.counter(HENDELSE_COUNTER_NAME,
           "hendelse_type", hendelsesType.toString(),
           "enhet", journalforendeEnhet,
+          "temaGammelt", Strings.isNullOrEmpty(record.getTemaGammelt()) ? "NULL" : record.getTemaGammelt(),
           "tema", tema,
           "kanal", record.getMottaksKanal()).increment();
 
