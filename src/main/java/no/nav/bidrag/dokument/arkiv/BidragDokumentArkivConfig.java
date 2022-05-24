@@ -157,8 +157,8 @@ public class BidragDokumentArkivConfig {
       SafConsumer safConsumerServiceUser,
       SecurityTokenService securityTokenService
   ) {
-    safConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor());
-    safConsumerServiceUser.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor());
+    safConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor("saf"));
+    safConsumerServiceUser.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor("saf"));
     var safConsumers = new HashMap<Discriminator, SafConsumer>();
     safConsumers.put(Discriminator.REGULAR_USER, safConsumerRegularUser);
     safConsumers.put(Discriminator.SERVICE_USER, safConsumerServiceUser);
