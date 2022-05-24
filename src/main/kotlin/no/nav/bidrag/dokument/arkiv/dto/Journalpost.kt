@@ -269,6 +269,8 @@ data class Journalpost(
         return journalpost.isStatusMottatt() && journalpost.hasSak();
     }
 
+    fun hentAntallDokumenter(): Int = dokumenter.size
+
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
