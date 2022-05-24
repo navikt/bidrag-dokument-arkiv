@@ -5,6 +5,7 @@ import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_KAF
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_LIVE;
 
 import com.google.common.base.Strings;
+import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -45,6 +46,8 @@ public class HendelseListener {
   private final DokarkivConsumer dokarkivConsumer;
   private final JournalpostService journalpostService;
 
+  private final DistributionSummary numberOfDocsDistribution;
+
   public HendelseListener(
       HendelserProducer producer,
       MeterRegistry registry,
@@ -56,6 +59,11 @@ public class HendelseListener {
     this.bidragOrganisasjonConsumer = bidragOrganisasjonConsumer;
     this.dokarkivConsumer = dokarkivConsumers.get(Discriminator.SERVICE_USER);
     this.journalpostService = journalpostServices.get(Discriminator.SERVICE_USER);
+    this.numberOfDocsDistribution = DistributionSummary.builder(HENDELSE_NUMBER_OF_DOCS_COUNTER_NAME)
+        .percentilePrecision(1)
+        .minimumExpectedValue(1D)
+        .description("Antall dokumenter som blir sendt inn via Ditt Nav/Skanning")
+        .register(this.meterRegistry);
   }
 
   @KafkaListener(groupId = "bidrag-dokument-arkiv", topics = "${TOPIC_JOURNALFOERING}")
@@ -72,7 +80,7 @@ public class HendelseListener {
       return;
     }
 
-    SECURE_LOGGER.info("Mottok journalføringshendelse {}", journalfoeringHendelseRecord);
+    LOGGER.info("Mottok journalføringshendelse {}", journalfoeringHendelseRecord);
 
     behandleJournalforingHendelse(journalfoeringHendelseRecord);
   }
@@ -86,27 +94,42 @@ public class HendelseListener {
         return;
       }
 
-      loggHendelse(record, journalpost);
       behandleJournalpostFraHendelse(journalpost);
+
+      measureHendelse(record, journalpost);
+      loggHendelse(record, journalpost);
   }
 
-  private void loggHendelse(JournalfoeringHendelseRecord hendelseRecord, Journalpost journalpost){
+  private void measureHendelse(JournalfoeringHendelseRecord record, Journalpost journalpost){
     try {
-      var hendelsesType = HendelsesType.Companion.from(hendelseRecord.getHendelsesType()).orElse(HendelsesType.UKJENT);
+      var hendelsesType = HendelsesType.Companion.from(record.getHendelsesType()).orElse(HendelsesType.UKJENT);
+      var journalforendeEnhet = Strings.isNullOrEmpty(journalpost.getJournalforendeEnhet()) ? "UKJENT" : journalpost.getJournalforendeEnhet();
+      var tema = Strings.isNullOrEmpty(journalpost.getTema()) ? record.getTemaNytt() : journalpost.getTema();
       this.meterRegistry.counter(HENDELSE_COUNTER_NAME,
           "hendelse_type", hendelsesType.toString(),
-          "tema", hendelseRecord.getTemaNytt(),
-          "kanal", hendelseRecord.getMottaksKanal()).increment();
-      SECURE_LOGGER.info("Behandler journalføringshendelse {}, bruker={}, avsender={}, journalfortAvNavn={}, opprettetAvNavn={}, brevkoder={}",
+          "enhet", journalforendeEnhet,
+          "tema", tema,
+          "kanal", record.getMottaksKanal()).increment();
+
+      this.numberOfDocsDistribution.record(journalpost.hentAntallDokumenter());
+    } catch (Exception e){
+      LOGGER.error("Det skjedde en feil ved måling av hendelse", e);
+    }
+
+  }
+  private void loggHendelse(JournalfoeringHendelseRecord hendelseRecord, Journalpost journalpost){
+    try {
+      var antallDokumenter = journalpost.hentAntallDokumenter();
+      SECURE_LOGGER.info("Behandlet journalføringshendelse {}, bruker={}, avsender={}, journalfortAvNavn={}, opprettetAvNavn={}, brevkoder={} og antall dokumenter {}",
           hendelseRecord,
           journalpost.hentGjelderId(),
           journalpost.hentAvsenderMottakerId(),
           journalpost.getJournalfortAvNavn(),
           journalpost.getOpprettetAvNavn(),
-          journalpost.getDokumenter().stream().map(Dokument::getBrevkode).collect(Collectors.joining(","))
+          journalpost.getDokumenter().stream().map(Dokument::getBrevkode).collect(Collectors.joining(",")),
+          antallDokumenter
       );
-      var antallDokumenter = journalpost.getDokumenter().size();
-      LOGGER.info("Behandler journalføringshendelse {} med journalpostId={}, journalforendeEnhet={}, kanal={}, journalpostStatus={}, temaGammelt={}, temaNytt={}, opprettetAvNavn={} og antall dokumenter {}",
+      LOGGER.info("Behandlet journalføringshendelse {} med journalpostId={}, journalforendeEnhet={}, kanal={}, journalpostStatus={}, temaGammelt={}, temaNytt={}, opprettetAvNavn={} og antall dokumenter {}",
           hendelseRecord.getHendelsesType(),
           hendelseRecord.getJournalpostId(),
           journalpost.getJournalforendeEnhet(),
@@ -117,7 +140,6 @@ public class HendelseListener {
           journalpost.getOpprettetAvNavn(),
           antallDokumenter
       );
-      this.meterRegistry.summary(HENDELSE_NUMBER_OF_DOCS_COUNTER_NAME).record(antallDokumenter);
     } catch (Exception e){
       LOGGER.error("Det skjedde en feil ved logging av hendelse", e);
     }
