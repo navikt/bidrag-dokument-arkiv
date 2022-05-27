@@ -134,18 +134,20 @@ data class Journalpost(
     }
 
     fun hentReturDetaljer(): ReturDetaljer? {
-        if (!isDistribusjonKommetIRetur()){
-            return null
+        val returDetaljerLog = hentReturDetaljerLog()
+        if (isDistribusjonKommetIRetur() || returDetaljerLog.isNotEmpty()){
+            return ReturDetaljer(
+                dato = hentDatoRetur(),
+                logg = returDetaljerLog,
+                antall = returDetaljerLog.size
+            )
         }
-        return ReturDetaljer(
-            dato = hentDatoRetur(),
-            logg = hentReturDetaljerLog(),
-            antall = hentReturDetaljerLog().size
-        )
+
+        return null;
     }
 
     fun kanLeggeTilNyReturdetalj(): Boolean{
-        if(isDistribusjonKommetIRetur()){
+        if(!isDistribusjonKommetIRetur()){
             return false
         }
         val returDetaljerLog = tilleggsopplysninger.hentReturDetaljerLogDO()

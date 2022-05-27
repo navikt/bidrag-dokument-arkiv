@@ -235,7 +235,7 @@ class JournalpostControllerTest extends AbstractControllerTest {
         () -> assertThat(returDetaljerLog.contains(new ReturDetaljerLog(LocalDate.parse("2020-11-15"), "Beskrivelse av retur"))).isTrue(),
         () -> assertThat(returDetaljerLog.contains(new ReturDetaljerLog(LocalDate.parse("2020-12-14"), "Beskrivelse av retur mer tekst for å teste lengre verdier"))).isTrue(),
         () -> assertThat(returDetaljerLog.contains(new ReturDetaljerLog(LocalDate.parse("2020-12-15"), "Beskrivelse av retur 2 mer tekst for å teste lengre verdier"))).isTrue(),
-        () -> assertThat(returDetaljer.getAntall()).isEqualTo(6),
+        () -> assertThat(returDetaljer.getAntall()).isEqualTo(3),
         () -> assertThat(returDetaljer.getDato()).isEqualTo(LocalDate.parse("2020-12-15")),
         () -> stubs.verifyStub.harEnSafKallEtterHentJournalpost(),
         () -> stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter(),
