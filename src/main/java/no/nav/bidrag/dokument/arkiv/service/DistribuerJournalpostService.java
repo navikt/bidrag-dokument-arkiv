@@ -71,6 +71,8 @@ public class DistribuerJournalpostService {
       return distribuerJournalpostRequestInternal.getAdresse();
     }
 
+    LOGGER.info("Distribusjon av journalpost bestilt uten adresse. Henter adresse for mottaker. JournalpostId {}", journalpost.getJournalpostId());
+
     var adresseResponse = personConsumer.hentAdresse(journalpost.hentAvsenderMottakerId());
 
     if (Objects.isNull(adresseResponse)){
