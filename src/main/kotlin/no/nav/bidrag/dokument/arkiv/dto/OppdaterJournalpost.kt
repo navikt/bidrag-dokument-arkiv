@@ -55,7 +55,8 @@ data class LagreJournalpostRequest(private var journalpostId: Long, private var 
             val endreReturDetaljer = endreJournalpostCommand.endreJournalpostCommand.endreReturDetaljer?.filter { Strings.isNotEmpty(it.beskrivelse) }
             if (endreReturDetaljer != null && endreReturDetaljer.isNotEmpty()){
                 endreReturDetaljer
-                    .forEach { journalpost.tilleggsopplysninger.updateReturDetaljLog(it.originalDato, ReturDetaljerLogDO(it.beskrivelse, it.nyDato ?: it.originalDato)) }
+                    .forEach { if (it.originalDato != null) journalpost.tilleggsopplysninger.updateReturDetaljLog(it.originalDato!!, ReturDetaljerLogDO(it.beskrivelse, it.nyDato ?: it.originalDato!!))
+                                else if (journalpost.kanLeggeTilNyReturdetalj() && it.nyDato != null) journalpost.tilleggsopplysninger.addReturDetaljLog(ReturDetaljerLogDO(it.beskrivelse, it.nyDato!!)) }
                 tilleggsopplysninger = journalpost.tilleggsopplysninger
             }
 

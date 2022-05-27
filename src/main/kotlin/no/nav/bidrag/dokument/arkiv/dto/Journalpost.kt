@@ -43,6 +43,7 @@ object JournalstatusDto {
     const val EKSPEDERT = "E"
     const val AVBRUTT = "A"
     const val KLAR_TIL_PRINT = "KP"
+    const val RETUR = "RE"
     const val JOURNALFORT = "J"
     const val FEILREGISTRERT = "F"
     const val MOTTAKSREGISTRERT = "M"
@@ -65,7 +66,7 @@ data class Journalpost(
     var relevanteDatoer: List<DatoType> = emptyList(),
     var sak: Sak? = null,
     var tema: String? = null,
-    var antallRetur: Int? = null,
+    val antallRetur: Int? = null,
     var tittel: String? = null,
     var behandlingstema: String? = null,
     var opprettetAvNavn: String? = null,
@@ -77,6 +78,9 @@ data class Journalpost(
     fun hentGjelderId(): String? = bruker?.id
     fun hentAvsenderMottakerId(): String? = avsenderMottaker?.id
     fun hentJournalStatus(): String? {
+        if (isDistribusjonKommetIRetur()){
+            return JournalstatusDto.RETUR
+        }
         return when(journalstatus){
                 JournalStatus.MOTTATT -> JournalstatusDto.MOTTAKSREGISTRERT
                 JournalStatus.JOURNALFOERT -> JournalstatusDto.JOURNALFORT
@@ -90,9 +94,11 @@ data class Journalpost(
             }
     }
 
+    fun isDistribusjonKommetIRetur() = (isDistribusjonBestilt()) && antallRetur != null && antallRetur > 0
+
     fun hentBrevkode(): String? = hentHoveddokument()?.brevkode
 
-    fun isDistribusjonBestilt(): Boolean = tilleggsopplysninger.isDistribusjonBestilt()
+    fun isDistribusjonBestilt(): Boolean = tilleggsopplysninger.isDistribusjonBestilt() || isStatusEkspedert()
 
     fun isFeilregistrert() = journalstatus == JournalStatus.FEILREGISTRERT
 
@@ -112,7 +118,7 @@ data class Journalpost(
     fun harJournalforendeEnhetLik(enhet: String) = journalforendeEnhet == enhet
     fun isTemaEqualTo(likTema: String) = tema == likTema
     fun hentJournalpostIdLong() = journalpostId?.toLong()
-    fun hentJournalpostIdMedPrefix() = "JOARK-"+journalpostId
+    fun hentJournalpostIdMedPrefix() = "JOARK-$journalpostId"
     fun hentJournalpostType() = if (journalposttype == JournalpostType.N) "X" else journalposttype?.name
     fun hentDatoJournalfort(): LocalDate? {
         val journalfort = relevanteDatoer
@@ -128,22 +134,37 @@ data class Journalpost(
     }
 
     fun hentReturDetaljer(): ReturDetaljer? {
-        if (hentDatoRetur() == null){
+        if (!isDistribusjonKommetIRetur()){
             return null
         }
         return ReturDetaljer(
             dato = hentDatoRetur(),
             logg = hentReturDetaljerLog(),
-            antall = antallRetur
+            antall = hentReturDetaljerLog().size
         )
+    }
+
+    fun kanLeggeTilNyReturdetalj(): Boolean{
+        if(isDistribusjonKommetIRetur()){
+            return false
+        }
+        val returDetaljerLog = tilleggsopplysninger.hentReturDetaljerLogDO()
+        return returDetaljerLog.none { it.dato.isAfter(hentDatoDokument()) }
     }
 
     fun hentReturDetaljerLog(): List<ReturDetaljerLog> {
         val returDetaljerLog = tilleggsopplysninger.hentReturDetaljerLogDO()
-        return returDetaljerLog.map { ReturDetaljerLog(
+        val logg = returDetaljerLog.map { ReturDetaljerLog(
             dato = it.dato,
             beskrivelse = it.beskrivelse
-        ) }
+        ) }.toMutableList()
+
+
+        if (kanLeggeTilNyReturdetalj()){
+            logg.add(ReturDetaljerLog(dato = hentDatoRetur(), beskrivelse = "Returpost"))
+        }
+
+        return logg
     }
 
     fun hentDatoRegistrert(): LocalDate? {
@@ -217,12 +238,14 @@ data class Journalpost(
 
     fun tilAvvik(): List<AvvikType> {
         val avvikTypeList = mutableListOf<AvvikType>()
-        if (isUtgaaendeDokument() && (isStatusFerdigsstilt() || isStatusEkspedert())) avvikTypeList.add(AvvikType.REGISTRER_RETUR)
+        if (isUtgaaendeDokument() && isStatusEkspedert()) avvikTypeList.add(AvvikType.REGISTRER_RETUR)
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
         if (!isStatusMottatt() && hasSak() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.FEILFORE_SAK)
         if (isInngaaendeDokument() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.ENDRE_FAGOMRADE)
         if (isInngaaendeDokument() && isStatusJournalfort()) avvikTypeList.add(AvvikType.SEND_TIL_FAGOMRADE)
+        if (isUtgaaendeDokument() && isDistribusjonKommetIRetur()) avvikTypeList.add(AvvikType.BESTILL_NY_DISTRIBUSJON)
+        if (isUtgaaendeDokument() && isStatusFerdigsstilt() && !isDistribusjonBestilt() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) avvikTypeList.add(AvvikType.MANGLER_ADRESSE)
         return avvikTypeList
     }
 

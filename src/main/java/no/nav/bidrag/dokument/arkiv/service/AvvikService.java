@@ -75,6 +75,7 @@ public class AvvikService {
       case TREKK_JOURNALPOST -> trekkJournalpost(journalpost, avvikshendelseIntern);
       case FEILFORE_SAK -> feilregistrerSakstilknytning(avvikshendelseIntern.getJournalpostId());
       case REGISTRER_RETUR -> registrerRetur(journalpost, avvikshendelseIntern);
+      case BESTILL_NY_DISTRIBUSJON -> manglerAdresse(journalpost, avvikshendelseIntern);
       default -> throw new AvvikNotSupportedException("Avvik %s ikke støttet".formatted(avvikshendelseIntern.getAvvikstype()));
     }
 
@@ -84,6 +85,13 @@ public class AvvikService {
     return Optional.of(new BehandleAvvikshendelseResponse(avvikshendelseIntern.getAvvikstype()));
   }
 
+  public void manglerAdresse(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
+
+  }
+
+  public void bestillNyDistribusjon(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
+
+  }
   /**
    * Used when avvikshåndtering is not triggering any action but only used for logging
    */
