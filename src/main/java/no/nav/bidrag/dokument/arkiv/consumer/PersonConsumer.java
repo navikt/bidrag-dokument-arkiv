@@ -29,7 +29,7 @@ public class PersonConsumer {
     return new HttpResponse<>(personResponse);
   }
 
-  @Cacheable(value = PERSON_ADRESSE_CACHE, condition = "#result!=null")
+  @Cacheable(value = PERSON_ADRESSE_CACHE, unless = "#result == null")
   public HentPostadresseResponse hentAdresse(String id){
     return restTemplate.exchange("/adresse/post", HttpMethod.POST, new HttpEntity<>(new HentPostadresseRequest(id)), HentPostadresseResponse.class).getBody();
   }
