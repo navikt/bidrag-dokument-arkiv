@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import no.nav.bidrag.dokument.arkiv.utils.DateUtils
+import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 import org.apache.logging.log4j.util.Strings
 
 data class OppdaterJournalpostDistribusjonsInfoRequest(private var journalpostId: Long, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId) {
@@ -13,13 +14,25 @@ data class OppdaterJournalpostDistribusjonsInfoRequest(private var journalpostId
     }
 }
 
-data class LagreAdresseRequest(private var journalpostId: Long, private val endreAdresse: DistribuertTilAdresseDo?, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId){
+data class LagreAdresseRequest(private var journalpostId: Long, private val mottakerAdresse: DistribuerTilAdresse?, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId){
         init {
-            if (journalpost.isUtgaaendeDokument() && endreAdresse != null){
-                journalpost.tilleggsopplysninger.addMottakerAdresse(endreAdresse)
+            val mottakerAdresseDO = mapToAdresseDO(mottakerAdresse)
+            if (journalpost.isUtgaaendeDokument() && mottakerAdresseDO != null){
+                journalpost.tilleggsopplysninger.addMottakerAdresse(mottakerAdresseDO)
                 tilleggsopplysninger = journalpost.tilleggsopplysninger
             }
         }
+
+    private fun mapToAdresseDO(adresse: DistribuerTilAdresse?): DistribuertTilAdresseDo? {
+        return if (adresse != null) DistribuertTilAdresseDo(
+            adresselinje1 = adresse.adresselinje1,
+            adresselinje2 = adresse.adresselinje2,
+            adresselinje3 = adresse.adresselinje3,
+            land = adresse.land!!,
+            poststed = adresse.poststed,
+            postnummer = adresse.postnummer
+        ) else null
+    }
 }
 
 data class LagreJournalpostRequest(private var journalpostId: Long, private var endreJournalpostCommand: EndreJournalpostCommandIntern, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId) {
