@@ -9,9 +9,11 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import no.nav.bidrag.commons.web.EnhetFilter;
+import no.nav.bidrag.dokument.arkiv.dto.DistribuertTilAdresseDo;
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsTidspunkt;
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsType;
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.HentPostadresseResponse;
 import no.nav.bidrag.dokument.arkiv.dto.JournalstatusDto;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.dto.AktorDto;
@@ -19,6 +21,7 @@ import no.nav.bidrag.dokument.dto.AvsenderMottakerDto;
 import no.nav.bidrag.dokument.dto.AvsenderMottakerDtoIdType;
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest;
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse;
+import no.nav.bidrag.dokument.dto.DistribuerTilAdresse;
 import no.nav.bidrag.dokument.dto.EndreDokument;
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand;
 import no.nav.bidrag.dokument.dto.EndreReturDetaljer;
@@ -428,13 +431,16 @@ class JournalpostControllerTest extends AbstractControllerTest {
     var xEnhet = "1234";
     var batchId = "FB201";
     var bestillingId = "TEST_BEST_ID";
+    var mottakerId = "12312321312321";
     var journalpostIdFraJson = 201028011L;
     var headersMedEnhet = new HttpHeaders();
+    var postadresse = new HentPostadresseResponse("Ramsegata 1", "Bakredør", null, "3939", "OSLO", "NO");
     headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet);
 
     stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponse.json", HttpStatus.OK);
     stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId);
     stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson);
+    stubs.mockPersonAdresseResponse(postadresse);
 
     // when
     var oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
@@ -450,10 +456,17 @@ class JournalpostControllerTest extends AbstractControllerTest {
             .extracting(ResponseEntity::getStatusCode)
             .as("statusCode")
             .isEqualTo(HttpStatus.OK),
-        () -> stubs.verifyStub.dokdistFordelingKalt(objectMapper.writeValueAsString(new DokDistDistribuerJournalpostRequest(journalpostIdFraJson,"BI01A01",null, null, batchId))),
+        () -> stubs.verifyStub.dokdistFordelingKalt(objectMapper.writeValueAsString(new DokDistDistribuerJournalpostRequest(journalpostIdFraJson,"BI01A01",null, new DistribuerTilAdresse(
+            postadresse.getAdresselinje1(),
+            postadresse.getAdresselinje2(),
+            postadresse.getAdresselinje3(),
+            postadresse.getLand(),postadresse.getPostnummer(),postadresse.getPoststed()
+        ), batchId))),
         () -> stubs.verifyStub.dokdistFordelingKalt(DistribusjonsType.VEDTAK.name()),
         () -> stubs.verifyStub.dokdistFordelingKalt(DistribusjonsTidspunkt.KJERNETID.name()),
         () -> stubs.verifyStub.dokdistFordelingKalt(batchId),
+        () -> stubs.verifyStub.hentPersonAdresseKalt(mottakerId),
+        () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,  "Ramsegata 1",  "NO"),
         () -> stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,  "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}")
     );
   }

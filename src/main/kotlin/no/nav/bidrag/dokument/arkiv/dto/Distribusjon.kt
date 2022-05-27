@@ -80,18 +80,6 @@ data class DistribuerJournalpostRequestInternal(
             postnummer = StringUtils.stripToNull(adresse.postnummer)
         ) else null
     }
-
-    fun getAdresseDo(): DistribuertTilAdresseDo? {
-        val adresse = getAdresse()
-        return if (adresse != null) DistribuertTilAdresseDo(
-            adresselinje1 = adresse.adresselinje1,
-            adresselinje2 = adresse.adresselinje2,
-            adresselinje3 = adresse.adresselinje3,
-            land = adresse.land!!,
-            poststed = adresse.poststed,
-            postnummer = adresse.postnummer
-        ) else null
-    }
 }
 
 data class DokDistDistribuerJournalpostResponse(

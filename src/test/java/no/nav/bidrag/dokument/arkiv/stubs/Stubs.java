@@ -31,6 +31,7 @@ import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivProxyConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.GeografiskTilknytningResponse;
+import no.nav.bidrag.dokument.arkiv.dto.HentPostadresseResponse;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilAnnenSakResponse;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
@@ -344,6 +345,20 @@ public class Stubs {
     );
   }
 
+  public void mockPersonAdresseResponse(HentPostadresseResponse hentPostadresseResponse) {
+    try {
+      stubFor(
+          post(urlMatching("/person/bidrag-person/adresse/post")).willReturn(
+              aClosedJsonResponse()
+                  .withStatus(HttpStatus.OK.value())
+                  .withBody(new ObjectMapper().writeValueAsString(hentPostadresseResponse == null ? new HentPostadresseResponse("Ramsegata 1", "Bakredør", null, "3939", "OSLO", "NO") : hentPostadresseResponse))
+          )
+      );
+    } catch (JsonProcessingException e) {
+      fail(e.getMessage());
+    }
+  }
+
   public void mockPersonResponse(PersonResponse personResponse, HttpStatus status) {
     try {
       stubFor(
@@ -359,6 +374,12 @@ public class Stubs {
   }
 
   public static class VerifyStub {
+
+    public void hentPersonAdresseKalt(String personId){
+      var requestPattern = postRequestedFor(urlMatching("/person/bidrag-person/adresse/post"));
+      requestPattern.withRequestBody(new ContainsPattern(personId));
+      verify(requestPattern);
+    }
 
     public void bidragOrganisasjonGeografiskTilknytningKalt(){
       bidragOrganisasjonGeografiskTilknytningKalt(null);
