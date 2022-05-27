@@ -21,6 +21,7 @@ import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse
 import org.assertj.core.api.Assertions
 import org.json.JSONException
 import org.junit.jupiter.api.Assertions.assertAll
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
@@ -73,6 +74,7 @@ class AvvikControllerTest : AbstractControllerTest() {
     }
 
     @Test
+    @Disabled
     @DisplayName("skal utføre avvik REGISTRER_RETUR")
     @Throws(IOException::class, JSONException::class)
     fun skalSendeAvvikRegistrerRetur() {
@@ -120,6 +122,7 @@ class AvvikControllerTest : AbstractControllerTest() {
     }
 
     @Test
+    @Disabled
     @DisplayName("skal utføre avvik REGISTRER_RETUR with long beskrivelse")
     @Throws(IOException::class, JSONException::class)
     fun skalSendeAvvikRegistrerReturLangBeskrivelse() {

@@ -161,7 +161,21 @@ class JournalpostTest {
     journalpost.setSak(new Sak(""));
     var avvikListe = journalpost.tilAvvik();
     assertThat(avvikListe).hasSize(2);
-    assertThat(avvikListe).contains(AvvikType.REGISTRER_RETUR);
+    assertThat(avvikListe).contains(AvvikType.MANGLER_ADRESSE);
+    assertThat(avvikListe).contains(AvvikType.FEILFORE_SAK);
+  }
+
+  @Test
+  @DisplayName("skal hente avvik hvis Journalpost er status er EKSPEDERT og utgående")
+  void skalHenteAvvikForEKSPEDERT_Utgaaende() {
+    var journalpost = new Journalpost();
+    journalpost.setJournalstatus(JournalStatus.EKSPEDERT);
+    journalpost.setJournalposttype(JournalpostType.U);
+    journalpost.setAntallRetur(1);
+    journalpost.setSak(new Sak(""));
+    var avvikListe = journalpost.tilAvvik();
+    assertThat(avvikListe).hasSize(2);
+    assertThat(avvikListe).contains(AvvikType.BESTILL_NY_DISTRIBUSJON);
     assertThat(avvikListe).contains(AvvikType.FEILFORE_SAK);
   }
 

@@ -66,7 +66,7 @@ data class Journalpost(
     var relevanteDatoer: List<DatoType> = emptyList(),
     var sak: Sak? = null,
     var tema: String? = null,
-    val antallRetur: Int? = null,
+    var antallRetur: Int? = null,
     var tittel: String? = null,
     var behandlingstema: String? = null,
     var opprettetAvNavn: String? = null,
@@ -94,7 +94,7 @@ data class Journalpost(
             }
     }
 
-    fun isDistribusjonKommetIRetur() = (isDistribusjonBestilt()) && antallRetur != null && antallRetur > 0
+    fun isDistribusjonKommetIRetur() = (isDistribusjonBestilt()) && antallRetur != null && antallRetur!! > 0
 
     fun hentBrevkode(): String? = hentHoveddokument()?.brevkode
 
@@ -238,7 +238,6 @@ data class Journalpost(
 
     fun tilAvvik(): List<AvvikType> {
         val avvikTypeList = mutableListOf<AvvikType>()
-        if (isUtgaaendeDokument() && isStatusEkspedert()) avvikTypeList.add(AvvikType.REGISTRER_RETUR)
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
         if (!isStatusMottatt() && hasSak() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.FEILFORE_SAK)
