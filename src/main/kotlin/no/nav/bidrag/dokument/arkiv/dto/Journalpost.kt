@@ -48,6 +48,7 @@ object JournalstatusDto {
     const val KLAR_TIL_PRINT = "KP"
     const val RETUR = "RE"
     const val JOURNALFORT = "J"
+    const val FERDIGSTILT = "FS"
     const val FEILREGISTRERT = "F"
     const val MOTTAKSREGISTRERT = "M"
     const val RESERVERT = "R"
@@ -143,7 +144,10 @@ data class Journalpost(
     fun hentReturDetaljer(): ReturDetaljer? {
         val returDetaljerLog = hentReturDetaljerLog()
         if (isDistribusjonKommetIRetur() || returDetaljerLog.isNotEmpty()){
-            val senestReturDato = returDetaljerLog.filter{it.dato != null && it.dato!!.isAfter(hentDatoDokument())}.maxOfOrNull { it.dato!! }
+            val senestReturDato = returDetaljerLog
+                .filter { it.dato != null }
+                .filter{!isDistribusjonKommetIRetur() || it.dato!!.isAfter(hentDatoDokument())}
+                .maxOfOrNull { it.dato!! }
             return ReturDetaljer(
                 dato = hentDatoRetur() ?: senestReturDato,
                 logg = returDetaljerLog,
@@ -151,7 +155,7 @@ data class Journalpost(
             )
         }
 
-        return null;
+        return null
     }
 
     fun manglerReturDetaljForSisteRetur(): Boolean{
@@ -585,10 +589,11 @@ data class EndreJournalpostCommandIntern(
     fun erGyldigEndringAvReturDato(journalpost: Journalpost): Boolean {
         val endreReturDetaljer = endreJournalpostCommand.endreReturDetaljer?.filter { Strings.isNotEmpty(it.beskrivelse) }
         if (endreReturDetaljer != null && endreReturDetaljer.isNotEmpty()) {
-            val manglerOriginalDato = !journalpost.manglerReturDetaljForSisteRetur() && endreReturDetaljer.any{it.originalDato == null}
+            val kanLeggeTilNyReturDetalj = journalpost.manglerReturDetaljForSisteRetur()
+            val manglerOriginalDato = endreReturDetaljer.any{it.originalDato == null}
             val nyReturDatoErIkkeEtterDokumentDato = endreReturDetaljer.none{it.originalDato == null && it.nyDato != null && it.nyDato!!.isBefore(journalpost.hentDatoDokument())}
 //            val harIkkeEndretDatoPaaEldreReturDetaljer = endreReturDetaljer.filter{it.originalDato != null}.all{it.originalDato == it.nyDato}
-            return nyReturDatoErIkkeEtterDokumentDato && !manglerOriginalDato
+            return nyReturDatoErIkkeEtterDokumentDato && !(!kanLeggeTilNyReturDetalj && manglerOriginalDato)
         }
         return true
     }

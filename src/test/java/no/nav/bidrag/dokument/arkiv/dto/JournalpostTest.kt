@@ -16,6 +16,7 @@ import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.Objects
 
 @DisplayName("Journalpost")
@@ -250,7 +251,7 @@ internal class JournalpostTest {
     }
 
     @Test
-    fun `should map returdetaljer when existing returdetaljer`() {
+    fun `skal legge til ny returdetalj uten dato hvis returdetaljer mangler for siste retur og returdato mangler`() {
         val journalpost = opprettUtgaendeSafResponseWithReturDetaljer()
         journalpost.journalstatus = JournalStatus.EKSPEDERT
         journalpost.antallRetur = 1
@@ -271,6 +272,46 @@ internal class JournalpostTest {
 
     }
 
+    @Test
+    fun `skal legge til ny returdetalj med dato hvis returdetaljer mangler for siste retur`() {
+        val journalpost = opprettUtgaendeSafResponseWithReturDetaljer()
+        val returDato = LocalDateTime.parse("2022-05-10T13:20:33")
+        journalpost.journalstatus = JournalStatus.EKSPEDERT
+        journalpost.antallRetur = 1
+        journalpost.relevanteDatoer = listOf(DatoType("2023-08-18T13:20:33", "DATO_DOKUMENT"), DatoType(returDato.toString(), "DATO_AVS_RETUR"))
+        val journalpostDto = journalpost.tilJournalpostDto()
+        Assertions.assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(3)
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(3)
+        Assertions.assertThat(journalpostDto.returDetaljer?.dato).isEqualTo(returDato.toLocalDate())
+
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isEqualTo(returDato.toLocalDate())
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("Returpost")
+
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.dato).isEqualTo(LocalDate.parse("2022-10-22"))
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.beskrivelse).isEqualTo("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
+
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.dato).isEqualTo(LocalDate.parse("2022-11-05"))
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.beskrivelse).isEqualTo("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
+    }
+
+    @Test
+    fun `skal ikke legge til ny returdetalj hvis journalpost ikke har kommet i retur`() {
+        val journalpost = opprettUtgaendeSafResponseWithReturDetaljer()
+        val sistRetur = LocalDate.parse("2022-11-05")
+        journalpost.journalstatus = JournalStatus.EKSPEDERT
+        journalpost.antallRetur = 0
+        journalpost.relevanteDatoer = listOf(DatoType("2023-08-18T13:20:33", "DATO_DOKUMENT"))
+        val journalpostDto = journalpost.tilJournalpostDto()
+        Assertions.assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(2)
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(2)
+        Assertions.assertThat(journalpostDto.returDetaljer?.dato).isEqualTo(sistRetur)
+
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isEqualTo(LocalDate.parse("2022-10-22"))
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
+
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.dato).isEqualTo(sistRetur)
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.beskrivelse).isEqualTo("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
+    }
     private fun getReturDetaljerDOByDate(returDetaljerLogDOList: List<ReturDetaljerLogDO>, dato: String): ReturDetaljerLogDO {
         return returDetaljerLogDOList.stream().filter { (_, dato1): ReturDetaljerLogDO -> dato1 == LocalDate.parse(dato) }.findFirst().orElse(
             ReturDetaljerLogDO("junit", LocalDate.now())

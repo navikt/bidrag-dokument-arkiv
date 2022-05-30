@@ -13,6 +13,8 @@ import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
+import no.nav.bidrag.dokument.dto.EndreDokument
+import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
 import java.time.LocalDate
 
 
@@ -72,9 +74,11 @@ fun opprettUtgaendeSafResponseWithReturDetaljer(
 
 fun opprettUtgaendeSafResponse(
     journalpostId: String = JOURNALPOST_ID.toString(),
+    relevanteDatoer: List<DatoType> = listOf(DATO_DOKUMENT),
     tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger()): Journalpost{
     return opprettSafResponse(
         journalpostId = journalpostId,
+        relevanteDatoer = relevanteDatoer,
         tilleggsopplysninger = tilleggsopplysninger,
         journalpostType = JournalpostType.U,
         journalstatus = JournalStatus.FERDIGSTILT
@@ -182,4 +186,15 @@ fun createTillegsopplysningerWithReturDetaljer(): TilleggsOpplysninger{
     )
     tilleggsopplysninger.setDistribusjonBestillt()
     return tilleggsopplysninger;
+}
+
+fun createEndreJournalpostCommand(): EndreJournalpostCommand {
+    val endreJournalpostCommand = EndreJournalpostCommand()
+    endreJournalpostCommand.avsenderNavn = "Dauden, Svarte"
+    endreJournalpostCommand.gjelder = "06127412345"
+    endreJournalpostCommand.tittel = "So Tired"
+    endreJournalpostCommand.endreDokumenter = java.util.List.of(
+        EndreDokument("BLABLA", 1, "In a galazy far far away")
+    )
+    return endreJournalpostCommand
 }

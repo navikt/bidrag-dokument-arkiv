@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
+import static no.nav.bidrag.dokument.arkiv.dto.ViolationKt.validateTrue;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -227,10 +228,5 @@ public class AvvikService {
     var tilknyttedeJournalpost = journalpostService.hentTilknyttedeJournalposter(journalpost);
     tilknyttedeJournalpost
         .forEach((jp)-> dokarkivConsumer.oppdaterDistribusjonsInfo(jp.getJournalpostId(), false, JournalpostKanal.INGEN_DISTRIBUSJON));
-  }
-  public void validateTrue(Boolean expression, RuntimeException throwable){
-    if (!expression){
-      throw throwable;
-    }
   }
 }

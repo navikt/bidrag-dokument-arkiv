@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.controller
 
 import no.nav.bidrag.commons.web.EnhetFilter
+import no.nav.bidrag.dokument.arkiv.dto.DatoType
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsTidspunkt
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsType
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest
@@ -8,13 +9,18 @@ import no.nav.bidrag.dokument.arkiv.dto.HentPostadresseResponse
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.JournalstatusDto
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
+import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
+import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_NAVN
+import no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
 import no.nav.bidrag.dokument.arkiv.stubs.createDistribuerTilAdresse
+import no.nav.bidrag.dokument.arkiv.stubs.createEndreJournalpostCommand
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
+import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
 import no.nav.bidrag.dokument.dto.AvsenderMottakerDto
 import no.nav.bidrag.dokument.dto.AvsenderMottakerDtoIdType
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest
@@ -387,6 +393,63 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
     }
 
     @Test
+    @Throws(IOException::class, JSONException::class)
+    fun `Skal legge til ny returdetalj hvis returdetalj for distribuert dokument etter dokumentdato mangler`() {
+        val xEnhet = "1234"
+        val journalpostId = 201028011L
+        val headersMedEnhet = HttpHeaders()
+        headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
+        val tilleggsOpplysninger = TilleggsOpplysninger()
+        tilleggsOpplysninger.setDistribusjonBestillt()
+        tilleggsOpplysninger.addReturDetaljLog(ReturDetaljerLogDO(
+            "En god begrunnelse for hvorfor dokument kom i retur",
+            LocalDate.parse("2020-01-02")
+        ))
+        tilleggsOpplysninger.addReturDetaljLog(ReturDetaljerLogDO(
+            "En annen god begrunnelse for hvorfor dokument kom i retur",
+            LocalDate.parse("2020-10-02")
+        ))
+        val safResponse = opprettUtgaendeSafResponse(journalpostId = journalpostId.toString(), tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")))
+        safResponse.antallRetur = 1
+        stubs.mockSafResponseHentJournalpost(safResponse)
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
+        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockDokarkivOppdaterRequest(journalpostId)
+        stubs.mockDokarkivFerdigstillRequest(journalpostId)
+        stubs.mockDokarkivProxyTilknyttRequest(journalpostId)
+
+        val endreJournalpostCommand = createEndreJournalpostCommand()
+        endreJournalpostCommand.skalJournalfores = false
+        endreJournalpostCommand.endreReturDetaljer = listOf(EndreReturDetaljer(null, LocalDate.parse("2022-11-15"), "Ny beskrivelse 1"))
+        // when
+        val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
+            initUrl() + "/journal/JOARK-" + journalpostId,
+            HttpMethod.PATCH,
+            HttpEntity(endreJournalpostCommand, headersMedEnhet),
+            JournalpostDto::class.java
+        )
+
+        // then
+        org.junit.jupiter.api.Assertions.assertAll(
+            Executable {
+                Assertions.assertThat(oppdaterJournalpostResponseEntity)
+                    .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
+                    .`as`("statusCode")
+                    .isEqualTo(HttpStatus.OK)
+            },
+            Executable {
+                stubs.verifyStub.dokarkivOppdaterKalt(
+                    journalpostId, "\"tilleggsopplysninger\":["
+                            + "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},"
+                            + "{\"nokkel\":\"retur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"},"
+                            + "{\"nokkel\":\"retur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"},"
+                            + "{\"nokkel\":\"retur0_2022-11-15\",\"verdi\":\"Ny beskrivelse 1\"}]"
+                )
+            }
+        )
+    }
+
+    @Test
     @DisplayName("skal distribuere journalpost")
     @Throws(IOException::class, JSONException::class)
     fun skalDistribuereJournalpost() {
@@ -734,16 +797,5 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                     .isEqualTo(HttpStatus.NOT_ACCEPTABLE)
             }
         )
-    }
-
-    private fun createEndreJournalpostCommand(): EndreJournalpostCommand {
-        val endreJournalpostCommand = EndreJournalpostCommand()
-        endreJournalpostCommand.avsenderNavn = "Dauden, Svarte"
-        endreJournalpostCommand.gjelder = "06127412345"
-        endreJournalpostCommand.tittel = "So Tired"
-        endreJournalpostCommand.endreDokumenter = java.util.List.of(
-            EndreDokument("BLABLA", 1, "In a galazy far far away")
-        )
-        return endreJournalpostCommand
     }
 }

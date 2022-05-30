@@ -19,7 +19,7 @@ data class OppdaterDistribusjonsInfoRequest(
     var utsendingsKanal: JournalpostKanal
 )
 
-data class LagreReturDetaljForSisteRetur(private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {
+data class LagreReturDetaljForSisteReturRequest(private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {
     init {
         journalpost.tilleggsopplysninger.addReturDetaljLog(ReturDetaljerLogDO("Returpost", journalpost.hentDatoRetur()!!))
         tilleggsopplysninger = journalpost.tilleggsopplysninger
