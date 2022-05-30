@@ -52,7 +52,7 @@ public class JournalpostService {
   public List<JournalpostDto> finnJournalposter(String saksnummer, String fagomrade) {
     return finnJournalposterForSaksnummer(saksnummer, fagomrade).stream()
         .map((this::konverterAktoerIdTilFnr))
-        .filter((jp)-> !jp.getTilleggsopplysninger().isEndretTema())
+        .filter((jp)-> !(jp.getTilleggsopplysninger().isEndretTema() || jp.getTilleggsopplysninger().isNyDistribusjonBestilt()) )
         .map(Journalpost::tilJournalpostDto)
         .collect(Collectors.toList());
   }
