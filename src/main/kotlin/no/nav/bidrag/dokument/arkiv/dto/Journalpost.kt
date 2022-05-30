@@ -89,7 +89,11 @@ data class Journalpost(
                 JournalStatus.JOURNALFOERT -> JournalstatusDto.JOURNALFORT
                 JournalStatus.FEILREGISTRERT -> JournalstatusDto.FEILREGISTRERT
                 JournalStatus.EKSPEDERT -> JournalstatusDto.EKSPEDERT
-                JournalStatus.FERDIGSTILT -> if (isUtgaaendeDokument()) if(isDistribusjonBestilt()) JournalstatusDto.EKSPEDERT else JournalstatusDto.KLAR_TIL_PRINT else JournalstatusDto.JOURNALFORT
+                JournalStatus.FERDIGSTILT ->
+                    if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON)
+                        if(isDistribusjonBestilt()) JournalstatusDto.EKSPEDERT
+                        else JournalstatusDto.KLAR_TIL_PRINT
+                    else JournalstatusDto.JOURNALFORT
                 JournalStatus.RESERVERT -> JournalstatusDto.RESERVERT
                 JournalStatus.UTGAAR -> JournalstatusDto.UTGAR
                 JournalStatus.AVBRUTT -> JournalstatusDto.AVBRUTT
