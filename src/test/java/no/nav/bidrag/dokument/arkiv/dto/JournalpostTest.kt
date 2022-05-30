@@ -1,211 +1,279 @@
-package no.nav.bidrag.dokument.arkiv.dto;
+package no.nav.bidrag.dokument.arkiv.dto
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import no.nav.bidrag.dokument.dto.AvvikType;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
+import com.fasterxml.jackson.databind.ObjectMapper
+import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
+import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
+import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponseWithReturDetaljer
+import no.nav.bidrag.dokument.dto.AvvikType
+import org.assertj.core.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.function.Executable
+import org.springframework.core.io.ClassPathResource
+import org.springframework.core.io.Resource
+import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.time.LocalDate
+import java.util.Objects
 
 @DisplayName("Journalpost")
-class JournalpostTest {
+internal class JournalpostTest {
+    private val objectMapper = ObjectMapper()
+    private var journalpostJsonText: String? = null
+    @BeforeEach
+    @Throws(IOException::class)
+    fun lesJsonResourceTilStreng() {
+        val responseJsonResource: Resource = ClassPathResource("__files/json/journalpost.json")
+        journalpostJsonText = String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJsonResource.file.toURI()))))
+    }
 
-  private final ObjectMapper objectMapper = new ObjectMapper();
+    @Test
+    @DisplayName("skal mappe en journalpost fra json")
+    @Throws(IOException::class)
+    fun skalMappeJournalpostFraJson() {
+        val (avsenderMottaker, bruker, dokumenter, journalforendeEnhet, journalfortAvNavn, journalpostId, journalposttype, _, journalstatus, relevanteDatoer, _, tema, _, tittel) = objectMapper.readValue(
+            journalpostJsonText,
+            Journalpost::class.java
+        )
+        org.junit.jupiter.api.Assertions.assertAll(
+            Executable {
+                Assertions.assertThat(
+                    avsenderMottaker
+                ).`as`("avsenderMottaker").isEqualTo(AvsenderMottaker("Tuborg", null, null))
+            },
+            Executable { Assertions.assertThat(bruker).`as`("bruker").isEqualTo(Bruker("1000024690889", "AKTOERID")) },
+            Executable {
+                Assertions.assertThat(dokumenter).`as`("dokumenter").isEqualTo(
+                    java.util.List.of(
+                        Dokument("ROD SNO", "12345", "BI01S02"),
+                        Dokument("SNOMANNEN", "56789", "BI01S02")
+                    )
+                )
+            },
+            Executable { Assertions.assertThat(journalforendeEnhet).`as`("journalforendeEnhet").isEqualTo("0104") },
+            Executable { Assertions.assertThat(journalfortAvNavn).`as`("journalfortAvNavn").isEqualTo("Terkelsen, Karin") },
+            Executable { Assertions.assertThat(journalpostId).`as`("journalpostId").isEqualTo("203915975") },
+            Executable { Assertions.assertThat(journalposttype).`as`("journalposttype").isEqualTo(JournalpostType.I) },
+            Executable { Assertions.assertThat(journalstatus).`as`("journalstatus").isEqualTo(JournalStatus.JOURNALFOERT) },
+            Executable {
+                Assertions.assertThat(relevanteDatoer).`as`("relevanteDater").isEqualTo(
+                    java.util.List.of(
+                        DatoType("2010-12-16T00:00", "DATO_JOURNALFOERT"),
+                        DatoType("2010-12-15T00:00", "DATO_REGISTRERT"),
+                        DatoType("2020-12-15T01:00", "DATO_AVS_RETUR")
+                    )
+                )
+            },
+            Executable { Assertions.assertThat(tema).`as`("tema").isEqualTo("AAP") },
+            Executable { Assertions.assertThat(tittel).`as`("tittel").isEqualTo("...and so on...") }
+        )
+    }
 
-  private String journalpostJsonText;
+    @Test
+    @DisplayName("skal hente journalført dato")
+    @Throws(IOException::class)
+    fun skalHenteJournalfortDato() {
+        val journalpost = objectMapper.readValue(journalpostJsonText, Journalpost::class.java)
+        Assertions.assertThat(journalpost.hentDatoJournalfort()).isEqualTo(LocalDate.of(2010, 12, 16))
+    }
 
-  @BeforeEach
-  void lesJsonResourceTilStreng() throws IOException {
-    Resource responseJsonResource = new ClassPathResource("__files/json/journalpost.json");
-    journalpostJsonText = new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJsonResource.getFile().toURI()))));
-  }
+    @Test
+    @DisplayName("skal hente registrert dato")
+    @Throws(IOException::class)
+    fun skalHenteRegistrertDato() {
+        val journalpost = objectMapper.readValue(journalpostJsonText, Journalpost::class.java)
+        Assertions.assertThat(journalpost.hentDatoRegistrert()).isEqualTo(LocalDate.of(2010, 12, 15))
+    }
 
-  @Test
-  @DisplayName("skal mappe en journalpost fra json")
-  void skalMappeJournalpostFraJson() throws IOException {
-    var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
+    @Test
+    @DisplayName("skal hente retur detaljer")
+    @Throws(IOException::class)
+    fun skalHenteReturDetaljer() {
+        val journalpost = objectMapper.readValue(journalpostJsonText, Journalpost::class.java)
+        val returDetaljer = journalpost.tilleggsopplysninger.hentReturDetaljerLogDO()
+        org.junit.jupiter.api.Assertions.assertAll(
+            Executable { Assertions.assertThat(journalpost.hentDatoRetur()).`as`("datoRegistrert").isEqualTo(LocalDate.parse("2020-12-15")) },
+            Executable { Assertions.assertThat(returDetaljer.size).isEqualTo(3) },
+            Executable { Assertions.assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-14")).isNotNull() },
+            Executable {
+                Assertions.assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-14").beskrivelse).isEqualTo(
+                    "Beskrivelse av retur mer tekst for å teste lengre verdier"
+                )
+            },
+            Executable {
+                Assertions.assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-15").beskrivelse).isEqualTo(
+                    "Beskrivelse av retur 2 mer tekst for å teste lengre verdier"
+                )
+            },
+            Executable { Assertions.assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-11-15").beskrivelse).isEqualTo("Beskrivelse av retur") }
+        )
+    }
 
-    assertAll(
-        () -> assertThat(journalpost.getAvsenderMottaker()).as("avsenderMottaker").isEqualTo(new AvsenderMottaker("Tuborg" , null, null)),
-        () -> assertThat(journalpost.getBruker()).as("bruker").isEqualTo(new Bruker("1000024690889", "AKTOERID")),
-        () -> assertThat(journalpost.getDokumenter()).as("dokumenter").isEqualTo(List.of(
-            new Dokument("ROD SNO", "12345", "BI01S02"),
-            new Dokument("SNOMANNEN", "56789", "BI01S02")
-        )),
-        () -> assertThat(journalpost.getJournalforendeEnhet()).as("journalforendeEnhet").isEqualTo("0104"),
-        () -> assertThat(journalpost.getJournalfortAvNavn()).as("journalfortAvNavn").isEqualTo("Terkelsen, Karin"),
-        () -> assertThat(journalpost.getJournalpostId()).as("journalpostId").isEqualTo("203915975"),
-        () -> assertThat(journalpost.getJournalposttype()).as("journalposttype").isEqualTo(JournalpostType.I),
-        () -> assertThat(journalpost.getJournalstatus()).as("journalstatus").isEqualTo(JournalStatus.JOURNALFOERT),
-        () -> assertThat(journalpost.getRelevanteDatoer()).as("relevanteDater").isEqualTo(List.of(
-            new DatoType("2010-12-16T00:00", "DATO_JOURNALFOERT"),
-            new DatoType("2010-12-15T00:00", "DATO_REGISTRERT"),
-            new DatoType("2020-12-15T01:00", "DATO_AVS_RETUR")
-        )),
-        () -> assertThat(journalpost.getTema()).as("tema").isEqualTo("AAP"),
-        () -> assertThat(journalpost.getTittel()).as("tittel").isEqualTo("...and so on...")
+    @Test
+    @DisplayName("skal hente distribuert adresse")
+    @Throws(IOException::class)
+    fun skalHenteDistribuertAdresse() {
+        val journalpost = objectMapper.readValue(journalpostJsonText, Journalpost::class.java)
+        journalpost.journalstatus = JournalStatus.FERDIGSTILT
+        journalpost.journalposttype = JournalpostType.U
+        val adresse = journalpost.tilleggsopplysninger.hentAdresseDo()
+        org.junit.jupiter.api.Assertions.assertAll(
+            Executable { Assertions.assertThat(adresse!!.adresselinje1).isEqualTo("Testveien 20A") },
+            Executable { Assertions.assertThat(adresse!!.adresselinje2).isEqualTo("TestLinje2") },
+            Executable { Assertions.assertThat(adresse!!.adresselinje3).isEqualTo("TestLinje4") },
+            Executable { Assertions.assertThat(adresse!!.postnummer).isEqualTo("7950") },
+            Executable { Assertions.assertThat(adresse!!.poststed).isEqualTo("ABELVÆR") },
+            Executable { Assertions.assertThat(adresse!!.land).isEqualTo("NO") },
+            Executable { Assertions.assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.KLAR_TIL_PRINT) }
+        )
+    }
 
-    );
-  }
+    @Test
+    @DisplayName("skal hente status JOURNALFØRT når notat and ferdigstilt")
+    @Throws(IOException::class)
+    fun skalHenteJournalpostStatusJournalfortForNotat() {
+        val journalpost = objectMapper.readValue(journalpostJsonText, Journalpost::class.java)
+        journalpost.journalstatus = JournalStatus.FERDIGSTILT
+        journalpost.journalposttype = JournalpostType.N
+        journalpost.tilleggsopplysninger.setDistribusjonBestillt()
+        org.junit.jupiter.api.Assertions.assertAll(
+            Executable { Assertions.assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.JOURNALFORT) },
+            Executable { Assertions.assertThat(journalpost.hentJournalpostType()).isEqualTo("X") }
+        )
+    }
 
-  @Test
-  @DisplayName("skal hente journalført dato")
-  void skalHenteJournalfortDato() throws IOException {
-    var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
+    @Test
+    @DisplayName("skal hente status EKSPEDERT når distribuert")
+    @Throws(IOException::class)
+    fun skalHenteJournalpostStatusEkspedertNarDistribuert() {
+        val journalpost = objectMapper.readValue(journalpostJsonText, Journalpost::class.java)
+        journalpost.journalstatus = JournalStatus.FERDIGSTILT
+        journalpost.journalposttype = JournalpostType.U
+        journalpost.tilleggsopplysninger.setDistribusjonBestillt()
+        org.junit.jupiter.api.Assertions.assertAll(
+            Executable { Assertions.assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.EKSPEDERT) }
+        )
+    }
 
-    assertThat(journalpost.hentDatoJournalfort()).isEqualTo(LocalDate.of(2010, 12, 16));
-  }
+    @Test
+    @DisplayName("skal hente avvik hvis Journalpost med status mottatt og inngående")
+    fun skalHenteAvvikForMottattOgInngaaende() {
+        val journalpost = Journalpost()
+        journalpost.journalstatus = JournalStatus.MOTTATT
+        journalpost.journalposttype = JournalpostType.I
+        val avvikListe = journalpost.tilAvvik()
+        Assertions.assertThat(avvikListe).hasSize(3)
+        Assertions.assertThat(avvikListe).contains(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
+        Assertions.assertThat(avvikListe).contains(AvvikType.TREKK_JOURNALPOST)
+        Assertions.assertThat(avvikListe).contains(AvvikType.ENDRE_FAGOMRADE)
+    }
 
-  @Test
-  @DisplayName("skal hente registrert dato")
-  void skalHenteRegistrertDato() throws IOException {
-    var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
+    @Test
+    @DisplayName("skal hente avvik hvis Journalpost er status er FERDIGSTILT og utgående")
+    fun skalHenteAvvikForFERDIGSTILT_Utgaaende() {
+        val journalpost = Journalpost()
+        journalpost.journalstatus = JournalStatus.FERDIGSTILT
+        journalpost.journalposttype = JournalpostType.U
+        journalpost.sak = Sak("")
+        val avvikListe = journalpost.tilAvvik()
+        Assertions.assertThat(avvikListe).hasSize(2)
+        Assertions.assertThat(avvikListe).contains(AvvikType.MANGLER_ADRESSE)
+        Assertions.assertThat(avvikListe).contains(AvvikType.FEILFORE_SAK)
+    }
 
-    assertThat(journalpost.hentDatoRegistrert()).isEqualTo(LocalDate.of(2010, 12, 15));
-  }
+    @Test
+    @DisplayName("skal hente avvik hvis Journalpost er status er EKSPEDERT og utgående")
+    fun skalHenteAvvikForEKSPEDERT_Utgaaende() {
+        val journalpost = Journalpost()
+        journalpost.journalstatus = JournalStatus.EKSPEDERT
+        journalpost.journalposttype = JournalpostType.U
+        journalpost.antallRetur = 1
+        journalpost.sak = Sak("")
+        val avvikListe = journalpost.tilAvvik()
+        Assertions.assertThat(avvikListe).hasSize(2)
+        Assertions.assertThat(avvikListe).contains(AvvikType.BESTILL_NY_DISTRIBUSJON)
+        Assertions.assertThat(avvikListe).contains(AvvikType.FEILFORE_SAK)
+    }
 
-  @Test
-  @DisplayName("skal hente retur detaljer")
-  void skalHenteReturDetaljer() throws IOException {
-    var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
-    var returDetaljer = journalpost.getTilleggsopplysninger().hentReturDetaljerLogDO();
+    @Test
+    @DisplayName("skal returnere avvik FEILFORE_SAK hvis status ikke er feilfort")
+    fun skalHenteAvvikFEILFORE_SAKHvisIkkeFeilfort() {
+        val journalpost = Journalpost()
+        journalpost.journalstatus = JournalStatus.JOURNALFOERT
+        journalpost.journalposttype = JournalpostType.I
+        journalpost.sak = Sak("")
+        val avvikListe = journalpost.tilAvvik()
+        Assertions.assertThat(avvikListe).hasSize(3)
+        Assertions.assertThat(avvikListe).contains(AvvikType.FEILFORE_SAK)
+    }
 
-    assertAll(
-        () -> assertThat(journalpost.hentDatoRetur()).as("datoRegistrert").isEqualTo(LocalDate.parse("2020-12-15")),
-        () -> assertThat(returDetaljer.size()).isEqualTo(3),
-        () -> assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-14")).isNotNull(),
-        () -> assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-14").getBeskrivelse()).isEqualTo(
-            "Beskrivelse av retur mer tekst for å teste lengre verdier"),
-        () -> assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-15").getBeskrivelse()).isEqualTo(
-            "Beskrivelse av retur 2 mer tekst for å teste lengre verdier"),
-        () -> assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-11-15").getBeskrivelse()).isEqualTo("Beskrivelse av retur")
-    );
-  }
+    @Test
+    @DisplayName("skal ikke tillate avvik FEILFORE_SAK hvis status feilregistrert")
+    fun skalHenteAvvikHvisStatusFeilregistrert() {
+        val journalpost = Journalpost()
+        journalpost.journalstatus = JournalStatus.FEILREGISTRERT
+        journalpost.journalposttype = JournalpostType.I
+        journalpost.sak = Sak("")
+        val avvikListe = journalpost.tilAvvik()
+        Assertions.assertThat(avvikListe).hasSize(0)
+        Assertions.assertThat(avvikListe).doesNotContain(AvvikType.FEILFORE_SAK)
+    }
 
-  @Test
-  @DisplayName("skal hente distribuert adresse")
-  void skalHenteDistribuertAdresse() throws IOException {
-    var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
-    journalpost.setJournalstatus(JournalStatus.FERDIGSTILT);
-    journalpost.setJournalposttype(JournalpostType.U);
-    var adresse = journalpost.getTilleggsopplysninger().hentAdresseDo();
+    @Test
+    fun `should map returdetaljer when distribusjon bestilt`() {
+        val journalpost = opprettUtgaendeSafResponse()
+        val tilleggsOpplysninger = TilleggsOpplysninger()
+        tilleggsOpplysninger.setDistribusjonBestillt()
+        journalpost.tilleggsopplysninger = tilleggsOpplysninger
+        journalpost.antallRetur = 1
+        val journalpostDto = journalpost.tilJournalpostDto()
+        Assertions.assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(1)
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(1)
+        Assertions.assertThat(journalpostDto.returDetaljer?.dato).isNull()
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isNull()
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("Returpost")
+    }
 
-    assertAll(
-        () -> assertThat(adresse.getAdresselinje1()).isEqualTo("Testveien 20A"),
-        () -> assertThat(adresse.getAdresselinje2()).isEqualTo("TestLinje2"),
-        () -> assertThat(adresse.getAdresselinje3()).isEqualTo("TestLinje4"),
-        () -> assertThat(adresse.getPostnummer()).isEqualTo("7950"),
-        () -> assertThat(adresse.getPoststed()).isEqualTo("ABELVÆR"),
-        () -> assertThat(adresse.getLand()).isEqualTo("NO"),
-        () -> assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.KLAR_TIL_PRINT)
-    );
-  }
+    @Test
+    fun `should map returdetaljer when ekspedert`() {
+        val journalpost = opprettUtgaendeSafResponse()
+        journalpost.journalstatus = JournalStatus.EKSPEDERT
+        journalpost.antallRetur = 1
+        val journalpostDto = journalpost.tilJournalpostDto()
+        Assertions.assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(1)
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(1)
+        Assertions.assertThat(journalpostDto.returDetaljer?.dato).isNull()
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isNull()
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("Returpost")
+    }
 
-  @Test
-  @DisplayName("skal hente status JOURNALFØRT når notat and ferdigstilt")
-  void skalHenteJournalpostStatusJournalfortForNotat() throws IOException {
-    var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
-    journalpost.setJournalstatus(JournalStatus.FERDIGSTILT);
-    journalpost.setJournalposttype(JournalpostType.N);
-    journalpost.getTilleggsopplysninger().setDistribusjonBestillt();
+    @Test
+    fun `should map returdetaljer when existing returdetaljer`() {
+        val journalpost = opprettUtgaendeSafResponseWithReturDetaljer()
+        journalpost.journalstatus = JournalStatus.EKSPEDERT
+        journalpost.antallRetur = 1
+        journalpost.relevanteDatoer = listOf(DatoType("2023-08-18T13:20:33", "DATO_DOKUMENT"))
+        val journalpostDto = journalpost.tilJournalpostDto()
+        Assertions.assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(3)
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(3)
+        Assertions.assertThat(journalpostDto.returDetaljer?.dato).isNull()
 
-    assertAll(
-        () -> assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.JOURNALFORT),
-        () -> assertThat(journalpost.hentJournalpostType()).isEqualTo("X")
-    );
-  }
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isNull()
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("Returpost")
 
-  @Test
-  @DisplayName("skal hente status EKSPEDERT når distribuert")
-  void skalHenteJournalpostStatusEkspedertNarDistribuert() throws IOException {
-    var journalpost = objectMapper.readValue(journalpostJsonText, Journalpost.class);
-    journalpost.setJournalstatus(JournalStatus.FERDIGSTILT);
-    journalpost.setJournalposttype(JournalpostType.U);
-    journalpost.getTilleggsopplysninger().setDistribusjonBestillt();
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.dato).isEqualTo(LocalDate.parse("2022-10-22"))
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.beskrivelse).isEqualTo("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
 
-    assertAll(
-        () -> assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.EKSPEDERT)
-    );
-  }
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.dato).isEqualTo(LocalDate.parse("2022-11-05"))
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.beskrivelse).isEqualTo("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
 
-  @Test
-  @DisplayName("skal hente avvik hvis Journalpost med status mottatt og inngående")
-  void skalHenteAvvikForMottattOgInngaaende() {
-    var journalpost = new Journalpost();
-    journalpost.setJournalstatus(JournalStatus.MOTTATT);
-    journalpost.setJournalposttype(JournalpostType.I);
-    var avvikListe = journalpost.tilAvvik();
-    assertThat(avvikListe).hasSize(3);
-    assertThat(avvikListe).contains(AvvikType.OVERFOR_TIL_ANNEN_ENHET);
-    assertThat(avvikListe).contains(AvvikType.TREKK_JOURNALPOST);
-    assertThat(avvikListe).contains(AvvikType.ENDRE_FAGOMRADE);
-  }
+    }
 
-  @Test
-  @DisplayName("skal hente avvik hvis Journalpost er status er FERDIGSTILT og utgående")
-  void skalHenteAvvikForFERDIGSTILT_Utgaaende() {
-    var journalpost = new Journalpost();
-    journalpost.setJournalstatus(JournalStatus.FERDIGSTILT);
-    journalpost.setJournalposttype(JournalpostType.U);
-    journalpost.setSak(new Sak(""));
-    var avvikListe = journalpost.tilAvvik();
-    assertThat(avvikListe).hasSize(2);
-    assertThat(avvikListe).contains(AvvikType.MANGLER_ADRESSE);
-    assertThat(avvikListe).contains(AvvikType.FEILFORE_SAK);
-  }
-
-  @Test
-  @DisplayName("skal hente avvik hvis Journalpost er status er EKSPEDERT og utgående")
-  void skalHenteAvvikForEKSPEDERT_Utgaaende() {
-    var journalpost = new Journalpost();
-    journalpost.setJournalstatus(JournalStatus.EKSPEDERT);
-    journalpost.setJournalposttype(JournalpostType.U);
-    journalpost.setAntallRetur(1);
-    journalpost.setSak(new Sak(""));
-    var avvikListe = journalpost.tilAvvik();
-    assertThat(avvikListe).hasSize(2);
-    assertThat(avvikListe).contains(AvvikType.BESTILL_NY_DISTRIBUSJON);
-    assertThat(avvikListe).contains(AvvikType.FEILFORE_SAK);
-  }
-
-  @Test
-  @DisplayName("skal returnere avvik FEILFORE_SAK hvis status ikke er feilfort")
-  void skalHenteAvvikFEILFORE_SAKHvisIkkeFeilfort() {
-    var journalpost = new Journalpost();
-    journalpost.setJournalstatus(JournalStatus.JOURNALFOERT);
-    journalpost.setJournalposttype(JournalpostType.I);
-    journalpost.setSak(new Sak(""));
-    var avvikListe = journalpost.tilAvvik();
-    assertThat(avvikListe).hasSize(3);
-    assertThat(avvikListe).contains(AvvikType.FEILFORE_SAK);
-  }
-
-  @Test
-  @DisplayName("skal ikke tillate avvik FEILFORE_SAK hvis status feilregistrert")
-  void skalHenteAvvikHvisStatusFeilregistrert() {
-    var journalpost = new Journalpost();
-    journalpost.setJournalstatus(JournalStatus.FEILREGISTRERT);
-    journalpost.setJournalposttype(JournalpostType.I);
-    journalpost.setSak(new Sak(""));
-    var avvikListe = journalpost.tilAvvik();
-    assertThat(avvikListe).hasSize(0);
-    assertThat(avvikListe).doesNotContain(AvvikType.FEILFORE_SAK);
-  }
-
-  private ReturDetaljerLogDO getReturDetaljerDOByDate(List<ReturDetaljerLogDO> returDetaljerLogDOList, String dato) {
-    return returDetaljerLogDOList.stream().filter(it -> it.getDato().equals(LocalDate.parse(dato))).findFirst().orElse(
-        new ReturDetaljerLogDO("junit", LocalDate.now())
-    );
-  }
+    private fun getReturDetaljerDOByDate(returDetaljerLogDOList: List<ReturDetaljerLogDO>, dato: String): ReturDetaljerLogDO {
+        return returDetaljerLogDOList.stream().filter { (_, dato1): ReturDetaljerLogDO -> dato1 == LocalDate.parse(dato) }.findFirst().orElse(
+            ReturDetaljerLogDO("junit", LocalDate.now())
+        )
+    }
 }

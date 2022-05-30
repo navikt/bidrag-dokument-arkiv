@@ -136,8 +136,9 @@ data class Journalpost(
     fun hentReturDetaljer(): ReturDetaljer? {
         val returDetaljerLog = hentReturDetaljerLog()
         if (isDistribusjonKommetIRetur() || returDetaljerLog.isNotEmpty()){
+            val senestReturDato = returDetaljerLog.filter{it.dato != null && it.dato!!.isAfter(hentDatoDokument())}.maxOfOrNull { it.dato!! }
             return ReturDetaljer(
-                dato = hentDatoRetur(),
+                dato = hentDatoRetur() ?: senestReturDato,
                 logg = returDetaljerLog,
                 antall = returDetaljerLog.size
             )
@@ -163,7 +164,7 @@ data class Journalpost(
 
 
         if (kanLeggeTilNyReturdetalj()){
-            logg.add(ReturDetaljerLog(dato = hentDatoRetur(), beskrivelse = "Returpost"))
+            logg.add(0, ReturDetaljerLog(dato = hentDatoRetur(), beskrivelse = "Returpost"))
         }
 
         return logg
@@ -184,7 +185,7 @@ data class Journalpost(
     }
 
     fun hentDatoRetur(): LocalDate? {
-        val returDato = relevanteDatoer.find { it.datotype == DATO_RETUR }
+        val returDato = relevanteDatoer.find { it.datotype == DATO_RETUR && it.dato != "2022-01-01" }
         return returDato?.somDato()
     }
 
@@ -549,10 +550,22 @@ data class EndreJournalpostCommandIntern(
             if (endreJournalpostCommand.tilknyttSaker.size > 1){
                 violations.add("Kan ikke lagre journalpost med flere saker uten å journalføre")
             }
+        } else if (journalpost.isUtgaaendeDokument()){
+            if (!erGyldigEndringAvReturDato(journalpost)){
+                violations.add("Returdetaljer inneholder ugyldig endring av returdato")
+            }
         }
         if (violations.isNotEmpty()) {
             throw ViolationException(violations)
         }
+    }
+
+    fun erGyldigEndringAvReturDato(journalpost: Journalpost): Boolean {
+        val endreReturDetaljer = endreJournalpostCommand.endreReturDetaljer?.filter { Strings.isNotEmpty(it.beskrivelse) }
+        if (endreReturDetaljer != null && endreReturDetaljer.isNotEmpty()) {
+            return endreReturDetaljer.none{it.originalDato == null && it.nyDato != null && it.nyDato!!.isBefore(journalpost.hentDatoDokument())}
+        }
+        return true
     }
 }
 

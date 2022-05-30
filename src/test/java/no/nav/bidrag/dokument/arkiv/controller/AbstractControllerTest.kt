@@ -41,8 +41,6 @@ abstract class AbstractControllerTest {
     @JvmField
     protected var responseJournalpostJsonWithAdresse = "journalpostSafAdresseResponse.json"
     @JvmField
-    protected var responseJournalpostIngenSakerJson = "journalpostSafIngenSakerResponse.json"
-    @JvmField
     protected var journalpostSafNotFoundResponse = "journalpostSafNotFoundResponse.json"
     @JvmField
     protected var journalpostJournalfortSafResponse = "journalpostJournalfortSafResponse.json"

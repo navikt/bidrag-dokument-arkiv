@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.stubs
 
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker
+import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottakerIdType
 import no.nav.bidrag.dokument.arkiv.dto.Bruker
 import no.nav.bidrag.dokument.arkiv.dto.DatoType
 import no.nav.bidrag.dokument.arkiv.dto.Dokument
@@ -8,9 +9,11 @@ import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostType
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveData
+import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
+import java.time.LocalDate
 
 
 var X_ENHET_HEADER = "1234"
@@ -55,9 +58,31 @@ fun createDistribuerTilAdresse(): DistribuerTilAdresse {
     )
 }
 
+
+fun opprettUtgaendeSafResponseWithReturDetaljer(
+    journalpostId: String = JOURNALPOST_ID.toString()): Journalpost{
+    return opprettSafResponse(
+        journalpostId = journalpostId,
+        tilleggsopplysninger = createTillegsopplysningerWithReturDetaljer(),
+        journalpostType = JournalpostType.U,
+        journalstatus = JournalStatus.FERDIGSTILT,
+        relevanteDatoer = listOf(DATO_DOKUMENT, DATO_RETUR)
+    )
+}
+
+fun opprettUtgaendeSafResponse(
+    journalpostId: String = JOURNALPOST_ID.toString(),
+    tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger()): Journalpost{
+    return opprettSafResponse(
+        journalpostId = journalpostId,
+        tilleggsopplysninger = tilleggsopplysninger,
+        journalpostType = JournalpostType.U,
+        journalstatus = JournalStatus.FERDIGSTILT
+    )
+}
 fun opprettSafResponse(
     journalpostId: String = JOURNALPOST_ID.toString(),
-    avsenderMottaker: AvsenderMottaker = AvsenderMottaker(AVSENDER_NAVN, AVSENDER_ID),
+    avsenderMottaker: AvsenderMottaker = AvsenderMottaker(AVSENDER_NAVN, AVSENDER_ID, AvsenderMottakerIdType.FNR),
     bruker: Bruker? = Bruker(BRUKER_AKTOER_ID, BRUKER_TYPE_AKTOERID),
     dokumenter: List<Dokument> = listOf(
         Dokument(
@@ -145,4 +170,16 @@ fun createOppgaveDataWithSaksnummer(saksnummer: String): OppgaveData{
 }
 fun createOppgaveDataWithJournalpostId(journalpostId: String): OppgaveData{
     return OppgaveData(journalpostId = journalpostId, id=2, versjon = 1, beskrivelse = "")
+}
+
+fun createTillegsopplysningerWithReturDetaljer(): TilleggsOpplysninger{
+    val tilleggsopplysninger = TilleggsOpplysninger()
+    tilleggsopplysninger.addReturDetaljLog(
+        ReturDetaljerLogDO("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", LocalDate.parse("2022-10-22"))
+    )
+    tilleggsopplysninger.addReturDetaljLog(
+        ReturDetaljerLogDO("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", LocalDate.parse("2022-11-05"))
+    )
+    tilleggsopplysninger.setDistribusjonBestillt()
+    return tilleggsopplysninger;
 }
