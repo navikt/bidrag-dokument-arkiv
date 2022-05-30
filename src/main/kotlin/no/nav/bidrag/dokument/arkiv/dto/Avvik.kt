@@ -55,12 +55,7 @@ data class AvvikshendelseIntern(
 data class OverforEnhetRequest(private var journalpostId: Long, override var journalfoerendeEnhet: String?): OppdaterJournalpostRequest(journalpostId)
 data class EndreFagomradeRequest(private var journalpostId: Long, override var tema: String?, override var journalfoerendeEnhet: String?): OppdaterJournalpostRequest(journalpostId)
 
-data class OppdaterFlaggNyDistribusjonBestiltRequest(private var journalpostId: Long, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId){
-    init {
-        journalpost.tilleggsopplysninger.setNyDistribusjonBestiltFlagg()
-        tilleggsopplysninger = journalpost.tilleggsopplysninger
-    }
-}
+
 
 data class EndreFagomradeJournalfortJournalpostRequest(private var journalpostId: Long, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId){
     init {

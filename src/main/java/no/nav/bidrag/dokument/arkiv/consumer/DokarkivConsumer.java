@@ -53,7 +53,7 @@ public class DokarkivConsumer extends AbstractConsumer {
 
   public OpprettJournalpostResponse opprett(OpprettJournalpostRequest opprettJournalpostRequest){
     try {
-      var response = restTemplate.exchange(URL_JOURNALPOSTAPI_V1, HttpMethod.POST, new HttpEntity<>(opprettJournalpostRequest), OpprettJournalpostResponse.class);
+      var response = restTemplate.exchange(URL_JOURNALPOSTAPI_V1+"?forsoekFerdigstill=true", HttpMethod.POST, new HttpEntity<>(opprettJournalpostRequest), OpprettJournalpostResponse.class);
       var responseBody = response.getBody();
       LOGGER.info("Opprettet journalpost {} med status {}", responseBody.getJournalpostId(), responseBody.getJournalstatus());
       return response.getBody();

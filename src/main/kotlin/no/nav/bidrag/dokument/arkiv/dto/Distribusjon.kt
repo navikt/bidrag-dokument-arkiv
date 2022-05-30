@@ -114,10 +114,6 @@ fun validerAdresse(adresse: DistribuerTilAdresse?) {
     }
 }
 
-fun validateNotNullOrEmpty(value: String?, message: String) {
-    Validate.isTrue(StringUtils.isNotEmpty(value), message)
-}
-
 
 class BrevkodeToDistribusjonstypeMapper {
     private var brevkodemap: MutableMap<String, DistribusjonsType> = hashMapOf()

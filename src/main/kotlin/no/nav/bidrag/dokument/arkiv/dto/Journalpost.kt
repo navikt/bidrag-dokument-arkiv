@@ -150,7 +150,7 @@ data class Journalpost(
         return null;
     }
 
-    fun kanLeggeTilNyReturdetalj(): Boolean{
+    fun manglerReturDetaljForSisteRetur(): Boolean{
         if(!isDistribusjonKommetIRetur()){
             return false
         }
@@ -166,7 +166,7 @@ data class Journalpost(
         ) }.toMutableList()
 
 
-        if (kanLeggeTilNyReturdetalj()){
+        if (manglerReturDetaljForSisteRetur()){
             logg.add(0, ReturDetaljerLog(dato = hentDatoRetur(), beskrivelse = "Returpost"))
         }
 
@@ -188,7 +188,7 @@ data class Journalpost(
     }
 
     fun hentDatoRetur(): LocalDate? {
-        val returDato = relevanteDatoer.find { it.datotype == DATO_RETUR && it.dato != "2022-01-01" }
+        val returDato = relevanteDatoer.find { it.datotype == DATO_RETUR && it.dato != "2022-01-01T01:00" }
         return returDato?.somDato()
     }
 
@@ -354,6 +354,11 @@ class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() 
             .firstOrNull()
     }
 
+    fun removeDistribusjonMetadata(){
+        this.removeAll{ it["nokkel"]?.contains(DISTRIBUSJON_BESTILT_KEY) ?: false}
+        this.removeAll{ it["nokkel"]?.contains(DISTRIBUERT_ADRESSE_KEY) ?: false}
+    }
+
     fun setDistribusjonBestillt() {
       this.removeAll{ it["nokkel"]?.contains(DISTRIBUSJON_BESTILT_KEY) ?: false}
       this.add(mapOf("nokkel" to DISTRIBUSJON_BESTILT_KEY, "verdi" to "true"))
@@ -505,6 +510,7 @@ data class DatoType(
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class Sak(
     var fagsakId: String? = null,
     var fagsakSystem: String? = null,
@@ -575,7 +581,9 @@ data class EndreJournalpostCommandIntern(
     fun erGyldigEndringAvReturDato(journalpost: Journalpost): Boolean {
         val endreReturDetaljer = endreJournalpostCommand.endreReturDetaljer?.filter { Strings.isNotEmpty(it.beskrivelse) }
         if (endreReturDetaljer != null && endreReturDetaljer.isNotEmpty()) {
-            return endreReturDetaljer.none{it.originalDato == null && it.nyDato != null && it.nyDato!!.isBefore(journalpost.hentDatoDokument())}
+            val nyReturDatoErEtterDokumentDato = endreReturDetaljer.any{it.originalDato == null && it.nyDato != null && it.nyDato!!.isBefore(journalpost.hentDatoDokument())}
+            val harIkkeEndretDatoPaaEldreReturDetaljer = endreReturDetaljer.filter{it.originalDato != null}.all{it.originalDato == it.nyDato}
+            return harIkkeEndretDatoPaaEldreReturDetaljer && nyReturDatoErEtterDokumentDato
         }
         return true
     }

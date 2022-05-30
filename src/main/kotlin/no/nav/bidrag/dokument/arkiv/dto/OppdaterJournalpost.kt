@@ -7,10 +7,24 @@ import no.nav.bidrag.dokument.arkiv.utils.DateUtils
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 import org.apache.logging.log4j.util.Strings
 
+data class OppdaterFlaggNyDistribusjonBestiltRequest(private var journalpostId: Long, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId){
+    init {
+        journalpost.tilleggsopplysninger.setNyDistribusjonBestiltFlagg()
+        tilleggsopplysninger = journalpost.tilleggsopplysninger
+    }
+}
+
 data class OppdaterDistribusjonsInfoRequest(
     var settStatusEkspedert: Boolean,
     var utsendingsKanal: JournalpostKanal
 )
+
+data class LagreReturDetaljForSisteRetur(private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {
+    init {
+        journalpost.tilleggsopplysninger.addReturDetaljLog(ReturDetaljerLogDO("Returpost", journalpost.hentDatoRetur()!!))
+        tilleggsopplysninger = journalpost.tilleggsopplysninger
+    }
+}
 
 data class OppdaterJournalpostDistribusjonsInfoRequest(private var journalpostId: Long, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId) {
     init {
@@ -61,7 +75,7 @@ data class LagreJournalpostRequest(private var journalpostId: Long, private var 
             if (endreReturDetaljer != null && endreReturDetaljer.isNotEmpty()){
                 endreReturDetaljer
                     .forEach { if (it.originalDato != null) journalpost.tilleggsopplysninger.updateReturDetaljLog(it.originalDato!!, ReturDetaljerLogDO(it.beskrivelse, it.nyDato ?: it.originalDato!!))
-                                else if (journalpost.kanLeggeTilNyReturdetalj() && it.nyDato != null) journalpost.tilleggsopplysninger.addReturDetaljLog(ReturDetaljerLogDO(it.beskrivelse, it.nyDato!!)) }
+                                else if (journalpost.manglerReturDetaljForSisteRetur() && it.nyDato != null) journalpost.tilleggsopplysninger.addReturDetaljLog(ReturDetaljerLogDO(it.beskrivelse, it.nyDato!!)) }
                 tilleggsopplysninger = journalpost.tilleggsopplysninger
             }
 

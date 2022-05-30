@@ -6,21 +6,15 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import kotlin.Pair;
 import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.AvvikshendelseIntern;
-import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal;
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal;
-import no.nav.bidrag.dokument.arkiv.dto.OppdaterFlaggNyDistribusjonBestiltRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OpphevEndreFagomradeJournalfortJournalpostRequest;
-import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostRequest;
-import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.RegistrerReturRequest;
 import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
@@ -45,23 +39,20 @@ public class AvvikService {
   public final JournalpostService journalpostService;
   public final HendelserProducer hendelserProducer;
   public final EndreJournalpostService endreJournalpostService;
-
   public final DistribuerJournalpostService distribuerJournalpostService;
-  public final DokumentService dokumentService;
   public final OppgaveService oppgaveService;
   private final DokarkivConsumer dokarkivConsumer;
   private final BidragOrganisasjonConsumer bidragOrganisasjonConsumer;
   private final SaksbehandlerInfoManager saksbehandlerInfoManager;
 
   public AvvikService(ResourceByDiscriminator<JournalpostService> journalpostService, HendelserProducer hendelserProducer,
-      EndreJournalpostService endreJournalpostService, DistribuerJournalpostService distribuerJournalpostService, DokumentService dokumentService, OppgaveService oppgaveService,
+      EndreJournalpostService endreJournalpostService, DistribuerJournalpostService distribuerJournalpostService, OppgaveService oppgaveService,
       ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers,
       BidragOrganisasjonConsumer bidragOrganisasjonConsumer, SaksbehandlerInfoManager saksbehandlerInfoManager) {
     this.journalpostService = journalpostService.get(Discriminator.REGULAR_USER);
     this.hendelserProducer = hendelserProducer;
     this.endreJournalpostService = endreJournalpostService;
     this.distribuerJournalpostService = distribuerJournalpostService;
-    this.dokumentService = dokumentService;
     this.oppgaveService = oppgaveService;
     this.bidragOrganisasjonConsumer = bidragOrganisasjonConsumer;
     this.saksbehandlerInfoManager = saksbehandlerInfoManager;
@@ -95,7 +86,7 @@ public class AvvikService {
       default -> throw new AvvikNotSupportedException("Avvik %s ikke støttet".formatted(avvikshendelseIntern.getAvvikstype()));
     }
 
-    hendelserProducer.publishJournalpostUpdated(journalpost.hentJournalpostIdLong(), avvikshendelseIntern.getSaksbehandlersEnhet());
+//    hendelserProducer.publishJournalpostUpdated(journalpost.hentJournalpostIdLong(), avvikshendelseIntern.getSaksbehandlersEnhet());
     SECURE_LOGGER.info("Avvik {} ble utført på journalpost {} av bruker {} og enhet {} med beskrivelse {} - avvik {}", avvikshendelseIntern.getAvvikstype(), avvikshendelseIntern.getJournalpostId(), saksbehandlerInfoManager.hentSaksbehandlerBrukerId(), avvikshendelseIntern.getSaksbehandlersEnhet(), avvikshendelseIntern.getBeskrivelse(), avvikshendelseIntern);
 
     return Optional.of(new BehandleAvvikshendelseResponse(avvikshendelseIntern.getAvvikstype()));
@@ -107,28 +98,13 @@ public class AvvikService {
 
   public void bestillNyDistribusjon(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
       LOGGER.info("Bestiller ny distribusjon for journalpost {}", journalpost.getJournalpostId());
-      journalpostService.populerMedTilknyttedeSaker(journalpost);
-      if (journalpost.getTilknyttedeSaker().size() > 1){
-        throw new UgyldigAvvikException("Kan ikke bestille distribusjon for journalpost med flere saker");
-      }
       if (avvikshendelseIntern.getAdresse() == null){
         throw new UgyldigAvvikException("Adresse må settes ved bestilling av ny distribusjon");
       }
 
-      var opprettJournalpostResponse = dupliserJournalpost(journalpost);
-      distribuerJournalpostService.distribuerJournalpost(opprettJournalpostResponse.getJournalpostId(), null, new DistribuerJournalpostRequestInternal(avvikshendelseIntern.getAdresse()));
-      oppdater(new OppdaterFlaggNyDistribusjonBestiltRequest(journalpost.hentJournalpostIdLong(), journalpost));
+      distribuerJournalpostService.bestillNyDistribusjon(journalpost, avvikshendelseIntern.getAdresse());
   }
 
-  private OpprettJournalpostResponse dupliserJournalpost(Journalpost journalpost){
-    var dokumenterByte = journalpost.getDokumenter().stream()
-        .map((dokument -> new Pair<>(dokument.getDokumentInfoId(),
-            dokumentService.hentDokument(journalpost.hentJournalpostIdLong(), dokument.getDokumentInfoId()).getBody())))
-        .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
-    var opprettJournalpostRequest = new OpprettJournalpostRequest(journalpost, dokumenterByte);
-    opprettJournalpostRequest.setEksternReferanseId(String.format("BID_duplikat_%s", journalpost.getJournalpostId()));
-    return dokarkivConsumer.opprett(opprettJournalpostRequest);
-  }
   /**
    * Used when avvikshåndtering is not triggering any action but only used for logging
    */

@@ -2,14 +2,15 @@ package no.nav.bidrag.dokument.arkiv.dto
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
+import org.apache.commons.lang3.Validate
 
 @JsonIgnoreProperties(ignoreUnknown = true, value = ["journalpostId"])
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class OpprettJournalpostRequest(
-    var sak: Sak? = null,
+    var sak: OpprettJournalpostSak? = null,
     var tittel: String? = null,
     var journalfoerendeEnhet: String? = null,
-    var journalpostType: JournalpostType? = null,
+    var journalpostType: String? = null,
     var datoRetur: String? = null,
     var behandlingstema: String? = null,
     var eksternReferanseId: String? = null,
@@ -17,20 +18,25 @@ data class OpprettJournalpostRequest(
     var tema: String? = null,
     var kanal: String? = null,
     var datoMottatt: String? = null,
-    var bruker: Bruker? = null,
+    var bruker: OpprettJournalpostBruker? = null,
     var dokumenter: List<Dokument> = emptyList(),
-    var avsenderMottaker: AvsenderMottaker? = null
+    var avsenderMottaker: OpprettJournalpostAvsenderMottaker? = null
 ) {
 
     constructor(journalpost: Journalpost, dokumenterByte: Map<String, ByteArray>): this() {
-        sak = journalpost.sak
+        sak = OpprettJournalpostSak(journalpost.sak?.fagsakId)
         tema = journalpost.tema
         journalfoerendeEnhet = journalpost.journalforendeEnhet
-        journalpostType = journalpost.journalposttype
+        journalpostType = when(journalpost.journalposttype){
+            JournalpostType.U -> "UTGAAENDE"
+            JournalpostType.I -> "INNGAAENDE"
+            JournalpostType.N -> "NOTAT"
+            else -> "UTGAAENDE"
+        }
         behandlingstema = journalpost.behandlingstema
         tittel = journalpost.tittel
-        avsenderMottaker = journalpost.avsenderMottaker
-        bruker = journalpost.bruker
+        avsenderMottaker = OpprettJournalpostAvsenderMottaker(journalpost.avsenderMottaker?.navn, journalpost.avsenderMottaker?.id, journalpost.avsenderMottaker?.type)
+        bruker = OpprettJournalpostBruker(journalpost.bruker?.id, journalpost.bruker?.type)
         tilleggsopplysninger = journalpost.tilleggsopplysninger
         dokumenter = journalpost.dokumenter.map {
             Dokument(
@@ -46,6 +52,20 @@ data class OpprettJournalpostRequest(
             )
         }
     }
+
+    @Suppress("unused") // properties used by jackson
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    data class OpprettJournalpostSak(val fagsakId: String? = null) {
+        val fagsaksystem = if (fagsakId == null) null else Fagsaksystem.BISYS
+        val sakstype = if (fagsakId === null) null else Sakstype.FAGSAK
+    }
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    data class OpprettJournalpostAvsenderMottaker(val navn: String? = null, val id: String? = null, val idType: AvsenderMottakerIdType?)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    data class OpprettJournalpostBruker(val id: String? = null, val idType: String? = null)
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -79,3 +99,11 @@ data class OpprettJournalpostResponse(
 data class DokumentInfo(
     val dokumentInfoId: String?
 )
+
+fun validerJournalpostKanDupliseres(journalpost: Journalpost){
+    Validate.isTrue(journalpost.tema == "BID" || journalpost.tema == "FAR", "Journalpost må ha tema BID/FAR")
+    Validate.isTrue(journalpost.isUtgaaendeDokument(), "Journalpost må være utgående dokument")
+    Validate.isTrue(journalpost.hasMottakerId(), "Journalpost må ha satt mottakerId")
+    Validate.isTrue(journalpost.hasSak(), "Journalpost må ha sak")
+    Validate.isTrue(journalpost.bruker?.id != null, "Journalpost må ha satt brukerid")
+}
