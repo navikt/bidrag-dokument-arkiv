@@ -265,7 +265,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                     Assertions.assertThat(
                         returDetaljerLog!!.contains(
                             ReturDetaljerLog(
-                                LocalDate.parse("2020-12-15"),
+                                LocalDate.parse("2022-12-15"),
                                 "Beskrivelse av retur 2 mer tekst for å teste lengre verdier"
                             )
                         )
@@ -350,7 +350,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         endreJournalpostCommand.skalJournalfores = false
         endreJournalpostCommand.endreReturDetaljer = java.util.List.of(
             EndreReturDetaljer(LocalDate.parse("2020-11-15"), null, "Ny beskrivelse 1"),
-            EndreReturDetaljer(LocalDate.parse("2020-12-15"), LocalDate.parse("2020-10-10"), "Ny beskrivelse 2")
+            EndreReturDetaljer(LocalDate.parse("2022-12-15"), LocalDate.parse("2023-10-10"), "Ny beskrivelse 2")
         )
         stubs.mockSafResponseHentJournalpost(responseJournalpostJsonWithReturDetaljer, HttpStatus.OK)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
@@ -380,7 +380,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                     journalpostIdFraJson, "\"tilleggsopplysninger\":["
                             + "{\"nokkel\":\"retur0_2020-11-15\",\"verdi\":\"Ny beskrivelse 1\"},"
                             + "{\"nokkel\":\"retur0_2020-12-14\",\"verdi\":\"Beskrivelse av retur mer tekst for å teste lengre verdier\"},"
-                            + "{\"nokkel\":\"retur0_2020-10-10\",\"verdi\":\"Ny beskrivelse 2\"}]"
+                            + "{\"nokkel\":\"retur0_2023-10-10\",\"verdi\":\"Ny beskrivelse 2\"}]"
                 )
             }
         )

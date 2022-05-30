@@ -584,7 +584,7 @@ data class EndreJournalpostCommandIntern(
             val manglerOriginalDato = !journalpost.manglerReturDetaljForSisteRetur() && endreReturDetaljer.any{it.originalDato == null}
             val nyReturDatoErIkkeEtterDokumentDato = endreReturDetaljer.none{it.originalDato == null && it.nyDato != null && it.nyDato!!.isBefore(journalpost.hentDatoDokument())}
 //            val harIkkeEndretDatoPaaEldreReturDetaljer = endreReturDetaljer.filter{it.originalDato != null}.all{it.originalDato == it.nyDato}
-            return nyReturDatoErIkkeEtterDokumentDato && manglerOriginalDato
+            return nyReturDatoErIkkeEtterDokumentDato && !manglerOriginalDato
         }
         return true
     }
