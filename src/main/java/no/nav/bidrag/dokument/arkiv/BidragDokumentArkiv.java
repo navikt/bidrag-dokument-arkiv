@@ -2,6 +2,7 @@ package no.nav.bidrag.dokument.arkiv;
 
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_LIVE;
 
+import no.nav.security.token.support.spring.api.EnableJwtTokenValidation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -9,6 +10,7 @@ import org.springframework.boot.actuate.autoconfigure.security.servlet.Managemen
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 
+@EnableJwtTokenValidation(ignore = {"org.springframework", "org.springdoc"})
 @SpringBootApplication(exclude = { SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class })
 public class BidragDokumentArkiv {
   public static final Logger SECURE_LOGGER = LoggerFactory.getLogger("secureLogger");
