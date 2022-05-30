@@ -15,7 +15,7 @@ import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker;
 import no.nav.bidrag.dokument.arkiv.dto.Bruker;
 import no.nav.bidrag.dokument.arkiv.dto.Dokument;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
-import no.nav.bidrag.dokument.arkiv.dto.MottaksKanal;
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal;
 import no.nav.bidrag.dokument.arkiv.dto.OverforEnhetRequest;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.HendelsesType;
@@ -190,11 +190,11 @@ public class HendelseListener {
   }
 
   private boolean erOpprettetAvNKS(JournalfoeringHendelseRecord record) {
-    return MottaksKanal.NAV_NO_CHAT.name().equals(record.getMottaksKanal());
+    return JournalpostKanal.NAV_NO_CHAT.name().equals(record.getMottaksKanal());
   }
 
   private boolean erOpprettetAvNKS(Journalpost journalpost){
-    var erKanalNavNoChat = MottaksKanal.NAV_NO_CHAT.name().equals(journalpost.getKanal());
+    var erKanalNavNoChat = JournalpostKanal.NAV_NO_CHAT.name().equals(journalpost.getKanal());
     var opprettetAvSalesforce = "NKSsalesforce".equals(journalpost.getOpprettetAvNavn());
     var brevkodeCRM = journalpost.getDokumenter().stream().anyMatch(dokument -> "CRM_MELDINGSKJEDE".equals(dokument.getBrevkode()) || "CRM_CHAT".equals(dokument.getBrevkode()));
     return brevkodeCRM || opprettetAvSalesforce || erKanalNavNoChat;

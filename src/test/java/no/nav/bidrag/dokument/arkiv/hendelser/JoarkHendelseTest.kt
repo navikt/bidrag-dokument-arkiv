@@ -6,7 +6,7 @@ import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal
 import no.nav.bidrag.dokument.arkiv.dto.Bruker
 import no.nav.bidrag.dokument.arkiv.dto.Dokument
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
-import no.nav.bidrag.dokument.arkiv.dto.MottaksKanal
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.kafka.HendelseListener
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_ID
@@ -180,7 +180,7 @@ class JoarkHendelseTest {
         val journalpostId = 123213L
 
         val record = createHendelseRecord(journalpostId)
-        record.mottaksKanal = MottaksKanal.NAV_NO_CHAT.name
+        record.mottaksKanal = JournalpostKanal.NAV_NO_CHAT.name
 
         hendelseListener.listen(record)
 

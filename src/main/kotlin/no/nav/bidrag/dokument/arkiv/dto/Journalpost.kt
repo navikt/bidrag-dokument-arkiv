@@ -60,7 +60,7 @@ data class Journalpost(
     var journalfortAvNavn: String? = null,
     var journalpostId: String? = null,
     var journalposttype: JournalpostType? = null,
-    var kanal: String? = null,
+    var kanal: JournalpostKanal? = null,
     var journalstatus: JournalStatus? = null,
     var relevanteDatoer: List<DatoType> = emptyList(),
     var sak: Sak? = null,
@@ -98,13 +98,13 @@ data class Journalpost(
 
     fun hentKanal(): Kanal? {
         return when(kanal){
-            "NAV_NO"->Kanal.NAV_NO
-            "NAV_NO_CHAT"->Kanal.NAV_NO
-            "NAV_NO_UINNLOGGET"->Kanal.NAV_NO
-            "SKAN_NETS"->Kanal.SKAN_NETS
-            "LOKAL_UTSKRIFT"->Kanal.LOKAL_UTSKRIFT
-            "SENTRAL_UTSKRIFT"->Kanal.SENTRAL_UTSKRIFT
-            "SDP"->Kanal.SDP
+            JournalpostKanal.NAV_NO ->Kanal.NAV_NO
+            JournalpostKanal.NAV_NO_CHAT ->Kanal.NAV_NO
+            JournalpostKanal.NAV_NO_UINNLOGGET->Kanal.NAV_NO
+            JournalpostKanal.SKAN_NETS->Kanal.SKAN_NETS
+            JournalpostKanal.LOKAL_UTSKRIFT->Kanal.LOKAL_UTSKRIFT
+            JournalpostKanal.SENTRAL_UTSKRIFT->Kanal.SENTRAL_UTSKRIFT
+            JournalpostKanal.SDP->Kanal.SDP
             else -> null
         }
     }
@@ -273,6 +273,16 @@ data class Journalpost(
 
 }
 
+enum class JournalpostKanal {
+    NAV_NO,
+    NAV_NO_CHAT,
+    NAV_NO_UINNLOGGET,
+    SKAN_NETS,
+    LOKAL_UTSKRIFT,
+    SENTRAL_UTSKRIFT,
+    SDP,
+    INGEN_DISTRIBUSJON
+}
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class DistribuertTilAdresseDo(
@@ -538,11 +548,4 @@ enum class JournalpostType(var dekode: String) {
     N("Notat"),
     I("Inngående dokument"),
     U("Utgående dokument")
-}
-
-enum class MottaksKanal {
-    NAV_NO,
-    NAV_NO_CHAT,
-    NAV_NO_UINNLOGGET,
-    SKAN_IM
 }

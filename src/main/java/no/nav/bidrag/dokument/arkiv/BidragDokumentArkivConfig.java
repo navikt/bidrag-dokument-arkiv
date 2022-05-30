@@ -1,6 +1,11 @@
 package no.nav.bidrag.dokument.arkiv;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import java.util.HashMap;
 import no.nav.bidrag.commons.ExceptionLogger;
 import no.nav.bidrag.commons.security.api.EnableSecurityConfiguration;
@@ -40,6 +45,16 @@ import org.springframework.retry.annotation.EnableRetry;
 @Configuration
 @EnableSecurityConfiguration
 @EnableRetry
+@OpenAPIDefinition(
+    info = @Info(title = "bidrag-dokument-arkiv", version = "v1"),
+    security = @SecurityRequirement(name = "bearer-key")
+)
+@SecurityScheme(
+    bearerFormat = "JWT",
+    name = "bearer-key",
+    scheme = "bearer",
+    type = SecuritySchemeType.HTTP
+)
 public class BidragDokumentArkivConfig {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BidragDokumentArkivConfig.class);
