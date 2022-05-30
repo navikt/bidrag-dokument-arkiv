@@ -2,12 +2,14 @@ package no.nav.bidrag.dokument.arkiv.service;
 
 import static no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostKt.validerJournalpostKanDupliseres;
 
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 import kotlin.Pair;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostResponse;
+import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import org.slf4j.Logger;
@@ -28,7 +30,6 @@ public class OpprettJournalpostService {
   public OpprettJournalpostResponse dupliserJournalpost(Journalpost journalpost, boolean removeDistribusjonMetadata){
     validerJournalpostKanDupliseres(journalpost);
 
-
     var opprettJournalpostRequest = createOpprettJournalpostRequest(journalpost, removeDistribusjonMetadata);
     opprettJournalpostRequest.setEksternReferanseId(String.format("BID_duplikat_%s", journalpost.getJournalpostId()));
     var opprettJournalpostResponse =  dokarkivConsumer.opprett(opprettJournalpostRequest);
@@ -44,7 +45,8 @@ public class OpprettJournalpostService {
 
     var opprettJournalpostRequest = new OpprettJournalpostRequest(journalpost, dokumenterByte);
     if (removeDistribusjonMetadata){
-      var tillegssopplysninger = journalpost.getTilleggsopplysninger();
+      var tillegssopplysninger = new TilleggsOpplysninger();
+      tillegssopplysninger.addAll(journalpost.getTilleggsopplysninger());
       tillegssopplysninger.removeDistribusjonMetadata();
       opprettJournalpostRequest.setTilleggsopplysninger(tillegssopplysninger);
     }
