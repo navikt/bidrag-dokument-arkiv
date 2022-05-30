@@ -581,9 +581,9 @@ data class EndreJournalpostCommandIntern(
     fun erGyldigEndringAvReturDato(journalpost: Journalpost): Boolean {
         val endreReturDetaljer = endreJournalpostCommand.endreReturDetaljer?.filter { Strings.isNotEmpty(it.beskrivelse) }
         if (endreReturDetaljer != null && endreReturDetaljer.isNotEmpty()) {
-            val nyReturDatoErEtterDokumentDato = endreReturDetaljer.any{it.originalDato == null && it.nyDato != null && it.nyDato!!.isBefore(journalpost.hentDatoDokument())}
-            val harIkkeEndretDatoPaaEldreReturDetaljer = endreReturDetaljer.filter{it.originalDato != null}.all{it.originalDato == it.nyDato}
-            return harIkkeEndretDatoPaaEldreReturDetaljer && nyReturDatoErEtterDokumentDato
+            val nyReturDatoErIkkeEtterDokumentDato = endreReturDetaljer.none{it.originalDato == null && it.nyDato != null && it.nyDato!!.isBefore(journalpost.hentDatoDokument())}
+//            val harIkkeEndretDatoPaaEldreReturDetaljer = endreReturDetaljer.filter{it.originalDato != null}.all{it.originalDato == it.nyDato}
+            return nyReturDatoErIkkeEtterDokumentDato
         }
         return true
     }
