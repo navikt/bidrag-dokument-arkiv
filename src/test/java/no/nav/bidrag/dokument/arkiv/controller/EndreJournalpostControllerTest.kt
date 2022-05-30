@@ -64,6 +64,7 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockDokarkivFerdigstillRequest(journalpostId)
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
 
         // when
         val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(

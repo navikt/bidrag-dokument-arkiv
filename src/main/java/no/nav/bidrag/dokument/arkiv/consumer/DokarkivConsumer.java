@@ -1,27 +1,38 @@
 package no.nav.bidrag.dokument.arkiv.consumer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Optional;
 import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal;
+import no.nav.bidrag.dokument.arkiv.dto.OppdaterDistribusjonsInfoRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
+import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.model.OppdaterJournalpostFeiletFunksjoneltException;
 import no.nav.bidrag.dokument.arkiv.model.OppdaterJournalpostFeiletTekniskException;
+import no.nav.bidrag.dokument.dto.JournalpostResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
-public class DokarkivConsumer extends AbstractConsumer{
+public class DokarkivConsumer extends AbstractConsumer {
   private static final Logger LOGGER = LoggerFactory.getLogger(DokarkivConsumer.class);
-
+  private final ObjectMapper objectMapper;
   public static final String URL_JOURNALPOSTAPI_V1 = "/rest/journalpostapi/v1/journalpost";
   public static final String URL_JOURNALPOSTAPI_V1_FEILREGISTRER = "/rest/journalpostapi/v1/journalpost/%s/feilregistrer";
 
-  public DokarkivConsumer(RestTemplate restTemplate) {
+  public DokarkivConsumer(RestTemplate restTemplate, ObjectMapper objectMapper) {
     super(restTemplate);
+    this.objectMapper = objectMapper;
   }
 
   public OppdaterJournalpostResponse endre(OppdaterJournalpostRequest oppdaterJournalpostRequest) {
@@ -38,7 +49,21 @@ public class DokarkivConsumer extends AbstractConsumer{
       }
       throw new OppdaterJournalpostFeiletTekniskException(String.format("Oppdatering av journalpost %s feilet med status %s og feilmelding: %s", oppdaterJournalpostRequest.hentJournalpostId(), e.getStatusCode(), errorMessage), e);
     }
+  }
 
+  public OpprettJournalpostResponse opprett(OpprettJournalpostRequest opprettJournalpostRequest){
+    try {
+      var response = restTemplate.exchange(URL_JOURNALPOSTAPI_V1, HttpMethod.POST, new HttpEntity<>(opprettJournalpostRequest), OpprettJournalpostResponse.class);
+      var responseBody = response.getBody();
+      LOGGER.info("Opprettet journalpost {} med status {}", responseBody.getJournalpostId(), responseBody.getJournalstatus());
+      return response.getBody();
+    } catch (HttpClientErrorException clientErrorException){
+      if (clientErrorException.getStatusCode() == HttpStatus.CONFLICT){
+        LOGGER.info("Journalpost med eksternReferanseId {} er allerede arkivert i Joark", opprettJournalpostRequest.getEksternReferanseId());
+        return handleConflictResponse(clientErrorException);
+      }
+      throw clientErrorException;
+    }
   }
 
   public HttpResponse<Void> ferdigstill(FerdigstillJournalpostRequest ferdigstillJournalpostRequest) {
@@ -62,10 +87,37 @@ public class DokarkivConsumer extends AbstractConsumer{
     }
   }
 
+  public HttpResponse<Void> oppdaterDistribusjonsInfo(Long journalpostId, boolean settStatusEkspedert, JournalpostKanal utsendingsKanal) {
+    var endpoint = URL_JOURNALPOSTAPI_V1 + "/%s";
+    var oppdaterJoarnalpostApiUrl = String.format(endpoint + "/oppdaterDistribusjonsinfo", journalpostId);
+    var request = new OppdaterDistribusjonsInfoRequest(settStatusEkspedert, utsendingsKanal);
+    try {
+      var response = restTemplate.exchange(oppdaterJoarnalpostApiUrl, HttpMethod.PATCH, new HttpEntity<>(request), Void.class);
+      return new HttpResponse<>(response);
+    } catch (HttpClientErrorException clientErrorException){
+      // Antar at status allerede er satt til ekspedert. Ignorer feil for å gjøre kallet idempotent
+      if (clientErrorException.getStatusCode() == HttpStatus.BAD_REQUEST && clientErrorException.getResponseBodyAsString().contains("Kan ikke ekspedere journalpost med status E")){
+        LOGGER.warn("Sett status til EKSPEDERT for journalpost {} feilet med melding {}", journalpostId, clientErrorException.getResponseBodyAsString());
+        return HttpResponse.from(HttpStatus.OK);
+      }
+      throw clientErrorException;
+    }
+  }
+
   public HttpResponse<Void> opphevFeilregistrerSakstilknytning(Long journalpostId) {
     var oppdaterJoarnalpostApiUrl = String.format(URL_JOURNALPOSTAPI_V1_FEILREGISTRER + "/opphevFeilregistrertSakstilknytning", journalpostId);
     var response = restTemplate.exchange(oppdaterJoarnalpostApiUrl, HttpMethod.PATCH, null, Void.class);
     return new HttpResponse<>(response);
+  }
+  private OpprettJournalpostResponse handleConflictResponse(HttpClientErrorException clientErrorException){
+    return convertStringToResponse(clientErrorException.getResponseBodyAsString());
+  }
+  private OpprettJournalpostResponse convertStringToResponse(String responseString){
+    try {
+      return objectMapper.readValue(responseString, OpprettJournalpostResponse.class);
+    } catch (JsonProcessingException e) {
+      return null;
+    }
   }
 
 }

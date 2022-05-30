@@ -7,6 +7,11 @@ import no.nav.bidrag.dokument.arkiv.utils.DateUtils
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 import org.apache.logging.log4j.util.Strings
 
+data class OppdaterDistribusjonsInfoRequest(
+    var settStatusEkspedert: Boolean,
+    var utsendingsKanal: JournalpostKanal
+)
+
 data class OppdaterJournalpostDistribusjonsInfoRequest(private var journalpostId: Long, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId) {
     init {
         journalpost.tilleggsopplysninger.setDistribusjonBestillt()

@@ -5,8 +5,11 @@ import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsTidspunkt
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsType
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.HentPostadresseResponse
+import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.JournalstatusDto
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
+import no.nav.bidrag.dokument.arkiv.dto.Sak
+import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_NAVN
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
@@ -396,6 +399,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponse.json", HttpStatus.OK)
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
+        stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(journalpostIdFraJson, JournalStatus.FERDIGSTILT, Sak("5276661"))))
         val distribuerTilAdresse = createDistribuerTilAdresse()
         distribuerTilAdresse.adresselinje2 = "Adresselinje2"
         distribuerTilAdresse.adresselinje3 = "Adresselinje3"
@@ -498,6 +502,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponse.json", HttpStatus.OK)
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
+        stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(journalpostIdFraJson, JournalStatus.FERDIGSTILT, Sak("5276661"))))
         stubs.mockPersonAdresseResponse(postadresse)
 
         // when
@@ -552,6 +557,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponseVedtakTittel.json", HttpStatus.OK)
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         val distribuerTilAdresse = createDistribuerTilAdresse()
         distribuerTilAdresse.adresselinje2 = "Adresselinje2"
         distribuerTilAdresse.adresselinje3 = "Adresselinje3"
@@ -605,6 +611,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
         stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponse.json", HttpStatus.OK)
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
+        stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(journalpostIdFraJson, JournalStatus.FERDIGSTILT, Sak("5276661"))))
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson, HttpStatus.INTERNAL_SERVER_ERROR)
         val distribuerTilAdresse = createDistribuerTilAdresse()
         distribuerTilAdresse.adresselinje2 = "Adresselinje2"
@@ -643,6 +650,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
         stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponseNoMottaker.json", HttpStatus.OK)
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         val request = DistribuerJournalpostRequest(createDistribuerTilAdresse())
 
         // when
@@ -677,6 +685,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
         stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponse.json", HttpStatus.OK)
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         // when
         val response = httpHeaderTestRestTemplate.exchange(
             initUrl() + "/journal/distribuer/JOARK-" + journalpostIdFraJson + "/enabled",

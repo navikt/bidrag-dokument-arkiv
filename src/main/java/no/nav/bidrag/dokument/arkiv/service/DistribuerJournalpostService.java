@@ -43,7 +43,7 @@ public class DistribuerJournalpostService {
 
   public DistribuerJournalpostResponse distribuerJournalpost(Long journalpostId, String batchId, DistribuerJournalpostRequestInternal distribuerJournalpostRequest){
     var journalpost = journalpostService.hentJournalpost(journalpostId).orElseThrow(() -> new JournalpostIkkeFunnetException(String.format("Fant ingen journalpost med id %s", journalpostId)));
-
+    journalpostService.populerMedTilknyttedeSaker(journalpost);
     if (journalpost.getTilleggsopplysninger().isDistribusjonBestilt()){
       LOGGER.warn("Distribusjon er allerede bestillt for journalpostid {}{}. Stopper videre behandling", journalpostId, batchId != null ? String.format(" med batchId %s", batchId) : "");
       return new DistribuerJournalpostResponse("JOARK-"+journalpostId, null);

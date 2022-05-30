@@ -6,14 +6,21 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import kotlin.Pair;
 import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.AvvikshendelseIntern;
+import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal;
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal;
+import no.nav.bidrag.dokument.arkiv.dto.OppdaterFlaggNyDistribusjonBestiltRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OpphevEndreFagomradeJournalfortJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.RegistrerReturRequest;
 import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
@@ -27,26 +34,34 @@ import no.nav.bidrag.dokument.dto.AvvikType;
 import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse;
 import no.nav.bidrag.dokument.dto.JournalpostIkkeFunnetException;
 import org.apache.logging.log4j.util.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AvvikService {
+  private static final Logger LOGGER = LoggerFactory.getLogger(AvvikService.class);
 
   public final JournalpostService journalpostService;
   public final HendelserProducer hendelserProducer;
   public final EndreJournalpostService endreJournalpostService;
+
+  public final DistribuerJournalpostService distribuerJournalpostService;
+  public final DokumentService dokumentService;
   public final OppgaveService oppgaveService;
   private final DokarkivConsumer dokarkivConsumer;
   private final BidragOrganisasjonConsumer bidragOrganisasjonConsumer;
   private final SaksbehandlerInfoManager saksbehandlerInfoManager;
 
   public AvvikService(ResourceByDiscriminator<JournalpostService> journalpostService, HendelserProducer hendelserProducer,
-      EndreJournalpostService endreJournalpostService, OppgaveService oppgaveService,
+      EndreJournalpostService endreJournalpostService, DistribuerJournalpostService distribuerJournalpostService, DokumentService dokumentService, OppgaveService oppgaveService,
       ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers,
       BidragOrganisasjonConsumer bidragOrganisasjonConsumer, SaksbehandlerInfoManager saksbehandlerInfoManager) {
     this.journalpostService = journalpostService.get(Discriminator.REGULAR_USER);
     this.hendelserProducer = hendelserProducer;
     this.endreJournalpostService = endreJournalpostService;
+    this.distribuerJournalpostService = distribuerJournalpostService;
+    this.dokumentService = dokumentService;
     this.oppgaveService = oppgaveService;
     this.bidragOrganisasjonConsumer = bidragOrganisasjonConsumer;
     this.saksbehandlerInfoManager = saksbehandlerInfoManager;
@@ -75,7 +90,8 @@ public class AvvikService {
       case TREKK_JOURNALPOST -> trekkJournalpost(journalpost, avvikshendelseIntern);
       case FEILFORE_SAK -> feilregistrerSakstilknytning(avvikshendelseIntern.getJournalpostId());
       case REGISTRER_RETUR -> registrerRetur(journalpost, avvikshendelseIntern);
-      case BESTILL_NY_DISTRIBUSJON -> manglerAdresse(journalpost, avvikshendelseIntern);
+      case BESTILL_NY_DISTRIBUSJON -> bestillNyDistribusjon(journalpost, avvikshendelseIntern);
+      case MANGLER_ADRESSE -> manglerAdresse(journalpost);
       default -> throw new AvvikNotSupportedException("Avvik %s ikke støttet".formatted(avvikshendelseIntern.getAvvikstype()));
     }
 
@@ -85,12 +101,33 @@ public class AvvikService {
     return Optional.of(new BehandleAvvikshendelseResponse(avvikshendelseIntern.getAvvikstype()));
   }
 
-  public void manglerAdresse(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
-
+  public void manglerAdresse(Journalpost journalpost){
+    oppdaterDistribusjonsInfoIngenDistribusjon(journalpost);
   }
 
   public void bestillNyDistribusjon(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
+      LOGGER.info("Bestiller ny distribusjon for journalpost {}", journalpost.getJournalpostId());
+      journalpostService.populerMedTilknyttedeSaker(journalpost);
+      if (journalpost.getTilknyttedeSaker().size() > 1){
+        throw new UgyldigAvvikException("Kan ikke bestille distribusjon for journalpost med flere saker");
+      }
+      if (avvikshendelseIntern.getAdresse() == null){
+        throw new UgyldigAvvikException("Adresse må settes ved bestilling av ny distribusjon");
+      }
 
+      var opprettJournalpostResponse = dupliserJournalpost(journalpost);
+      distribuerJournalpostService.distribuerJournalpost(opprettJournalpostResponse.getJournalpostId(), null, new DistribuerJournalpostRequestInternal(avvikshendelseIntern.getAdresse()));
+      oppdater(new OppdaterFlaggNyDistribusjonBestiltRequest(journalpost.hentJournalpostIdLong(), journalpost));
+  }
+
+  private OpprettJournalpostResponse dupliserJournalpost(Journalpost journalpost){
+    var dokumenterByte = journalpost.getDokumenter().stream()
+        .map((dokument -> new Pair<>(dokument.getDokumentInfoId(),
+            dokumentService.hentDokument(journalpost.hentJournalpostIdLong(), dokument.getDokumentInfoId()).getBody())))
+        .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
+    var opprettJournalpostRequest = new OpprettJournalpostRequest(journalpost, dokumenterByte);
+    opprettJournalpostRequest.setEksternReferanseId(String.format("BID_duplikat_%s", journalpost.getJournalpostId()));
+    return dokarkivConsumer.opprett(opprettJournalpostRequest);
   }
   /**
    * Used when avvikshåndtering is not triggering any action but only used for logging
@@ -210,6 +247,11 @@ public class AvvikService {
     return journalpost.tilAvvik().contains(avvikType);
   }
 
+  public void oppdaterDistribusjonsInfoIngenDistribusjon(Journalpost journalpost){
+    var tilknyttedeJournalpost = journalpostService.hentTilknyttedeJournalposter(journalpost);
+    tilknyttedeJournalpost
+        .forEach((jp)-> dokarkivConsumer.oppdaterDistribusjonsInfo(jp.getJournalpostId(), false, JournalpostKanal.INGEN_DISTRIBUSJON));
+  }
   public void validateTrue(Boolean expression, RuntimeException throwable){
     if (!expression){
       throw throwable;

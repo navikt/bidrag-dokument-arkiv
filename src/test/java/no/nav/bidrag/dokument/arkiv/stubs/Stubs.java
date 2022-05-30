@@ -38,6 +38,7 @@ import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerInfoResponse;
+import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost;
 import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -269,6 +270,7 @@ public class Stubs {
     );
   }
 
+
   public void mockSafResponseTilknyttedeJournalposter(HttpStatus httpStatus) {
     stubFor(
         post(urlEqualTo("/saf/graphql"))
@@ -278,6 +280,24 @@ public class Stubs {
                     .withBodyFile("json/tilknyttedeJournalposter.json")
             )
     );
+  }
+
+  public void mockSafResponseTilknyttedeJournalposter(List<TilknyttetJournalpost> tilknyttetJournalposts) {
+    try {
+      stubFor(
+          post(urlEqualTo("/saf/graphql"))
+              .withRequestBody(new ContainsPattern("query tilknyttedeJournalposter")).willReturn(
+                  aClosedJsonResponse()
+                      .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                      .withStatus(HttpStatus.OK.value())
+                      .withBody("{\"data\":{\"tilknyttedeJournalposter\": %s }}".formatted(objectMapper.writeValueAsString(tilknyttetJournalposts)))
+
+              )
+      );
+    }catch (Exception e){
+      fail(e.getMessage());
+
+    }
   }
 
   public void mockSafResponseDokumentOversiktFagsak() {

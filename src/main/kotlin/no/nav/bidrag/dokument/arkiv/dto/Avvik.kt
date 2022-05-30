@@ -4,6 +4,7 @@ import no.nav.bidrag.dokument.arkiv.model.AvvikDetaljException
 import no.nav.bidrag.dokument.arkiv.utils.DateUtils
 import no.nav.bidrag.dokument.dto.AvvikType
 import no.nav.bidrag.dokument.dto.Avvikshendelse
+import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 import java.time.LocalDate
 
 object AvvikDetaljer {
@@ -23,6 +24,7 @@ data class AvvikshendelseIntern(
     val saksbehandlersEnhet: String?,
     val journalpostId: Long = -1,
     var saksnummer: String? = null,
+    var adresse: DistribuerTilAdresse? = null,
     private val detaljer: Map<String, String?> = HashMap()
 ) {
     val returDato: String get() = detaljer[AvvikDetaljer.RETUR_DATO] ?: throw AvvikDetaljException(AvvikDetaljer.RETUR_DATO)
@@ -39,7 +41,8 @@ data class AvvikshendelseIntern(
         saksbehandlersEnhet = opprettetAvEnhetsnummer,
         journalpostId = journalpostId,
         saksnummer = avvikshendelse.saksnummer,
-        detaljer=avvikshendelse.detaljer
+        detaljer=avvikshendelse.detaljer,
+        adresse=avvikshendelse.adresse
     )
 
     fun toOverforEnhetRequest() = OverforEnhetRequest(journalpostId, enhetsnummerNytt)
@@ -51,6 +54,13 @@ data class AvvikshendelseIntern(
 
 data class OverforEnhetRequest(private var journalpostId: Long, override var journalfoerendeEnhet: String?): OppdaterJournalpostRequest(journalpostId)
 data class EndreFagomradeRequest(private var journalpostId: Long, override var tema: String?, override var journalfoerendeEnhet: String?): OppdaterJournalpostRequest(journalpostId)
+
+data class OppdaterFlaggNyDistribusjonBestiltRequest(private var journalpostId: Long, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId){
+    init {
+        journalpost.tilleggsopplysninger.setNyDistribusjonBestiltFlagg()
+        tilleggsopplysninger = journalpost.tilleggsopplysninger
+    }
+}
 
 data class EndreFagomradeJournalfortJournalpostRequest(private var journalpostId: Long, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId){
     init {

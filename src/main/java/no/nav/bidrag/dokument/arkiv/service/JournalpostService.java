@@ -67,7 +67,7 @@ public class JournalpostService {
     return Optional.of(journalpost);
   }
 
-  private List<TilknyttetJournalpost> hentTilknyttedeJournalposter(Journalpost journalpost){
+  protected List<TilknyttetJournalpost> hentTilknyttedeJournalposter(Journalpost journalpost){
     if (journalpost.getDokumenter().isEmpty() || journalpost.getSak() == null){
       return List.of();
     }

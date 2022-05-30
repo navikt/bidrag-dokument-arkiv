@@ -91,11 +91,12 @@ public class BidragDokumentArkivConfig {
   @Scope("prototype")
   public DokarkivConsumer baseDokarkivConsumer(
       @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
-      EnvironmentProperties environmentProperties
+      EnvironmentProperties environmentProperties,
+      ObjectMapper objectMapper
   ) {
     httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.dokarkivUrl));
     httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
-    return new DokarkivConsumer(httpHeaderRestTemplate);
+    return new DokarkivConsumer(httpHeaderRestTemplate, objectMapper);
   }
 
   @Bean

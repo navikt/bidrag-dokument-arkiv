@@ -68,6 +68,8 @@ data class DokDistDistribuerTilAdresse(
 data class DistribuerJournalpostRequestInternal(
     var request: DistribuerJournalpostRequest? = null
 ) {
+
+    constructor(distribuerTilAdresse: DistribuerTilAdresse?): this(DistribuerJournalpostRequest(distribuerTilAdresse))
     fun hasAdresse(): Boolean = request?.adresse != null
     fun getAdresse(): DistribuerTilAdresse? {
         val adresse = request?.adresse
@@ -92,6 +94,7 @@ data class DokDistDistribuerJournalpostResponse(
 
 fun validerKanDistribueres(journalpost: Journalpost?) {
     Validate.isTrue(journalpost != null, "Fant ingen journalpost")
+    Validate.isTrue(journalpost != null && journalpost.hentTilknyttetSaker().size < 2, "Kan bare distribuere journalpost med 1 sak")
     Validate.isTrue(journalpost?.journalstatus == JournalStatus.FERDIGSTILT, "Journalpost må ha status FERDIGSTILT")
     Validate.isTrue(journalpost?.tilleggsopplysninger?.isDistribusjonBestilt() == false, "Journalpost er allerede distribuert")
     Validate.isTrue(journalpost?.tema == "BID", "Journalpost må ha tema BID")
