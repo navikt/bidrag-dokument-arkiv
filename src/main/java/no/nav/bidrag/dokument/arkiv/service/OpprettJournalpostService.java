@@ -8,6 +8,8 @@ import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostResponse;
+import no.nav.bidrag.dokument.arkiv.model.Discriminator;
+import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -18,8 +20,8 @@ public class OpprettJournalpostService {
   private final DokarkivConsumer dokarkivConsumer;
   private final  DokumentService dokumentService;
 
-  public OpprettJournalpostService(DokarkivConsumer dokarkivConsumer, DokumentService dokumentService) {
-    this.dokarkivConsumer = dokarkivConsumer;
+  public OpprettJournalpostService(ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers, DokumentService dokumentService) {
+    this.dokarkivConsumer = dokarkivConsumers.get(Discriminator.REGULAR_USER);
     this.dokumentService = dokumentService;
   }
 
