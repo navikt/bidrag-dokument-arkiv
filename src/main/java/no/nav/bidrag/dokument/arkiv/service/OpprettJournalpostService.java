@@ -48,6 +48,7 @@ public class OpprettJournalpostService {
       var tillegssopplysninger = new TilleggsOpplysninger();
       tillegssopplysninger.addAll(journalpost.getTilleggsopplysninger());
       tillegssopplysninger.removeDistribusjonMetadata();
+      tillegssopplysninger.lockAllReturDetaljerLog();
       opprettJournalpostRequest.setTilleggsopplysninger(tillegssopplysninger);
     }
     return opprettJournalpostRequest;

@@ -67,7 +67,6 @@ public class DistribuerJournalpostService {
       endreJournalpostService.lagreJournalpost(new LagreReturDetaljForSisteReturRequest(journalpost));
     }
 
-    endreJournalpostService.lagreJournalpost(new LockReturDetaljerRequest(journalpost));
   }
 
   public DistribuerJournalpostResponse distribuerJournalpost(Long journalpostId, String batchId, DistribuerJournalpostRequestInternal distribuerJournalpostRequest){
