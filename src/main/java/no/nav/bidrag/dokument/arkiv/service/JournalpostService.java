@@ -1,5 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -46,6 +48,7 @@ public class JournalpostService {
 
   public Optional<Journalpost> hentJournalpostMedAktorId(Long journalpostId) {
     var journalpost = hentJournalpost(journalpostId);
+    SECURE_LOGGER.info("Hentet journalpost {}", journalpost);
     return journalpost.map(this::konverterFnrTilAktorId);
   }
 
@@ -126,6 +129,7 @@ public class JournalpostService {
 
   private PersonResponse hentPerson(String personId) {
     var personResponse = personConsumer.hentPerson(personId);
+    SECURE_LOGGER.info("Person response {} {}", personResponse.getResponseEntity().getBody(), personResponse.getResponseEntity().getStatusCode());
     if (!personResponse.is2xxSuccessful()) {
       throw new PersonException("Det skjedde en feil ved henting av person", HttpStatus.INTERNAL_SERVER_ERROR);
     }
