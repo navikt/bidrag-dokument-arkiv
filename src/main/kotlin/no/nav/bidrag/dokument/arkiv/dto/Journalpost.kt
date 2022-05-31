@@ -119,6 +119,7 @@ data class Journalpost(
             JournalpostKanal.LOKAL_UTSKRIFT->Kanal.LOKAL_UTSKRIFT
             JournalpostKanal.SENTRAL_UTSKRIFT->Kanal.SENTRAL_UTSKRIFT
             JournalpostKanal.SDP->Kanal.SDP
+            JournalpostKanal.INGEN_DISTRIBUSJON->Kanal.INGEN_DISTRIBUSJON
             else -> null
         }
     }
