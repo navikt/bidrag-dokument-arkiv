@@ -26,6 +26,15 @@ data class LagreReturDetaljForSisteReturRequest(private var journalpost: Journal
     }
 }
 
+data class LockReturDetaljerRequest(private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {
+    init {
+        val updatedTillegsopplysninger = TilleggsOpplysninger()
+        updatedTillegsopplysninger.addAll(journalpost.tilleggsopplysninger)
+        updatedTillegsopplysninger.lockAllReturDetaljerLog()
+        tilleggsopplysninger = updatedTillegsopplysninger
+    }
+}
+
 data class OppdaterJournalpostDistribusjonsInfoRequest(private var journalpostId: Long, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId) {
     init {
         journalpost.tilleggsopplysninger.setDistribusjonBestillt()

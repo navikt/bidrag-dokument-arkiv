@@ -12,6 +12,7 @@ import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.LagreAdresseRequest;
 import no.nav.bidrag.dokument.arkiv.dto.LagreReturDetaljForSisteReturRequest;
+import no.nav.bidrag.dokument.arkiv.dto.LockReturDetaljerRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterFlaggNyDistribusjonBestiltRequest;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
@@ -65,6 +66,8 @@ public class DistribuerJournalpostService {
       }
       endreJournalpostService.lagreJournalpost(new LagreReturDetaljForSisteReturRequest(journalpost));
     }
+
+    endreJournalpostService.lagreJournalpost(new LockReturDetaljerRequest(journalpost));
   }
 
   public DistribuerJournalpostResponse distribuerJournalpost(Long journalpostId, String batchId, DistribuerJournalpostRequestInternal distribuerJournalpostRequest){

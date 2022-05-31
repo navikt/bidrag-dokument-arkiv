@@ -298,6 +298,37 @@ internal class JournalpostTest {
     }
 
     @Test
+    fun `skal legge til ny returdetalj hvis journalpost har returdetalj lik dokumentdato men er låst`() {
+        val sistRetur = LocalDate.parse("2023-08-18")
+        val journalpost = opprettUtgaendeSafResponse()
+        val tilleggsopplysninger = TilleggsOpplysninger()
+        tilleggsopplysninger.addReturDetaljLog(
+            ReturDetaljerLogDO("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", RETUR_DETALJER_DATO_2, true)
+        )
+        tilleggsopplysninger.addReturDetaljLog(
+            ReturDetaljerLogDO("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", sistRetur, true)
+        )
+        tilleggsopplysninger.setDistribusjonBestillt()
+        journalpost.tilleggsopplysninger = tilleggsopplysninger
+        journalpost.journalstatus = JournalStatus.EKSPEDERT
+        journalpost.antallRetur = 1
+        journalpost.relevanteDatoer = listOf(DatoType(LocalDateTime.of(sistRetur, LocalTime.of(1, 1)).toString(), "DATO_DOKUMENT"))
+        val journalpostDto = journalpost.tilJournalpostDto()
+        Assertions.assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(3)
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(3)
+        Assertions.assertThat(journalpostDto.returDetaljer?.dato).isNull()
+
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isNull()
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("Returpost")
+
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.dato).isEqualTo(RETUR_DETALJER_DATO_2)
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.beskrivelse).isEqualTo("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
+
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.dato).isEqualTo(sistRetur)
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.beskrivelse).isEqualTo("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
+    }
+
+    @Test
     fun `skal ikke legge til ny returdetalj hvis journalpost har returdetalj lik dokumentdato`() {
         val sistRetur = LocalDate.parse("2023-08-18")
         val journalpost = opprettUtgaendeSafResponse()

@@ -146,7 +146,7 @@ data class Journalpost(
         val returDetaljerLog = hentReturDetaljerLog()
         if (isDistribusjonKommetIRetur() || returDetaljerLog.isNotEmpty()){
             val senestReturDato = returDetaljerLog
-                .filter { it.dato != null }
+                .filter { it.dato != null && it.locked != true }
                 .filter{!isDistribusjonKommetIRetur() || it.dato!!.isEqual(hentDatoDokument()) || it.dato!!.isAfter(hentDatoDokument())}
                 .maxOfOrNull { it.dato!! }
             return ReturDetaljer(
@@ -164,14 +164,15 @@ data class Journalpost(
             return false
         }
         val returDetaljerLog = tilleggsopplysninger.hentReturDetaljerLogDO()
-        return returDetaljerLog.none { it.dato.isEqual(hentDatoDokument()) || it.dato.isAfter(hentDatoDokument()) }
+        return returDetaljerLog.filter { it.locked != true }.none { it.dato.isEqual(hentDatoDokument()) || it.dato.isAfter(hentDatoDokument()) }
     }
 
     fun hentReturDetaljerLog(): List<ReturDetaljerLog> {
         val returDetaljerLog = tilleggsopplysninger.hentReturDetaljerLogDO()
         val logg = returDetaljerLog.map { ReturDetaljerLog(
             dato = it.dato,
-            beskrivelse = it.beskrivelse
+            beskrivelse = it.beskrivelse,
+            locked = it.locked == true
         ) }.toMutableList()
 
 
@@ -429,6 +430,15 @@ class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() 
         return fromJsonString(adresseJsonString)
     }
 
+    fun lockAllReturDetaljerLog() {
+        val updatedReturDetaljer = hentReturDetaljerLogDO().map {
+            it.locked = true
+            it
+        }.flatMap { it.toMap() }
+        this.removeAll{ it["nokkel"]?.contains(RETUR_DETALJER_KEY) ?: false}
+        this.addAll(updatedReturDetaljer)
+    }
+
     fun hentReturDetaljerLogDO(): List<ReturDetaljerLogDO> {
         // Key format (RETUR_DETALJER_KEY)(index)_(date)
         val returDetaljer = this.filter { it["nokkel"]?.contains(RETUR_DETALJER_KEY) ?: false}
@@ -443,11 +453,12 @@ class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() 
         returDetaljer.forEach {
             val dato = DateUtils.parseDate(it["nokkel"]!!.split("_")[1])
             val beskrivelse = it["verdi"]!!
+            val locked = it["nokkel"]?.startsWith("L") == true
             val existing = returDetaljerList.find{ it.dato == dato }
             if (existing != null){
                 existing.beskrivelse = existing.beskrivelse + beskrivelse
             } else {
-                returDetaljerList.add(ReturDetaljerLogDO(beskrivelse, dato!!))
+                returDetaljerList.add(ReturDetaljerLogDO(beskrivelse, dato!!, locked))
             }
 
         }
@@ -455,12 +466,15 @@ class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() 
     }
 
 }
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class ReturDetaljerLogDO(
     var beskrivelse: String,
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
-    var dato: LocalDate
+    var dato: LocalDate,
+    var locked: Boolean? = false
 ) {
-    fun toMap(): List<Map<String, String>> = beskrivelse.chunked(100).mapIndexed{ index, it -> mapOf("nokkel" to "$RETUR_DETALJER_KEY${index}_${DateUtils.formatDate(dato)}", "verdi" to it) }
+    fun toMap(): List<Map<String, String>> = beskrivelse.chunked(100).mapIndexed{ index, it -> mapOf("nokkel" to "${if(locked==true) "L" else ""}$RETUR_DETALJER_KEY${index}_${DateUtils.formatDate(dato)}", "verdi" to it) }
 }
 data class AvsenderMottaker(
     var navn: String? = null,
