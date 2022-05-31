@@ -24,6 +24,7 @@ var JOURNALPOST_ID = 123213213L
 var JOURNALPOST_ID_2 = 55513213L
 var JOURNALPOST_ID_3 = 23421321L
 var JOURNALPOST_ID_4 = 2443421321L
+var JOURNALPOST_ID_5 = 5443421321L
 var NY_JOURNALPOST_ID_KNYTT_TIL_SAK = 23423331321L
 
 var DOKUMENT_1_ID = "123123";
@@ -60,6 +61,19 @@ fun createDistribuerTilAdresse(): DistribuerTilAdresse {
     )
 }
 
+
+fun opprettUtgaendeDistribuertSafResponse(
+    journalpostId: String = JOURNALPOST_ID.toString()): Journalpost{
+    val tilleggsopplysninger = TilleggsOpplysninger()
+    tilleggsopplysninger.setDistribusjonBestillt()
+    return opprettSafResponse(
+        journalpostId = journalpostId,
+        tilleggsopplysninger = tilleggsopplysninger,
+        journalpostType = JournalpostType.U,
+        journalstatus = JournalStatus.FERDIGSTILT,
+        relevanteDatoer = listOf(DATO_DOKUMENT, DATO_RETUR)
+    )
+}
 
 fun opprettUtgaendeSafResponseWithReturDetaljer(
     journalpostId: String = JOURNALPOST_ID.toString()): Journalpost{
@@ -122,6 +136,9 @@ fun opprettSafResponse(
 fun opprettDokumentOversiktfagsakResponse(): List<Journalpost>{
     val tilleggsopplysningerEndretFagomrade = TilleggsOpplysninger()
     tilleggsopplysningerEndretFagomrade.setEndretTemaFlagg();
+
+    val tilleggsopplysningerBestiltNyDistribusjon = TilleggsOpplysninger()
+    tilleggsopplysningerBestiltNyDistribusjon.setNyDistribusjonBestiltFlagg();
     return listOf(
         opprettSafResponse(
             journalpostId = JOURNALPOST_ID.toString(),
@@ -164,6 +181,11 @@ fun opprettDokumentOversiktfagsakResponse(): List<Journalpost>{
             journalstatus = JournalStatus.FEILREGISTRERT,
             tema = "BID",
             tilleggsopplysninger = tilleggsopplysningerEndretFagomrade
+
+        ),
+        opprettUtgaendeSafResponse(
+            journalpostId = JOURNALPOST_ID_5.toString(),
+            tilleggsopplysninger = tilleggsopplysningerBestiltNyDistribusjon
 
         ),
 
