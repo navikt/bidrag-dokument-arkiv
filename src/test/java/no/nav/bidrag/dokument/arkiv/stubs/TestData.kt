@@ -46,6 +46,8 @@ var JOURNALFORENDE_ENHET = "4833";
 var DATO_DOKUMENT = DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
 var DATO_RETUR = DatoType("2021-08-18T13:20:33", "DATO_AVS_RETUR")
 
+var RETUR_DETALJER_DATO_1 = LocalDate.parse("2021-08-20")
+var RETUR_DETALJER_DATO_2 = LocalDate.parse("2021-11-22")
 var TILLEGGSOPPLYSNINGER_RETUR: MutableList<Map<String, String>> =
     mutableListOf(mapOf("nokkel" to "retur0_2020-11-15", "verdi" to "Beskrivelse av retur"))
 
@@ -201,10 +203,10 @@ fun createOppgaveDataWithJournalpostId(journalpostId: String): OppgaveData{
 fun createTillegsopplysningerWithReturDetaljer(): TilleggsOpplysninger{
     val tilleggsopplysninger = TilleggsOpplysninger()
     tilleggsopplysninger.addReturDetaljLog(
-        ReturDetaljerLogDO("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", LocalDate.parse("2022-10-22"))
+        ReturDetaljerLogDO("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", RETUR_DETALJER_DATO_1)
     )
     tilleggsopplysninger.addReturDetaljLog(
-        ReturDetaljerLogDO("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", LocalDate.parse("2022-11-05"))
+        ReturDetaljerLogDO("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", RETUR_DETALJER_DATO_2)
     )
     tilleggsopplysninger.setDistribusjonBestillt()
     return tilleggsopplysninger;

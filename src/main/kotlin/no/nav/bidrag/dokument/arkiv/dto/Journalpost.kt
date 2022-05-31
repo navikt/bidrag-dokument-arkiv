@@ -577,25 +577,36 @@ data class EndreJournalpostCommandIntern(
                 violations.add("Kan ikke lagre journalpost med flere saker uten å journalføre")
             }
         } else if (journalpost.isUtgaaendeDokument()){
-            if (!erGyldigEndringAvReturDato(journalpost)){
-                violations.add("Returdetaljer inneholder ugyldig endring av returdato")
-            }
+            sjekkGyldigEndringAvReturDato(journalpost, violations)
         }
         if (violations.isNotEmpty()) {
             throw ViolationException(violations)
         }
     }
 
-    fun erGyldigEndringAvReturDato(journalpost: Journalpost): Boolean {
+    fun sjekkGyldigEndringAvReturDato(journalpost: Journalpost, violations: MutableList<String>) {
         val endreReturDetaljer = endreJournalpostCommand.endreReturDetaljer?.filter { Strings.isNotEmpty(it.beskrivelse) }
         if (endreReturDetaljer != null && endreReturDetaljer.isNotEmpty()) {
+            val skalLeggeTilNyReturDetalj = endreReturDetaljer.any{it.originalDato == null}
             val kanLeggeTilNyReturDetalj = journalpost.manglerReturDetaljForSisteRetur()
-            val manglerOriginalDato = endreReturDetaljer.any{it.originalDato == null}
-            val nyReturDatoErIkkeEtterDokumentDato = endreReturDetaljer.none{it.originalDato == null && it.nyDato != null && it.nyDato!!.isBefore(journalpost.hentDatoDokument())}
-//            val harIkkeEndretDatoPaaEldreReturDetaljer = endreReturDetaljer.filter{it.originalDato != null}.all{it.originalDato == it.nyDato}
-            return nyReturDatoErIkkeEtterDokumentDato && !(!kanLeggeTilNyReturDetalj && manglerOriginalDato)
+            val erGyldigOpprettelseAvNyReturDetalj = (kanLeggeTilNyReturDetalj || !skalLeggeTilNyReturDetalj)
+            val nyReturDatoErEtterDokumentDato = endreReturDetaljer.any{it.originalDato == null && it.nyDato?.isBefore(journalpost.hentDatoDokument()) == false}
+            val oppdatertReturDatoErEtterDagensDato = endreReturDetaljer.any { it.nyDato?.isAfter(LocalDate.now()) == true}
+            val harEndretDatoPaaReturDetaljerFoerDokumentDato = endreReturDetaljer.any{it.originalDato?.isBefore(journalpost.hentDatoDokument()) == true && it.originalDato != it.nyDato}
+            if (!erGyldigOpprettelseAvNyReturDetalj){
+                violations.add("Kan ikke opprette ny returdetalj (originalDato=null)")
+            }
+            if (skalLeggeTilNyReturDetalj && !nyReturDatoErEtterDokumentDato){
+                violations.add("Kan ikke opprette ny returdetalj med returdato før dokumentdato")
+            }
+            if (oppdatertReturDatoErEtterDagensDato){
+                violations.add("Kan ikke oppdatere returdato til etter dagens dato")
+            }
+            // Ved bestilling av ny distribusjon opprettes det ny journalpost. Da vil dokumentdato være lik siste utsendt dato og ikke første
+            if (harEndretDatoPaaReturDetaljerFoerDokumentDato){
+                violations.add("Kan ikke endre returdetaljer opprettet før dokumentdato")
+            }
         }
-        return true
     }
 }
 

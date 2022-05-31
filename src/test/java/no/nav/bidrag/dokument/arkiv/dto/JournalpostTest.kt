@@ -1,6 +1,8 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import no.nav.bidrag.dokument.arkiv.stubs.RETUR_DETALJER_DATO_1
+import no.nav.bidrag.dokument.arkiv.stubs.RETUR_DETALJER_DATO_2
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponseWithReturDetaljer
@@ -265,10 +267,10 @@ internal class JournalpostTest {
         Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isNull()
         Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("Returpost")
 
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.dato).isEqualTo(LocalDate.parse("2022-10-22"))
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.dato).isEqualTo(RETUR_DETALJER_DATO_1)
         Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.beskrivelse).isEqualTo("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
 
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.dato).isEqualTo(LocalDate.parse("2022-11-05"))
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.dato).isEqualTo(RETUR_DETALJER_DATO_2)
         Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.beskrivelse).isEqualTo("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
 
     }
@@ -288,10 +290,10 @@ internal class JournalpostTest {
         Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isEqualTo(returDato.toLocalDate())
         Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("Returpost")
 
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.dato).isEqualTo(LocalDate.parse("2022-10-22"))
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.dato).isEqualTo(RETUR_DETALJER_DATO_1)
         Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.beskrivelse).isEqualTo("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
 
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.dato).isEqualTo(LocalDate.parse("2022-11-05"))
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.dato).isEqualTo(RETUR_DETALJER_DATO_2)
         Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.beskrivelse).isEqualTo("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
     }
 
@@ -355,7 +357,7 @@ internal class JournalpostTest {
     @Test
     fun `skal ikke legge til ny returdetalj hvis journalpost ikke har kommet i retur`() {
         val journalpost = opprettUtgaendeSafResponseWithReturDetaljer()
-        val sistRetur = LocalDate.parse("2022-11-05")
+        val sistRetur = RETUR_DETALJER_DATO_2
         journalpost.journalstatus = JournalStatus.EKSPEDERT
         journalpost.antallRetur = 0
         journalpost.relevanteDatoer = listOf(DatoType("2023-08-18T13:20:33", "DATO_DOKUMENT"))
@@ -364,7 +366,7 @@ internal class JournalpostTest {
         Assertions.assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(2)
         Assertions.assertThat(journalpostDto.returDetaljer?.dato).isEqualTo(sistRetur)
 
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isEqualTo(LocalDate.parse("2022-10-22"))
+        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isEqualTo(RETUR_DETALJER_DATO_1)
         Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
 
         Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.dato).isEqualTo(sistRetur)

@@ -17,10 +17,13 @@ import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_NAVN
 import no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
+import no.nav.bidrag.dokument.arkiv.stubs.RETUR_DETALJER_DATO_1
+import no.nav.bidrag.dokument.arkiv.stubs.RETUR_DETALJER_DATO_2
 import no.nav.bidrag.dokument.arkiv.stubs.createDistribuerTilAdresse
 import no.nav.bidrag.dokument.arkiv.stubs.createEndreJournalpostCommand
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
+import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponseWithReturDetaljer
 import no.nav.bidrag.dokument.dto.AvsenderMottakerDto
 import no.nav.bidrag.dokument.dto.AvsenderMottakerDtoIdType
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest
@@ -354,11 +357,11 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
         val endreJournalpostCommand = createEndreJournalpostCommand()
         endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.endreReturDetaljer = java.util.List.of(
-            EndreReturDetaljer(LocalDate.parse("2020-11-15"), null, "Ny beskrivelse 1"),
-            EndreReturDetaljer(LocalDate.parse("2022-12-15"), LocalDate.parse("2023-10-10"), "Ny beskrivelse 2")
+        endreJournalpostCommand.endreReturDetaljer = listOf(
+            EndreReturDetaljer(RETUR_DETALJER_DATO_1, null, "Ny beskrivelse 1"),
+            EndreReturDetaljer(RETUR_DETALJER_DATO_2, LocalDate.parse("2021-10-10"), "Ny beskrivelse 2")
         )
-        stubs.mockSafResponseHentJournalpost(responseJournalpostJsonWithReturDetaljer, HttpStatus.OK)
+        stubs.mockSafResponseHentJournalpost(opprettUtgaendeSafResponseWithReturDetaljer())
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
@@ -383,10 +386,10 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             },
             Executable {
                 stubs.verifyStub.dokarkivOppdaterKalt(
-                    journalpostIdFraJson, "\"tilleggsopplysninger\":["
-                            + "{\"nokkel\":\"retur0_2020-11-15\",\"verdi\":\"Ny beskrivelse 1\"},"
-                            + "{\"nokkel\":\"retur0_2020-12-14\",\"verdi\":\"Beskrivelse av retur mer tekst for å teste lengre verdier\"},"
-                            + "{\"nokkel\":\"retur0_2023-10-10\",\"verdi\":\"Ny beskrivelse 2\"}]"
+                    journalpostIdFraJson, "tilleggsopplysninger\":" +
+                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                            "{\"nokkel\":\"retur0_2021-08-20\",\"verdi\":\"Ny beskrivelse 1\"}," +
+                            "{\"nokkel\":\"retur0_2021-10-10\",\"verdi\":\"Ny beskrivelse 2\"}]"
                 )
             }
         )
@@ -420,7 +423,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
 
         val endreJournalpostCommand = createEndreJournalpostCommand()
         endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.endreReturDetaljer = listOf(EndreReturDetaljer(null, LocalDate.parse("2022-11-15"), "Ny beskrivelse 1"))
+        endreJournalpostCommand.endreReturDetaljer = listOf(EndreReturDetaljer(null, LocalDate.parse("2021-12-15"), "Ny beskrivelse 1"))
         // when
         val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
             initUrl() + "/journal/JOARK-" + journalpostId,
@@ -443,7 +446,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                             + "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},"
                             + "{\"nokkel\":\"retur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"},"
                             + "{\"nokkel\":\"retur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"},"
-                            + "{\"nokkel\":\"retur0_2022-11-15\",\"verdi\":\"Ny beskrivelse 1\"}]"
+                            + "{\"nokkel\":\"retur0_2021-12-15\",\"verdi\":\"Ny beskrivelse 1\"}]"
                 )
             }
         )
