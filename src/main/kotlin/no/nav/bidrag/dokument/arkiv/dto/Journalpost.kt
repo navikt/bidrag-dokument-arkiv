@@ -149,7 +149,7 @@ data class Journalpost(
                 .filter{!isDistribusjonKommetIRetur() || it.dato!!.isEqual(hentDatoDokument()) || it.dato!!.isAfter(hentDatoDokument())}
                 .maxOfOrNull { it.dato!! }
             return ReturDetaljer(
-                dato = hentDatoRetur() ?: senestReturDato,
+                dato = if (isDistribusjonKommetIRetur()) hentDatoRetur() ?: senestReturDato else null,
                 logg = returDetaljerLog,
                 antall = returDetaljerLog.size
             )
@@ -587,12 +587,16 @@ data class EndreJournalpostCommandIntern(
     fun sjekkGyldigEndringAvReturDato(journalpost: Journalpost, violations: MutableList<String>) {
         val endreReturDetaljer = endreJournalpostCommand.endreReturDetaljer?.filter { Strings.isNotEmpty(it.beskrivelse) }
         if (endreReturDetaljer != null && endreReturDetaljer.isNotEmpty()) {
+            val kanEndreReturDetaljer = journalpost.isDistribusjonKommetIRetur()
             val skalLeggeTilNyReturDetalj = endreReturDetaljer.any{it.originalDato == null}
             val kanLeggeTilNyReturDetalj = journalpost.manglerReturDetaljForSisteRetur()
             val erGyldigOpprettelseAvNyReturDetalj = (kanLeggeTilNyReturDetalj || !skalLeggeTilNyReturDetalj)
             val nyReturDatoErEtterDokumentDato = endreReturDetaljer.any{it.originalDato == null && it.nyDato?.isBefore(journalpost.hentDatoDokument()) == false}
             val oppdatertReturDatoErEtterDagensDato = endreReturDetaljer.any { it.nyDato?.isAfter(LocalDate.now()) == true}
             val harEndretDatoPaaReturDetaljerFoerDokumentDato = endreReturDetaljer.any{it.originalDato?.isBefore(journalpost.hentDatoDokument()) == true && it.originalDato != it.nyDato}
+            if (!kanEndreReturDetaljer){
+                violations.add("Kan ikke endre returdetaljer på journalpost som ikke har kommet i retur")
+            }
             if (!erGyldigOpprettelseAvNyReturDetalj){
                 violations.add("Kan ikke opprette ny returdetalj (originalDato=null)")
             }

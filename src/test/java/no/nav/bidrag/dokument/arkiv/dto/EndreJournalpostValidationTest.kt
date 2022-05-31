@@ -39,7 +39,7 @@ internal class EndreJournalpostValidationTest {
     }
 
     @Test
-    fun `Skal feile validering hvis antallretur er 0 og originalDato er null`(){
+    fun `Skal feile validering hvis returdetaljer endres paa journalpost som ikke har kommet i retur`(){
         val tilleggsOpplysninger = TilleggsOpplysninger()
         tilleggsOpplysninger.setDistribusjonBestillt()
         tilleggsOpplysninger.addReturDetaljLog(ReturDetaljerLogDO(
@@ -48,16 +48,16 @@ internal class EndreJournalpostValidationTest {
         ))
         tilleggsOpplysninger.addReturDetaljLog(ReturDetaljerLogDO(
             "En annen god begrunnelse for hvorfor dokument kom i retur",
-            LocalDate.parse("2020-10-02")
+            LocalDate.parse("2021-09-02")
         ))
         val journalpost = opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")))
         journalpost.antallRetur = 0
         val endreJournalpostCommand = createEndreJournalpostCommand()
         endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.endreReturDetaljer = listOf(EndreReturDetaljer(null, LocalDate.parse("2022-01-15"), "Ny beskrivelse 1"))
+        endreJournalpostCommand.endreReturDetaljer = listOf(EndreReturDetaljer(LocalDate.parse("2021-09-02"), LocalDate.parse("2022-01-15"), "Ny beskrivelse 1"))
 
         val throwable = Assertions.assertThrows(ViolationException::class.java) { EndreJournalpostCommandIntern(endreJournalpostCommand, "0000").sjekkGyldigEndring(journalpost) }
-        assertThat(throwable.message).isEqualTo("Ugyldige data: Kan ikke opprette ny returdetalj (originalDato=null)")
+        assertThat(throwable.message).isEqualTo("Ugyldige data: Kan ikke endre returdetaljer på journalpost som ikke har kommet i retur")
     }
 
     @Test

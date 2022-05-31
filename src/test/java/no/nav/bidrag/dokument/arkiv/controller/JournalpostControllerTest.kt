@@ -361,7 +361,9 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             EndreReturDetaljer(RETUR_DETALJER_DATO_1, null, "Ny beskrivelse 1"),
             EndreReturDetaljer(RETUR_DETALJER_DATO_2, LocalDate.parse("2021-10-10"), "Ny beskrivelse 2")
         )
-        stubs.mockSafResponseHentJournalpost(opprettUtgaendeSafResponseWithReturDetaljer())
+        val safResponse = opprettUtgaendeSafResponseWithReturDetaljer()
+        safResponse.antallRetur = 1
+        stubs.mockSafResponseHentJournalpost(safResponse)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)

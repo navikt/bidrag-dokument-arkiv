@@ -364,7 +364,7 @@ internal class JournalpostTest {
         val journalpostDto = journalpost.tilJournalpostDto()
         Assertions.assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(2)
         Assertions.assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(2)
-        Assertions.assertThat(journalpostDto.returDetaljer?.dato).isEqualTo(sistRetur)
+        Assertions.assertThat(journalpostDto.returDetaljer?.dato).isNull()
 
         Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isEqualTo(RETUR_DETALJER_DATO_1)
         Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
