@@ -146,7 +146,7 @@ data class Journalpost(
         if (isDistribusjonKommetIRetur() || returDetaljerLog.isNotEmpty()){
             val senestReturDato = returDetaljerLog
                 .filter { it.dato != null }
-                .filter{!isDistribusjonKommetIRetur() || it.dato!!.isAfter(hentDatoDokument())}
+                .filter{!isDistribusjonKommetIRetur() || it.dato!!.isEqual(hentDatoDokument()) || it.dato!!.isAfter(hentDatoDokument())}
                 .maxOfOrNull { it.dato!! }
             return ReturDetaljer(
                 dato = hentDatoRetur() ?: senestReturDato,
@@ -163,7 +163,7 @@ data class Journalpost(
             return false
         }
         val returDetaljerLog = tilleggsopplysninger.hentReturDetaljerLogDO()
-        return returDetaljerLog.none { it.dato.isAfter(hentDatoDokument()) }
+        return returDetaljerLog.none { it.dato.isEqual(hentDatoDokument()) || it.dato.isAfter(hentDatoDokument()) }
     }
 
     fun hentReturDetaljerLog(): List<ReturDetaljerLog> {
