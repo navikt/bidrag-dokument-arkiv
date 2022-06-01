@@ -255,7 +255,8 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                         returDetaljerLog!!.contains(
                             ReturDetaljerLog(
                                 LocalDate.parse("2020-11-15"),
-                                "Beskrivelse av retur"
+                                "Beskrivelse av retur",
+                                false
                             )
                         )
                     ).isTrue()
@@ -265,7 +266,8 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                         returDetaljerLog!!.contains(
                             ReturDetaljerLog(
                                 LocalDate.parse("2020-12-14"),
-                                "Beskrivelse av retur mer tekst for å teste lengre verdier"
+                                "Beskrivelse av retur mer tekst for å teste lengre verdier",
+                                false
                             )
                         )
                     ).isTrue()
@@ -275,12 +277,89 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                         returDetaljerLog!!.contains(
                             ReturDetaljerLog(
                                 LocalDate.parse("2022-12-15"),
-                                "Beskrivelse av retur 2 mer tekst for å teste lengre verdier"
+                                "Beskrivelse av retur 2 mer tekst for å teste lengre verdier",
+                                false
                             )
                         )
                     ).isTrue()
                 },
                 Executable { Assertions.assertThat(returDetaljer!!.antall).isEqualTo(3) },
+                Executable { Assertions.assertThat(returDetaljer!!.dato).isEqualTo(LocalDate.parse("2020-12-15")) },
+                Executable { stubs.verifyStub.harEnSafKallEtterHentJournalpost() },
+                Executable { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() },
+                Executable { stubs.verifyStub.bidragPersonKalt() }
+            )
+        }
+    }
+
+    @Test
+    @DisplayName("skal hente Journalpost med låste retur detaljer")
+    @Throws(IOException::class)
+    fun skalHenteJournalpostMedLaasteReturDetaljer() {
+        val journalpostIdFraJson = 201028011
+        stubs.mockSafResponseHentJournalpost("journalpostSafLockedReturDetaljerResponse.json", HttpStatus.OK)
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
+        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        val responseEntity = httpHeaderTestRestTemplate.exchange(
+            initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
+            HttpMethod.GET,
+            null,
+            JournalpostResponse::class.java
+        )
+        val journalpost = if (responseEntity.body != null) responseEntity.body!!.journalpost else null
+        val returDetaljer = journalpost!!.returDetaljer
+        val returDetaljerLog = journalpost.returDetaljer!!.logg
+        Assertions.assertThat(Optional.of(responseEntity)).hasValueSatisfying { response: ResponseEntity<JournalpostResponse?> ->
+            org.junit.jupiter.api.Assertions.assertAll(
+                Executable { Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.OK) },
+                Executable {Assertions.assertThat(journalpost).isNotNull.extracting{it.journalpostId}.isEqualTo("JOARK-$journalpostIdFraJson") },
+                Executable { Assertions.assertThat(returDetaljer).isNotNull() },
+                Executable { Assertions.assertThat(returDetaljerLog!!.size).isEqualTo(4) },
+                Executable {
+                    Assertions.assertThat(
+                        returDetaljerLog!!.contains(
+                            ReturDetaljerLog(
+                                LocalDate.parse("2020-11-15"),
+                                "Beskrivelse av retur",
+                                true
+                            )
+                        )
+                    ).isTrue()
+                },
+                Executable {
+                    Assertions.assertThat(
+                        returDetaljerLog!!.contains(
+                            ReturDetaljerLog(
+                                LocalDate.parse("2020-12-14"),
+                                "Beskrivelse av retur mer tekst for å teste lengre verdier",
+                                true
+                            )
+                        )
+                    ).isTrue()
+                },
+                Executable {
+                    Assertions.assertThat(
+                        returDetaljerLog!!.contains(
+                            ReturDetaljerLog(
+                                LocalDate.parse("2022-12-15"),
+                                "Beskrivelse av retur 2 mer tekst for å teste lengre verdier",
+                                true
+                            )
+                        )
+                    ).isTrue()
+                },
+                Executable {
+                    Assertions.assertThat(
+                        returDetaljerLog!!.contains(
+                            ReturDetaljerLog(
+                                LocalDate.parse("2022-12-20"),
+                                "Beskrivelse av retur uten lås",
+                                false
+                            )
+                        )
+                    ).isTrue()
+                },
+                Executable { Assertions.assertThat(returDetaljer!!.antall).isEqualTo(4) },
                 Executable { Assertions.assertThat(returDetaljer!!.dato).isEqualTo(LocalDate.parse("2020-12-15")) },
                 Executable { stubs.verifyStub.harEnSafKallEtterHentJournalpost() },
                 Executable { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() },
@@ -345,113 +424,6 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
 
     private fun listeMedJournalposterTypeReference(): ParameterizedTypeReference<List<JournalpostDto>> {
         return object : ParameterizedTypeReference<List<JournalpostDto>>() {}
-    }
-
-    @Test
-    @DisplayName("skal endre utgaaende journalpost retur detaljer")
-    @Throws(IOException::class, JSONException::class)
-    fun skalEndreUtgaaendeJournalpostReturDetaljer() {
-        val xEnhet = "1234"
-        val journalpostIdFraJson = 201028011L
-        val headersMedEnhet = HttpHeaders()
-        headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
-        val endreJournalpostCommand = createEndreJournalpostCommand()
-        endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.endreReturDetaljer = listOf(
-            EndreReturDetaljer(RETUR_DETALJER_DATO_1, null, "Ny beskrivelse 1"),
-            EndreReturDetaljer(RETUR_DETALJER_DATO_2, LocalDate.parse("2021-10-10"), "Ny beskrivelse 2")
-        )
-        val safResponse = opprettUtgaendeSafResponseWithReturDetaljer()
-        safResponse.antallRetur = 1
-        stubs.mockSafResponseHentJournalpost(safResponse)
-        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
-        stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
-        stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson)
-        stubs.mockDokarkivProxyTilknyttRequest(journalpostIdFraJson)
-
-        // when
-        val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
-            HttpMethod.PATCH,
-            HttpEntity(endreJournalpostCommand, headersMedEnhet),
-            JournalpostDto::class.java
-        )
-
-        // then
-        org.junit.jupiter.api.Assertions.assertAll(
-            Executable {
-                Assertions.assertThat(oppdaterJournalpostResponseEntity)
-                    .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
-                    .`as`("statusCode")
-                    .isEqualTo(HttpStatus.OK)
-            },
-            Executable {
-                stubs.verifyStub.dokarkivOppdaterKalt(
-                    journalpostIdFraJson, "tilleggsopplysninger\":" +
-                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                            "{\"nokkel\":\"retur0_2021-08-20\",\"verdi\":\"Ny beskrivelse 1\"}," +
-                            "{\"nokkel\":\"retur0_2021-10-10\",\"verdi\":\"Ny beskrivelse 2\"}]"
-                )
-            }
-        )
-    }
-
-    @Test
-    @Throws(IOException::class, JSONException::class)
-    fun `Skal legge til ny returdetalj hvis returdetalj for distribuert dokument etter dokumentdato mangler`() {
-        val xEnhet = "1234"
-        val journalpostId = 201028011L
-        val headersMedEnhet = HttpHeaders()
-        headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
-        val tilleggsOpplysninger = TilleggsOpplysninger()
-        tilleggsOpplysninger.setDistribusjonBestillt()
-        tilleggsOpplysninger.addReturDetaljLog(ReturDetaljerLogDO(
-            "En god begrunnelse for hvorfor dokument kom i retur",
-            LocalDate.parse("2020-01-02")
-        ))
-        tilleggsOpplysninger.addReturDetaljLog(ReturDetaljerLogDO(
-            "En annen god begrunnelse for hvorfor dokument kom i retur",
-            LocalDate.parse("2020-10-02")
-        ))
-        val safResponse = opprettUtgaendeSafResponse(journalpostId = journalpostId.toString(), tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")))
-        safResponse.antallRetur = 1
-        stubs.mockSafResponseHentJournalpost(safResponse)
-        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
-        stubs.mockDokarkivOppdaterRequest(journalpostId)
-        stubs.mockDokarkivFerdigstillRequest(journalpostId)
-        stubs.mockDokarkivProxyTilknyttRequest(journalpostId)
-
-        val endreJournalpostCommand = createEndreJournalpostCommand()
-        endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.endreReturDetaljer = listOf(EndreReturDetaljer(null, LocalDate.parse("2021-12-15"), "Ny beskrivelse 1"))
-        // when
-        val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/JOARK-" + journalpostId,
-            HttpMethod.PATCH,
-            HttpEntity(endreJournalpostCommand, headersMedEnhet),
-            JournalpostDto::class.java
-        )
-
-        // then
-        org.junit.jupiter.api.Assertions.assertAll(
-            Executable {
-                Assertions.assertThat(oppdaterJournalpostResponseEntity)
-                    .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
-                    .`as`("statusCode")
-                    .isEqualTo(HttpStatus.OK)
-            },
-            Executable {
-                stubs.verifyStub.dokarkivOppdaterKalt(
-                    journalpostId, "\"tilleggsopplysninger\":["
-                            + "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},"
-                            + "{\"nokkel\":\"retur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"},"
-                            + "{\"nokkel\":\"retur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"},"
-                            + "{\"nokkel\":\"retur0_2021-12-15\",\"verdi\":\"Ny beskrivelse 1\"}]"
-                )
-            }
-        )
     }
 
     @Test

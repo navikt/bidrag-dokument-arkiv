@@ -562,7 +562,9 @@ class AvvikControllerTest : AbstractControllerTest() {
                 )
             },
             { stubs.verifyStub.dokarkivOppdaterKalt(newJournalpostId, "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}") },
-            { stubs.verifyStub.dokarkivOpprettKalt() },
+            { stubs.verifyStub.dokarkivOpprettKalt("\"tilleggsopplysninger\":[" +
+                    "{\"nokkel\":\"Lretur0_2021-08-18\",\"verdi\":\"Returpost\"}"+
+                    "]") },
             { stubs.verifyStub.safHentDokumentKalt(journalpostId, DOKUMENT_1_ID.toLong()) },
             {
                 Mockito.verify(kafkaTemplateMock).send(

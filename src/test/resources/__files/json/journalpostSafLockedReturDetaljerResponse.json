@@ -1,0 +1,63 @@
+{
+  "data": {
+    "journalpost": {
+      "avsenderMottaker": {
+        "navn": null
+      },
+      "bruker": {
+        "id": "1385076492416",
+        "type": "AKTOERID"
+      },
+      "dokumenter": [
+        {
+          "dokumentInfoId": "12345",
+          "tittel": null
+        }
+      ],
+      "journalforendeEnhet": "4806",
+      "journalfortAvNavn": null,
+      "journalpostId": "201028011",
+      "journalposttype": "U",
+      "journalstatus": "EKSPEDERT",
+      "antallRetur": "6",
+      "relevanteDatoer": [
+        {
+          "dato": "2021-08-18T13:20:33",
+          "datotype": "DATO_DOKUMENT"
+        },
+        {
+          "dato": "2020-12-15T01:00",
+          "datotype": "DATO_AVS_RETUR"
+        }
+      ],
+      "tilleggsopplysninger": [
+        {
+          "nokkel": "Lretur0_2020-11-15",
+          "verdi": "Beskrivelse av retur"
+        },
+        {
+          "nokkel": "Lretur0_2020-12-14",
+          "verdi": "Beskrivelse av retur"
+        },
+        {
+          "nokkel": "Lretur1_2022-12-15",
+          "verdi": " mer tekst for å teste lengre verdier"
+        },
+        {
+          "nokkel": "Lretur1_2020-12-14",
+          "verdi": " mer tekst for å teste lengre verdier"
+        },
+        {
+          "nokkel": "Lretur0_2022-12-15",
+          "verdi": "Beskrivelse av retur 2"
+        },
+        {
+          "nokkel": "retur0_2022-12-20",
+          "verdi": "Beskrivelse av retur uten lås"
+        }
+      ],
+      "tema": "BID",
+      "tittel": "Filosofens bidrag"
+    }
+  }
+}

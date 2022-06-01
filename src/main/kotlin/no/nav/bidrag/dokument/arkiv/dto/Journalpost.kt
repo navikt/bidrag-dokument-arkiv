@@ -609,6 +609,10 @@ data class EndreJournalpostCommandIntern(
             val nyReturDatoErEtterDokumentDato = endreReturDetaljer.any{it.originalDato == null && it.nyDato?.isBefore(journalpost.hentDatoDokument()) == false}
             val oppdatertReturDatoErEtterDagensDato = endreReturDetaljer.any { it.nyDato?.isAfter(LocalDate.now()) == true}
             val harEndretDatoPaaReturDetaljerFoerDokumentDato = endreReturDetaljer.any{it.originalDato?.isBefore(journalpost.hentDatoDokument()) == true && it.originalDato != it.nyDato}
+            val endringAvLaastReturDetalj = journalpost.hentReturDetaljer()?.logg?.filter{endreReturDetaljer.any{l->l.originalDato == it.dato } }?.any{it.locked == true} == true
+            if (endringAvLaastReturDetalj){
+                violations.add("Kan ikke endre låste returdetaljer")
+            }
             if (!kanEndreReturDetaljer){
                 violations.add("Kan ikke endre returdetaljer på journalpost som ikke har kommet i retur")
             }

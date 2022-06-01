@@ -1,22 +1,33 @@
 package no.nav.bidrag.dokument.arkiv.controller
 
+import no.nav.bidrag.commons.web.EnhetFilter
 import no.nav.bidrag.dokument.arkiv.dto.Bruker
+import no.nav.bidrag.dokument.arkiv.dto.DatoType
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
+import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO
 import no.nav.bidrag.dokument.arkiv.dto.Sak
+import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
+import no.nav.bidrag.dokument.arkiv.stubs.RETUR_DETALJER_DATO_1
+import no.nav.bidrag.dokument.arkiv.stubs.RETUR_DETALJER_DATO_2
 import no.nav.bidrag.dokument.arkiv.stubs.Stubs
 import no.nav.bidrag.dokument.arkiv.stubs.createOppgaveDataWithSaksnummer
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
+import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
+import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponseWithReturDetaljer
 import no.nav.bidrag.dokument.dto.EndreDokument
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
+import no.nav.bidrag.dokument.dto.EndreReturDetaljer
 import no.nav.bidrag.dokument.dto.JournalpostDto
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Condition
 import org.json.JSONException
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -276,6 +287,184 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
              { stubs.verifyStub.dokarkivFerdigstillIkkeKalt(journalpostId) },
              { stubs.verifyStub.oppgaveOpprettIkkeKalt() },
              { stubs.verifyStub.oppgaveSokIkkeKalt() }
+        )
+    }
+
+
+    @Test
+    @DisplayName("skal endre utgaaende journalpost retur detaljer")
+    @Throws(IOException::class, JSONException::class)
+    fun skalEndreUtgaaendeJournalpostReturDetaljer() {
+        val xEnhet = "1234"
+        val journalpostIdFraJson = 201028011L
+        val headersMedEnhet = HttpHeaders()
+        headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
+        val endreJournalpostCommand = no.nav.bidrag.dokument.arkiv.stubs.createEndreJournalpostCommand()
+        endreJournalpostCommand.skalJournalfores = false
+        endreJournalpostCommand.endreReturDetaljer = listOf(
+            EndreReturDetaljer(RETUR_DETALJER_DATO_1, null, "Ny beskrivelse 1"),
+            EndreReturDetaljer(RETUR_DETALJER_DATO_2, LocalDate.parse("2021-10-10"), "Ny beskrivelse 2")
+        )
+        val safResponse = opprettUtgaendeSafResponseWithReturDetaljer()
+        safResponse.antallRetur = 1
+        stubs.mockSafResponseHentJournalpost(safResponse)
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
+        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
+        stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson)
+        stubs.mockDokarkivProxyTilknyttRequest(journalpostIdFraJson)
+
+        // when
+        val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
+            initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
+            HttpMethod.PATCH,
+            HttpEntity(endreJournalpostCommand, headersMedEnhet),
+            JournalpostDto::class.java
+        )
+
+        // then
+        Assertions.assertAll(
+            {
+                assertThat(oppdaterJournalpostResponseEntity)
+                    .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
+                    .`as`("statusCode")
+                    .isEqualTo(HttpStatus.OK)
+            },
+            {
+                stubs.verifyStub.dokarkivOppdaterKalt(
+                    journalpostIdFraJson, "tilleggsopplysninger\":" +
+                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                            "{\"nokkel\":\"retur0_2021-08-20\",\"verdi\":\"Ny beskrivelse 1\"}," +
+                            "{\"nokkel\":\"retur0_2021-10-10\",\"verdi\":\"Ny beskrivelse 2\"}]"
+                )
+            }
+        )
+    }
+
+    @Test
+    @Throws(IOException::class, JSONException::class)
+    fun `Skal legge til ny returdetalj hvis returdetalj for distribuert dokument etter dokumentdato mangler`() {
+        val xEnhet = "1234"
+        val journalpostId = 201028011L
+        val headersMedEnhet = HttpHeaders()
+        headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
+        val tilleggsOpplysninger = TilleggsOpplysninger()
+        tilleggsOpplysninger.setDistribusjonBestillt()
+        tilleggsOpplysninger.addReturDetaljLog(
+            ReturDetaljerLogDO(
+            "En god begrunnelse for hvorfor dokument kom i retur",
+            LocalDate.parse("2020-01-02"),
+                true
+        )
+        )
+        tilleggsOpplysninger.addReturDetaljLog(
+            ReturDetaljerLogDO(
+            "En annen god begrunnelse for hvorfor dokument kom i retur",
+            LocalDate.parse("2020-10-02"),
+                true
+        )
+        )
+        val safResponse = opprettUtgaendeSafResponse(journalpostId = journalpostId.toString(), tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(
+            DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
+        ))
+        safResponse.antallRetur = 1
+        stubs.mockSafResponseHentJournalpost(safResponse)
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
+        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockDokarkivOppdaterRequest(journalpostId)
+        stubs.mockDokarkivFerdigstillRequest(journalpostId)
+        stubs.mockDokarkivProxyTilknyttRequest(journalpostId)
+
+        val endreJournalpostCommand = no.nav.bidrag.dokument.arkiv.stubs.createEndreJournalpostCommand()
+        endreJournalpostCommand.skalJournalfores = false
+        endreJournalpostCommand.endreReturDetaljer = listOf(EndreReturDetaljer(null, LocalDate.parse("2021-12-15"), "Ny returdetalj"))
+        // when
+        val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
+            initUrl() + "/journal/JOARK-" + journalpostId,
+            HttpMethod.PATCH,
+            HttpEntity(endreJournalpostCommand, headersMedEnhet),
+            JournalpostDto::class.java
+        )
+
+        // then
+        Assertions.assertAll(
+            {
+                assertThat(oppdaterJournalpostResponseEntity)
+                    .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
+                    .`as`("statusCode")
+                    .isEqualTo(HttpStatus.OK)
+            },
+            {
+                stubs.verifyStub.dokarkivOppdaterKalt(
+                    journalpostId, "\"tilleggsopplysninger\":["
+                            + "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},"
+                            + "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"},"
+                            + "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"},"
+                            + "{\"nokkel\":\"retur0_2021-12-15\",\"verdi\":\"Ny returdetalj\"}]"
+                )
+            }
+        )
+    }
+
+    @Test
+    @Throws(IOException::class, JSONException::class)
+    fun `Skal ikke kunne endre laste returdetaljer`() {
+        val xEnhet = "1234"
+        val journalpostId = 201028011L
+        val headersMedEnhet = HttpHeaders()
+        headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
+        val tilleggsOpplysninger = TilleggsOpplysninger()
+        tilleggsOpplysninger.setDistribusjonBestillt()
+        tilleggsOpplysninger.addReturDetaljLog(
+            ReturDetaljerLogDO(
+                "En god begrunnelse for hvorfor dokument kom i retur",
+                LocalDate.parse("2020-01-02"),
+                true
+            )
+        )
+        tilleggsOpplysninger.addReturDetaljLog(
+            ReturDetaljerLogDO(
+                "En annen god begrunnelse for hvorfor dokument kom i retur",
+                LocalDate.parse("2020-10-02"),
+                true
+            )
+        )
+        val safResponse = opprettUtgaendeSafResponse(journalpostId = journalpostId.toString(), tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(
+            DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
+        ))
+        safResponse.antallRetur = 1
+        stubs.mockSafResponseHentJournalpost(safResponse)
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
+        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockDokarkivOppdaterRequest(journalpostId)
+        stubs.mockDokarkivFerdigstillRequest(journalpostId)
+        stubs.mockDokarkivProxyTilknyttRequest(journalpostId)
+
+        val endreJournalpostCommand = no.nav.bidrag.dokument.arkiv.stubs.createEndreJournalpostCommand()
+        endreJournalpostCommand.skalJournalfores = false
+        endreJournalpostCommand.endreReturDetaljer = listOf(EndreReturDetaljer(LocalDate.parse("2020-10-02"), LocalDate.parse("2021-12-15"), "Oppdatert returdetalj"))
+        // when
+        val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
+            initUrl() + "/journal/JOARK-" + journalpostId,
+            HttpMethod.PATCH,
+            HttpEntity(endreJournalpostCommand, headersMedEnhet),
+            JournalpostDto::class.java
+        )
+
+        // then
+        Assertions.assertAll(
+            {
+                assertThat(oppdaterJournalpostResponseEntity)
+                    .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
+                    .`as`("statusCode")
+                    .isEqualTo(HttpStatus.BAD_REQUEST)
+            },
+            {
+                assertThat(oppdaterJournalpostResponseEntity)
+                    .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.headers[HttpHeaders.WARNING] }
+                    .`as`("Feilmelding")
+                    .isEqualTo(listOf("Ugyldige data: Kan ikke endre låste returdetaljer, Kan ikke endre returdetaljer opprettet før dokumentdato"))
+            }
         )
     }
 }
