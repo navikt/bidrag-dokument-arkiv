@@ -454,7 +454,7 @@ class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() 
             val dato = DateUtils.parseDate(it["nokkel"]!!.split("_")[1])
             val beskrivelse = it["verdi"]!!
             val locked = it["nokkel"]?.startsWith("L") == true
-            val existing = returDetaljerList.find{ it.dato == dato }
+            val existing = returDetaljerList.find{ rd -> rd.dato == dato && !locked }
             if (existing != null){
                 existing.beskrivelse = existing.beskrivelse + beskrivelse
             } else {
