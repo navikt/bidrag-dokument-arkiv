@@ -8,6 +8,7 @@ import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponseWithReturDetaljer
 import no.nav.bidrag.dokument.dto.AvvikType
 import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -43,26 +44,26 @@ internal class JournalpostTest {
         )
         org.junit.jupiter.api.Assertions.assertAll(
             Executable {
-                Assertions.assertThat(
+                assertThat(
                     avsenderMottaker
                 ).`as`("avsenderMottaker").isEqualTo(AvsenderMottaker("Tuborg", null, null))
             },
-            Executable { Assertions.assertThat(bruker).`as`("bruker").isEqualTo(Bruker("1000024690889", "AKTOERID")) },
+            Executable { assertThat(bruker).`as`("bruker").isEqualTo(Bruker("1000024690889", "AKTOERID")) },
             Executable {
-                Assertions.assertThat(dokumenter).`as`("dokumenter").isEqualTo(
+                assertThat(dokumenter).`as`("dokumenter").isEqualTo(
                     java.util.List.of(
                         Dokument("ROD SNO", "12345", "BI01S02"),
                         Dokument("SNOMANNEN", "56789", "BI01S02")
                     )
                 )
             },
-            Executable { Assertions.assertThat(journalforendeEnhet).`as`("journalforendeEnhet").isEqualTo("0104") },
-            Executable { Assertions.assertThat(journalfortAvNavn).`as`("journalfortAvNavn").isEqualTo("Terkelsen, Karin") },
-            Executable { Assertions.assertThat(journalpostId).`as`("journalpostId").isEqualTo("203915975") },
-            Executable { Assertions.assertThat(journalposttype).`as`("journalposttype").isEqualTo(JournalpostType.I) },
-            Executable { Assertions.assertThat(journalstatus).`as`("journalstatus").isEqualTo(JournalStatus.JOURNALFOERT) },
+            Executable { assertThat(journalforendeEnhet).`as`("journalforendeEnhet").isEqualTo("0104") },
+            Executable { assertThat(journalfortAvNavn).`as`("journalfortAvNavn").isEqualTo("Terkelsen, Karin") },
+            Executable { assertThat(journalpostId).`as`("journalpostId").isEqualTo("203915975") },
+            Executable { assertThat(journalposttype).`as`("journalposttype").isEqualTo(JournalpostType.I) },
+            Executable { assertThat(journalstatus).`as`("journalstatus").isEqualTo(JournalStatus.JOURNALFOERT) },
             Executable {
-                Assertions.assertThat(relevanteDatoer).`as`("relevanteDater").isEqualTo(
+                assertThat(relevanteDatoer).`as`("relevanteDater").isEqualTo(
                     java.util.List.of(
                         DatoType("2010-12-16T00:00", "DATO_JOURNALFOERT"),
                         DatoType("2010-12-15T00:00", "DATO_REGISTRERT"),
@@ -70,8 +71,8 @@ internal class JournalpostTest {
                     )
                 )
             },
-            Executable { Assertions.assertThat(tema).`as`("tema").isEqualTo("AAP") },
-            Executable { Assertions.assertThat(tittel).`as`("tittel").isEqualTo("...and so on...") }
+            Executable { assertThat(tema).`as`("tema").isEqualTo("AAP") },
+            Executable { assertThat(tittel).`as`("tittel").isEqualTo("...and so on...") }
         )
     }
 
@@ -80,7 +81,7 @@ internal class JournalpostTest {
     @Throws(IOException::class)
     fun skalHenteJournalfortDato() {
         val journalpost = objectMapper.readValue(journalpostJsonText, Journalpost::class.java)
-        Assertions.assertThat(journalpost.hentDatoJournalfort()).isEqualTo(LocalDate.of(2010, 12, 16))
+        assertThat(journalpost.hentDatoJournalfort()).isEqualTo(LocalDate.of(2010, 12, 16))
     }
 
     @Test
@@ -88,7 +89,7 @@ internal class JournalpostTest {
     @Throws(IOException::class)
     fun skalHenteRegistrertDato() {
         val journalpost = objectMapper.readValue(journalpostJsonText, Journalpost::class.java)
-        Assertions.assertThat(journalpost.hentDatoRegistrert()).isEqualTo(LocalDate.of(2010, 12, 15))
+        assertThat(journalpost.hentDatoRegistrert()).isEqualTo(LocalDate.of(2010, 12, 15))
     }
 
     @Test
@@ -98,20 +99,20 @@ internal class JournalpostTest {
         val journalpost = objectMapper.readValue(journalpostJsonText, Journalpost::class.java)
         val returDetaljer = journalpost.tilleggsopplysninger.hentReturDetaljerLogDO()
         org.junit.jupiter.api.Assertions.assertAll(
-            Executable { Assertions.assertThat(journalpost.hentDatoRetur()).`as`("datoRegistrert").isEqualTo(LocalDate.parse("2020-12-15")) },
-            Executable { Assertions.assertThat(returDetaljer.size).isEqualTo(3) },
-            Executable { Assertions.assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-14")).isNotNull() },
+            Executable { assertThat(journalpost.hentDatoRetur()).`as`("datoRegistrert").isEqualTo(LocalDate.parse("2020-12-15")) },
+            Executable { assertThat(returDetaljer.size).isEqualTo(3) },
+            Executable { assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-14")).isNotNull() },
             Executable {
-                Assertions.assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-14").beskrivelse).isEqualTo(
+                assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-14").beskrivelse).isEqualTo(
                     "Beskrivelse av retur mer tekst for å teste lengre verdier"
                 )
             },
             Executable {
-                Assertions.assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-15").beskrivelse).isEqualTo(
+                assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-15").beskrivelse).isEqualTo(
                     "Beskrivelse av retur 2 mer tekst for å teste lengre verdier"
                 )
             },
-            Executable { Assertions.assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-11-15").beskrivelse).isEqualTo("Beskrivelse av retur") }
+            Executable { assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-11-15").beskrivelse).isEqualTo("Beskrivelse av retur") }
         )
     }
 
@@ -124,13 +125,13 @@ internal class JournalpostTest {
         journalpost.journalposttype = JournalpostType.U
         val adresse = journalpost.tilleggsopplysninger.hentAdresseDo()
         org.junit.jupiter.api.Assertions.assertAll(
-            Executable { Assertions.assertThat(adresse!!.adresselinje1).isEqualTo("Testveien 20A") },
-            Executable { Assertions.assertThat(adresse!!.adresselinje2).isEqualTo("TestLinje2") },
-            Executable { Assertions.assertThat(adresse!!.adresselinje3).isEqualTo("TestLinje4") },
-            Executable { Assertions.assertThat(adresse!!.postnummer).isEqualTo("7950") },
-            Executable { Assertions.assertThat(adresse!!.poststed).isEqualTo("ABELVÆR") },
-            Executable { Assertions.assertThat(adresse!!.land).isEqualTo("NO") },
-            Executable { Assertions.assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.KLAR_TIL_PRINT) }
+            Executable { assertThat(adresse!!.adresselinje1).isEqualTo("Testveien 20A") },
+            Executable { assertThat(adresse!!.adresselinje2).isEqualTo("TestLinje2") },
+            Executable { assertThat(adresse!!.adresselinje3).isEqualTo("TestLinje4") },
+            Executable { assertThat(adresse!!.postnummer).isEqualTo("7950") },
+            Executable { assertThat(adresse!!.poststed).isEqualTo("ABELVÆR") },
+            Executable { assertThat(adresse!!.land).isEqualTo("NO") },
+            Executable { assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.KLAR_TIL_PRINT) }
         )
     }
 
@@ -143,8 +144,8 @@ internal class JournalpostTest {
         journalpost.journalposttype = JournalpostType.N
         journalpost.tilleggsopplysninger.setDistribusjonBestillt()
         org.junit.jupiter.api.Assertions.assertAll(
-            Executable { Assertions.assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.JOURNALFORT) },
-            Executable { Assertions.assertThat(journalpost.hentJournalpostType()).isEqualTo("X") }
+            Executable { assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.JOURNALFORT) },
+            Executable { assertThat(journalpost.hentJournalpostType()).isEqualTo("X") }
         )
     }
 
@@ -157,7 +158,7 @@ internal class JournalpostTest {
         journalpost.journalposttype = JournalpostType.U
         journalpost.tilleggsopplysninger.setDistribusjonBestillt()
         org.junit.jupiter.api.Assertions.assertAll(
-            Executable { Assertions.assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.EKSPEDERT) }
+            Executable { assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.EKSPEDERT) }
         )
     }
 
@@ -168,10 +169,10 @@ internal class JournalpostTest {
         journalpost.journalstatus = JournalStatus.MOTTATT
         journalpost.journalposttype = JournalpostType.I
         val avvikListe = journalpost.tilAvvik()
-        Assertions.assertThat(avvikListe).hasSize(3)
-        Assertions.assertThat(avvikListe).contains(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
-        Assertions.assertThat(avvikListe).contains(AvvikType.TREKK_JOURNALPOST)
-        Assertions.assertThat(avvikListe).contains(AvvikType.ENDRE_FAGOMRADE)
+        assertThat(avvikListe).hasSize(3)
+        assertThat(avvikListe).contains(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
+        assertThat(avvikListe).contains(AvvikType.TREKK_JOURNALPOST)
+        assertThat(avvikListe).contains(AvvikType.ENDRE_FAGOMRADE)
     }
 
     @Test
@@ -182,9 +183,9 @@ internal class JournalpostTest {
         journalpost.journalposttype = JournalpostType.U
         journalpost.sak = Sak("")
         val avvikListe = journalpost.tilAvvik()
-        Assertions.assertThat(avvikListe).hasSize(2)
-        Assertions.assertThat(avvikListe).contains(AvvikType.MANGLER_ADRESSE)
-        Assertions.assertThat(avvikListe).contains(AvvikType.FEILFORE_SAK)
+        assertThat(avvikListe).hasSize(2)
+        assertThat(avvikListe).contains(AvvikType.MANGLER_ADRESSE)
+        assertThat(avvikListe).contains(AvvikType.FEILFORE_SAK)
     }
 
     @Test
@@ -196,9 +197,9 @@ internal class JournalpostTest {
         journalpost.antallRetur = 1
         journalpost.sak = Sak("")
         val avvikListe = journalpost.tilAvvik()
-        Assertions.assertThat(avvikListe).hasSize(2)
-        Assertions.assertThat(avvikListe).contains(AvvikType.BESTILL_NY_DISTRIBUSJON)
-        Assertions.assertThat(avvikListe).contains(AvvikType.FEILFORE_SAK)
+        assertThat(avvikListe).hasSize(2)
+        assertThat(avvikListe).contains(AvvikType.BESTILL_NY_DISTRIBUSJON)
+        assertThat(avvikListe).contains(AvvikType.FEILFORE_SAK)
     }
 
     @Test
@@ -209,8 +210,8 @@ internal class JournalpostTest {
         journalpost.journalposttype = JournalpostType.I
         journalpost.sak = Sak("")
         val avvikListe = journalpost.tilAvvik()
-        Assertions.assertThat(avvikListe).hasSize(3)
-        Assertions.assertThat(avvikListe).contains(AvvikType.FEILFORE_SAK)
+        assertThat(avvikListe).hasSize(3)
+        assertThat(avvikListe).contains(AvvikType.FEILFORE_SAK)
     }
 
     @Test
@@ -221,8 +222,8 @@ internal class JournalpostTest {
         journalpost.journalposttype = JournalpostType.I
         journalpost.sak = Sak("")
         val avvikListe = journalpost.tilAvvik()
-        Assertions.assertThat(avvikListe).hasSize(0)
-        Assertions.assertThat(avvikListe).doesNotContain(AvvikType.FEILFORE_SAK)
+        assertThat(avvikListe).hasSize(0)
+        assertThat(avvikListe).doesNotContain(AvvikType.FEILFORE_SAK)
     }
 
     @Test
@@ -233,11 +234,11 @@ internal class JournalpostTest {
         journalpost.tilleggsopplysninger = tilleggsOpplysninger
         journalpost.antallRetur = 1
         val journalpostDto = journalpost.tilJournalpostDto()
-        Assertions.assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(1)
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(1)
-        Assertions.assertThat(journalpostDto.returDetaljer?.dato).isNull()
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isNull()
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("Returpost")
+        assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(1)
+        assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(1)
+        assertThat(journalpostDto.returDetaljer?.dato).isNull()
+        assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isNull()
+        assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("Returpost")
     }
 
     @Test
@@ -246,11 +247,11 @@ internal class JournalpostTest {
         journalpost.journalstatus = JournalStatus.EKSPEDERT
         journalpost.antallRetur = 1
         val journalpostDto = journalpost.tilJournalpostDto()
-        Assertions.assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(1)
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(1)
-        Assertions.assertThat(journalpostDto.returDetaljer?.dato).isNull()
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isNull()
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("Returpost")
+        assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(1)
+        assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(1)
+        assertThat(journalpostDto.returDetaljer?.dato).isNull()
+        assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isNull()
+        assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("Returpost")
     }
 
     @Test
@@ -260,18 +261,18 @@ internal class JournalpostTest {
         journalpost.antallRetur = 1
         journalpost.relevanteDatoer = listOf(DatoType("2023-08-18T13:20:33", "DATO_DOKUMENT"))
         val journalpostDto = journalpost.tilJournalpostDto()
-        Assertions.assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(3)
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(3)
-        Assertions.assertThat(journalpostDto.returDetaljer?.dato).isNull()
+        assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(3)
+        assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(3)
+        assertThat(journalpostDto.returDetaljer?.dato).isNull()
 
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isNull()
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("Returpost")
+        assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isNull()
+        assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("Returpost")
 
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.dato).isEqualTo(RETUR_DETALJER_DATO_1)
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.beskrivelse).isEqualTo("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
+        assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.dato).isEqualTo(RETUR_DETALJER_DATO_1)
+        assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.beskrivelse).isEqualTo("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
 
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.dato).isEqualTo(RETUR_DETALJER_DATO_2)
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.beskrivelse).isEqualTo("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
+        assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.dato).isEqualTo(RETUR_DETALJER_DATO_2)
+        assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.beskrivelse).isEqualTo("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
 
     }
 
@@ -283,18 +284,18 @@ internal class JournalpostTest {
         journalpost.antallRetur = 1
         journalpost.relevanteDatoer = listOf(DatoType("2023-08-18T13:20:33", "DATO_DOKUMENT"), DatoType(returDato.toString(), "DATO_AVS_RETUR"))
         val journalpostDto = journalpost.tilJournalpostDto()
-        Assertions.assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(3)
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(3)
-        Assertions.assertThat(journalpostDto.returDetaljer?.dato).isEqualTo(returDato.toLocalDate())
+        assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(3)
+        assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(3)
+        assertThat(journalpostDto.returDetaljer?.dato).isEqualTo(returDato.toLocalDate())
 
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isEqualTo(returDato.toLocalDate())
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("Returpost")
+        assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isEqualTo(returDato.toLocalDate())
+        assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("Returpost")
 
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.dato).isEqualTo(RETUR_DETALJER_DATO_1)
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.beskrivelse).isEqualTo("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
+        assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.dato).isEqualTo(RETUR_DETALJER_DATO_1)
+        assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.beskrivelse).isEqualTo("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
 
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.dato).isEqualTo(RETUR_DETALJER_DATO_2)
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.beskrivelse).isEqualTo("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
+        assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.dato).isEqualTo(RETUR_DETALJER_DATO_2)
+        assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.beskrivelse).isEqualTo("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
     }
 
     @Test
@@ -314,18 +315,18 @@ internal class JournalpostTest {
         journalpost.antallRetur = 1
         journalpost.relevanteDatoer = listOf(DatoType(LocalDateTime.of(sistRetur, LocalTime.of(1, 1)).toString(), "DATO_DOKUMENT"))
         val journalpostDto = journalpost.tilJournalpostDto()
-        Assertions.assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(3)
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(3)
-        Assertions.assertThat(journalpostDto.returDetaljer?.dato).isNull()
+        assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(3)
+        assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(3)
+        assertThat(journalpostDto.returDetaljer?.dato).isNull()
 
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isNull()
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("Returpost")
+        assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isNull()
+        assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("Returpost")
 
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.dato).isEqualTo(RETUR_DETALJER_DATO_2)
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.beskrivelse).isEqualTo("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
+        assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.dato).isEqualTo(RETUR_DETALJER_DATO_2)
+        assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.beskrivelse).isEqualTo("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
 
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.dato).isEqualTo(sistRetur)
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.beskrivelse).isEqualTo("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
+        assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.dato).isEqualTo(sistRetur)
+        assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.beskrivelse).isEqualTo("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
     }
 
     @Test
@@ -345,15 +346,15 @@ internal class JournalpostTest {
         journalpost.antallRetur = 1
         journalpost.relevanteDatoer = listOf(DatoType(LocalDateTime.of(sistRetur, LocalTime.of(1, 1)).toString(), "DATO_DOKUMENT"))
         val journalpostDto = journalpost.tilJournalpostDto()
-        Assertions.assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(2)
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(2)
-        Assertions.assertThat(journalpostDto.returDetaljer?.dato).isEqualTo(sistRetur)
+        assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(2)
+        assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(2)
+        assertThat(journalpostDto.returDetaljer?.dato).isEqualTo(sistRetur)
 
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isEqualTo(LocalDate.parse("2022-10-22"))
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
+        assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isEqualTo(LocalDate.parse("2022-10-22"))
+        assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
 
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.dato).isEqualTo(sistRetur)
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.beskrivelse).isEqualTo("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
+        assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.dato).isEqualTo(sistRetur)
+        assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.beskrivelse).isEqualTo("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
     }
 
     @Test
@@ -374,15 +375,15 @@ internal class JournalpostTest {
         journalpost.antallRetur = 1
         journalpost.relevanteDatoer = listOf(DatoType("2023-08-18T13:20:33", "DATO_DOKUMENT"))
         val journalpostDto = journalpost.tilJournalpostDto()
-        Assertions.assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(2)
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(2)
-        Assertions.assertThat(journalpostDto.returDetaljer?.dato).isEqualTo(sistRetur)
+        assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(2)
+        assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(2)
+        assertThat(journalpostDto.returDetaljer?.dato).isEqualTo(sistRetur)
 
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isEqualTo(LocalDate.parse("2022-10-22"))
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
+        assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isEqualTo(LocalDate.parse("2022-10-22"))
+        assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
 
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.dato).isEqualTo(sistRetur)
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.beskrivelse).isEqualTo("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
+        assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.dato).isEqualTo(sistRetur)
+        assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.beskrivelse).isEqualTo("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
     }
 
     @Test
@@ -393,15 +394,33 @@ internal class JournalpostTest {
         journalpost.antallRetur = 0
         journalpost.relevanteDatoer = listOf(DatoType("2023-08-18T13:20:33", "DATO_DOKUMENT"))
         val journalpostDto = journalpost.tilJournalpostDto()
-        Assertions.assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(2)
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(2)
-        Assertions.assertThat(journalpostDto.returDetaljer?.dato).isNull()
+        assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(2)
+        assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(2)
+        assertThat(journalpostDto.returDetaljer?.dato).isNull()
 
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isEqualTo(RETUR_DETALJER_DATO_1)
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
+        assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.dato).isEqualTo(RETUR_DETALJER_DATO_1)
+        assertThat(journalpostDto.returDetaljer?.logg?.get(0)?.beskrivelse).isEqualTo("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
 
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.dato).isEqualTo(sistRetur)
-        Assertions.assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.beskrivelse).isEqualTo("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
+        assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.dato).isEqualTo(sistRetur)
+        assertThat(journalpostDto.returDetaljer?.logg?.get(1)?.beskrivelse).isEqualTo("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
+    }
+
+    @Test
+    fun `skal laase returdetaljer`() {
+        val tilleggsopplysninger = TilleggsOpplysninger()
+        tilleggsopplysninger.addReturDetaljLog(
+            ReturDetaljerLogDO("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", RETUR_DETALJER_DATO_1, false)
+        )
+        tilleggsopplysninger.addReturDetaljLog(
+            ReturDetaljerLogDO("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", RETUR_DETALJER_DATO_2, false)
+        )
+        tilleggsopplysninger.setDistribusjonBestillt()
+        tilleggsopplysninger.lockAllReturDetaljerLog()
+        val returDetaljerLog = tilleggsopplysninger.hentReturDetaljerLogDO()
+        assertThat(returDetaljerLog[0].locked).isTrue
+        assertThat(returDetaljerLog[1].locked).isTrue
+        assertThat(returDetaljerLog[0].dato).isEqualTo(RETUR_DETALJER_DATO_1)
+        assertThat(returDetaljerLog[1].dato).isEqualTo(RETUR_DETALJER_DATO_2)
     }
     private fun getReturDetaljerDOByDate(returDetaljerLogDOList: List<ReturDetaljerLogDO>, dato: String): ReturDetaljerLogDO {
         return returDetaljerLogDOList.stream().filter { (_, dato1): ReturDetaljerLogDO -> dato1 == LocalDate.parse(dato) }.findFirst().orElse(
