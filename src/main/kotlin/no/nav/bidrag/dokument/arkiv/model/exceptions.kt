@@ -32,8 +32,11 @@ class UgyldigAvvikException(message: String) : RuntimeException(message);
 
 class KnyttTilSakManglerTemaException(message: String) : RuntimeException(message)
 
+class UgyldigDistribusjonException(message: String): FunksjonellFeilException(message)
 class DistribusjonFeiletFunksjoneltException(message: String): FunksjonellFeilException(message)
 class DistribusjonFeiletTekniskException(message: String, throwable: Throwable): TekniskFeilException(message, throwable)
 
 class OppdaterJournalpostFeiletFunksjoneltException(message: String): FunksjonellFeilException(message)
 class OppdaterJournalpostFeiletTekniskException(message: String, throwable: Throwable): TekniskFeilException(message, throwable)
+
+class JournalpostHarIkkeKommetIRetur(message: String): RuntimeException(message)
