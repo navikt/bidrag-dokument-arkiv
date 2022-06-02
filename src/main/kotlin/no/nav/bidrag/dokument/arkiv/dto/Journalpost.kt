@@ -281,6 +281,7 @@ enum class JournalpostKanal {
     LOKAL_UTSKRIFT,
     SENTRAL_UTSKRIFT,
     SDP,
+    SKAN_IM,
     INGEN_DISTRIBUSJON
 }
 @JsonIgnoreProperties(ignoreUnknown = true)
