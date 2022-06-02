@@ -596,6 +596,13 @@ public class Stubs {
       );
     }
 
+    public void harSafKallEtterHentJournalpost(Integer antall) {
+      verify(
+          antall,
+          postRequestedFor(urlEqualTo("/saf/graphql")).withRequestBody(new ContainsPattern("query journalpost"))
+      );
+    }
+
     public void harSafEnKallEtterDokumentOversiktFagsak() {
       verify(
           postRequestedFor(urlEqualTo("/saf/graphql")).withRequestBody(new ContainsPattern("query dokumentoversiktFagsak"))

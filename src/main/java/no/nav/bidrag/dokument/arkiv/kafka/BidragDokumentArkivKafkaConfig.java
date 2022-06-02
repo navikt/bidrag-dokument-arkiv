@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
+import no.nav.bidrag.dokument.arkiv.model.JournalpostHarIkkeKommetIRetur;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
@@ -26,11 +27,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
-import org.springframework.kafka.config.ContainerCustomizer;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
@@ -60,7 +59,7 @@ public class BidragDokumentArkivKafkaConfig {
 
   @Bean
   public DefaultErrorHandler defaultErrorHandler() {
-    return new DefaultErrorHandler((rec, e) -> {
+    DefaultErrorHandler errorHandler =  new DefaultErrorHandler((rec, e) -> {
       var key = rec.key();
       var value = rec.value();
       var offset = rec.offset();
@@ -68,6 +67,9 @@ public class BidragDokumentArkivKafkaConfig {
       var partition =  rec.topic();
       SECURE_LOGGER.error("Kafka melding med nøkkel {}, partition {} og topic {} feilet på offset {}. Melding som feilet: {}", key, partition, topic, offset, value, e);
     }, new ExponentialBackOff());
+
+    errorHandler.addNotRetryableExceptions(JournalpostHarIkkeKommetIRetur.class);
+    return errorHandler;
   }
 
   @Bean

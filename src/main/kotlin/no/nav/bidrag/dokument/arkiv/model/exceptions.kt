@@ -38,3 +38,5 @@ class DistribusjonFeiletTekniskException(message: String, throwable: Throwable):
 
 class OppdaterJournalpostFeiletFunksjoneltException(message: String): FunksjonellFeilException(message)
 class OppdaterJournalpostFeiletTekniskException(message: String, throwable: Throwable): TekniskFeilException(message, throwable)
+
+class JournalpostHarIkkeKommetIRetur(message: String): RuntimeException(message)
