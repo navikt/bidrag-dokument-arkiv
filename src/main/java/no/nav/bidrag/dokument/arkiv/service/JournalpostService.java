@@ -11,14 +11,11 @@ import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.Bruker;
 import no.nav.bidrag.dokument.arkiv.dto.BrukerType;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
-import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.arkiv.dto.Sak;
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost;
-import no.nav.bidrag.dokument.arkiv.model.PersonException;
 import no.nav.bidrag.dokument.dto.JournalpostDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 
 public class JournalpostService {
 
@@ -106,9 +103,10 @@ public class JournalpostService {
       return journalpost;
     }
 
-    var personResponse = hentPerson(bruker.getId());
-    var brukerId = personResponse.getIdent();
-    journalpost.setBruker(new Bruker(brukerId, BrukerType.FNR.name()));
+    personConsumer.hentPerson(bruker.getId()).ifPresent((personResponse)->{
+      var brukerId = personResponse.getIdent();
+      journalpost.setBruker(new Bruker(brukerId, BrukerType.FNR.name()));
+    });
     return journalpost;
   }
 
@@ -117,23 +115,10 @@ public class JournalpostService {
     if (Objects.isNull(bruker) || journalpost.getBruker().isAktoerId()) {
       return journalpost;
     }
-
-    var personResponse = hentPerson(bruker.getId());
-    var brukerId = personResponse.getAktoerId();
-    journalpost.setBruker(new Bruker(brukerId, BrukerType.AKTOERID.name()));
+    personConsumer.hentPerson(bruker.getId()).ifPresent((personResponse)->{
+      var brukerId = personResponse.getAktoerId();
+      journalpost.setBruker(new Bruker(brukerId, BrukerType.AKTOERID.name()));
+    });
     return journalpost;
-  }
-
-  private PersonResponse hentPerson(String personId) {
-    var personResponse = personConsumer.hentPerson(personId);
-    if (!personResponse.is2xxSuccessful()) {
-      throw new PersonException("Det skjedde en feil ved henting av person", HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-    var response =  personResponse.getResponseEntity().getBody();
-    if (Objects.isNull(response)){
-      LOGGER.error("Fant ingen person med id {}", personId);
-      return new PersonResponse(personId, personId);
-    }
-    return response;
   }
 }
