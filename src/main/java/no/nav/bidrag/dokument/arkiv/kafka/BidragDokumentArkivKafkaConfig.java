@@ -98,7 +98,8 @@ public class BidragDokumentArkivKafkaConfig {
     props.put("spring.deserializer.key.delegate.class", LongDeserializer.class);
     props.put("spring.deserializer.value.delegate.class",  StringDeserializer.class);
     if (Arrays.stream(environment.getActiveProfiles()).noneMatch(val->val.contains(PROFILE_KAFKA_TEST))){
-      props.put(SaslConfigs.SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$username\" password=\"$password\";");
+      props.put(SaslConfigs.SASL_JAAS_CONFIG,
+          String.format("org.apache.kafka.common.security.plain.PlainLoginModule required username=\"%s\" password=\"%s\";", username, password));
       props.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
       props.put(SECURITY_PROTOCOL_CONFIG, "SASL_SSL");
       props.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, trustStorePath);
