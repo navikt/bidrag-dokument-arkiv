@@ -103,10 +103,10 @@ public class JournalpostService {
       return journalpost;
     }
 
-    personConsumer.hentPerson(bruker.getId()).ifPresentOrElse((personResponse)->{
+    personConsumer.hentPerson(bruker.getId()).ifPresent((personResponse)->{
       var brukerId = personResponse.getIdent();
       journalpost.setBruker(new Bruker(brukerId, BrukerType.FNR.name()));
-    }, ()->LOGGER.error("Kunne ikke konvertere aktoerId til FNR på journalpost {}", journalpost.getJournalpostId()));
+    });
     return journalpost;
   }
 
@@ -115,10 +115,10 @@ public class JournalpostService {
     if (Objects.isNull(bruker) || journalpost.getBruker().isAktoerId()) {
       return journalpost;
     }
-    personConsumer.hentPerson(bruker.getId()).ifPresentOrElse((personResponse)->{
+    personConsumer.hentPerson(bruker.getId()).ifPresent((personResponse)->{
       var brukerId = personResponse.getAktoerId();
       journalpost.setBruker(new Bruker(brukerId, BrukerType.AKTOERID.name()));
-    }, ()->LOGGER.error("Kunne ikke konvertere FNR til AktoerId på journalpost {}", journalpost.getJournalpostId()));
+    });
     return journalpost;
   }
 }
