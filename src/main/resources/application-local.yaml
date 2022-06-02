@@ -23,9 +23,12 @@ ORGANISASJON_SCOPE: dev-fss.bidrag.bidrag-organisasjon-feature
 DOKARKIV_SCOPE: dev-fss.teamdokumenthandtering.dokarkiv-q1
 KAFKA_GROUP_ID: bidrag-arkiv-consumer
 KAFKA_BROKERS: localhost:9092
-
+NAV_TRUSTSTORE_PATH: test
+NAV_TRUSTSTORE_PASSWORD: test
 AZURE_APP_CLIENT_SECRET: changme
 AZURE_APP_CLIENT_ID: changeme
+TOPIC_OPPGAVE_OPPRETTET: oppgave-opprettet
+KAFKA_BOOTSTRAP_SERVERS: localhost:9092
 
 spring:
   kafka:
