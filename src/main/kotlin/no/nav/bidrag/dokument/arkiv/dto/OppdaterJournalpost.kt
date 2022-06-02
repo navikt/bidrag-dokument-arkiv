@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import no.nav.bidrag.dokument.arkiv.utils.DateUtils
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 import org.apache.logging.log4j.util.Strings
+import java.time.LocalDate
 
 data class OppdaterFlaggNyDistribusjonBestiltRequest(private var journalpostId: Long, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId){
     init {
@@ -18,6 +19,20 @@ data class OppdaterDistribusjonsInfoRequest(
     var settStatusEkspedert: Boolean,
     var utsendingsKanal: JournalpostKanal
 )
+
+data class OpprettNyReturLoggRequest(private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {
+    init {
+        val dateNow = LocalDate.now()
+        val returDetaljerLogDO = journalpost.tilleggsopplysninger.hentReturDetaljerLogDO()
+        val returDetaljLoggWithSameDate = returDetaljerLogDO.find{it.dato == dateNow}
+        if (returDetaljLoggWithSameDate != null){
+            journalpost.tilleggsopplysninger.unlockReturDetaljerLog(dateNow)
+        } else {
+            journalpost.tilleggsopplysninger.addReturDetaljLog(ReturDetaljerLogDO("Returpost", dateNow))
+        }
+        tilleggsopplysninger = journalpost.tilleggsopplysninger
+    }
+}
 
 data class LagreReturDetaljForSisteReturRequest(private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {
     init {

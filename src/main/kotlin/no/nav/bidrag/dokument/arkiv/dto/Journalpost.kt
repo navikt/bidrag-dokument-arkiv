@@ -411,6 +411,14 @@ class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() 
         this.addAll(returDetaljerLogDO.toMap())
     }
 
+    fun unlockReturDetaljerLog(logDate: LocalDate){
+        val updatedTilleggsopplysninger = hentReturDetaljerLogDO().map {
+            if (it.dato == logDate && it.locked == true) it.locked = false
+            it
+        }.flatMap { it.toMap() }
+        this.removeAll{ it["nokkel"]?.contains(RETUR_DETALJER_KEY) ?: false}
+        this.addAll(updatedTilleggsopplysninger)
+    }
     fun updateReturDetaljLog(originalDate: LocalDate, returDetaljerLogDO: ReturDetaljerLogDO){
         val updatedTilleggsopplysninger = hentReturDetaljerLogDO().map { if (it.dato == originalDate && it.locked != true) returDetaljerLogDO else it }.flatMap { it.toMap() }
         this.removeAll{ it["nokkel"]?.contains(RETUR_DETALJER_KEY) ?: false}

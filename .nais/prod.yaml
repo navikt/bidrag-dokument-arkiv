@@ -20,6 +20,7 @@ env:
   SAF_SCOPE: prod-fss.teamdokumenthandtering.saf
   DOKARKIV_SCOPE: prod-fss.teamdokumenthandtering.dokarkiv
   TOPIC_JOURNALPOST: bidrag.journalpost
+  TOPIC_OPPGAVE_OPPRETTET: aapen-oppgave-opprettet-v1-prod
   TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering
   BIDRAG_PERSON_URL: https://bidrag-person.nais.adeo.no
   BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon.nais.adeo.no

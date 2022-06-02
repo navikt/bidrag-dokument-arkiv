@@ -82,7 +82,7 @@ class JoarkHendelseTest {
 
         val record = createHendelseRecord(journalpostId)
 
-        hendelseListener.listen(record)
+        hendelseListener.listenJournalforingHendelse(record)
         val jsonCaptor = ArgumentCaptor.forClass(String::class.java)
         verify(kafkaTemplateMock).send(ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(expectedJoarkJournalpostId), jsonCaptor.capture())
         val journalpostHendelse = objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
@@ -116,7 +116,7 @@ class JoarkHendelseTest {
 
         val record = createHendelseRecord(journalpostId)
 
-        hendelseListener.listen(record)
+        hendelseListener.listenJournalforingHendelse(record)
         val jsonCaptor = ArgumentCaptor.forClass(String::class.java)
         verify(kafkaTemplateMock).send(ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(expectedJoarkJournalpostId), jsonCaptor.capture())
         val journalpostHendelse = objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
@@ -151,7 +151,7 @@ class JoarkHendelseTest {
 
         val record = createHendelseRecord(journalpostId)
 
-        hendelseListener.listen(record)
+        hendelseListener.listenJournalforingHendelse(record)
         val jsonCaptor = ArgumentCaptor.forClass(String::class.java)
         verify(kafkaTemplateMock).send(ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(expectedJoarkJournalpostId), jsonCaptor.capture())
         val journalpostHendelse = objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
@@ -170,7 +170,7 @@ class JoarkHendelseTest {
         record.temaNytt = "AAP"
         record.temaGammelt = "AAP"
 
-        hendelseListener.listen(record)
+        hendelseListener.listenJournalforingHendelse(record)
 
         verify(kafkaTemplateMock, Mockito.never()).send(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
     }
@@ -182,7 +182,7 @@ class JoarkHendelseTest {
         val record = createHendelseRecord(journalpostId)
         record.mottaksKanal = JournalpostKanal.NAV_NO_CHAT.name
 
-        hendelseListener.listen(record)
+        hendelseListener.listenJournalforingHendelse(record)
 
         verify(kafkaTemplateMock, Mockito.never()).send(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
     }
@@ -208,7 +208,7 @@ class JoarkHendelseTest {
 
         val record = createHendelseRecord(journalpostId)
 
-        hendelseListener.listen(record)
+        hendelseListener.listenJournalforingHendelse(record)
 
         verify(kafkaTemplateMock, Mockito.never()).send(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
     }
