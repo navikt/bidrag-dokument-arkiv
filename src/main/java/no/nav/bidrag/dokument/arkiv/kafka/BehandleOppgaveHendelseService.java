@@ -40,7 +40,7 @@ public class BehandleOppgaveHendelseService {
       LOGGER.warn("Returoppgave {} har ingen journalpostid. Avslutter behandling", oppgaveHendelse.getId());
       return;
     }
-    LOGGER.info("Legger til ny returlogg på journalpost {}", oppgaveHendelse.getJournalpostId());
+    LOGGER.info("Legger til ny returlogg med dagens dato på journalpost {}", oppgaveHendelse.getJournalpostId());
 
     journalpostService.hentJournalpost(Long.valueOf(oppgaveHendelse.getJournalpostId()))
         .ifPresentOrElse((journalpost) -> {
@@ -50,6 +50,8 @@ public class BehandleOppgaveHendelseService {
               } else if (!journalpost.isDistribusjonKommetIRetur()) {
                 LOGGER.error("Journalpost {} har ikke kommet i retur", oppgaveHendelse.getJournalpostId());
                 throw new JournalpostHarIkkeKommetIRetur(String.format("Journalpost %s har ikke kommet i retur", oppgaveHendelse.getJournalpostId()));
+              } else {
+                LOGGER.warn("Legger ikke til ny returlogg på journalpost {}. Journalpost har allerede registrert returlogg for siste retur", journalpost.getJournalpostId());
               }
             },
             () -> LOGGER.error("Fant ingen journalpost med id {}", oppgaveHendelse.getJournalpostId())
