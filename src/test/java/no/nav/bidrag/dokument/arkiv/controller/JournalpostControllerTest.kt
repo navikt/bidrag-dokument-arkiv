@@ -148,7 +148,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         Assertions.assertThat(Optional.of(responseEntity)).hasValueSatisfying(
             Consumer { response: ResponseEntity<JournalpostResponse?> ->
                 org.junit.jupiter.api.Assertions.assertAll(
-                    Executable { Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.BAD_REQUEST) },
+                    Executable { Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR) },
                     Executable { Assertions.assertThat(response.body).isNull() },
                     Executable { stubs.verifyStub.harEnSafKallEtterHentJournalpost() },
                     Executable { stubs.verifyStub.bidragPersonKalt() }
