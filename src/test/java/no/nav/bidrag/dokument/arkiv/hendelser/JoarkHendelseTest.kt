@@ -9,6 +9,7 @@ import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.kafka.HendelseListener
+import no.nav.bidrag.dokument.arkiv.model.PersonException
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.BRUKER_AKTOER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.BRUKER_ENHET
@@ -23,6 +24,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
@@ -160,6 +162,34 @@ class JoarkHendelseTest {
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isEqualTo(BRUKER_AKTOER_ID) },
             { stubs.verifyStub.bidragPersonKalt() },
         )
+    }
+
+    @Test
+    fun `skal feile hvis person feiler`() {
+        val journalpostId = 123213L
+        stubs.mockSts()
+        stubs.mockSafResponseHentJournalpost(
+            opprettSafResponse(
+                journalpostId = journalpostId.toString(),
+                journalstatus = JournalStatus.MOTTATT,
+                journalforendeEnhet = BRUKER_ENHET,
+                bruker = Bruker(BRUKER_FNR, "FNR")
+            )
+        )
+        stubs.mockDokarkivOppdaterRequest(journalpostId)
+        stubs.mockPersonResponse(PersonResponse(BRUKER_FNR, BRUKER_AKTOER_ID), HttpStatus.BAD_REQUEST)
+        stubs.mockBidragOrganisasjonSaksbehandler()
+        stubs.mockOrganisasjonGeografiskTilknytning(BRUKER_ENHET)
+
+        val record = createHendelseRecord(journalpostId)
+
+        try {
+            hendelseListener.listen(record)
+            fail("Should fail")
+        } catch (e: PersonException){
+
+        }
+
     }
 
     @Test

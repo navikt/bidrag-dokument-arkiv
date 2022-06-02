@@ -22,7 +22,7 @@ class JournalpostHendelseException(message: String, throwable: Throwable) : Runt
 class JournalpostIkkeFunnetException(message: String) : RuntimeException(message)
 
 class SafException(message: String, override val status: HttpStatus) : HttpStatusException(message)
-class PersonException(message: String, override val status: HttpStatus) : HttpStatusException(message)
+class PersonException(message: String) : RuntimeException(message)
 class ResourceDiscriminatorException(message: String) : RuntimeException(message)
 class AvvikDetaljException(detalj: String) : RuntimeException("Manglende detalj i avvik: $detalj")
 class AvvikNotSupportedException(message: String) : HttpStatusException(message) {

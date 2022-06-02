@@ -132,7 +132,7 @@ class JournalpostControllerTest extends AbstractControllerTest {
     );
 
     assertThat(Optional.of(responseEntity)).hasValueSatisfying(response -> assertAll(
-        () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST),
+        () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR),
         () -> assertThat(response.getBody()).isNull(),
         () -> stubs.verifyStub.harEnSafKallEtterHentJournalpost(),
         () -> stubs.verifyStub.bidragPersonKalt()
