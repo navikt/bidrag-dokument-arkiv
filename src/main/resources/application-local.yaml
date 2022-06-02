@@ -28,6 +28,7 @@ NAV_TRUSTSTORE_PASSWORD: test
 AZURE_APP_CLIENT_SECRET: changme
 AZURE_APP_CLIENT_ID: changeme
 TOPIC_OPPGAVE_OPPRETTET: oppgave-opprettet
+KAFKA_BOOTSTRAP_SERVERS: localhost:9092
 
 spring:
   kafka:
