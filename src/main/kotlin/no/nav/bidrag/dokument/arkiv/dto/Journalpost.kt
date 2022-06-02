@@ -282,7 +282,18 @@ enum class JournalpostKanal {
     SENTRAL_UTSKRIFT,
     SDP,
     SKAN_IM,
-    INGEN_DISTRIBUSJON
+    SKAN_PEN,
+    INNSENDT_NAV_ANSATT,
+    INGEN_DISTRIBUSJON,
+    UKJENT,
+    ALTINN,
+    EIA,
+    EESSI,
+    EKST_OPPS,
+    TRYGDERETTEN,
+    HELSENETTET,
+    DPV,
+    DPVS
 }
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
