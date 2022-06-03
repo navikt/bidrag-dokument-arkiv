@@ -260,7 +260,7 @@ data class Journalpost(
         if (!isStatusMottatt() && hasSak() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.FEILFORE_SAK)
         if (isInngaaendeDokument() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.ENDRE_FAGOMRADE)
         if (isInngaaendeDokument() && isStatusJournalfort()) avvikTypeList.add(AvvikType.SEND_TIL_FAGOMRADE)
-        if (isUtgaaendeDokument() && isDistribusjonKommetIRetur()) avvikTypeList.add(AvvikType.BESTILL_NY_DISTRIBUSJON)
+        if (isUtgaaendeDokument() && isDistribusjonKommetIRetur() && !tilleggsopplysninger.isNyDistribusjonBestilt()) avvikTypeList.add(AvvikType.BESTILL_NY_DISTRIBUSJON)
         if (isUtgaaendeDokument() && isStatusFerdigsstilt() && !isDistribusjonBestilt() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) avvikTypeList.add(AvvikType.MANGLER_ADRESSE)
         return avvikTypeList
     }
