@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.kafka;
 
 import com.google.common.base.Strings;
+import java.time.LocalDate;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.OpprettNyReturLoggRequest;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
@@ -46,7 +47,7 @@ public class BehandleOppgaveHendelseService {
         .ifPresentOrElse((journalpost) -> {
               if (journalpost.manglerReturDetaljForSisteRetur()) {
                 dokarkivConsumer.endre(new OpprettNyReturLoggRequest(journalpost));
-                LOGGER.info("Lagt til ny returlogg på journalpost {}", journalpost.getJournalpostId());
+                LOGGER.info("Lagt til ny returlogg med returdato {} på journalpost {} med dokumentdato {}.",  LocalDate.now(), journalpost.getJournalpostId(), journalpost.hentDatoDokument());
               } else if (!journalpost.isDistribusjonKommetIRetur()) {
                 LOGGER.error("Journalpost {} har ikke kommet i retur", oppgaveHendelse.getJournalpostId());
                 throw new JournalpostHarIkkeKommetIRetur(String.format("Journalpost %s har ikke kommet i retur", oppgaveHendelse.getJournalpostId()));
