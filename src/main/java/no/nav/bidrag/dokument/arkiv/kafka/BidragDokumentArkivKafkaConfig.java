@@ -32,6 +32,7 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.support.ExponentialBackOffWithMaxRetries;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.util.backoff.ExponentialBackOff;
 
@@ -58,7 +59,9 @@ public class BidragDokumentArkivKafkaConfig {
   }
 
   @Bean
-  public DefaultErrorHandler defaultErrorHandler() {
+  public DefaultErrorHandler defaultErrorHandler(@Value("${KAFKA_MAX_RETRY:-1}") Integer maxRetry) {
+    var backoffPolicy = maxRetry == -1 ? new ExponentialBackOff() : new ExponentialBackOffWithMaxRetries(maxRetry);
+    LOGGER.info("Initializing Kafka errorhandler with backoffpolicy {}, maxRetry={}", backoffPolicy, maxRetry);
     DefaultErrorHandler errorHandler =  new DefaultErrorHandler((rec, e) -> {
       var key = rec.key();
       var value = rec.value();
@@ -66,7 +69,7 @@ public class BidragDokumentArkivKafkaConfig {
       var topic =  rec.topic();
       var partition =  rec.topic();
       SECURE_LOGGER.error("Kafka melding med nøkkel {}, partition {} og topic {} feilet på offset {}. Melding som feilet: {}", key, partition, topic, offset, value, e);
-    }, new ExponentialBackOff());
+    }, backoffPolicy);
 
     errorHandler.addNotRetryableExceptions(JournalpostHarIkkeKommetIRetur.class);
     return errorHandler;
