@@ -199,7 +199,7 @@ data class Journalpost(
     }
 
     fun hentDatoRetur(): LocalDate? {
-        val returDato = relevanteDatoer.find { it.datotype == DATO_RETUR && it.dato != "2022-01-01T01:00" }
+        val returDato = relevanteDatoer.find { it.datotype == DATO_RETUR }
         return returDato?.somDato()
     }
 
