@@ -33,7 +33,6 @@ public class PersonConsumer {
   @Cacheable(value = PERSON_CACHE, unless = "#result==null")
   @Retryable(value = Exception.class, maxAttempts = 5, backoff = @Backoff(delay = 500, maxDelay = 3000, multiplier = 2.0))
   public Optional<PersonResponse> hentPerson(String id){
-    SECURE_LOGGER.info("Henter person {}", id);
     try {
       var personResponse = restTemplate.exchange(String.format("/informasjon/%s", id), HttpMethod.GET, null, PersonResponse.class);
       if (HttpStatus.NO_CONTENT.equals(personResponse.getStatusCode())){
