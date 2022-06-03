@@ -43,7 +43,7 @@ public class BehandleOppgaveHendelseService {
       LOGGER.warn("Returoppgave {} har ingen journalpostid. Avslutter behandling", oppgaveHendelse.getId());
       return;
     }
-    LOGGER.info("Legger til ny returlogg med dagens dato på journalpost {}", oppgaveHendelse.getJournalpostId());
+    LOGGER.info("Sjekker om det skal legges til returlogg med dagens dato på journalpost {}", oppgaveHendelse.getJournalpostId());
 
     journalpostService.hentJournalpost(Long.valueOf(oppgaveHendelse.getJournalpostId()))
         .ifPresentOrElse((journalpost) -> {

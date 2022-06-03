@@ -172,6 +172,29 @@ internal class EndreJournalpostValidationTest {
         assertThat(throwable.message).isEqualTo("Ugyldige data: Kan ikke endre returdetaljer opprettet før dokumentdato")
     }
 
+    @Test
+    fun `Skal feile validering hvis ny returdetalj har samme dato som laast dato`(){
+        val dokumentDato = LocalDate.parse("2022-02-02")
+        val endreDato = dokumentDato.plusDays(2)
+        val tilleggsOpplysninger = TilleggsOpplysninger()
+        tilleggsOpplysninger.setDistribusjonBestillt()
+        tilleggsOpplysninger.addReturDetaljLog(ReturDetaljerLogDO(
+            "En god begrunnelse for hvorfor dokument kom i retur",
+            LocalDate.parse("2020-01-02"),true
+        ))
+        tilleggsOpplysninger.addReturDetaljLog(ReturDetaljerLogDO(
+            "En annen god begrunnelse for hvorfor dokument kom i retur",
+            endreDato,true
+        ))
+        val journalpost = opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(DatoType(LocalDateTime.of(dokumentDato, LocalTime.of(0, 0)).toString(), "DATO_DOKUMENT")))
+        journalpost.antallRetur = 1
+        val endreJournalpostCommand = createEndreJournalpostCommand()
+        endreJournalpostCommand.skalJournalfores = false
+        endreJournalpostCommand.endreReturDetaljer = listOf(EndreReturDetaljer(null, endreDato, "Ny beskrivelse 1"))
+
+        val throwable = Assertions.assertThrows(ViolationException::class.java) { EndreJournalpostCommandIntern(endreJournalpostCommand, "0000").sjekkGyldigEndring(journalpost) }
+        assertThat(throwable.message).isEqualTo("Ugyldige data: Kan ikke endre låste returdetaljer")
+    }
 
     @Test
     fun `Skal ikke feile validering hvis oppdatert returdato er lik dokumentdato`(){

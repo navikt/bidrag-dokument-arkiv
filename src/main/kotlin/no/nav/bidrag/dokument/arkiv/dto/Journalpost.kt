@@ -642,7 +642,8 @@ data class EndreJournalpostCommandIntern(
             }
 
             val endringAvLaastReturDetalj = endreReturDetaljer.any{it.originalDato != null && journalpost.hasLockedReturDetaljerWithDate(it.originalDato!!)}
-            if (endringAvLaastReturDetalj){
+            val opprettelseAvEksisterendeReturDato = endreReturDetaljer.any{it.originalDato == null && journalpost.hasLockedReturDetaljerWithDate(it.nyDato!!)}
+            if (endringAvLaastReturDetalj || opprettelseAvEksisterendeReturDato){
                 violations.add("Kan ikke endre låste returdetaljer")
             }
 
@@ -655,6 +656,7 @@ data class EndreJournalpostCommandIntern(
             if (harEndretDatoPaaReturDetaljerFoerDokumentDato){
                 violations.add("Kan ikke endre returdetaljer opprettet før dokumentdato")
             }
+
         }
     }
 }

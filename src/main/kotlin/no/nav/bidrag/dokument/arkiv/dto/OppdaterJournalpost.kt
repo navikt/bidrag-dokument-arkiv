@@ -99,7 +99,7 @@ data class LagreJournalpostRequest(private var journalpostId: Long, private var 
             if (endreReturDetaljer != null && endreReturDetaljer.isNotEmpty()){
                 endreReturDetaljer
                     .forEach { if (it.originalDato != null) journalpost.tilleggsopplysninger.updateReturDetaljLog(it.originalDato!!, ReturDetaljerLogDO(it.beskrivelse, it.nyDato ?: it.originalDato!!))
-                                else if (journalpost.manglerReturDetaljForSisteRetur() && it.nyDato != null) journalpost.tilleggsopplysninger.addReturDetaljLog(ReturDetaljerLogDO(it.beskrivelse, it.nyDato!!)) }
+                                else if (journalpost.manglerReturDetaljForSisteRetur() && it.nyDato != null && !journalpost.hasReturDetaljerWithDate(it.nyDato!!)) journalpost.tilleggsopplysninger.addReturDetaljLog(ReturDetaljerLogDO(it.beskrivelse, it.nyDato!!)) }
                 tilleggsopplysninger = journalpost.tilleggsopplysninger
             }
 
