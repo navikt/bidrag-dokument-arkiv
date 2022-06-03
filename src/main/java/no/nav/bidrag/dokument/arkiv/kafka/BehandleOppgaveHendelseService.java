@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.kafka;
 
 import com.google.common.base.Strings;
+import java.time.LocalDate;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHarIkkeKommetIRetur;
@@ -44,7 +45,7 @@ public class BehandleOppgaveHendelseService {
     journalpostService.hentJournalpost(Long.valueOf(oppgaveHendelse.getJournalpostId()))
         .ifPresentOrElse((journalpost) -> {
                 if (journalpost.getAntallRetur() != null && journalpost.getAntallRetur() > 0){
-                  LOGGER.info("Lagt til ny returlogg på journalpost {}", journalpost.getJournalpostId());
+                  LOGGER.info("Lagt til ny returlogg med returdato {} på journalpost {} med dokumentdato {}.",  LocalDate.now(), journalpost.getJournalpostId(), journalpost.hentDatoDokument());
                 } else {
                   LOGGER.error("Journalpost {} har ikke kommet i retur", oppgaveHendelse.getJournalpostId());
                   throw new JournalpostHarIkkeKommetIRetur(String.format("Journalpost %s har ikke kommet i retur", oppgaveHendelse.getJournalpostId()));
