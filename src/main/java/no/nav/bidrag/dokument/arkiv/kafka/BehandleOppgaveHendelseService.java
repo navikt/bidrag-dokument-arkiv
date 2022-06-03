@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.kafka;
 
 import com.google.common.base.Strings;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.time.LocalDate;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.OpprettNyReturLoggRequest;
@@ -22,11 +23,12 @@ public class BehandleOppgaveHendelseService {
 
   private final DokarkivConsumer dokarkivConsumer;
   private final JournalpostService journalpostService;
-
+  private final MeterRegistry meterRegistry;
   public BehandleOppgaveHendelseService(ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers,
-      ResourceByDiscriminator<JournalpostService> journalpostServices) {
+      ResourceByDiscriminator<JournalpostService> journalpostServices, MeterRegistry meterRegistry) {
     this.dokarkivConsumer = dokarkivConsumers.get(Discriminator.SERVICE_USER);
     this.journalpostService = journalpostServices.get(Discriminator.SERVICE_USER);
+    this.meterRegistry = meterRegistry;
   }
 
 
@@ -58,5 +60,6 @@ public class BehandleOppgaveHendelseService {
             () -> LOGGER.error("Fant ingen journalpost med id {}", oppgaveHendelse.getJournalpostId())
         );
 
+      this.meterRegistry.counter("ny_retur_oppgave", "tema", oppgaveHendelse.getTema()).increment();
   }
 }
