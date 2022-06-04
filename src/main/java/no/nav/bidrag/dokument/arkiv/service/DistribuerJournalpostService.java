@@ -11,9 +11,13 @@ import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.LagreAdresseRequest;
+import no.nav.bidrag.dokument.arkiv.dto.LagreReturDetaljForSisteReturRequest;
+import no.nav.bidrag.dokument.arkiv.dto.LockReturDetaljerRequest;
+import no.nav.bidrag.dokument.arkiv.dto.OppdaterFlaggNyDistribusjonBestiltRequest;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
+import no.nav.bidrag.dokument.arkiv.model.UgyldigDistribusjonException;
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse;
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse;
 import org.slf4j.Logger;
@@ -26,6 +30,7 @@ public class DistribuerJournalpostService {
   private static final String DISTRIBUSJON_COUNTER_NAME = "distribuer_journalpost";
   private final JournalpostService journalpostService;
   private final EndreJournalpostService endreJournalpostService;
+  private final OpprettJournalpostService opprettJournalpostService;
   private final DokdistFordelingConsumer dokdistFordelingConsumer;
   private final PersonConsumer personConsumer;
   private final MeterRegistry meterRegistry;
@@ -33,17 +38,40 @@ public class DistribuerJournalpostService {
   public DistribuerJournalpostService(
       ResourceByDiscriminator<JournalpostService> journalpostServices,
       EndreJournalpostService endreJournalpostService,
-      DokdistFordelingConsumer dokdistFordelingConsumer, ResourceByDiscriminator<PersonConsumer> personConsumers, MeterRegistry meterRegistry) {
+      OpprettJournalpostService opprettJournalpostService, DokdistFordelingConsumer dokdistFordelingConsumer, ResourceByDiscriminator<PersonConsumer> personConsumers, MeterRegistry meterRegistry) {
     this.journalpostService = journalpostServices.get(Discriminator.REGULAR_USER);
     this.endreJournalpostService = endreJournalpostService;
+    this.opprettJournalpostService = opprettJournalpostService;
     this.dokdistFordelingConsumer = dokdistFordelingConsumer;
     this.personConsumer = personConsumers.get(Discriminator.REGULAR_USER);
     this.meterRegistry = meterRegistry;
   }
 
+  public void bestillNyDistribusjon(Journalpost journalpost, DistribuerTilAdresse distribuerTilAdresse){
+    if (journalpost.getTilleggsopplysninger().isNyDistribusjonBestilt()){
+      throw new UgyldigDistribusjonException(String.format("Ny distribusjon er allerede bestilt for journalpost %s", journalpost.getJournalpostId()));
+    }
+    validerAdresse(distribuerTilAdresse);
+    oppdaterReturDetaljerHvisNodvendig(journalpost);
+
+    var opprettJournalpostResponse = opprettJournalpostService.dupliserJournalpost(journalpost, true);
+    distribuerJournalpost(opprettJournalpostResponse.getJournalpostId(), null, new DistribuerJournalpostRequestInternal(distribuerTilAdresse));
+    endreJournalpostService.lagreJournalpost(new OppdaterFlaggNyDistribusjonBestiltRequest(journalpost.hentJournalpostIdLong(), journalpost));
+  }
+
+  private void oppdaterReturDetaljerHvisNodvendig(Journalpost journalpost){
+    if (journalpost.manglerReturDetaljForSisteRetur()){
+      if (journalpost.hentDatoRetur() == null){
+        throw new UgyldigDistribusjonException("Kan ikke bestille distribusjon når det mangler returdetalj for siste returpost");
+      }
+      endreJournalpostService.lagreJournalpost(new LagreReturDetaljForSisteReturRequest(journalpost));
+    }
+
+  }
+
   public DistribuerJournalpostResponse distribuerJournalpost(Long journalpostId, String batchId, DistribuerJournalpostRequestInternal distribuerJournalpostRequest){
     var journalpost = journalpostService.hentJournalpost(journalpostId).orElseThrow(() -> new JournalpostIkkeFunnetException(String.format("Fant ingen journalpost med id %s", journalpostId)));
-
+    journalpostService.populerMedTilknyttedeSaker(journalpost);
     if (journalpost.getTilleggsopplysninger().isDistribusjonBestilt()){
       LOGGER.warn("Distribusjon er allerede bestillt for journalpostid {}{}. Stopper videre behandling", journalpostId, batchId != null ? String.format(" med batchId %s", batchId) : "");
       return new DistribuerJournalpostResponse("JOARK-"+journalpostId, null);
@@ -96,7 +124,7 @@ public class DistribuerJournalpostService {
     validerKanDistribueres(journalpost);
   }
 
-  public void lagreAdresse(Long journalpostId, DistribuerTilAdresse distribuerTilAdresse, Journalpost journalpost){
+  private void lagreAdresse(Long journalpostId, DistribuerTilAdresse distribuerTilAdresse, Journalpost journalpost){
     if (distribuerTilAdresse != null){
       endreJournalpostService.lagreJournalpost(new LagreAdresseRequest(journalpostId, distribuerTilAdresse, journalpost));
     }

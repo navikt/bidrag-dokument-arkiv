@@ -3,7 +3,6 @@ package no.nav.bidrag.dokument.arkiv.model
 import no.nav.bidrag.commons.CorrelationId
 import no.nav.bidrag.dokument.arkiv.dto.BrukerType
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
-import no.nav.bidrag.dokument.arkiv.dto.Saksbehandler
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerMedEnhet
 import no.nav.bidrag.dokument.dto.JournalpostHendelse
 import no.nav.bidrag.dokument.dto.Sporingsdata

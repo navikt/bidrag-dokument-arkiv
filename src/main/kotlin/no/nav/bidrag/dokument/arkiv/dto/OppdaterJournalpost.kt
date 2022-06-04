@@ -6,6 +6,49 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import no.nav.bidrag.dokument.arkiv.utils.DateUtils
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 import org.apache.logging.log4j.util.Strings
+import java.time.LocalDate
+
+data class OppdaterFlaggNyDistribusjonBestiltRequest(private var journalpostId: Long, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId){
+    init {
+        journalpost.tilleggsopplysninger.setNyDistribusjonBestiltFlagg()
+        tilleggsopplysninger = journalpost.tilleggsopplysninger
+    }
+}
+
+data class OppdaterDistribusjonsInfoRequest(
+    var settStatusEkspedert: Boolean,
+    var utsendingsKanal: JournalpostKanal
+)
+
+data class OpprettNyReturLoggRequest(private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {
+    init {
+        val dateNow = LocalDate.now()
+        val returDetaljerLogDO = journalpost.tilleggsopplysninger.hentReturDetaljerLogDO()
+        val returDetaljLoggWithSameDate = returDetaljerLogDO.find{it.dato == dateNow}
+        if (returDetaljLoggWithSameDate != null){
+            journalpost.tilleggsopplysninger.unlockReturDetaljerLog(dateNow)
+        } else {
+            journalpost.tilleggsopplysninger.addReturDetaljLog(ReturDetaljerLogDO("Returpost", dateNow))
+        }
+        tilleggsopplysninger = journalpost.tilleggsopplysninger
+    }
+}
+
+data class LagreReturDetaljForSisteReturRequest(private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {
+    init {
+        journalpost.tilleggsopplysninger.addReturDetaljLog(ReturDetaljerLogDO("Returpost", journalpost.hentDatoRetur()!!))
+        tilleggsopplysninger = journalpost.tilleggsopplysninger
+    }
+}
+
+data class LockReturDetaljerRequest(private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {
+    init {
+        val updatedTillegsopplysninger = TilleggsOpplysninger()
+        updatedTillegsopplysninger.addAll(journalpost.tilleggsopplysninger)
+        updatedTillegsopplysninger.lockAllReturDetaljerLog()
+        tilleggsopplysninger = updatedTillegsopplysninger
+    }
+}
 
 data class OppdaterJournalpostDistribusjonsInfoRequest(private var journalpostId: Long, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId) {
     init {
@@ -55,7 +98,8 @@ data class LagreJournalpostRequest(private var journalpostId: Long, private var 
             val endreReturDetaljer = endreJournalpostCommand.endreJournalpostCommand.endreReturDetaljer?.filter { Strings.isNotEmpty(it.beskrivelse) }
             if (endreReturDetaljer != null && endreReturDetaljer.isNotEmpty()){
                 endreReturDetaljer
-                    .forEach { journalpost.tilleggsopplysninger.updateReturDetaljLog(it.originalDato!!, ReturDetaljerLogDO(it.beskrivelse, it.nyDato ?: it.originalDato!!)) }
+                    .forEach { if (it.originalDato != null) journalpost.tilleggsopplysninger.updateReturDetaljLog(it.originalDato!!, ReturDetaljerLogDO(it.beskrivelse, it.nyDato ?: it.originalDato!!))
+                                else if (journalpost.manglerReturDetaljForSisteRetur() && it.nyDato != null && !journalpost.hasReturDetaljerWithDate(it.nyDato!!)) journalpost.tilleggsopplysninger.addReturDetaljLog(ReturDetaljerLogDO(it.beskrivelse, it.nyDato!!)) }
                 tilleggsopplysninger = journalpost.tilleggsopplysninger
             }
 

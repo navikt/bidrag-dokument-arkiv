@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.time.LocalDate;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
+import no.nav.bidrag.dokument.arkiv.dto.OpprettNyReturLoggRequest;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHarIkkeKommetIRetur;
 import no.nav.bidrag.dokument.arkiv.model.OppgaveHendelse;
@@ -42,23 +43,19 @@ public class BehandleOppgaveHendelseService {
       LOGGER.warn("Returoppgave {} har ingen journalpostid. Avslutter behandling", oppgaveHendelse.getId());
       return;
     }
-    LOGGER.info("Legger til ny returlogg på journalpost {}", oppgaveHendelse.getJournalpostId());
+    LOGGER.info("Sjekker om det skal legges til returlogg med dagens dato på journalpost {}", oppgaveHendelse.getJournalpostId());
 
     journalpostService.hentJournalpost(Long.valueOf(oppgaveHendelse.getJournalpostId()))
         .ifPresentOrElse((journalpost) -> {
-                if (journalpost.getAntallRetur() != null && journalpost.getAntallRetur() > 0){
-                  LOGGER.info("Lagt til ny returlogg med returdato {} på journalpost {} med dokumentdato {}.",  LocalDate.now(), journalpost.getJournalpostId(), journalpost.hentDatoDokument());
-                } else {
-                  LOGGER.error("Journalpost {} har ikke kommet i retur", oppgaveHendelse.getJournalpostId());
-                  throw new JournalpostHarIkkeKommetIRetur(String.format("Journalpost %s har ikke kommet i retur", oppgaveHendelse.getJournalpostId()));
-                }
-//              if (journalpost.manglerReturDetaljForSisteRetur()) {
-//                dokarkivConsumer.endre(new OpprettNyReturLoggRequest(journalpost));
-//                LOGGER.info("Lagt til ny returlogg på journalpost {}", journalpost.getJournalpostId());
-//              } else if (!journalpost.isDistribusjonKommetIRetur()) {
-//                LOGGER.error("Journalpost {} har ikke kommet i retur", oppgaveHendelse.getJournalpostId());
-//                throw new JournalpostHarIkkeKommetIRetur(String.format("Journalpost %s har ikke kommet i retur", oppgaveHendelse.getJournalpostId()));
-//              }
+              if (journalpost.manglerReturDetaljForSisteRetur()) {
+                dokarkivConsumer.endre(new OpprettNyReturLoggRequest(journalpost));
+                LOGGER.info("Lagt til ny returlogg med returdato {} på journalpost {} med dokumentdato {}.",  LocalDate.now(), journalpost.getJournalpostId(), journalpost.hentDatoDokument());
+              } else if (!journalpost.isDistribusjonKommetIRetur()) {
+                LOGGER.error("Journalpost {} har ikke kommet i retur", oppgaveHendelse.getJournalpostId());
+                throw new JournalpostHarIkkeKommetIRetur(String.format("Journalpost %s har ikke kommet i retur", oppgaveHendelse.getJournalpostId()));
+              } else {
+                LOGGER.warn("Legger ikke til ny returlogg på journalpost {}. Journalpost har allerede registrert returlogg for siste retur", journalpost.getJournalpostId());
+              }
             },
             () -> LOGGER.error("Fant ingen journalpost med id {}", oppgaveHendelse.getJournalpostId())
         );

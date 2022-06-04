@@ -49,7 +49,7 @@ public class JournalpostService {
   public List<JournalpostDto> finnJournalposter(String saksnummer, String fagomrade) {
     return finnJournalposterForSaksnummer(saksnummer, fagomrade).stream()
         .map((this::konverterAktoerIdTilFnr))
-        .filter((jp)-> !jp.getTilleggsopplysninger().isEndretTema())
+        .filter((jp)-> !(jp.getTilleggsopplysninger().isEndretTema() || jp.getTilleggsopplysninger().isNyDistribusjonBestilt()) )
         .map(Journalpost::tilJournalpostDto)
         .collect(Collectors.toList());
   }
@@ -64,7 +64,7 @@ public class JournalpostService {
     return Optional.of(journalpost);
   }
 
-  private List<TilknyttetJournalpost> hentTilknyttedeJournalposter(Journalpost journalpost){
+  protected List<TilknyttetJournalpost> hentTilknyttedeJournalposter(Journalpost journalpost){
     if (journalpost.getDokumenter().isEmpty() || journalpost.getSak() == null){
       return List.of();
     }

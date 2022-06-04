@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.stubs
 
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker
+import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottakerIdType
 import no.nav.bidrag.dokument.arkiv.dto.Bruker
 import no.nav.bidrag.dokument.arkiv.dto.DatoType
 import no.nav.bidrag.dokument.arkiv.dto.Dokument
@@ -8,9 +9,13 @@ import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostType
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveData
+import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
+import no.nav.bidrag.dokument.dto.EndreDokument
+import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
+import java.time.LocalDate
 
 
 var X_ENHET_HEADER = "1234"
@@ -19,6 +24,7 @@ var JOURNALPOST_ID = 123213213L
 var JOURNALPOST_ID_2 = 55513213L
 var JOURNALPOST_ID_3 = 23421321L
 var JOURNALPOST_ID_4 = 2443421321L
+var JOURNALPOST_ID_5 = 5443421321L
 var NY_JOURNALPOST_ID_KNYTT_TIL_SAK = 23423331321L
 
 var DOKUMENT_1_ID = "123123";
@@ -40,6 +46,8 @@ var JOURNALFORENDE_ENHET = "4833";
 var DATO_DOKUMENT = DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
 var DATO_RETUR = DatoType("2021-08-18T13:20:33", "DATO_AVS_RETUR")
 
+var RETUR_DETALJER_DATO_1 = LocalDate.parse("2021-08-20")
+var RETUR_DETALJER_DATO_2 = LocalDate.parse("2021-11-22")
 var TILLEGGSOPPLYSNINGER_RETUR: MutableList<Map<String, String>> =
     mutableListOf(mapOf("nokkel" to "retur0_2020-11-15", "verdi" to "Beskrivelse av retur"))
 
@@ -55,9 +63,46 @@ fun createDistribuerTilAdresse(): DistribuerTilAdresse {
     )
 }
 
+
+fun opprettUtgaendeDistribuertSafResponse(
+    journalpostId: String = JOURNALPOST_ID.toString()): Journalpost{
+    val tilleggsopplysninger = TilleggsOpplysninger()
+    tilleggsopplysninger.setDistribusjonBestillt()
+    return opprettSafResponse(
+        journalpostId = journalpostId,
+        tilleggsopplysninger = tilleggsopplysninger,
+        journalpostType = JournalpostType.U,
+        journalstatus = JournalStatus.FERDIGSTILT,
+        relevanteDatoer = listOf(DATO_DOKUMENT, DATO_RETUR)
+    )
+}
+
+fun opprettUtgaendeSafResponseWithReturDetaljer(
+    journalpostId: String = JOURNALPOST_ID.toString()): Journalpost{
+    return opprettSafResponse(
+        journalpostId = journalpostId,
+        tilleggsopplysninger = createTillegsopplysningerWithReturDetaljer(),
+        journalpostType = JournalpostType.U,
+        journalstatus = JournalStatus.FERDIGSTILT,
+        relevanteDatoer = listOf(DATO_DOKUMENT, DATO_RETUR)
+    )
+}
+
+fun opprettUtgaendeSafResponse(
+    journalpostId: String = JOURNALPOST_ID.toString(),
+    relevanteDatoer: List<DatoType> = listOf(DATO_DOKUMENT),
+    tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger()): Journalpost{
+    return opprettSafResponse(
+        journalpostId = journalpostId,
+        relevanteDatoer = relevanteDatoer,
+        tilleggsopplysninger = tilleggsopplysninger,
+        journalpostType = JournalpostType.U,
+        journalstatus = JournalStatus.FERDIGSTILT
+    )
+}
 fun opprettSafResponse(
     journalpostId: String = JOURNALPOST_ID.toString(),
-    avsenderMottaker: AvsenderMottaker = AvsenderMottaker(AVSENDER_NAVN, AVSENDER_ID),
+    avsenderMottaker: AvsenderMottaker = AvsenderMottaker(AVSENDER_NAVN, AVSENDER_ID, AvsenderMottakerIdType.FNR),
     bruker: Bruker? = Bruker(BRUKER_AKTOER_ID, BRUKER_TYPE_AKTOERID),
     dokumenter: List<Dokument> = listOf(
         Dokument(
@@ -93,6 +138,9 @@ fun opprettSafResponse(
 fun opprettDokumentOversiktfagsakResponse(): List<Journalpost>{
     val tilleggsopplysningerEndretFagomrade = TilleggsOpplysninger()
     tilleggsopplysningerEndretFagomrade.setEndretTemaFlagg();
+
+    val tilleggsopplysningerBestiltNyDistribusjon = TilleggsOpplysninger()
+    tilleggsopplysningerBestiltNyDistribusjon.setNyDistribusjonBestiltFlagg();
     return listOf(
         opprettSafResponse(
             journalpostId = JOURNALPOST_ID.toString(),
@@ -137,6 +185,11 @@ fun opprettDokumentOversiktfagsakResponse(): List<Journalpost>{
             tilleggsopplysninger = tilleggsopplysningerEndretFagomrade
 
         ),
+        opprettUtgaendeSafResponse(
+            journalpostId = JOURNALPOST_ID_5.toString(),
+            tilleggsopplysninger = tilleggsopplysningerBestiltNyDistribusjon
+
+        ),
 
     )
 }
@@ -145,4 +198,27 @@ fun createOppgaveDataWithSaksnummer(saksnummer: String): OppgaveData{
 }
 fun createOppgaveDataWithJournalpostId(journalpostId: String): OppgaveData{
     return OppgaveData(journalpostId = journalpostId, id=2, versjon = 1, beskrivelse = "")
+}
+
+fun createTillegsopplysningerWithReturDetaljer(): TilleggsOpplysninger{
+    val tilleggsopplysninger = TilleggsOpplysninger()
+    tilleggsopplysninger.addReturDetaljLog(
+        ReturDetaljerLogDO("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", RETUR_DETALJER_DATO_1)
+    )
+    tilleggsopplysninger.addReturDetaljLog(
+        ReturDetaljerLogDO("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", RETUR_DETALJER_DATO_2)
+    )
+    tilleggsopplysninger.setDistribusjonBestillt()
+    return tilleggsopplysninger;
+}
+
+fun createEndreJournalpostCommand(): EndreJournalpostCommand {
+    val endreJournalpostCommand = EndreJournalpostCommand()
+    endreJournalpostCommand.avsenderNavn = "Dauden, Svarte"
+    endreJournalpostCommand.gjelder = "06127412345"
+    endreJournalpostCommand.tittel = "So Tired"
+    endreJournalpostCommand.endreDokumenter = java.util.List.of(
+        EndreDokument("BLABLA", 1, "In a galazy far far away")
+    )
+    return endreJournalpostCommand
 }
