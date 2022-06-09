@@ -17,7 +17,9 @@ import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal;
 import no.nav.bidrag.dokument.arkiv.dto.OverforEnhetRequest;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.HendelsesType;
+import no.nav.bidrag.dokument.arkiv.model.JournalforingHendelseIntern;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
+import no.nav.bidrag.dokument.arkiv.model.PersonException;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord;
@@ -31,25 +33,16 @@ public class BehandleJournalforingHendelseService {
   private static final Logger LOGGER = LoggerFactory.getLogger(BehandleJournalforingHendelseService.class);
   private static final String HENDELSE_COUNTER_NAME = "joark_hendelse";
   private static final String HENDELSE_NUMBER_OF_DOCS_COUNTER_NAME = "joark_antall_dokumenter";
-  private static final String DEFAULT_ENHET = "4833";
 
   private final MeterRegistry meterRegistry;
   private final HendelserProducer producer;
-  private final BidragOrganisasjonConsumer bidragOrganisasjonConsumer;
-  private final DokarkivConsumer dokarkivConsumer;
   private final JournalpostService journalpostService;
 
   private final DistributionSummary numberOfDocsDistribution;
 
-  public BehandleJournalforingHendelseService(HendelserProducer producer,
-      MeterRegistry registry,
-      BidragOrganisasjonConsumer bidragOrganisasjonConsumer,
-      ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers,
-      ResourceByDiscriminator<JournalpostService> journalpostServices) {
+  public BehandleJournalforingHendelseService(HendelserProducer producer, MeterRegistry registry, ResourceByDiscriminator<JournalpostService> journalpostServices) {
     this.producer = producer;
     this.meterRegistry = registry;
-    this.bidragOrganisasjonConsumer = bidragOrganisasjonConsumer;
-    this.dokarkivConsumer = dokarkivConsumers.get(Discriminator.SERVICE_USER);
     this.journalpostService = journalpostServices.get(Discriminator.SERVICE_USER);
     this.numberOfDocsDistribution = DistributionSummary.builder(HENDELSE_NUMBER_OF_DOCS_COUNTER_NAME)
         .publishPercentileHistogram()
@@ -67,8 +60,9 @@ public class BehandleJournalforingHendelseService {
       return;
     }
 
-    behandleJournalpostFraHendelse(journalpost);
+    JournalforingHendelseIntern journalforingHendelseIntern = new JournalforingHendelseIntern(record);
 
+    producer.publishJournalpostHendelse(journalforingHendelseIntern.toJournalpostHendelse(journalpost));
     measureHendelse(record, journalpost);
     loggHendelse(record, journalpost);
   }
@@ -76,11 +70,9 @@ public class BehandleJournalforingHendelseService {
   private void measureHendelse(JournalfoeringHendelseRecord record, Journalpost journalpost){
     try {
       var hendelsesType = HendelsesType.Companion.from(record.getHendelsesType()).orElse(HendelsesType.UKJENT);
-      var journalforendeEnhet = Strings.isNullOrEmpty(journalpost.getJournalforendeEnhet()) ? "UKJENT" : journalpost.getJournalforendeEnhet();
       var tema = Strings.isNullOrEmpty(journalpost.getTema()) ? record.getTemaNytt() : journalpost.getTema();
       this.meterRegistry.counter(HENDELSE_COUNTER_NAME,
           "hendelse_type", hendelsesType.toString(),
-          "enhet", journalforendeEnhet,
           "temaGammelt", Strings.isNullOrEmpty(record.getTemaGammelt()) ? "NULL" : record.getTemaGammelt(),
           "tema", tema,
           "kanal", record.getMottaksKanal()).increment();
@@ -117,48 +109,15 @@ public class BehandleJournalforingHendelseService {
     } catch (Exception e){
       LOGGER.error("Det skjedde en feil ved logging av hendelse", e);
     }
-
-  }
-
-  private void behandleJournalpostFraHendelse(Journalpost journalpost){
-    if (journalpost.isStatusMottatt() && journalpost.isTemaBidrag()){
-      oppdaterJournalpostMedPersonGeografiskEnhet(journalpost);
-    }
-    producer.publishJournalpostUpdated(journalpost);
-  }
-
-  private String hentGeografiskEnhet(String personId){
-    var geografiskEnhet = bidragOrganisasjonConsumer.hentGeografiskEnhet(personId);
-    if (Strings.isNullOrEmpty(geografiskEnhet)){
-      LOGGER.warn("Fant ingen geografisk enhet for person, bruker enhet {}", DEFAULT_ENHET);
-      SECURE_LOGGER.warn("Fant ingen geografisk enhet for person {}, bruker enhet {}", personId, DEFAULT_ENHET);
-      return DEFAULT_ENHET;
-    }
-    return geografiskEnhet;
   }
 
   private Journalpost hentJournalpost(Long journalpostId){
-    return journalpostService.hentJournalpostMedAktorId(journalpostId).orElseThrow(()->new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId)));
-  }
-
-  private String hentBrukerId(Journalpost journalpost){
-    return Optional.of(journalpost)
-        .map(Journalpost::getBruker)
-        .map(Bruker::getId)
-        .orElseGet(() -> Optional.of(journalpost)
-            .map(Journalpost::getAvsenderMottaker)
-            .map(AvsenderMottaker::getId)
-            .orElse(null));
-  }
-
-  private void oppdaterJournalpostMedPersonGeografiskEnhet(Journalpost journalpost){
-    var brukerId = hentBrukerId(journalpost);
-    var geografiskEnhet = hentGeografiskEnhet(brukerId);
-    if (!journalpost.harJournalforendeEnhetLik(geografiskEnhet)){
-      LOGGER.info("Oppdaterer journalpost {} enhet fra {} til {}", journalpost.getJournalpostId(), journalpost.getJournalforendeEnhet(), geografiskEnhet);
-      SECURE_LOGGER.info("Oppdaterer journalpost {} enhet fra {} til {} for person {}", journalpost.getJournalpostId(), journalpost.getJournalforendeEnhet(), geografiskEnhet, brukerId);
-      dokarkivConsumer.endre(new OverforEnhetRequest(journalpost.hentJournalpostIdLong(), geografiskEnhet));
-      journalpost.setJournalforendeEnhet(geografiskEnhet);
+    try {
+      return journalpostService.hentJournalpostMedAktorId(journalpostId)
+          .orElseThrow(()->new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId)));
+    } catch (PersonException e){
+      return journalpostService.hentJournalpost(journalpostId)
+          .orElseThrow(()->new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId)));
     }
   }
 

@@ -37,7 +37,7 @@ public class HendelseListener {
     OppgaveHendelse oppgaveOpprettetHendelse = jsonMapperService.mapOppgaveHendelse(consumerRecord.value());
 
     if (oppgaveOpprettetHendelse.erTemaBIDEllerFAR() && oppgaveOpprettetHendelse.erReturOppgave() && oppgaveOpprettetHendelse.erStatusOpprettet()) {
-      LOGGER.info("Mottatt retur oppgave opprettet hendelse med journalpostId {}, oppgaveId {}, tema {}, opprettetAv {}, og status {}",
+        LOGGER.info("Mottatt retur oppgave opprettet hendelse med journalpostId {}, oppgaveId {}, tema {}, opprettetAv {}, og status {}",
           oppgaveOpprettetHendelse.getJournalpostId(), oppgaveOpprettetHendelse.getId(), oppgaveOpprettetHendelse.getTema(), oppgaveOpprettetHendelse.getOpprettetAv(), oppgaveOpprettetHendelse.getStatus());
       behandleOppgaveHendelseService.behandleReturOppgaveOpprettetHendelse(oppgaveOpprettetHendelse);
     }
