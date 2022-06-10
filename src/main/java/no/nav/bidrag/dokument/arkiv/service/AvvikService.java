@@ -204,7 +204,7 @@ public class AvvikService {
   public void leggTilBegrunnelsePaaTittel(AvvikshendelseIntern avvikshendelseIntern, Journalpost journalpost){
     if (Strings.isNotEmpty(avvikshendelseIntern.getBeskrivelse())){
       validateTrue(avvikshendelseIntern.getBeskrivelse().length() < 100, new AvvikDetaljException("Beskrivelse kan ikke være lengre enn 100 tegn"));
-      oppdater(avvikshendelseIntern.toLeggTilBegrunnelsePaaTittelRequest(journalpost.getTittel()));
+      oppdater(avvikshendelseIntern.toLeggTilBegrunnelsePaaTittelRequest(journalpost));
     }
   }
 
