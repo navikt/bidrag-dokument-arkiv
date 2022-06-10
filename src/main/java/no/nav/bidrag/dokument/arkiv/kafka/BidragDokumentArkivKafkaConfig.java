@@ -60,7 +60,10 @@ public class BidragDokumentArkivKafkaConfig {
 
   @Bean
   public DefaultErrorHandler defaultErrorHandler(@Value("${KAFKA_MAX_RETRY:-1}") Integer maxRetry) {
+    // Max retry should not be set in production
     var backoffPolicy = maxRetry == -1 ? new ExponentialBackOff() : new ExponentialBackOffWithMaxRetries(maxRetry);
+    backoffPolicy.setMultiplier(2.0);
+    backoffPolicy.setMaxInterval(1800000L); // 30 mins
     LOGGER.info("Initializing Kafka errorhandler with backoffpolicy {}, maxRetry={}", backoffPolicy, maxRetry);
     DefaultErrorHandler errorHandler =  new DefaultErrorHandler((rec, e) -> {
       var key = rec.key();
