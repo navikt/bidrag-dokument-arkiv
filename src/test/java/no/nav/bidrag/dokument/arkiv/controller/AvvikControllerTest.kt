@@ -442,7 +442,19 @@ class AvvikControllerTest : AbstractControllerTest() {
         val avvikHendelse = createAvvikHendelse(AvvikType.TREKK_JOURNALPOST, java.util.Map.of())
         val detaljer: MutableMap<String, String> = HashMap()
         avvikHendelse.detaljer = detaljer
-        stubs.mockSafResponseHentJournalpost(responseJournalpostJson, HttpStatus.OK)
+        avvikHendelse.beskrivelse = "En begrunnelse"
+        stubs.mockSafResponseHentJournalpost(opprettSafResponse(journalpostIdFraJson.toString(),
+            dokumenter = listOf(
+                    Dokument(
+                        dokumentInfoId = DOKUMENT_1_ID,
+                        tittel = DOKUMENT_1_TITTEL
+                    ),
+                    Dokument(
+                        dokumentInfoId = "123213",
+                        tittel = "tittel"
+                    )
+                )
+        ))
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivFeilregistrerRequest(journalpostIdFraJson)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
@@ -460,6 +472,9 @@ class AvvikControllerTest : AbstractControllerTest() {
             },
             { stubs.verifyStub.dokarkivFeilregistrerKalt(journalpostIdFraJson) },
             { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "GENERELL_SAK") },
+            { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,
+                "\"tittel\":\"Tittel på dokument 1 (En begrunnelse)\"",
+                "\"dokumenter\":[{\"dokumentInfoId\":\"123123\",\"tittel\":\"Tittel på dokument 1 (En begrunnelse)\"}]") },
             { stubs.verifyStub.dokarkivFerdigstillKalt(journalpostIdFraJson) },
             {
                 Mockito.verify(kafkaTemplateMock).send(

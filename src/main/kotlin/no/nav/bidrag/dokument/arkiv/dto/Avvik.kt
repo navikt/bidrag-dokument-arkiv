@@ -49,7 +49,7 @@ data class AvvikshendelseIntern(
     fun toEndreFagomradeRequest() = EndreFagomradeRequest(journalpostId, nyttFagomrade, "9999")
     fun toEndreFagomradeJournalfortJournalpostRequest(journalpost: Journalpost) = EndreFagomradeJournalfortJournalpostRequest(journalpostId, journalpost)
     fun toKnyttTilGenerellSakRequest(fagomrade: String, bruker: Bruker) = EndreKnyttTilGenerellSakRequest(journalpostId, OppdaterJournalpostRequest.Bruker(bruker.id, bruker.type), fagomrade)
-    fun toLeggTilBegrunnelsePaaTittelRequest(tittel: String) = EndreTittelRequest(journalpostId, "$tittel ($beskrivelse)")
+    fun toLeggTilBegrunnelsePaaTittelRequest(journalpost: Journalpost) = EndreTittelRequest(journalpostId, "${journalpost.hentHoveddokument()?.tittel ?: journalpost.tittel} ($beskrivelse)", journalpost)
 }
 
 data class OverforEnhetRequest(private var journalpostId: Long, override var journalfoerendeEnhet: String?): OppdaterJournalpostRequest(journalpostId)
@@ -71,7 +71,13 @@ data class OpphevEndreFagomradeJournalfortJournalpostRequest(private var journal
     }
 }
 
-data class EndreTittelRequest(private var journalpostId: Long, override var tittel: String?): OppdaterJournalpostRequest(journalpostId)
+data class EndreTittelRequest(private var journalpostId: Long, override var tittel: String?, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId) {
+
+    init {
+        val hoveddokument = journalpost.hentHoveddokument()
+        if (hoveddokument != null) dokumenter = listOf(Dokument(hoveddokument.dokumentInfoId, tittel, hoveddokument.brevkode))
+    }
+}
 data class EndreKnyttTilGenerellSakRequest(private var journalpostId: Long, override var bruker: Bruker?, override var tema: String?, override var sak: Sak? = GenerellSak()): OppdaterJournalpostRequest(journalpostId)
 data class InngaaendeTilUtgaaendeRequest(private var journalpostId: Long, override var tema: String?): OppdaterJournalpostRequest(journalpostId)
 data class RegistrerReturRequest(private var journalpostId: Long, private var _datoRetur: LocalDate, private var _tilleggsopplysninger: TilleggsOpplysninger?): OppdaterJournalpostRequest(journalpostId) {

@@ -41,8 +41,7 @@ public class HendelserProducer {
     publish(journalpostHendelse);
   }
 
-  public void publishJournalpostUpdated(Journalpost journalpost){
-    var journalpostHendelse = createJournalpostHendelse(journalpost, "9999");
+  public void publishJournalpostHendelse(JournalpostHendelse journalpostHendelse){
     publish(journalpostHendelse);
   }
 
