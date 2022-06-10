@@ -65,8 +65,8 @@ public class BehandleOppgaveHendelseService {
   }
 
   public void behandleJournalforingOppgaveOpprettetHendelse(OppgaveHendelse oppgaveHendelse){
-    if (oppgaveHendelse.erJoarkJournalpost()){
-      dokarkivConsumer.endre(new OverforEnhetRequest(Long.parseLong(oppgaveHendelse.getJournalpostId()), oppgaveHendelse.getTildeltEnhetsnr()));
-    }
+//    if (oppgaveHendelse.erJoarkJournalpost()){
+//      dokarkivConsumer.endre(new OverforEnhetRequest(Long.parseLong(oppgaveHendelse.getJournalpostId()), oppgaveHendelse.getTildeltEnhetsnr()));
+//    }
   }
 }
