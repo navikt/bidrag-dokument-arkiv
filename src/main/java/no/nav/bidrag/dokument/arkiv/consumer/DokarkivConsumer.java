@@ -20,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
@@ -34,7 +36,7 @@ public class DokarkivConsumer extends AbstractConsumer {
     super(restTemplate);
     this.objectMapper = objectMapper;
   }
-
+  @Retryable(value = OppdaterJournalpostFeiletTekniskException.class, maxAttempts = 5, backoff = @Backoff(delay = 1000, maxDelay = 5000, multiplier = 2.0))
   public OppdaterJournalpostResponse endre(OppdaterJournalpostRequest oppdaterJournalpostRequest) {
     var oppdaterJoarnalpostApiUrl = URL_JOURNALPOSTAPI_V1 + '/' + oppdaterJournalpostRequest.hentJournalpostId();
     try {
