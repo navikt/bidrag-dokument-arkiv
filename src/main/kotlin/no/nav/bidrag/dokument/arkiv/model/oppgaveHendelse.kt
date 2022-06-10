@@ -43,7 +43,10 @@ data class OppgaveHendelse(
 
     fun erTemaBIDEllerFAR(): Boolean = tema == "BID" || tema == "FAR"
     fun erReturOppgave(): Boolean = oppgavetype == "RETUR";
+    fun erJournalforingOppgave(): Boolean = oppgavetype == "JFR";
     fun erStatusOpprettet(): Boolean = status == OppgaveStatus.OPPRETTET
+
+    fun erJoarkJournalpost(): Boolean = journalpostId != null && !journalpostId.contains("BID")
 
 }
 

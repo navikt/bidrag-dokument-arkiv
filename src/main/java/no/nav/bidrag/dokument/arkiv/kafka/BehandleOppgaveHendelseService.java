@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import java.time.LocalDate;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.OpprettNyReturLoggRequest;
+import no.nav.bidrag.dokument.arkiv.dto.OverforEnhetRequest;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHarIkkeKommetIRetur;
 import no.nav.bidrag.dokument.arkiv.model.OppgaveHendelse;
@@ -61,5 +62,11 @@ public class BehandleOppgaveHendelseService {
         );
 
       this.meterRegistry.counter("ny_retur_oppgave", "tema", oppgaveHendelse.getTema()).increment();
+  }
+
+  public void behandleJournalforingOppgaveOpprettetHendelse(OppgaveHendelse oppgaveHendelse){
+    if (oppgaveHendelse.erJoarkJournalpost()){
+      dokarkivConsumer.endre(new OverforEnhetRequest(Long.parseLong(oppgaveHendelse.getJournalpostId()), oppgaveHendelse.getTildeltEnhetsnr()));
+    }
   }
 }

@@ -40,6 +40,10 @@ public class HendelseListener {
         LOGGER.info("Mottatt retur oppgave opprettet hendelse med journalpostId {}, oppgaveId {}, tema {}, opprettetAv {}, og status {}",
           oppgaveOpprettetHendelse.getJournalpostId(), oppgaveOpprettetHendelse.getId(), oppgaveOpprettetHendelse.getTema(), oppgaveOpprettetHendelse.getOpprettetAv(), oppgaveOpprettetHendelse.getStatus());
       behandleOppgaveHendelseService.behandleReturOppgaveOpprettetHendelse(oppgaveOpprettetHendelse);
+    } else if (oppgaveOpprettetHendelse.erTemaBIDEllerFAR() && oppgaveOpprettetHendelse.erJournalforingOppgave()){
+      LOGGER.info("Mottatt journalforing oppgave opprettet hendelse med journalpostId {}, oppgaveId {}, tema {}, opprettetAv {}, tildeltEnhetsnr {}, og status {}",
+          oppgaveOpprettetHendelse.getJournalpostId(), oppgaveOpprettetHendelse.getId(), oppgaveOpprettetHendelse.getTema(),oppgaveOpprettetHendelse.getOpprettetAv(), oppgaveOpprettetHendelse.getTildeltEnhetsnr(), oppgaveOpprettetHendelse.getStatus());
+      behandleOppgaveHendelseService.behandleJournalforingOppgaveOpprettetHendelse(oppgaveOpprettetHendelse);
     }
   }
 
