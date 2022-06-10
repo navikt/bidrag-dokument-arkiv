@@ -106,13 +106,8 @@ public class BehandleJournalforingHendelseService {
   }
 
   private Journalpost hentJournalpost(Long journalpostId){
-    try {
-      return journalpostService.hentJournalpostMedAktorId(journalpostId)
-          .orElseThrow(()->new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId)));
-    } catch (PersonException e){
-      return journalpostService.hentJournalpost(journalpostId)
-          .orElseThrow(()->new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId)));
-    }
+    return journalpostService.hentJournalpost(journalpostId)
+        .orElseThrow(()->new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId)));
   }
 
   private boolean erOpprettetAvNKS(Journalpost journalpost){

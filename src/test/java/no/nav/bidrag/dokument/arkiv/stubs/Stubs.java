@@ -501,6 +501,12 @@ public class Stubs {
       );
     }
 
+    public void bidragPersonIkkeKalt() {
+      verify(0,
+          getRequestedFor(urlMatching("/person/.*"))
+      );
+    }
+
     public void dokdistFordelingKalt(String... contains) {
       var requestPattern = postRequestedFor(urlMatching("/dokdistfordeling/.*"));
       Arrays.stream(contains).forEach(contain -> requestPattern.withRequestBody(new ContainsPattern(contain)));

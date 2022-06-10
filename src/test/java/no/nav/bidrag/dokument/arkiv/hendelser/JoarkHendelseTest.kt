@@ -99,12 +99,11 @@ class JoarkHendelseTest {
     }
 
     @Test
-    fun `skal publisere journalposthendelse med fnr hvis hent person aktorid feiler`() {
+    fun `skal publisere journalposthendelse med fnr`() {
         val journalpostId = 123213L
         val expectedJoarkJournalpostId = "JOARK-$journalpostId"
         val personEnhet = "4844"
         stubs.mockSts()
-        stubs.mockPersonResponse(null, HttpStatus.BAD_REQUEST)
         stubs.mockSafResponseHentJournalpost(
             opprettSafResponse(
                 journalpostId = journalpostId.toString(),
@@ -130,6 +129,7 @@ class JoarkHendelseTest {
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isNull() },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::fnr).isEqualTo(BRUKER_FNR) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus).isEqualTo("M") },
+            { stubs.verifyStub.bidragPersonIkkeKalt() },
         )
     }
 
@@ -160,37 +160,6 @@ class JoarkHendelseTest {
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isEqualTo(BRUKER_AKTOER_ID) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus).isEqualTo("M") },
             { stubs.verifyStub.dokarkivOppdaterIkkeKalt(journalpostId) }
-        )
-    }
-
-    @Test
-    fun `skal sende aktorid hvis SAF returnerer personnummer`() {
-        val journalpostId = 123213L
-        val expectedJoarkJournalpostId = "JOARK-$journalpostId"
-        stubs.mockSts()
-        stubs.mockSafResponseHentJournalpost(
-            opprettSafResponse(
-                journalpostId = journalpostId.toString(),
-                journalstatus = JournalStatus.MOTTATT,
-                journalforendeEnhet = BRUKER_ENHET,
-                bruker = Bruker(BRUKER_FNR, "FNR")
-            )
-        )
-        stubs.mockDokarkivOppdaterRequest(journalpostId)
-        stubs.mockPersonResponse(PersonResponse(BRUKER_FNR, BRUKER_AKTOER_ID), HttpStatus.OK)
-        stubs.mockBidragOrganisasjonSaksbehandler()
-        stubs.mockOrganisasjonGeografiskTilknytning(BRUKER_ENHET)
-
-        val record = createHendelseRecord(journalpostId)
-
-        hendelseListener.listenJournalforingHendelse(record)
-        val jsonCaptor = ArgumentCaptor.forClass(String::class.java)
-        verify(kafkaTemplateMock).send(ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(expectedJoarkJournalpostId), jsonCaptor.capture())
-        val journalpostHendelse = objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
-
-        assertAll("JournalpostHendelse",
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isEqualTo(BRUKER_AKTOER_ID) },
-            { stubs.verifyStub.bidragPersonKalt() },
         )
     }
 
