@@ -12,7 +12,6 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Optional;
-import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
@@ -33,7 +32,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles(PROFILE_TEST)
@@ -65,7 +63,7 @@ class JournalpostServiceTest {
     when(safConsumerMock.hentJournalpost(journalpostIdFraJson)).thenReturn(journalpostDokOversikt);
     when(personConsumerMock.hentPerson(journalpostDokOversikt.getBruker().getId())).thenReturn(Optional.of(new PersonResponse("123123", "555555")));
 
-    var muligJournalpost = journalpostService.get(Discriminator.REGULAR_USER).hentJournalpostMedFnrOgTilknyttedeSaker(journalpostIdFraJson, null);
+    var muligJournalpost = journalpostService.get(Discriminator.REGULAR_USER).hentJournalpostMedTilknyttedeSaker(journalpostIdFraJson, null);
 
     assertAll(
         () -> {

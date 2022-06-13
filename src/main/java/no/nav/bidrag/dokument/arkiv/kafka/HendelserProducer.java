@@ -46,11 +46,8 @@ public class HendelserProducer {
   }
 
   private JournalpostHendelse createJournalpostHendelse(Long journalpostId, String saksbehandlersEnhet) {
-    var journalpostOptional = journalpostService.hentJournalpostMedAktorId(journalpostId);
-    if (journalpostOptional.isEmpty()) {
-      throw new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId));
-    }
-    var journalpost = journalpostOptional.get();
+    var journalpost = journalpostService.hentJournalpost(journalpostId)
+        .orElseThrow(()->new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId)));
     return createJournalpostHendelse(journalpost, saksbehandlersEnhet);
   }
 
