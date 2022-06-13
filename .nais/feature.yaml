@@ -21,6 +21,8 @@ env:
   SAF_SCOPE: dev-fss.teamdokumenthandtering.saf
   DOKARKIV_SCOPE: dev-fss.teamdokumenthandtering.dokarkiv-q1
   TOPIC_JOURNALPOST: bidrag.journalpost-feature
+  TOPIC_OPPGAVE_OPPRETTET: aapen-oppgave-opprettet-v1-preprod
+  KAFKA_BOOTSTRAP_SERVERS: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
   TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering-q1
   BIDRAG_PERSON_URL: https://bidrag-person-feature.dev.adeo.no
   BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon-feature.dev.adeo.no

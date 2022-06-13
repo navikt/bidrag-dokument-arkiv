@@ -10,6 +10,9 @@ springdoc:
   packages-to-scan: no.nav.bidrag.dokument.arkiv.controller
 
 STS_ISSUER_URL: ${STS_ISSUER_URL:${ACCESS_TOKEN_URL}}
+KAFKA_GROUP_ID: bidrag-dokument-arkiv-oppgave-consumer
+SERVICE_USER_USERNAME: srvbdarkiv
+SERVICE_USER_PASSWORD: ${SRV_BD_ARKIV_AUTH}
 ---
 
 spring.config.activate.on-profile: live

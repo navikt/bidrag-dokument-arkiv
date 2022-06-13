@@ -21,11 +21,6 @@ public class BidragOrganisasjonConsumer {
     this.restTemplate = restTemplate;
   }
 
-  @Cacheable(value = GEOGRAFISK_ENHET_CACHE, unless="#result == null")
-  public String hentGeografiskEnhet(String personId){
-      return hentGeografiskEnhet(personId, null);
-  }
-
   @Cacheable(value = GEOGRAFISK_ENHET_WITH_TEMA_CACHE, unless="#result == null")
   public String hentGeografiskEnhet(String personId, String tema){
     if (Strings.isEmpty(personId)){

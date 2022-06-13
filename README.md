@@ -10,6 +10,35 @@ Verdiene i `src/test/resources/application-local.yaml` må settes opp som miljø
 `BidragDokumentArkiv` for kjøring lokalt. Start applikasjon med `spring.profiles.active=local,live`
 `SRV_BD_ARKIV_AUTH` kan hentes fra Vault
 
+
+### Lokal utvikling
+
+#### Kjør lokalt med kafka
+Start kafka lokalt i en docker container med følgende kommando på root mappen
+````bash
+docker-compose up -d
+````
+Start opp applikasjon ved å kjøre BidragDokumentArkivLocal.java under test/java mappen.
+Når du starter applikasjon må følgende miljøvariabler settes
+```bash
+-DAZURE_APP_CLIENT_SECRET=<secret>
+-DAZURE_APP_CLIENT_ID=<secret>
+-DSRV_BD_ARKIV_AUTH=<secret> - kan hentes fra Vault
+```
+Disse kan hentes ved å kjøre kan hentes ved å kjøre `kubectl exec --tty deployment/bidrag-dokument-arkiv-feature -- printenv | grep -e AZURE_APP_CLIENT_ID -e AZURE_APP_CLIENT_SECRET`
+
+Bruk `kcat` til å sende meldinger til kafka topic. Feks
+
+````bash
+kcat -b localhost:9092 -t bidrag-journalpost -P -K:
+````
+og lim inn eks:
+```bash
+BID-2121212121:{"journalpostId":"BID-2121212121","aktorId":"2889800801806","fagomrade":"BID","enhet":"4806","journalstatus":"J","sporing":{"brukerident":"z992903","correlationId":"17f9db643c5-cuke"}}
+12321333:{"id":"12321333","aktorId":"2889800801806", "tema": "BID", "oppgavetype": "RETUR", "status": "OPPRETTET"}}
+```
+og deretter trykk Ctrl+D. Da vil meldingen bli sendt til topic bidrag-journalpost
+
 Se [Sikkerhet](#Sikkerhet) for kjøring med sikkerhet lokalt.
 
 ## beskrivelse
