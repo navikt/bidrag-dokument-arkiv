@@ -33,17 +33,12 @@ public class JournalpostService {
     return hentJournalpost(journalpostId, null);
   }
 
-  public Optional<Journalpost> hentJournalpostMedFnrOgTilknyttedeSaker(Long journalpostId, String saksnummer) {
+  public Optional<Journalpost> hentJournalpostMedTilknyttedeSaker(Long journalpostId, String saksnummer) {
     var jpOptional = hentJournalpostMedFnr(journalpostId, saksnummer);
     if (jpOptional.isEmpty()){
       return jpOptional;
     }
     return Optional.of(populerMedTilknyttedeSaker(jpOptional.get()));
-  }
-
-  public Optional<Journalpost> hentJournalpostMedAktorId(Long journalpostId) {
-    var journalpost = hentJournalpost(journalpostId);
-    return journalpost.map(this::konverterFnrTilAktorId);
   }
 
   public List<JournalpostDto> finnJournalposter(String saksnummer, String fagomrade) {
@@ -106,18 +101,6 @@ public class JournalpostService {
     personConsumer.hentPerson(bruker.getId()).ifPresent((personResponse)->{
       var brukerId = personResponse.getIdent();
       journalpost.setBruker(new Bruker(brukerId, BrukerType.FNR.name()));
-    });
-    return journalpost;
-  }
-
-  private Journalpost konverterFnrTilAktorId(Journalpost journalpost) {
-    var bruker = journalpost.getBruker();
-    if (Objects.isNull(bruker) || journalpost.getBruker().isAktoerId()) {
-      return journalpost;
-    }
-    personConsumer.hentPerson(bruker.getId()).ifPresent((personResponse)->{
-      var brukerId = personResponse.getAktoerId();
-      journalpost.setBruker(new Bruker(brukerId, BrukerType.AKTOERID.name()));
     });
     return journalpost;
   }
