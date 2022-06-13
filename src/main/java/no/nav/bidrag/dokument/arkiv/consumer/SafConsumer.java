@@ -85,7 +85,7 @@ public class SafConsumer {
         throw notFoundException.init(message);
       }
 
-      throw new SafException(message, reasonToHttpStatus.getStatus());
+      throw new SafException(String.format("Query %s med variabler (%s) feilet med feilmelding: %s", query.getClass().getSimpleName(), query.getVariables(), message), reasonToHttpStatus.getStatus());
     }
 
     return response;

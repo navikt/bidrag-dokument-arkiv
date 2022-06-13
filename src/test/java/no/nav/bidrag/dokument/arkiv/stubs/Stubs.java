@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.ContainsPattern;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -31,12 +32,16 @@ import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivProxyConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.GeografiskTilknytningResponse;
+import no.nav.bidrag.dokument.arkiv.dto.HentPostadresseResponse;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal;
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilAnnenSakResponse;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse;
+import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerInfoResponse;
+import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost;
 import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -131,11 +136,22 @@ public class Stubs {
     }
   }
 
-  public void mockDokarkivOppdaterDistribusjonsInfoRequest(Long journalpostId, HttpStatus status) throws JsonProcessingException {
+  public void mockSafHentDokumentResponse() throws JsonProcessingException {
     stubFor(
-        patch(urlMatching("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + '/' + journalpostId + "/oppdaterDistribusjonsinfo")).willReturn(
+        get(urlMatching("/saf/rest/hentdokument/.*")).willReturn(
+            aClosedJsonResponse()
+                .withStatus(HttpStatus.OK.value())
+                .withBody("JVBERi0xLjcgQmFzZTY0IGVuY29kZXQgZnlzaXNrIGRva3VtZW50")
+        )
+    );
+  }
+
+  public void mockDokarkivOpprettRequest(Long nyJournalpostId, HttpStatus status) throws JsonProcessingException {
+    stubFor(
+        post(urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1+"?forsoekFerdigstill=true")).willReturn(
             aClosedJsonResponse()
                 .withStatus(status.value())
+                .withBody(objectMapper.writeValueAsString(new OpprettJournalpostResponse(nyJournalpostId, "FERDIGTILT", null, true, new ArrayList<>())))
         )
     );
   }
@@ -238,6 +254,24 @@ public class Stubs {
     mockSafResponseHentJournalpost(journalpost, null, null);
   }
 
+  public void mockSafResponseHentJournalpost(Journalpost journalpost, Long journalpostId) {
+    try {
+      stubFor(
+          post(urlEqualTo("/saf/graphql"))
+              .withRequestBody(new ContainsPattern("query journalpost"))
+              .withRequestBody(new ContainsPattern(String.format("\"variables\":{\"journalpostId\":%s}", journalpostId)))
+              .willReturn(
+                  aClosedJsonResponse()
+                      .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                      .withStatus(HttpStatus.OK.value())
+                      .withBody("{\"data\":{\"journalpost\": %s }}".formatted(objectMapper.writeValueAsString(journalpost)))
+              )
+      );
+    } catch (JsonProcessingException e) {
+      fail(e.getMessage());
+    }
+  }
+
   public void mockSafResponseHentJournalpost(Journalpost journalpost, String scenarioState, String nextScenario) {
     try {
       stubFor(
@@ -268,6 +302,7 @@ public class Stubs {
     );
   }
 
+
   public void mockSafResponseTilknyttedeJournalposter(HttpStatus httpStatus) {
     stubFor(
         post(urlEqualTo("/saf/graphql"))
@@ -277,6 +312,24 @@ public class Stubs {
                     .withBodyFile("json/tilknyttedeJournalposter.json")
             )
     );
+  }
+
+  public void mockSafResponseTilknyttedeJournalposter(List<TilknyttetJournalpost> tilknyttetJournalposts) {
+    try {
+      stubFor(
+          post(urlEqualTo("/saf/graphql"))
+              .withRequestBody(new ContainsPattern("query tilknyttedeJournalposter")).willReturn(
+                  aClosedJsonResponse()
+                      .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                      .withStatus(HttpStatus.OK.value())
+                      .withBody("{\"data\":{\"tilknyttedeJournalposter\": %s }}".formatted(objectMapper.writeValueAsString(tilknyttetJournalposts)))
+
+              )
+      );
+    }catch (Exception e){
+      fail(e.getMessage());
+
+    }
   }
 
   public void mockSafResponseDokumentOversiktFagsak() {
@@ -344,6 +397,20 @@ public class Stubs {
     );
   }
 
+  public void mockPersonAdresseResponse(HentPostadresseResponse hentPostadresseResponse) {
+    try {
+      stubFor(
+          post(urlMatching("/person/bidrag-person/adresse/post")).willReturn(
+              aClosedJsonResponse()
+                  .withStatus(HttpStatus.OK.value())
+                  .withBody(new ObjectMapper().writeValueAsString(hentPostadresseResponse == null ? new HentPostadresseResponse("Ramsegata 1", "Bakredør", null, "3939", "OSLO", "NO") : hentPostadresseResponse))
+          )
+      );
+    } catch (JsonProcessingException e) {
+      fail(e.getMessage());
+    }
+  }
+
   public void mockPersonResponse(PersonResponse personResponse, HttpStatus status) {
     try {
       stubFor(
@@ -359,6 +426,12 @@ public class Stubs {
   }
 
   public static class VerifyStub {
+
+    public void hentPersonAdresseKalt(String personId){
+      var requestPattern = postRequestedFor(urlMatching("/person/bidrag-person/adresse/post"));
+      requestPattern.withRequestBody(new ContainsPattern(personId));
+      verify(requestPattern);
+    }
 
     public void bidragOrganisasjonGeografiskTilknytningKalt(){
       bidragOrganisasjonGeografiskTilknytningKalt(null);
@@ -407,6 +480,17 @@ public class Stubs {
 
     public void dokarkivOppdaterKalt(Long journalpostId, String... contains) {
       var requestPattern = putRequestedFor(urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + '/' + journalpostId));
+      Arrays.stream(contains).forEach(contain -> requestPattern.withRequestBody(new ContainsPattern(contain)));
+      verify(requestPattern);
+    }
+
+    public void safHentDokumentKalt(Long journalpostId, Long dokumentId) {
+      var requestPattern = getRequestedFor(urlEqualTo(String.format("/saf/rest/hentdokument/%s/%s/ARKIV", journalpostId, dokumentId)));
+      verify(requestPattern);
+    }
+
+    public void dokarkivOpprettKalt(String... contains) {
+      var requestPattern = postRequestedFor(urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "?forsoekFerdigstill=true"));
       Arrays.stream(contains).forEach(contain -> requestPattern.withRequestBody(new ContainsPattern(contain)));
       verify(requestPattern);
     }
@@ -498,16 +582,23 @@ public class Stubs {
       );
     }
 
-    public void dokarkivOppdaterDistribusjonsInfoKalt(Long journalpostId) {
+    public void dokarkivOppdaterDistribusjonsInfoKalt(Long journalpostId, JournalpostKanal kanal) {
       verify(
           patchRequestedFor(urlMatching("/dokarkiv" +
               DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/"+
-              journalpostId + "/oppdaterDistribusjonsinfo"))
+              journalpostId + "/oppdaterDistribusjonsinfo")).withRequestBody(new ContainsPattern(kanal.name()))
       );
     }
 
     public void harEnSafKallEtterHentJournalpost() {
       verify(
+          postRequestedFor(urlEqualTo("/saf/graphql")).withRequestBody(new ContainsPattern("query journalpost"))
+      );
+    }
+
+    public void harSafKallEtterHentJournalpost(Integer antall) {
+      verify(
+          antall,
           postRequestedFor(urlEqualTo("/saf/graphql")).withRequestBody(new ContainsPattern("query journalpost"))
       );
     }

@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
+import static no.nav.bidrag.dokument.arkiv.dto.ViolationKt.validateTrue;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -12,7 +13,9 @@ import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.AvvikshendelseIntern;
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.OpphevEndreFagomradeJournalfortJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.RegistrerReturRequest;
 import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
@@ -26,26 +29,31 @@ import no.nav.bidrag.dokument.dto.AvvikType;
 import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse;
 import no.nav.bidrag.dokument.dto.JournalpostIkkeFunnetException;
 import org.apache.logging.log4j.util.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AvvikService {
+  private static final Logger LOGGER = LoggerFactory.getLogger(AvvikService.class);
 
   public final JournalpostService journalpostService;
   public final HendelserProducer hendelserProducer;
   public final EndreJournalpostService endreJournalpostService;
+  public final DistribuerJournalpostService distribuerJournalpostService;
   public final OppgaveService oppgaveService;
   private final DokarkivConsumer dokarkivConsumer;
   private final BidragOrganisasjonConsumer bidragOrganisasjonConsumer;
   private final SaksbehandlerInfoManager saksbehandlerInfoManager;
 
   public AvvikService(ResourceByDiscriminator<JournalpostService> journalpostService, HendelserProducer hendelserProducer,
-      EndreJournalpostService endreJournalpostService, OppgaveService oppgaveService,
+      EndreJournalpostService endreJournalpostService, DistribuerJournalpostService distribuerJournalpostService, OppgaveService oppgaveService,
       ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers,
       BidragOrganisasjonConsumer bidragOrganisasjonConsumer, SaksbehandlerInfoManager saksbehandlerInfoManager) {
     this.journalpostService = journalpostService.get(Discriminator.REGULAR_USER);
     this.hendelserProducer = hendelserProducer;
     this.endreJournalpostService = endreJournalpostService;
+    this.distribuerJournalpostService = distribuerJournalpostService;
     this.oppgaveService = oppgaveService;
     this.bidragOrganisasjonConsumer = bidragOrganisasjonConsumer;
     this.saksbehandlerInfoManager = saksbehandlerInfoManager;
@@ -74,6 +82,8 @@ public class AvvikService {
       case TREKK_JOURNALPOST -> trekkJournalpost(journalpost, avvikshendelseIntern);
       case FEILFORE_SAK -> feilregistrerSakstilknytning(avvikshendelseIntern.getJournalpostId());
       case REGISTRER_RETUR -> registrerRetur(journalpost, avvikshendelseIntern);
+      case BESTILL_NY_DISTRIBUSJON -> bestillNyDistribusjon(journalpost, avvikshendelseIntern);
+      case MANGLER_ADRESSE -> manglerAdresse(journalpost);
       default -> throw new AvvikNotSupportedException("Avvik %s ikke støttet".formatted(avvikshendelseIntern.getAvvikstype()));
     }
 
@@ -81,6 +91,19 @@ public class AvvikService {
     SECURE_LOGGER.info("Avvik {} ble utført på journalpost {} av bruker {} og enhet {} med beskrivelse {} - avvik {}", avvikshendelseIntern.getAvvikstype(), avvikshendelseIntern.getJournalpostId(), saksbehandlerInfoManager.hentSaksbehandlerBrukerId(), avvikshendelseIntern.getSaksbehandlersEnhet(), avvikshendelseIntern.getBeskrivelse(), avvikshendelseIntern);
 
     return Optional.of(new BehandleAvvikshendelseResponse(avvikshendelseIntern.getAvvikstype()));
+  }
+
+  public void manglerAdresse(Journalpost journalpost){
+    oppdaterDistribusjonsInfoIngenDistribusjon(journalpost);
+  }
+
+  public void bestillNyDistribusjon(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
+      LOGGER.info("Bestiller ny distribusjon for journalpost {}", journalpost.getJournalpostId());
+      if (avvikshendelseIntern.getAdresse() == null){
+        throw new UgyldigAvvikException("Adresse må settes ved bestilling av ny distribusjon");
+      }
+
+      distribuerJournalpostService.bestillNyDistribusjon(journalpost, avvikshendelseIntern.getAdresse());
   }
 
   /**
@@ -109,7 +132,10 @@ public class AvvikService {
     hentFeilregistrerteDupliserteJournalposterMedSakOgTema(saksnummer, avvikshendelseIntern.getNyttFagomrade(), journalpost)
         .findFirst()
         .ifPresentOrElse(
-          jp -> opphevFeilregistrerSakstilknytning(jp.getJournalpostId()),
+          jp -> {
+            opphevFeilregistrerSakstilknytning(jp.getJournalpostId());
+            oppdater(new OpphevEndreFagomradeJournalfortJournalpostRequest(jp.hentJournalpostIdLong(), jp));
+          },
           () -> endreJournalpostService.tilknyttTilSak(saksnummer, avvikshendelseIntern.getNyttFagomrade(), journalpost)
         );
   }
@@ -135,6 +161,7 @@ public class AvvikService {
       sendTilFagomrade(journalpost, avvikshendelseIntern);
     }
 
+    oppdater(avvikshendelseIntern.toEndreFagomradeJournalfortJournalpostRequest(journalpost));
     feilregistrerSakstilknytning(avvikshendelseIntern.getJournalpostId());
   }
 
@@ -153,7 +180,7 @@ public class AvvikService {
     }
     var beskrivelse = Strings.isNotEmpty(avvikshendelseIntern.getBeskrivelse()) ? avvikshendelseIntern.getBeskrivelse() : "";
     var tilleggsOpplysninger = journalpost.getTilleggsopplysninger();
-    tilleggsOpplysninger.addReturDetaljLog(new ReturDetaljerLogDO(beskrivelse, returDato));
+    tilleggsOpplysninger.addReturDetaljLog(new ReturDetaljerLogDO(beskrivelse, returDato, false));
     oppdater(new RegistrerReturRequest(journalpost.hentJournalpostIdLong(), returDato, tilleggsOpplysninger));
   }
 
@@ -177,7 +204,7 @@ public class AvvikService {
   public void leggTilBegrunnelsePaaTittel(AvvikshendelseIntern avvikshendelseIntern, Journalpost journalpost){
     if (Strings.isNotEmpty(avvikshendelseIntern.getBeskrivelse())){
       validateTrue(avvikshendelseIntern.getBeskrivelse().length() < 100, new AvvikDetaljException("Beskrivelse kan ikke være lengre enn 100 tegn"));
-      oppdater(avvikshendelseIntern.toLeggTilBegrunnelsePaaTittelRequest(journalpost.getTittel()));
+      oppdater(avvikshendelseIntern.toLeggTilBegrunnelsePaaTittelRequest(journalpost));
     }
   }
 
@@ -197,9 +224,9 @@ public class AvvikService {
     return journalpost.tilAvvik().contains(avvikType);
   }
 
-  public void validateTrue(Boolean expression, RuntimeException throwable){
-    if (!expression){
-      throw throwable;
-    }
+  public void oppdaterDistribusjonsInfoIngenDistribusjon(Journalpost journalpost){
+    var tilknyttedeJournalpost = journalpostService.hentTilknyttedeJournalposter(journalpost);
+    tilknyttedeJournalpost
+        .forEach((jp)-> dokarkivConsumer.oppdaterDistribusjonsInfo(jp.getJournalpostId(), false, JournalpostKanal.INGEN_DISTRIBUSJON));
   }
 }

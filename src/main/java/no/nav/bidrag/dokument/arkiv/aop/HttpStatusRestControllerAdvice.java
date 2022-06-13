@@ -5,6 +5,7 @@ import no.nav.bidrag.dokument.arkiv.model.JournalIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.model.KnyttTilSakManglerTemaException;
 import no.nav.bidrag.dokument.arkiv.model.OppdaterJournalpostFeiletFunksjoneltException;
+import no.nav.bidrag.dokument.arkiv.model.PersonException;
 import no.nav.bidrag.dokument.arkiv.model.UgyldigAvvikException;
 import no.nav.bidrag.dokument.arkiv.model.ViolationException;
 import no.nav.security.token.support.spring.validation.interceptor.JwtTokenUnauthorizedException;
@@ -21,6 +22,18 @@ import org.springframework.web.client.HttpClientErrorException;
 @RestControllerAdvice
 public class HttpStatusRestControllerAdvice {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpStatusRestControllerAdvice.class);
+
+  @ResponseBody
+  @ExceptionHandler({PersonException.class})
+  public ResponseEntity<?> handleTechnicalException(Exception exception) {
+    LOGGER.warn(exception.getMessage());
+
+    return ResponseEntity
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .header(HttpHeaders.WARNING, exception.getMessage())
+        .build();
+  }
+
 
   @ResponseBody
   @ExceptionHandler

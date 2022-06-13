@@ -4,7 +4,51 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import no.nav.bidrag.dokument.arkiv.utils.DateUtils
+import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 import org.apache.logging.log4j.util.Strings
+import java.time.LocalDate
+
+data class OppdaterFlaggNyDistribusjonBestiltRequest(private var journalpostId: Long, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId){
+    init {
+        journalpost.tilleggsopplysninger.setNyDistribusjonBestiltFlagg()
+        tilleggsopplysninger = journalpost.tilleggsopplysninger
+    }
+}
+
+data class OppdaterDistribusjonsInfoRequest(
+    var settStatusEkspedert: Boolean,
+    var utsendingsKanal: JournalpostKanal
+)
+
+data class OpprettNyReturLoggRequest(private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {
+    init {
+        val dateNow = LocalDate.now()
+        val returDetaljerLogDO = journalpost.tilleggsopplysninger.hentReturDetaljerLogDO()
+        val returDetaljLoggWithSameDate = returDetaljerLogDO.find{it.dato == dateNow}
+        if (returDetaljLoggWithSameDate != null){
+            journalpost.tilleggsopplysninger.unlockReturDetaljerLog(dateNow)
+        } else {
+            journalpost.tilleggsopplysninger.addReturDetaljLog(ReturDetaljerLogDO("Returpost", dateNow))
+        }
+        tilleggsopplysninger = journalpost.tilleggsopplysninger
+    }
+}
+
+data class LagreReturDetaljForSisteReturRequest(private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {
+    init {
+        journalpost.tilleggsopplysninger.addReturDetaljLog(ReturDetaljerLogDO("Returpost", journalpost.hentDatoRetur()!!))
+        tilleggsopplysninger = journalpost.tilleggsopplysninger
+    }
+}
+
+data class LockReturDetaljerRequest(private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {
+    init {
+        val updatedTillegsopplysninger = TilleggsOpplysninger()
+        updatedTillegsopplysninger.addAll(journalpost.tilleggsopplysninger)
+        updatedTillegsopplysninger.lockAllReturDetaljerLog()
+        tilleggsopplysninger = updatedTillegsopplysninger
+    }
+}
 
 data class OppdaterJournalpostDistribusjonsInfoRequest(private var journalpostId: Long, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId) {
     init {
@@ -13,13 +57,25 @@ data class OppdaterJournalpostDistribusjonsInfoRequest(private var journalpostId
     }
 }
 
-data class LagreAdresseRequest(private var journalpostId: Long, private val endreAdresse: DistribuertTilAdresseDo?, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId){
+data class LagreAdresseRequest(private var journalpostId: Long, private val mottakerAdresse: DistribuerTilAdresse?, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId){
         init {
-            if (journalpost.isUtgaaendeDokument() && endreAdresse != null){
-                journalpost.tilleggsopplysninger.addMottakerAdresse(endreAdresse)
+            val mottakerAdresseDO = mapToAdresseDO(mottakerAdresse)
+            if (journalpost.isUtgaaendeDokument() && mottakerAdresseDO != null){
+                journalpost.tilleggsopplysninger.addMottakerAdresse(mottakerAdresseDO)
                 tilleggsopplysninger = journalpost.tilleggsopplysninger
             }
         }
+
+    private fun mapToAdresseDO(adresse: DistribuerTilAdresse?): DistribuertTilAdresseDo? {
+        return if (adresse != null) DistribuertTilAdresseDo(
+            adresselinje1 = adresse.adresselinje1,
+            adresselinje2 = adresse.adresselinje2,
+            adresselinje3 = adresse.adresselinje3,
+            land = adresse.land!!,
+            poststed = adresse.poststed,
+            postnummer = adresse.postnummer
+        ) else null
+    }
 }
 
 data class LagreJournalpostRequest(private var journalpostId: Long, private var endreJournalpostCommand: EndreJournalpostCommandIntern, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId) {
@@ -42,7 +98,8 @@ data class LagreJournalpostRequest(private var journalpostId: Long, private var 
             val endreReturDetaljer = endreJournalpostCommand.endreJournalpostCommand.endreReturDetaljer?.filter { Strings.isNotEmpty(it.beskrivelse) }
             if (endreReturDetaljer != null && endreReturDetaljer.isNotEmpty()){
                 endreReturDetaljer
-                    .forEach { journalpost.tilleggsopplysninger.updateReturDetaljLog(it.originalDato, ReturDetaljerLogDO(it.beskrivelse, it.nyDato ?: it.originalDato)) }
+                    .forEach { if (it.originalDato != null) journalpost.tilleggsopplysninger.updateReturDetaljLog(it.originalDato!!, ReturDetaljerLogDO(it.beskrivelse, it.nyDato ?: it.originalDato!!))
+                                else if (journalpost.manglerReturDetaljForSisteRetur() && it.nyDato != null && !journalpost.hasReturDetaljerWithDate(it.nyDato!!)) journalpost.tilleggsopplysninger.addReturDetaljLog(ReturDetaljerLogDO(it.beskrivelse, it.nyDato!!)) }
                 tilleggsopplysninger = journalpost.tilleggsopplysninger
             }
 
@@ -58,7 +115,9 @@ data class LagreJournalpostRequest(private var journalpostId: Long, private var 
         val saksnummer = if (endreJournalpostCommand.harEnTilknyttetSak()) endreJournalpostCommand.hentTilknyttetSak() else null
         sak = if (saksnummer != null) Sak(saksnummer) else null
 
-        bruker = if (endreJournalpostCommand.hentGjelder()!=null) Bruker(endreJournalpostCommand.hentGjelder(), endreJournalpostCommand.hentGjelderType()) else null
+        bruker = if (endreJournalpostCommand.hentGjelder()!=null) Bruker(endreJournalpostCommand.hentGjelder(), endreJournalpostCommand.hentGjelderType())
+                 else if (journalpost.bruker != null) Bruker(journalpost.bruker?.id, journalpost.bruker?.type)
+                 else null
         tema = if (endreJournalpostCommand.hentFagomrade() != null) endreJournalpostCommand.hentFagomrade() else journalpost.tema
     }
 }

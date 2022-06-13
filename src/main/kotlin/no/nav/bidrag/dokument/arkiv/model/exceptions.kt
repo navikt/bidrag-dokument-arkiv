@@ -22,7 +22,7 @@ class JournalpostHendelseException(message: String, throwable: Throwable) : Runt
 class JournalpostIkkeFunnetException(message: String) : RuntimeException(message)
 
 class SafException(message: String, override val status: HttpStatus) : HttpStatusException(message)
-class PersonException(message: String, override val status: HttpStatus) : HttpStatusException(message)
+class PersonException(message: String) : RuntimeException(message)
 class ResourceDiscriminatorException(message: String) : RuntimeException(message)
 class AvvikDetaljException(detalj: String) : RuntimeException("Manglende detalj i avvik: $detalj")
 class AvvikNotSupportedException(message: String) : HttpStatusException(message) {
@@ -32,8 +32,11 @@ class UgyldigAvvikException(message: String) : RuntimeException(message);
 
 class KnyttTilSakManglerTemaException(message: String) : RuntimeException(message)
 
+class UgyldigDistribusjonException(message: String): FunksjonellFeilException(message)
 class DistribusjonFeiletFunksjoneltException(message: String): FunksjonellFeilException(message)
 class DistribusjonFeiletTekniskException(message: String, throwable: Throwable): TekniskFeilException(message, throwable)
 
 class OppdaterJournalpostFeiletFunksjoneltException(message: String): FunksjonellFeilException(message)
 class OppdaterJournalpostFeiletTekniskException(message: String, throwable: Throwable): TekniskFeilException(message, throwable)
+
+class JournalpostHarIkkeKommetIRetur(message: String): RuntimeException(message)
