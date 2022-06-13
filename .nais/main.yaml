@@ -15,16 +15,18 @@ env:
     DOKARKIV_URL: https://dokarkiv-q2.dev.adeo.no/
     DOKARKIV_PROXY_URL: https://dokarkivproxy-q2.dev.intern.nav.no
     DOKDISTFORDELING_URL: https://dokdistfordeling-q2.dev.adeo.no
-    SAF_GRAPHQL_URL: https://saf-q2.dev.adeo.no/graphql
+    SAF_URL: https://saf-q2.dev.adeo.no
     OPPGAVE_URL: https://oppgave-q2.nais.preprod.local/api/v1/oppgaver
     OPPGAVE_SCOPE: dev-fss.oppgavehandtering.oppgave
     SAF_SCOPE: dev-fss.teamdokumenthandtering.saf
     DOKARKIV_SCOPE: dev-fss.teamdokumenthandtering.dokarkiv
     TOPIC_JOURNALPOST: bidrag.journalpost
+    TOPIC_OPPGAVE_OPPRETTET: aapen-oppgave-opprettet-v1-dev-syntetisk
+    KAFKA_BOOTSTRAP_SERVERS: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
     TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering
     BIDRAG_PERSON_URL: https://bidrag-person.dev.adeo.no
     BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon.dev.adeo.no
-    FEATURE_ENABLED: KAFKA_ARBEIDSFLYT
+    ORGANISASJON_SCOPE: dev-fss.bidrag.bidrag-organisasjon
 vault:
   kvPath: dev
 azureAccessInbound:

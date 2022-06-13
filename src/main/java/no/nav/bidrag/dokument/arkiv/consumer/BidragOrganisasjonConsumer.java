@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.consumer;
 
 import static no.nav.bidrag.dokument.arkiv.CacheConfig.GEOGRAFISK_ENHET_CACHE;
+import static no.nav.bidrag.dokument.arkiv.CacheConfig.GEOGRAFISK_ENHET_WITH_TEMA_CACHE;
 import static no.nav.bidrag.dokument.arkiv.CacheConfig.SAKSBEHANDLERINFO_CACHE;
 
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
@@ -20,17 +21,17 @@ public class BidragOrganisasjonConsumer {
     this.restTemplate = restTemplate;
   }
 
-  @Cacheable(GEOGRAFISK_ENHET_CACHE)
+  @Cacheable(value = GEOGRAFISK_ENHET_WITH_TEMA_CACHE, unless="#result == null")
   public String hentGeografiskEnhet(String personId, String tema){
-      if (Strings.isEmpty(personId)){
-        return null;
-      }
-      var arbeidsfordelingUrl = String.format(ARBEIDSFORDELING_URL, personId);
-      if (Strings.isNotEmpty(tema)){
-        arbeidsfordelingUrl = arbeidsfordelingUrl+"?tema="+tema;
-      }
-      var response = restTemplate.exchange(arbeidsfordelingUrl, HttpMethod.GET, null, GeografiskTilknytningResponse.class);
-      return response.getBody().getEnhetIdent();
+    if (Strings.isEmpty(personId)){
+      return null;
+    }
+    var arbeidsfordelingUrl = String.format(ARBEIDSFORDELING_URL, personId);
+    if (Strings.isNotEmpty(tema)){
+      arbeidsfordelingUrl = arbeidsfordelingUrl+"?tema="+tema;
+    }
+    var response = restTemplate.exchange(arbeidsfordelingUrl, HttpMethod.GET, null, GeografiskTilknytningResponse.class);
+    return response.getBody() == null ? null : response.getBody().getEnhetIdent();
   }
 
 

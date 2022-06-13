@@ -14,16 +14,18 @@ env:
   DOKARKIV_URL: https://dokarkiv.nais.adeo.no/
   DOKARKIV_PROXY_URL:  https://dokarkivproxy.intern.nav.no
   DOKDISTFORDELING_URL: https://dokdistfordeling.nais.adeo.no
-  SAF_GRAPHQL_URL: https://saf.nais.adeo.no/graphql
+  SAF_URL: https://saf.nais.adeo.no
   OPPGAVE_URL: https://oppgave.nais.adeo.no/api/v1/oppgaver
   OPPGAVE_SCOPE: prod-fss.oppgavehandtering.oppgave
   SAF_SCOPE: prod-fss.teamdokumenthandtering.saf
   DOKARKIV_SCOPE: prod-fss.teamdokumenthandtering.dokarkiv
   TOPIC_JOURNALPOST: bidrag.journalpost
+  TOPIC_OPPGAVE_OPPRETTET: aapen-oppgave-opprettet-v1-prod
+  KAFKA_BOOTSTRAP_SERVERS: a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443
   TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering
   BIDRAG_PERSON_URL: https://bidrag-person.nais.adeo.no
   BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon.nais.adeo.no
-  FEATURE_ENABLED: NONE
+  ORGANISASJON_SCOPE: prod-fss.bidrag.bidrag-organisasjon
 vault:
   kvPath: prod
 azureAccessInbound:

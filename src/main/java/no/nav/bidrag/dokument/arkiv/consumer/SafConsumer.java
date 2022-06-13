@@ -18,7 +18,6 @@ import no.nav.bidrag.dokument.arkiv.query.GraphQuery;
 import no.nav.bidrag.dokument.arkiv.query.JournalpostQuery;
 import no.nav.bidrag.dokument.arkiv.query.TilknyttedeJournalposterQuery;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +30,10 @@ public class SafConsumer {
 
   public SafConsumer(RestTemplate restTemplate) {
     this.restTemplate = restTemplate;
+  }
+
+  public ResponseEntity<byte[]> hentDokument(Long journalpostId, Long dokumentReferanse){
+      return this.restTemplate.exchange(String.format("/rest/hentdokument/%s/%s/ARKIV", journalpostId, dokumentReferanse), HttpMethod.GET, HttpEntity.EMPTY, byte[].class);
   }
 
   public Journalpost hentJournalpost(Long journalpostId) {
@@ -63,7 +66,7 @@ public class SafConsumer {
   private GraphQLResponse consumeQuery(GraphQuery query, NotFoundException notFoundException) {
     var queryString = query.getQuery();
     var graphQLClient = new CustomGraphQLClient("", (url, headers, body) -> {
-      ResponseEntity<String> exchange = restTemplate.exchange("/", HttpMethod.POST, new HttpEntity<>(body), String.class);
+      ResponseEntity<String> exchange = restTemplate.exchange("/graphql", HttpMethod.POST, new HttpEntity<>(body), String.class);
       return new HttpResponse(exchange.getStatusCodeValue(), exchange.getBody());
     });
 
@@ -82,7 +85,7 @@ public class SafConsumer {
         throw notFoundException.init(message);
       }
 
-      throw new SafException(message, reasonToHttpStatus.getStatus());
+      throw new SafException(String.format("Query %s med variabler (%s) feilet med feilmelding: %s", query.getClass().getSimpleName(), query.getVariables(), message), reasonToHttpStatus.getStatus());
     }
 
     return response;

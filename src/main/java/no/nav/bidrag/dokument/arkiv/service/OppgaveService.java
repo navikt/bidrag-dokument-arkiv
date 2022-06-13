@@ -40,7 +40,7 @@ public class OppgaveService {
     this.saksbehandlerInfoManager = saksbehandlerInfoManager;
   }
 
-  public void opprettOverforJournalpostOppgave(Journalpost journalpost, String journalpostId, String tildeltEnhetsnr, String tema, String kommentar) {
+  public void opprettVurderDokumentOppgave(Journalpost journalpost, String journalpostId, String tildeltEnhetsnr, String tema, String kommentar) {
     var aktorId = hentAktorId(journalpost.hentGjelderId());
     opprettOppgave(new OpprettVurderDokumentOppgaveRequest(
         journalpost,
@@ -113,16 +113,8 @@ public class OppgaveService {
   }
 
   private String hentAktorId(String gjelder) {
-    var personResponse = personConsumers.get(Discriminator.REGULAR_USER).hentPerson(gjelder);
-    if (personResponse.getResponseEntity() == null){
-      return gjelder;
-    }
-    var muligIdent = personResponse.fetchBody();
-    var ident = muligIdent.orElseGet(() -> {
-      LOGGER.warn("Fant ikke identinfo for {}.", gjelder);
-      return new PersonResponse(gjelder, gjelder);
-    });
-    return ident.getAktoerId();
+    return personConsumers.get(Discriminator.REGULAR_USER).hentPerson(gjelder)
+        .orElseGet(()->new PersonResponse(gjelder, gjelder)).getAktoerId();
   }
 
   private String notNull(String fagomrade) {

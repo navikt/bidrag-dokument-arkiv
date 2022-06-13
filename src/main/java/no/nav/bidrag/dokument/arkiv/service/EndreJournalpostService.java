@@ -3,7 +3,6 @@ package no.nav.bidrag.dokument.arkiv.service;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import no.nav.bidrag.commons.web.HttpResponse;
-import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivProxyConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
@@ -56,12 +55,21 @@ public class EndreJournalpostService {
     lagreJournalpost(journalpostId, endreJournalpostCommand, journalpost);
     journalfoerJournalpostNarMottaksregistrert(endreJournalpostCommand, journalpost);
 
-    journalpost = hentJournalpost(journalpostId);
-    tilknyttSakerTilJournalfoertJournalpost(endreJournalpostCommand, journalpost);
-    opprettBehandleDokumentOppgaveVedJournalforing(endreJournalpostCommand, journalpost);
+    if (journalpost.kanTilknytteSaker() || endreJournalpostCommand.skalJournalfores()){
+      journalpost = hentJournalpost(journalpostId);
+      tilknyttSakerTilJournalfoertJournalpost(endreJournalpostCommand, journalpost);
+      opprettBehandleDokumentOppgaveVedJournalforing(endreJournalpostCommand, journalpost);
+    }
 
-    hendelserProducer.publishJournalpostUpdated(journalpostId, endreJournalpostCommand.getEnhet());
+    publiserJournalpostEndretHendelse(journalpost, journalpostId, endreJournalpostCommand);
+
     return HttpResponse.from(HttpStatus.OK);
+  }
+
+  private void publiserJournalpostEndretHendelse(Journalpost journalpost, Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand){
+    if (journalpost.isInngaaendeDokument()){
+      hendelserProducer.publishJournalpostUpdated(journalpostId, endreJournalpostCommand.getEnhet());
+    }
   }
 
   public OppdaterJournalpostResponse lagreJournalpost(OppdaterJournalpostRequest oppdaterJournalpostRequest){

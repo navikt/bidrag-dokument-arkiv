@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.Optional;
 import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal;
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
@@ -62,8 +63,7 @@ class JournalpostServiceTest {
     var journalpostDokOversikt = dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostIdFraJson);
 
     when(safConsumerMock.hentJournalpost(journalpostIdFraJson)).thenReturn(journalpostDokOversikt);
-    when(personConsumerMock.hentPerson(journalpostDokOversikt.getBruker().getId())).thenReturn(HttpResponse.from(
-        HttpStatus.OK, new PersonResponse("123123", "555555")));
+    when(personConsumerMock.hentPerson(journalpostDokOversikt.getBruker().getId())).thenReturn(Optional.of(new PersonResponse("123123", "555555")));
 
     var muligJournalpost = journalpostService.get(Discriminator.REGULAR_USER).hentJournalpostMedFnrOgTilknyttedeSaker(journalpostIdFraJson, null);
 
