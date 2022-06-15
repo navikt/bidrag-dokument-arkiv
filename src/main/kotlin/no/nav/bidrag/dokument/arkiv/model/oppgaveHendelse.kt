@@ -48,6 +48,8 @@ data class OppgaveHendelse(
 
     fun erJoarkJournalpost(): Boolean = journalpostId != null && !journalpostId.contains("BID")
 
+    override fun toString(): String = "{id=$id,journalpostId=$journalpostId,tema=$tema,opprettetAv=$opprettetAv,tildeltEnhetsnr=$tildeltEnhetsnr,fristFerdigstillelse=$fristFerdigstillelse,status=$status,statuskategori=$statuskategori,saksreferanse=$saksreferanse}"
+
 }
 
 enum class Prioritet {

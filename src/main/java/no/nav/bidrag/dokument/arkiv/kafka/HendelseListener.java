@@ -37,12 +37,10 @@ public class HendelseListener {
     OppgaveHendelse oppgaveOpprettetHendelse = jsonMapperService.mapOppgaveHendelse(consumerRecord.value());
 
     if (oppgaveOpprettetHendelse.erTemaBIDEllerFAR() && oppgaveOpprettetHendelse.erReturOppgave()) {
-        LOGGER.info("Mottatt retur oppgave opprettet hendelse med journalpostId {}, oppgaveId {}, tema {}, opprettetAv {}, saksnummer {}. statuskategori {} og status {}",
-          oppgaveOpprettetHendelse.getJournalpostId(), oppgaveOpprettetHendelse.getId(), oppgaveOpprettetHendelse.getTema(), oppgaveOpprettetHendelse.getOpprettetAv(), oppgaveOpprettetHendelse.getSaksreferanse(), oppgaveOpprettetHendelse.getStatuskategori(), oppgaveOpprettetHendelse.getStatus());
+      LOGGER.info("Mottatt retur oppgave opprettet hendelse {}", oppgaveOpprettetHendelse);
       behandleOppgaveHendelseService.behandleReturOppgaveOpprettetHendelse(oppgaveOpprettetHendelse);
     } else if (oppgaveOpprettetHendelse.erTemaBIDEllerFAR() && oppgaveOpprettetHendelse.erJournalforingOppgave()){
-      LOGGER.info("Mottatt journalforing oppgave opprettet hendelse med journalpostId {}, oppgaveId {}, tema {}, opprettetAv {}, tildeltEnhetsnr {}, og status {}",
-          oppgaveOpprettetHendelse.getJournalpostId(), oppgaveOpprettetHendelse.getId(), oppgaveOpprettetHendelse.getTema(),oppgaveOpprettetHendelse.getOpprettetAv(), oppgaveOpprettetHendelse.getTildeltEnhetsnr(), oppgaveOpprettetHendelse.getStatus());
+      LOGGER.info("Mottatt journalforing oppgave opprettet hendelse {}", oppgaveOpprettetHendelse);
       behandleOppgaveHendelseService.behandleJournalforingOppgaveOpprettetHendelse(oppgaveOpprettetHendelse);
     }
   }
