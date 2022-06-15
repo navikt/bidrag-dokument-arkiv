@@ -105,6 +105,28 @@ class DokDistDistribuerJournalpostRequestTest {
   }
 
   @Test
+  @DisplayName("skal mappe distribusjonstype vedtak hvis tittel inneholder decision")
+  void skalMappeDistribusjonsTypeVedtakHvisTittelInneholderDecision() throws IOException {
+    var jpid = 123123;
+
+    var request = new DokDistDistribuerJournalpostRequest(jpid, "???", "Some deciSion", null, null);
+    assertAll(
+        () -> assertThat(request.getDistribusjonstype()).isEqualTo(DistribusjonsType.VEDTAK)
+    );
+  }
+
+  @Test
+  @DisplayName("skal mappe distribusjonstype viktig hvis tittel ikke inneholder vedtak eller decision")
+  void skalMappeDistribusjonsTypeViktigHvisTittelIkkeInneholderVedtakDecision() throws IOException {
+    var jpid = 123123;
+
+    var request = new DokDistDistribuerJournalpostRequest(jpid, "???", "Brev med en tittel vedta decisio", null, null);
+    assertAll(
+        () -> assertThat(request.getDistribusjonstype()).isEqualTo(DistribusjonsType.VIKTIG)
+    );
+  }
+
+  @Test
   @DisplayName("skal mappe distribusjonstype vedtak")
   void skalMappeDistribusjonsTypeVedtak() throws IOException {
     var jpid = 123123;
