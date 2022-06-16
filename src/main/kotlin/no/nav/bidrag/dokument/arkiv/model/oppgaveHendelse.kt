@@ -19,7 +19,7 @@ data class OppgaveHendelse(
     val behandlingstema: String? = null,
     val oppgavetype: String? = null,
     val behandlingstype: String? = null,
-    val versjon: Int? = null,
+    val versjon: Int = -1,
     val status: OppgaveStatus? = null,
     val statuskategori: Oppgavestatuskategori? = null,
     val endretAv: String? = null,

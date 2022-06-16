@@ -2,6 +2,7 @@ package no.nav.bidrag.dokument.arkiv.dto
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
+import no.nav.bidrag.dokument.arkiv.model.OppgaveHendelse
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -33,7 +34,7 @@ open class OppgaveData(
     var journalpostId: String? = null,
     var journalpostkilde: String? = null,
     var behandlesAvApplikasjon: String? = null,
-    var saksreferanse: String? = null,
+    open var saksreferanse: String? = null,
     var bnr: String? = null,
     var samhandlernr: String? = null,
     var aktoerId: String? = null,
@@ -68,6 +69,8 @@ open class OppgaveData(
                 "$beskrivelse"
     }
 }
+
+data class OppdaterSakRequest(private var oppgaveHendelse: OppgaveHendelse, override var saksreferanse: String?): OppgaveData(id = oppgaveHendelse.id, versjon = oppgaveHendelse.versjon)
 
 data class EndreForNyttDokumentRequest(private var oppgaveData: OppgaveData,
                                        private var saksbehandlersInfo: String,
