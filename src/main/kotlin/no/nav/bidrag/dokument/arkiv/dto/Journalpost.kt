@@ -210,6 +210,7 @@ data class Journalpost(
         return saksnummerList
     }
 
+    fun hentSaksnummer(): String? = sak?.fagsakId
     fun leggTilTilknyttetSak(tilknyttetSak: String) {
         tilknyttedeSaker = tilknyttedeSaker + listOf(tilknyttetSak)
     }

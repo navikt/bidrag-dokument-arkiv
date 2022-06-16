@@ -3,9 +3,12 @@ package no.nav.bidrag.dokument.arkiv.kafka;
 import com.google.common.base.Strings;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.time.LocalDate;
+import java.util.Objects;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
+import no.nav.bidrag.dokument.arkiv.consumer.OppgaveConsumer;
+import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.OppdaterSakRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OpprettNyReturLoggRequest;
-import no.nav.bidrag.dokument.arkiv.dto.OverforEnhetRequest;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHarIkkeKommetIRetur;
 import no.nav.bidrag.dokument.arkiv.model.OppgaveHendelse;
@@ -23,11 +26,13 @@ public class BehandleOppgaveHendelseService {
   private static final Logger LOGGER = LoggerFactory.getLogger(BehandleOppgaveHendelseService.class);
 
   private final DokarkivConsumer dokarkivConsumer;
+  private final OppgaveConsumer oppgaveConsumer;
   private final JournalpostService journalpostService;
   private final MeterRegistry meterRegistry;
   public BehandleOppgaveHendelseService(ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers,
-      ResourceByDiscriminator<JournalpostService> journalpostServices, MeterRegistry meterRegistry) {
+      ResourceByDiscriminator<OppgaveConsumer> oppgaveConsumers, ResourceByDiscriminator<JournalpostService> journalpostServices, MeterRegistry meterRegistry) {
     this.dokarkivConsumer = dokarkivConsumers.get(Discriminator.SERVICE_USER);
+    this.oppgaveConsumer = oppgaveConsumers.get(Discriminator.SERVICE_USER);
     this.journalpostService = journalpostServices.get(Discriminator.SERVICE_USER);
     this.meterRegistry = meterRegistry;
   }
@@ -57,6 +62,8 @@ public class BehandleOppgaveHendelseService {
               } else {
                 LOGGER.warn("Legger ikke til ny returlogg på journalpost {}. Journalpost har allerede registrert returlogg for siste retur", journalpost.getJournalpostId());
               }
+
+              oppdaterOppgaveSaksreferanse(journalpost, oppgaveHendelse);
             },
             () -> LOGGER.error("Fant ingen journalpost med id {}", oppgaveHendelse.getJournalpostId())
         );
@@ -64,6 +71,16 @@ public class BehandleOppgaveHendelseService {
       this.meterRegistry.counter("ny_retur_oppgave", "tema", oppgaveHendelse.getTema()).increment();
   }
 
+  private void oppdaterOppgaveSaksreferanse(Journalpost journalpost, OppgaveHendelse oppgaveHendelse){
+    try {
+      if (!Objects.equals(oppgaveHendelse.getSaksreferanse(), journalpost.hentSaksnummer())){
+        oppgaveConsumer.patchOppgave(new OppdaterSakRequest(oppgaveHendelse, journalpost.hentSaksnummer()));
+        LOGGER.info("Oppdatert oppgave {} saksreferanse til {}.",  oppgaveHendelse.getId(), journalpost.hentSaksnummer());
+      }
+    } catch (Exception e){
+      LOGGER.error("Det skjedde en feil ved oppdatering av saksreferanse på oppgave {}", oppgaveHendelse.getId(), e);
+    }
+  }
   public void behandleJournalforingOppgaveOpprettetHendelse(OppgaveHendelse oppgaveHendelse){
 //    if (oppgaveHendelse.erJoarkJournalpost()){
 //      dokarkivConsumer.endre(new OverforEnhetRequest(Long.parseLong(oppgaveHendelse.getJournalpostId()), oppgaveHendelse.getTildeltEnhetsnr()));
