@@ -75,7 +75,7 @@ public class BehandleOppgaveHendelseService {
     try {
       if (!Objects.equals(oppgaveHendelse.getSaksreferanse(), journalpost.hentSaksnummer())){
         oppgaveConsumer.patchOppgave(new OppdaterSakRequest(oppgaveHendelse, journalpost.hentSaksnummer()));
-        LOGGER.info("Oppdatert oppgave {} saksreferanse til {}.",  oppgaveHendelse.getId(), journalpost.hentSaksnummer());
+        LOGGER.info("Oppdatert retur oppgave {} saksreferanse til {}. JournalpostId={}",  journalpost.hentSaksnummer(), oppgaveHendelse.getId(), journalpost.getJournalpostId());
       }
     } catch (Exception e){
       LOGGER.error("Det skjedde en feil ved oppdatering av saksreferanse på oppgave {}", oppgaveHendelse.getId(), e);
