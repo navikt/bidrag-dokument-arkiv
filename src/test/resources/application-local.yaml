@@ -19,6 +19,7 @@ AZURE_APP_TENANT_ID: 966ac572-f5b7-4bbe-aa88-c76419c0f851
 OPPGAVE_URL: https://oppgave-q1.dev-fss-pub.nais.io/api/v1/oppgaver
 OPPGAVE_SCOPE: dev-fss.oppgavehandtering.oppgave-q1
 SAF_SCOPE: dev-fss.teamdokumenthandtering.saf
+PERSON_SCOPE: dev-fss.bidrag.bidrag-person-feature
 ORGANISASJON_SCOPE: dev-fss.bidrag.bidrag-organisasjon-feature
 DOKARKIV_SCOPE: dev-fss.teamdokumenthandtering.dokarkiv-q1
 KAFKA_GROUP_ID: bidrag-arkiv-consumer

@@ -201,8 +201,8 @@ public class BidragDokumentArkivConfig {
       PersonConsumer personConsumerServiceUser,
       SecurityTokenService securityTokenService
   ) {
-    personConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor());
-    personConsumerServiceUser.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor());
+    personConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor("bidrag-person"));
+    personConsumerServiceUser.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor("bidrag-person"));
     var personConsumers = new HashMap<Discriminator, PersonConsumer>();
     personConsumers.put(Discriminator.REGULAR_USER, personConsumerRegularUser);
     personConsumers.put(Discriminator.SERVICE_USER, personConsumerServiceUser);

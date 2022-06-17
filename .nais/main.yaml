@@ -25,6 +25,7 @@ env:
     KAFKA_BOOTSTRAP_SERVERS: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
     TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering
     BIDRAG_PERSON_URL: https://bidrag-person.dev.adeo.no
+    PERSON_SCOPE: dev-fss.bidrag.bidrag-person
     BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon.dev.adeo.no
     ORGANISASJON_SCOPE: dev-fss.bidrag.bidrag-organisasjon
 vault:
