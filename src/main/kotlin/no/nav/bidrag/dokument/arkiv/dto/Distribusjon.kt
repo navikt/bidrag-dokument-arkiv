@@ -240,7 +240,7 @@ class BrevkodeToDistribusjonstypeMapper {
     }
 
     fun toDistribusjonsType(brevkode: String?, tittel: String?): DistribusjonsType {
-        if (tittel?.lowercase()?.contains("vedtak") == true) {
+        if (listOf("vedtak","decision").any { tittel?.lowercase()?.contains(it) == true }) {
             return DistribusjonsType.VEDTAK
         }
         return brevkodemap.getOrDefault(brevkode, DistribusjonsType.VIKTIG)

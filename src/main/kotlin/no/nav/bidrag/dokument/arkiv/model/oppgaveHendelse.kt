@@ -19,7 +19,7 @@ data class OppgaveHendelse(
     val behandlingstema: String? = null,
     val oppgavetype: String? = null,
     val behandlingstype: String? = null,
-    val versjon: Int? = null,
+    val versjon: Int = -1,
     val status: OppgaveStatus? = null,
     val statuskategori: Oppgavestatuskategori? = null,
     val endretAv: String? = null,
@@ -47,6 +47,8 @@ data class OppgaveHendelse(
     fun erStatusOpprettet(): Boolean = status == OppgaveStatus.OPPRETTET
 
     fun erJoarkJournalpost(): Boolean = journalpostId != null && !journalpostId.contains("BID")
+
+    override fun toString(): String = "{id=$id,journalpostId=$journalpostId,tema=$tema,opprettetAv=$opprettetAv,tildeltEnhetsnr=$tildeltEnhetsnr,fristFerdigstillelse=$fristFerdigstillelse,status=$status,statuskategori=$statuskategori,saksreferanse=$saksreferanse}"
 
 }
 
