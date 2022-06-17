@@ -113,7 +113,7 @@ public class OppgaveService {
   }
 
   private String hentAktorId(String gjelder) {
-    return personConsumers.get(Discriminator.REGULAR_USER).hentPerson(gjelder)
+    return personConsumers.get(Discriminator.SERVICE_USER).hentPerson(gjelder)
         .orElseGet(()->new PersonResponse(gjelder, gjelder)).getAktoerId();
   }
 
