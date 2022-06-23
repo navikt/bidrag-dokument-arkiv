@@ -18,7 +18,10 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 public class DokdistFordelingConsumer {
@@ -34,6 +37,7 @@ public class DokdistFordelingConsumer {
   }
 
 
+  @Retryable(value = {DistribusjonFeiletTekniskException.class, ResourceAccessException.class}, backoff = @Backoff(delay = 500, maxDelay = 3000, multiplier = 1.5))
   public DistribuerJournalpostResponse distribuerJournalpost(Journalpost journalpost, String batchId, DistribuerTilAdresse adresse) {
     var journalpostId = journalpost.hentJournalpostIdLong();
     var request = new DokDistDistribuerJournalpostRequest(journalpostId, journalpost.hentBrevkode(), journalpost.hentTittel(), adresse, batchId);
