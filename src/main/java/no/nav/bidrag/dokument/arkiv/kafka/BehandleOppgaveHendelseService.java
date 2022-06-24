@@ -57,7 +57,7 @@ public class BehandleOppgaveHendelseService {
                 dokarkivConsumer.endre(new OpprettNyReturLoggRequest(journalpost));
                 LOGGER.info("Lagt til ny returlogg med returdato {} på journalpost {} med dokumentdato {}.",  LocalDate.now(), journalpost.getJournalpostId(), journalpost.hentDatoDokument());
               } else if (!journalpost.isDistribusjonKommetIRetur()) {
-                LOGGER.error("Journalpost {} har ikke kommet i retur. Det kan hende dette skyldes race-condition hvor retur oppgave er opprettet før journalpost er oppdatert. Forsøker på nytt.", oppgaveHendelse.getJournalpostId());
+                LOGGER.warn("Journalpost {} har ikke kommet i retur. Det kan hende dette skyldes race-condition hvor retur oppgave er opprettet før journalpost er oppdatert. Forsøker på nytt.", oppgaveHendelse.getJournalpostId());
                 throw new JournalpostHarIkkeKommetIRetur(String.format("Journalpost %s har ikke kommet i retur", oppgaveHendelse.getJournalpostId()));
               } else {
                 LOGGER.warn("Legger ikke til ny returlogg på journalpost {}. Journalpost har allerede registrert returlogg for siste retur", journalpost.getJournalpostId());
