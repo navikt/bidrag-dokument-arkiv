@@ -49,7 +49,7 @@ public class HttpStatusRestControllerAdvice {
   @ResponseBody
   @ExceptionHandler
   public ResponseEntity<?> handleOtherExceptions(Exception exception) {
-    LOGGER.error(exception.getMessage());
+    LOGGER.error(exception.getMessage(), exception);
 
     return ResponseEntity
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
