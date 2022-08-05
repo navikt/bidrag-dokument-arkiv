@@ -22,7 +22,7 @@
 
     <!-- language -->
     <java.version>17</java.version>
-    <kotlin.version>1.6.21</kotlin.version>
+    <kotlin.version>1.7.10</kotlin.version>
 
     <!-- dependent versions other than from spring-boot -->
     <apache-avro-version>1.11.0</apache-avro-version>
@@ -36,7 +36,7 @@
     <kafka-avro-serializer.version>6.2.1</kafka-avro-serializer.version>
     <logback-encoder.version>7.2</logback-encoder.version>
     <nimbus-jose-jwt.version>9.15.2</nimbus-jose-jwt.version>
-    <springdoc-openapi-ui.version>1.6.8</springdoc-openapi-ui.version>
+    <springdoc-openapi-ui.version>1.6.9</springdoc-openapi-ui.version>
     <springframework-cloud.version>3.1.0</springframework-cloud.version>
     <squareup.version>4.9.3</squareup.version>
     <token-support.version>2.0.14</token-support.version>
