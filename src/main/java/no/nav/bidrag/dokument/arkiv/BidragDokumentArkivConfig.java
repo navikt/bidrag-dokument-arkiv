@@ -107,7 +107,6 @@ public class BidragDokumentArkivConfig {
       ObjectMapper objectMapper,
       SecurityTokenService securityTokenService
   ) {
-    httpHeaderRestTemplate.setRequestFactory(factory);
     httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.dokdistFordelingUrl));
     httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
     DokdistFordelingConsumer dokdistFordelingConsumer = new DokdistFordelingConsumer(httpHeaderRestTemplate, objectMapper);
