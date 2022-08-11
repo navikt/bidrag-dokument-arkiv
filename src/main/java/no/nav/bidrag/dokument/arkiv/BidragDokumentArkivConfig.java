@@ -257,7 +257,6 @@ public class BidragDokumentArkivConfig {
   public EnvironmentProperties environmentProperties(
       @Value("${DOKARKIV_URL}") String dokarkivUrl,
       @Value("${DOKDISTFORDELING_URL}") String dokdistFordelingUrl,
-      @Value("${DOKARKIV_PROXY_URL}") String dokarkivProxyUrl,
       @Value("${BIDRAG_PERSON_URL}") String bidragPersonUrl,
       @Value("${SAF_URL}") String safUrl,
       @Value("${OPPGAVE_URL}") String oppgaveUrl,
@@ -266,7 +265,7 @@ public class BidragDokumentArkivConfig {
       @Value("${BIDRAG_ORGANISASJON_URL}") String bidragOrganisasjonUrl,
       @Value("${NAIS_APP_NAME}") String naisAppName
   ) {
-    var environmentProperties = new EnvironmentProperties(dokdistFordelingUrl, dokarkivUrl, dokarkivProxyUrl, safUrl, oppgaveUrl,
+    var environmentProperties = new EnvironmentProperties(dokdistFordelingUrl, dokarkivUrl, safUrl, oppgaveUrl,
         secretForServiceUser, securityTokenUrl,
         naisAppName, bidragPersonUrl, bidragOrganisasjonUrl);
     LOGGER.info(String.format("> Environment: %s", environmentProperties));
@@ -278,7 +277,6 @@ public class BidragDokumentArkivConfig {
 
     public final String dokarkivUrl;
     public final String dokdistFordelingUrl;
-    public final String dokarkivProxyUrl;
     public final String bidragPersonUrl;
     public final String safUrl;
     public final String oppgaveUrl;
@@ -289,11 +287,10 @@ public class BidragDokumentArkivConfig {
 
     public EnvironmentProperties(
         String dokdistFordelingUrl,
-        String dokarkivUrl, String dokarkivProxyUrl, String safUrl, String oppgaveUrl, String secretForServiceUser,
+        String dokarkivUrl, String safUrl, String oppgaveUrl, String secretForServiceUser,
         String securityTokenUrl, String naisAppName, String bidragPersonUrl, String bidragOrganisasjonUrl
     ) {
       this.dokdistFordelingUrl = dokdistFordelingUrl;
-      this.dokarkivProxyUrl = dokarkivProxyUrl;
       this.oppgaveUrl = oppgaveUrl;
       this.bidragPersonUrl = bidragPersonUrl;
       this.dokarkivUrl = dokarkivUrl;
@@ -310,7 +307,6 @@ public class BidragDokumentArkivConfig {
           ", safUrl='" + safUrl + '\'' +
           ", bidragPersonUrl='" + bidragPersonUrl + '\'' +
           ", securityTokenUrl='" + securityTokenUrl + '\'' +
-          ", dokarkivProxyUrl='" + dokarkivProxyUrl + '\'' +
           ", bidragOrganisasjonUrl='" + bidragOrganisasjonUrl + '\'' +
           ", naisAppName='" + naisAppName + '\'' +
           ", secretForServiceUser '" + notActualValue() + "'.";
