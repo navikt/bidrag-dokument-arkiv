@@ -19,7 +19,6 @@ import no.nav.bidrag.dokument.arkiv.stubs.NY_JOURNALPOST_ID_KNYTT_TIL_SAK
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeDistribuertSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
-import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponseWithReturDetaljer
 import no.nav.bidrag.dokument.dto.AvvikType
 import no.nav.bidrag.dokument.dto.Avvikshendelse
 import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse
@@ -259,7 +258,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
         stubs.mockOpprettOppgave(HttpStatus.OK)
-        stubs.mockDokarkivProxyTilknyttRequest(JOURNALPOST_ID, NY_JOURNALPOST_ID_KNYTT_TIL_SAK)
+        stubs.mockDokarkivKnyttTilAnnenSakRequest(JOURNALPOST_ID, NY_JOURNALPOST_ID_KNYTT_TIL_SAK)
         stubs.mockDokarkivFeilregistrerRequest(JOURNALPOST_ID)
 
         val overforEnhetResponse = sendAvvikRequest(xEnhet, JOURNALPOST_ID, avvikHendelse)
@@ -273,7 +272,7 @@ class AvvikControllerTest : AbstractControllerTest() {
                     .isEqualTo(HttpStatus.OK)
             },
             { stubs.verifyStub.oppgaveOpprettIkkeKalt() },
-            { stubs.verifyStub.dokarkivProxyTilknyttSakerKalt(JOURNALPOST_ID, "FAR") },
+            { stubs.verifyStub.dokarkivKnyttTilSakerKalt(JOURNALPOST_ID, "FAR") },
             { stubs.verifyStub.dokarkivFeilregistrerKalt(JOURNALPOST_ID) },
             { stubs.verifyStub.dokarkivOppdaterKalt(JOURNALPOST_ID, "\"tilleggsopplysninger\":[{\"nokkel\":\"avvikEndretTema\",\"verdi\":\"true\"}]") },
             {
@@ -326,7 +325,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID_3)
         stubs.mockOpprettOppgave(HttpStatus.OK)
-        stubs.mockDokarkivProxyTilknyttRequest(JOURNALPOST_ID, JOURNALPOST_ID_3)
+        stubs.mockDokarkivKnyttTilAnnenSakRequest(JOURNALPOST_ID, JOURNALPOST_ID_3)
         stubs.mockDokarkivFeilregistrerRequest(JOURNALPOST_ID)
         stubs.mockDokarkivOpphevFeilregistrerRequest(JOURNALPOST_ID_3)
 
@@ -367,7 +366,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val nyJournalpostId = 301028011L
         val avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, java.util.Map.of("fagomrade", nyttFagomrade))
         stubs.mockOrganisasjonGeografiskTilknytning(geografiskEnhet)
-        stubs.mockDokarkivProxyTilknyttRequest(journalpostIdFraJson, nyJournalpostId)
+        stubs.mockDokarkivKnyttTilAnnenSakRequest(journalpostIdFraJson, nyJournalpostId)
         stubs.mockSafResponseHentJournalpost(journalpostJournalfortSafResponse, HttpStatus.OK)
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)

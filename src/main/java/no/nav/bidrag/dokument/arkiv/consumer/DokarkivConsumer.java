@@ -7,6 +7,8 @@ import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal;
+import no.nav.bidrag.dokument.arkiv.dto.KnyttTilAnnenSakRequest;
+import no.nav.bidrag.dokument.arkiv.dto.KnyttTilAnnenSakResponse;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterDistribusjonsInfoRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
@@ -31,6 +33,7 @@ public class DokarkivConsumer extends AbstractConsumer {
   private final ObjectMapper objectMapper;
   public static final String URL_JOURNALPOSTAPI_V1 = "/rest/journalpostapi/v1/journalpost";
   public static final String URL_JOURNALPOSTAPI_V1_FEILREGISTRER = "/rest/journalpostapi/v1/journalpost/%s/feilregistrer";
+  public static final String URL_KNYTT_TIL_ANNEN_SAK = "/rest/journalpostapi/v1/journalpost/%s/knyttTilAnnenSak";
 
   public DokarkivConsumer(RestTemplate restTemplate, ObjectMapper objectMapper) {
     super(restTemplate);
@@ -104,6 +107,15 @@ public class DokarkivConsumer extends AbstractConsumer {
       }
       throw clientErrorException;
     }
+  }
+
+  public KnyttTilAnnenSakResponse knyttTilSak(Long journalpostId, KnyttTilAnnenSakRequest knyttTilAnnenSakRequest) {
+    var oppdaterJoarnalpostApiUrl = String.format(URL_KNYTT_TIL_ANNEN_SAK, journalpostId);
+    var oppdaterJournalpostResponseEntity = restTemplate.exchange(
+        oppdaterJoarnalpostApiUrl, HttpMethod.PUT, new HttpEntity<>(knyttTilAnnenSakRequest), KnyttTilAnnenSakResponse.class
+    );
+
+    return oppdaterJournalpostResponseEntity.getBody();
   }
 
   public HttpResponse<Void> opphevFeilregistrerSakstilknytning(Long journalpostId) {

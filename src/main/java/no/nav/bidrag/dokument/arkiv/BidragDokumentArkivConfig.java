@@ -17,7 +17,6 @@ import no.nav.bidrag.dokument.arkiv.aop.AspectExceptionLogger;
 import no.nav.bidrag.dokument.arkiv.aop.HttpStatusRestControllerAdvice;
 import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
-import no.nav.bidrag.dokument.arkiv.consumer.DokarkivProxyConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokdistFordelingConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.OppgaveConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
@@ -40,6 +39,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.retry.annotation.EnableRetry;
 
 @Configuration
@@ -107,6 +107,9 @@ public class BidragDokumentArkivConfig {
       ObjectMapper objectMapper,
       SecurityTokenService securityTokenService
   ) {
+    var factory = new HttpComponentsClientHttpRequestFactory();
+    factory.setReadTimeout(1);
+    httpHeaderRestTemplate.setRequestFactory(factory);
     httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.dokdistFordelingUrl));
     httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
     DokdistFordelingConsumer dokdistFordelingConsumer = new DokdistFordelingConsumer(httpHeaderRestTemplate, objectMapper);
@@ -140,14 +143,13 @@ public class BidragDokumentArkivConfig {
   public EndreJournalpostService endreJournalpostService(
       ResourceByDiscriminator<JournalpostService> journalpostServices,
       ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers,
-      DokarkivProxyConsumer dokarkivProxyConsumer,
       OppgaveService oppgaveService,
       HendelserProducer hendelserProducer
   ) {
     return new EndreJournalpostService(
         journalpostServices.get(Discriminator.REGULAR_USER),
         dokarkivConsumers.get(Discriminator.REGULAR_USER),
-        dokarkivProxyConsumer, oppgaveService, hendelserProducer);
+        oppgaveService, hendelserProducer);
   }
 
   @Bean
@@ -207,21 +209,6 @@ public class BidragDokumentArkivConfig {
     personConsumers.put(Discriminator.REGULAR_USER, personConsumerRegularUser);
     personConsumers.put(Discriminator.SERVICE_USER, personConsumerServiceUser);
     return new ResourceByDiscriminator<>(personConsumers);
-  }
-
-  @Bean
-  public DokarkivProxyConsumer dokarkivProxyConsumer(
-      @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
-      EnvironmentProperties environmentProperties,
-      SecurityTokenService securityTokenService
-  ) {
-    httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.dokarkivProxyUrl));
-    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
-
-    DokarkivProxyConsumer dokarkivProxyConsumer = new DokarkivProxyConsumer(httpHeaderRestTemplate);
-    dokarkivProxyConsumer.leggTilInterceptor(securityTokenService.authTokenInterceptor());
-    dokarkivProxyConsumer.leggTilInterceptor(securityTokenService.navConsumerTokenInterceptor(true));
-    return dokarkivProxyConsumer;
   }
 
   @Bean
