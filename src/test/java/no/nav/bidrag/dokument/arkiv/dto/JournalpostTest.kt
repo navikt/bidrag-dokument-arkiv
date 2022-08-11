@@ -166,6 +166,7 @@ internal class JournalpostTest {
     @DisplayName("skal hente avvik hvis Journalpost med status mottatt og inngående")
     fun skalHenteAvvikForMottattOgInngaaende() {
         val journalpost = Journalpost()
+        journalpost.tema = "BID"
         journalpost.journalstatus = JournalStatus.MOTTATT
         journalpost.journalposttype = JournalpostType.I
         val avvikListe = journalpost.tilAvvik()
@@ -192,6 +193,7 @@ internal class JournalpostTest {
     @DisplayName("skal hente avvik hvis Journalpost er status er EKSPEDERT og utgående")
     fun skalHenteAvvikForEKSPEDERT_Utgaaende() {
         val journalpost = Journalpost()
+        journalpost.tema = "BID"
         journalpost.journalstatus = JournalStatus.EKSPEDERT
         journalpost.journalposttype = JournalpostType.U
         journalpost.antallRetur = 1
@@ -209,6 +211,7 @@ internal class JournalpostTest {
         journalpost.journalstatus = JournalStatus.JOURNALFOERT
         journalpost.journalposttype = JournalpostType.I
         journalpost.sak = Sak("")
+        journalpost.tema = "BID"
         val avvikListe = journalpost.tilAvvik()
         assertThat(avvikListe).hasSize(3)
         assertThat(avvikListe).contains(AvvikType.FEILFORE_SAK)
