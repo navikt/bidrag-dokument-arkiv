@@ -183,6 +183,7 @@ internal class JournalpostTest {
         journalpost.journalstatus = JournalStatus.FERDIGSTILT
         journalpost.journalposttype = JournalpostType.U
         journalpost.sak = Sak("")
+        journalpost.tema = "BID"
         val avvikListe = journalpost.tilAvvik()
         assertThat(avvikListe).hasSize(2)
         assertThat(avvikListe).contains(AvvikType.MANGLER_ADRESSE)
