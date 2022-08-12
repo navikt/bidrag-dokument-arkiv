@@ -121,7 +121,7 @@ public class EndreJournalpostService {
   }
 
   public void tilknyttTilSak(String saksnummer, Journalpost journalpost){
-    tilknyttTilSak(saksnummer, null, journalpost);
+    tilknyttTilSak(saksnummer, journalpost.isBidragTema() ? null : "BID", journalpost);
   }
 
   public void tilknyttTilSak(String saksnummer, String tema, Journalpost journalpost){
