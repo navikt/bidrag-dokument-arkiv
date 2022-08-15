@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
-import no.nav.bidrag.dokument.arkiv.consumer.DokarkivProxyConsumer;
+import no.nav.bidrag.dokument.arkiv.consumer.DokarkivKnyttTilSakConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus;
@@ -30,19 +30,19 @@ public class EndreJournalpostService {
 
   private final JournalpostService journalpostService;
   private final DokarkivConsumer dokarkivConsumer;
-  private final DokarkivProxyConsumer dokarkivProxyConsumer;
+  private final DokarkivKnyttTilSakConsumer dokarkivKnyttTilSakConsumer;
   private final OppgaveService oppgaveService;
   private final HendelserProducer hendelserProducer;
 
   public EndreJournalpostService(
       JournalpostService journalpostService,
       DokarkivConsumer dokarkivConsumer,
-      DokarkivProxyConsumer dokarkivProxyConsumer,
+      DokarkivKnyttTilSakConsumer dokarkivKnyttTilSakConsumer,
       OppgaveService oppgaveService,
       HendelserProducer hendelserProducer) {
     this.journalpostService = journalpostService;
     this.dokarkivConsumer = dokarkivConsumer;
-    this.dokarkivProxyConsumer = dokarkivProxyConsumer;
+    this.dokarkivKnyttTilSakConsumer = dokarkivKnyttTilSakConsumer;
     this.oppgaveService = oppgaveService;
     this.hendelserProducer = hendelserProducer;
   }
@@ -126,14 +126,14 @@ public class EndreJournalpostService {
 
   public void tilknyttTilSak(String saksnummer, String tema, Journalpost journalpost){
     KnyttTilAnnenSakRequest knyttTilAnnenSakRequest = new KnyttTilSakRequest(saksnummer, journalpost, tema);
-    var response = dokarkivProxyConsumer.knyttTilSak(journalpost.hentJournalpostIdLong(), knyttTilAnnenSakRequest);
+    var response = dokarkivKnyttTilSakConsumer.knyttTilSak(journalpost.hentJournalpostIdLong(), knyttTilAnnenSakRequest);
     LOGGER.info("Tilknyttet journalpost {} til sak {} med ny journalpostId {} og tema {}",journalpost.getJournalpostId(), saksnummer, response.getNyJournalpostId(), tema);
     journalpost.leggTilTilknyttetSak(saksnummer);
   }
 
   public String tilknyttTilGenerellSak(String tema, Journalpost journalpost){
     KnyttTilGenerellSakRequest knyttTilGenerellSakRequest = new KnyttTilGenerellSakRequest(journalpost, tema);
-    var response = dokarkivProxyConsumer.knyttTilSak(journalpost.hentJournalpostIdLong(), knyttTilGenerellSakRequest);
+    var response = dokarkivKnyttTilSakConsumer.knyttTilSak(journalpost.hentJournalpostIdLong(), knyttTilGenerellSakRequest);
     LOGGER.info("Tilknyttet journalpost {} til GENERELL_SAK med ny journalpostId {} og tema {}",journalpost.getJournalpostId(), response.getNyJournalpostId(), tema);
     return response.getNyJournalpostId();
   }

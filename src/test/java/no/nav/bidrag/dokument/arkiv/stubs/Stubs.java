@@ -26,10 +26,9 @@ import com.github.tomakehurst.wiremock.stubbing.Scenario;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import kotlin.Pair;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
-import no.nav.bidrag.dokument.arkiv.consumer.DokarkivProxyConsumer;
+import no.nav.bidrag.dokument.arkiv.consumer.DokarkivKnyttTilSakConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.GeografiskTilknytningResponse;
 import no.nav.bidrag.dokument.arkiv.dto.HentPostadresseResponse;
@@ -224,16 +223,16 @@ public class Stubs {
     );
   }
 
-  public void mockDokarkivProxyTilknyttRequest(Long journalpostId) {
-    mockDokarkivProxyTilknyttRequest(journalpostId, 123213213L);
+  public void mockDokarkivTilknyttRequest(Long journalpostId) {
+    mockDokarkivTilknyttRequest(journalpostId, 123213213L);
   }
 
-  public void mockDokarkivProxyTilknyttRequest(Long journalpostId, Long nyJournalpostId) {
+  public void mockDokarkivTilknyttRequest(Long journalpostId, Long nyJournalpostId) {
     try {
       stubFor(
           put(
               urlMatching(
-                  "/dokarkivproxy" + String.format(DokarkivProxyConsumer.URL_KNYTT_TIL_ANNEN_SAK, journalpostId)
+                  "/dokarkiv" + String.format(DokarkivKnyttTilSakConsumer.URL_KNYTT_TIL_ANNEN_SAK, journalpostId)
               )
           ).willReturn(
               aClosedJsonResponse()
@@ -520,22 +519,22 @@ public class Stubs {
     }
 
 
-    private void dokarkivProxyTilknyttSakerKalt(Integer times, Long journalpostId, String... contains) {
+    private void dokarkivTilknyttSakerKalt(Integer times, Long journalpostId, String... contains) {
       var verify = putRequestedFor(
           urlMatching(
-              "/dokarkivproxy" + String.format(DokarkivProxyConsumer.URL_KNYTT_TIL_ANNEN_SAK, journalpostId)
+              "/dokarkiv" + String.format(DokarkivKnyttTilSakConsumer.URL_KNYTT_TIL_ANNEN_SAK, journalpostId)
           )
       );
       Arrays.stream(contains).forEach(contain -> verify.withRequestBody(new ContainsPattern(contain)));
       verify(exactly(times), verify);
     }
 
-    public void dokarkivProxyTilknyttSakerIkkeKalt(Long journalpostId, String... contains) {
-      dokarkivProxyTilknyttSakerKalt(0, journalpostId, contains);
+    public void dokarkivTilknyttSakerIkkeKalt(Long journalpostId, String... contains) {
+      dokarkivTilknyttSakerKalt(0, journalpostId, contains);
     }
 
-    public void dokarkivProxyTilknyttSakerKalt(Long journalpostId, String... contains) {
-      dokarkivProxyTilknyttSakerKalt(1, journalpostId, contains);
+    public void dokarkivTilknyttSakerKalt(Long journalpostId, String... contains) {
+      dokarkivTilknyttSakerKalt(1, journalpostId, contains);
     }
 
     private void dokarkivFerdigstillKalt(Integer times, Long journalpostId) {
