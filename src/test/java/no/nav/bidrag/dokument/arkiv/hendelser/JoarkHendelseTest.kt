@@ -2,19 +2,17 @@ package no.nav.bidrag.dokument.arkiv.hendelser
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig
-import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal
+import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivTest
 import no.nav.bidrag.dokument.arkiv.dto.Bruker
 import no.nav.bidrag.dokument.arkiv.dto.BrukerType
 import no.nav.bidrag.dokument.arkiv.dto.Dokument
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
-import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.kafka.HendelseListener
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.BRUKER_AKTOER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.BRUKER_ENHET
 import no.nav.bidrag.dokument.arkiv.stubs.BRUKER_FNR
-import no.nav.bidrag.dokument.arkiv.stubs.BRUKER_TYPE_AKTOERID
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_ID
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
 import no.nav.bidrag.dokument.arkiv.stubs.Stubs
@@ -34,12 +32,11 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
-import org.springframework.http.HttpStatus
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.test.context.ActiveProfiles
 
-@ActiveProfiles(value = [BidragDokumentArkivConfig.PROFILE_KAFKA_TEST, BidragDokumentArkivConfig.PROFILE_TEST, BidragDokumentArkivLocal.PROFILE_INTEGRATION])
-@SpringBootTest(classes = [BidragDokumentArkivLocal::class])
+@ActiveProfiles(value = [BidragDokumentArkivConfig.PROFILE_KAFKA_TEST, BidragDokumentArkivConfig.PROFILE_TEST, BidragDokumentArkivTest.PROFILE_INTEGRATION])
+@SpringBootTest(classes = [BidragDokumentArkivTest::class])
 @AutoConfigureWireMock(port = 0)
 @EnableMockOAuth2Server
 class JoarkHendelseTest {

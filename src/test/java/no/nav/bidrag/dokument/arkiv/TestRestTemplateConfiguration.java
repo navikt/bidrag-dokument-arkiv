@@ -1,7 +1,7 @@
 package no.nav.bidrag.dokument.arkiv;
 
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.ISSUER_ISSO;
-import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal.PROFILE_INTEGRATION;
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivTest.PROFILE_INTEGRATION;
 
 import no.nav.bidrag.commons.web.test.HttpHeaderTestRestTemplate;
 import no.nav.security.mock.oauth2.MockOAuth2Server;

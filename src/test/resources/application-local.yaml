@@ -30,6 +30,7 @@ AZURE_APP_CLIENT_SECRET: changme
 AZURE_APP_CLIENT_ID: changeme
 TOPIC_OPPGAVE_OPPRETTET: oppgave-opprettet
 KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+server.port: 8082
 spring:
   kafka:
     bootstrap-servers: ${KAFKA_BROKERS}

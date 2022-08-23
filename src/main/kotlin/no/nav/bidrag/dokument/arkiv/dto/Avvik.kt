@@ -46,14 +46,14 @@ data class AvvikshendelseIntern(
     )
 
     fun toOverforEnhetRequest() = OverforEnhetRequest(journalpostId, enhetsnummerNytt)
-    fun toEndreFagomradeRequest() = EndreFagomradeRequest(journalpostId, nyttFagomrade, "9999")
+    fun toEndreFagomradeRequest() = EndreFagomradeRequest(journalpostId, nyttFagomrade)
     fun toEndreFagomradeJournalfortJournalpostRequest(journalpost: Journalpost) = EndreFagomradeJournalfortJournalpostRequest(journalpostId, journalpost)
     fun toKnyttTilGenerellSakRequest(fagomrade: String, bruker: Bruker) = EndreKnyttTilGenerellSakRequest(journalpostId, OppdaterJournalpostRequest.Bruker(bruker.id, bruker.type), fagomrade)
     fun toLeggTilBegrunnelsePaaTittelRequest(journalpost: Journalpost) = EndreTittelRequest(journalpostId, "${journalpost.hentHoveddokument()?.tittel ?: journalpost.tittel} ($beskrivelse)", journalpost)
 }
 
 data class OverforEnhetRequest(private var journalpostId: Long, override var journalfoerendeEnhet: String?): OppdaterJournalpostRequest(journalpostId)
-data class EndreFagomradeRequest(private var journalpostId: Long, override var tema: String?, override var journalfoerendeEnhet: String?): OppdaterJournalpostRequest(journalpostId)
+data class EndreFagomradeRequest(private var journalpostId: Long, override var tema: String?): OppdaterJournalpostRequest(journalpostId)
 
 
 
