@@ -47,6 +47,7 @@ data class AvvikshendelseIntern(
 
     fun toOverforEnhetRequest() = OverforEnhetRequest(journalpostId, enhetsnummerNytt)
     fun toEndreFagomradeRequest() = EndreFagomradeRequest(journalpostId, nyttFagomrade)
+    fun toEndreFagomradeOgKnyttTilSakRequest(bruker: Bruker) = EndreFagomradeOgKnyttTilSakRequest(journalpostId, nyttFagomrade, OppdaterJournalpostRequest.Bruker(bruker.id, bruker.type))
     fun toEndreFagomradeJournalfortJournalpostRequest(journalpost: Journalpost) = EndreFagomradeJournalfortJournalpostRequest(journalpostId, journalpost)
     fun toKnyttTilGenerellSakRequest(fagomrade: String, bruker: Bruker) = EndreKnyttTilGenerellSakRequest(journalpostId, OppdaterJournalpostRequest.Bruker(bruker.id, bruker.type), fagomrade)
     fun toLeggTilBegrunnelsePaaTittelRequest(journalpost: Journalpost) = EndreTittelRequest(journalpostId, "${journalpost.hentHoveddokument()?.tittel ?: journalpost.tittel} ($beskrivelse)", journalpost)
@@ -55,6 +56,7 @@ data class AvvikshendelseIntern(
 data class OverforEnhetRequest(private var journalpostId: Long, override var journalfoerendeEnhet: String?): OppdaterJournalpostRequest(journalpostId)
 data class EndreFagomradeRequest(private var journalpostId: Long, override var tema: String?): OppdaterJournalpostRequest(journalpostId)
 
+data class EndreFagomradeOgKnyttTilSakRequest(private var journalpostId: Long, override var tema: String?, override var bruker: Bruker?, override var sak: Sak? = GenerellSak()): OppdaterJournalpostRequest(journalpostId)
 
 
 data class EndreFagomradeJournalfortJournalpostRequest(private var journalpostId: Long, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId){

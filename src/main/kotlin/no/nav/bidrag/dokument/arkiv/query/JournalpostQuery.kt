@@ -21,6 +21,9 @@ data class JournalpostQuery(val journalpostId: Long) : GraphQuery() {
               }
               sak {
                 fagsakId
+                tema
+                sakstype
+                fagsaksystem
               }
               journalforendeEnhet
               journalfortAvNavn

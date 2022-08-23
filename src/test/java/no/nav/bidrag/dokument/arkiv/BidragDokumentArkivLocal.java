@@ -13,7 +13,7 @@ import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_KAF
 public class BidragDokumentArkivLocal {
   public static void main(String[] args) {
     SpringApplication app = new SpringApplication(BidragDokumentArkivLocal.class);
-    app.setAdditionalProfiles("live", "local");
+    app.setAdditionalProfiles(PROFILE_KAFKA_TEST, "live", "local");
     app.run(args);
   }
 }

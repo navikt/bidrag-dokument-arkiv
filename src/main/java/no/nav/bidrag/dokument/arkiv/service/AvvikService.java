@@ -169,6 +169,14 @@ public class AvvikService {
     if (journalpost.isInngaaendeJournalfort()){
       endreFagomradeJournalfortJournalpost(journalpost, avvikshendelseIntern);
     } else {
+      endreFagomradeMottattJournalpost(journalpost, avvikshendelseIntern);
+    }
+  }
+
+  private void endreFagomradeMottattJournalpost(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
+    if (journalpost.hasSak()){
+      oppdater(avvikshendelseIntern.toEndreFagomradeOgKnyttTilSakRequest(journalpost.getBruker()));
+    } else {
       oppdater(avvikshendelseIntern.toEndreFagomradeRequest());
     }
   }

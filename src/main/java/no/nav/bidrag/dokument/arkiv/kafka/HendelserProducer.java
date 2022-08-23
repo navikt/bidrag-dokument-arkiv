@@ -54,7 +54,7 @@ public class HendelserProducer {
   private JournalpostHendelse createJournalpostHendelse(Journalpost journalpost, String saksbehandlersEnhet) {
     var saksbehandler = saksbehandlerInfoManager.hentSaksbehandler().orElse(new Saksbehandler("bidrag-dokument-arkiv", "bidrag-dokument-arkiv"));
     var saksbehandlerMedEnhet = saksbehandler.tilEnhet(saksbehandlersEnhet);
-    return new JournalpostHendelseIntern(journalpost, saksbehandlerMedEnhet).hentJournalpostHendelse();
+    return new JournalpostHendelseIntern(journalpost, saksbehandlerMedEnhet, null).hentJournalpostHendelse();
   }
 
   @Retryable(value = Exception.class, maxAttempts = 10, backoff = @Backoff(delay = 1000, maxDelay = 12000, multiplier = 2.0))
