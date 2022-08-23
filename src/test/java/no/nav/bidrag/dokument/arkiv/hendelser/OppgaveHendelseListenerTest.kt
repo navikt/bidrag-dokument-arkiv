@@ -3,7 +3,7 @@ package no.nav.bidrag.dokument.arkiv.hendelser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig
-import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal
+import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivTest
 import no.nav.bidrag.dokument.arkiv.dto.DatoType
 import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO
 import no.nav.bidrag.dokument.arkiv.dto.Sak
@@ -29,8 +29,8 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDate
 
-@ActiveProfiles(value = [BidragDokumentArkivConfig.PROFILE_KAFKA_TEST, BidragDokumentArkivConfig.PROFILE_TEST, BidragDokumentArkivLocal.PROFILE_INTEGRATION])
-@SpringBootTest(classes = [BidragDokumentArkivLocal::class])
+@ActiveProfiles(value = [BidragDokumentArkivConfig.PROFILE_KAFKA_TEST, BidragDokumentArkivConfig.PROFILE_TEST, BidragDokumentArkivTest.PROFILE_INTEGRATION])
+@SpringBootTest(classes = [BidragDokumentArkivTest::class])
 @AutoConfigureWireMock(port = 0)
 @EnableMockOAuth2Server
 class OppgaveHendelseListenerTest {

@@ -2,10 +2,9 @@ package no.nav.bidrag.dokument.arkiv.hendelser
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig
-import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_KAFKA_TEST
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TEST
-import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal
+import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivTest
 import no.nav.bidrag.dokument.dto.JournalpostHendelse
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
@@ -29,8 +28,8 @@ import org.springframework.kafka.test.utils.KafkaTestUtils
 import org.springframework.test.context.ActiveProfiles
 import java.util.Collections
 
-@SpringBootTest(classes = [BidragDokumentArkivLocal::class])
-@ActiveProfiles(value = [PROFILE_KAFKA_TEST, PROFILE_TEST, BidragDokumentArkivLocal.PROFILE_INTEGRATION])
+@SpringBootTest(classes = [BidragDokumentArkivTest::class])
+@ActiveProfiles(value = [PROFILE_KAFKA_TEST, PROFILE_TEST, BidragDokumentArkivTest.PROFILE_INTEGRATION])
 @DisplayName("OppgaveEndretHendelseListenerTest")
 @EnableMockOAuth2Server
 @AutoConfigureWireMock(port = 0)

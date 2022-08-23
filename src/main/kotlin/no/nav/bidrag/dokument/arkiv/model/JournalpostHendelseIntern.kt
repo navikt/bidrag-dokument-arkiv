@@ -10,13 +10,13 @@ import no.nav.bidrag.dokument.dto.JournalpostHendelse
 import no.nav.bidrag.dokument.dto.Sporingsdata
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord
 
-class JournalpostHendelseIntern(var journalpost: Journalpost, var saksbehandler: SaksbehandlerMedEnhet?) {
+class JournalpostHendelseIntern(var journalpost: Journalpost, var saksbehandler: SaksbehandlerMedEnhet?, var journalforingHendelse: JournalfoeringHendelseRecord?) {
     var journalpostHendelse: JournalpostHendelse = JournalpostHendelse()
     init {
         journalpostHendelse.journalpostId = journalpost.hentJournalpostIdMedPrefix()
         journalpostHendelse.journalstatus = journalpost.hentJournalStatus()
         journalpostHendelse.enhet = journalpost.journalforendeEnhet
-        journalpostHendelse.fagomrade = journalpost.tema
+        journalpostHendelse.fagomrade = journalforingHendelse?.temaNytt ?: journalpost.tema
         journalpostHendelse.aktorId = hentAktoerIdFraJournalpost()
         journalpostHendelse.fnr = hentFnrFraJournalpost()
         journalpostHendelse.sporing = opprettSporingsData()
@@ -41,7 +41,7 @@ class JournalforingHendelseIntern(var journalforingHendelse: JournalfoeringHende
 
     fun toJournalpostHendelse(journalpost: Journalpost?): JournalpostHendelse {
         if (journalpost != null){
-            val hendelse = JournalpostHendelseIntern(journalpost, saksbehandler).hentJournalpostHendelse()
+            val hendelse = JournalpostHendelseIntern(journalpost, saksbehandler, journalforingHendelse).hentJournalpostHendelse()
             hendelse.enhet = null
             return hendelse
         }
