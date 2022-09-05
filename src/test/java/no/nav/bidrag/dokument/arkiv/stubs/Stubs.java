@@ -26,7 +26,7 @@ import com.github.tomakehurst.wiremock.stubbing.Scenario;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+
 import kotlin.Pair;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivProxyConsumer;
@@ -38,7 +38,7 @@ import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal;
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilAnnenSakResponse;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse;
-import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostResponse;
+import no.nav.bidrag.dokument.arkiv.dto.JoarkOpprettJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerInfoResponse;
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost;
@@ -151,7 +151,7 @@ public class Stubs {
         post(urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1+"?forsoekFerdigstill=true")).willReturn(
             aClosedJsonResponse()
                 .withStatus(status.value())
-                .withBody(objectMapper.writeValueAsString(new OpprettJournalpostResponse(nyJournalpostId, "FERDIGTILT", null, true, new ArrayList<>())))
+                .withBody(objectMapper.writeValueAsString(new JoarkOpprettJournalpostResponse(nyJournalpostId, "FERDIGTILT", null, true, new ArrayList<>())))
         )
     );
   }

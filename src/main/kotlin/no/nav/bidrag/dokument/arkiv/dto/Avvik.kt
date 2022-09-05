@@ -11,6 +11,7 @@ object AvvikDetaljer {
     const val ENHETSNUMMER = "enhetsnummer"
     const val RETUR_DATO = "returDato"
     const val UTSENDINGSKANAL = "utsendingsKanal"
+    const val KNYTT_TIL_SAKER = "knyttTilSaker"
     const val SETT_STATUS_EKSPEDERT = "settStatusEkspedert"
     const val ENHETSNUMMER_GAMMELT = "gammeltEnhetsnummer"
     const val ENHETSNUMMER_NYTT = "nyttEnhetsnummer"
@@ -24,15 +25,17 @@ data class AvvikshendelseIntern(
     val saksbehandlersEnhet: String?,
     val journalpostId: Long = -1,
     var saksnummer: String? = null,
+    var dokumenter: List<no.nav.bidrag.dokument.dto.DokumentDto>? = emptyList(),
     var adresse: DistribuerTilAdresse? = null,
     private val detaljer: Map<String, String?> = HashMap()
 ) {
-    val returDato: String get() = detaljer[AvvikDetaljer.RETUR_DATO] ?: throw AvvikDetaljException(AvvikDetaljer.RETUR_DATO)
-    val enhetsnummer: String get() = detaljer[AvvikDetaljer.ENHETSNUMMER] ?: throw AvvikDetaljException(AvvikDetaljer.ENHETSNUMMER)
-    val enhetsnummerGammelt: String get() = detaljer[AvvikDetaljer.ENHETSNUMMER] ?: throw AvvikDetaljException(AvvikDetaljer.ENHETSNUMMER_GAMMELT)
-    val enhetsnummerNytt: String get() = detaljer[AvvikDetaljer.ENHETSNUMMER_NYTT] ?: throw AvvikDetaljException(AvvikDetaljer.ENHETSNUMMER_NYTT)
-    val nyttFagomrade: String get() = detaljer[AvvikDetaljer.FAGOMRADE] ?: throw AvvikDetaljException(AvvikDetaljer.FAGOMRADE)
-    val utsendingsKanal: String get() = detaljer[AvvikDetaljer.UTSENDINGSKANAL] ?: throw AvvikDetaljException(AvvikDetaljer.UTSENDINGSKANAL)
+    val returDato: String get() = (detaljer[AvvikDetaljer.RETUR_DATO] ?: throw AvvikDetaljException(AvvikDetaljer.RETUR_DATO))
+    val enhetsnummer: String get() = (detaljer[AvvikDetaljer.ENHETSNUMMER] ?: throw AvvikDetaljException(AvvikDetaljer.ENHETSNUMMER))
+    val enhetsnummerGammelt: String get() = (detaljer[AvvikDetaljer.ENHETSNUMMER] ?: throw AvvikDetaljException(AvvikDetaljer.ENHETSNUMMER_GAMMELT))
+    val enhetsnummerNytt: String get() = (detaljer[AvvikDetaljer.ENHETSNUMMER_NYTT] ?: throw AvvikDetaljException(AvvikDetaljer.ENHETSNUMMER_NYTT))
+    val nyttFagomrade: String get() = (detaljer[AvvikDetaljer.FAGOMRADE] ?: throw AvvikDetaljException(AvvikDetaljer.FAGOMRADE))
+    val utsendingsKanal: String get() = (detaljer[AvvikDetaljer.UTSENDINGSKANAL] ?: throw AvvikDetaljException(AvvikDetaljer.UTSENDINGSKANAL))
+    val knyttTilSaker: List<String> get() = (detaljer[AvvikDetaljer.KNYTT_TIL_SAKER]?.split(",") ?: throw AvvikDetaljException(AvvikDetaljer.KNYTT_TIL_SAKER))
     val isBidragFagomrade: Boolean get() = nyttFagomrade == Fagomrade.BID.name || nyttFagomrade == Fagomrade.FAR.name
 
     constructor(avvikshendelse: Avvikshendelse, opprettetAvEnhetsnummer: String, journalpostId: Long) : this(
@@ -40,6 +43,7 @@ data class AvvikshendelseIntern(
         beskrivelse = avvikshendelse.beskrivelse,
         saksbehandlersEnhet = opprettetAvEnhetsnummer,
         journalpostId = journalpostId,
+        dokumenter = avvikshendelse.dokumenter,
         saksnummer = avvikshendelse.saksnummer,
         detaljer=avvikshendelse.detaljer,
         adresse=avvikshendelse.adresse

@@ -226,7 +226,7 @@ internal class JournalpostTest {
         journalpost.journalposttype = JournalpostType.I
         journalpost.sak = Sak("")
         val avvikListe = journalpost.tilAvvik()
-        assertThat(avvikListe).hasSize(0)
+        assertThat(avvikListe).hasSize(1)
         assertThat(avvikListe).doesNotContain(AvvikType.FEILFORE_SAK)
     }
 

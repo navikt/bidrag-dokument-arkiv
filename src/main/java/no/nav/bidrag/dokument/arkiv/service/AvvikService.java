@@ -4,9 +4,11 @@ import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
 import static no.nav.bidrag.dokument.arkiv.dto.ViolationKt.validateTrue;
 
 import java.time.LocalDate;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
@@ -41,10 +43,12 @@ public class AvvikService {
   private final BidragOrganisasjonConsumer bidragOrganisasjonConsumer;
   private final SaksbehandlerInfoManager saksbehandlerInfoManager;
 
+  private final OpprettJournalpostService opprettJournalpostService;
+
   public AvvikService(ResourceByDiscriminator<JournalpostService> journalpostService, HendelserProducer hendelserProducer,
                       EndreJournalpostService endreJournalpostService, DistribuerJournalpostService distribuerJournalpostService, OppgaveService oppgaveService,
                       ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers,
-                      ResourceByDiscriminator<PersonConsumer> personConsumers, BidragOrganisasjonConsumer bidragOrganisasjonConsumer, SaksbehandlerInfoManager saksbehandlerInfoManager) {
+                      ResourceByDiscriminator<PersonConsumer> personConsumers, BidragOrganisasjonConsumer bidragOrganisasjonConsumer, SaksbehandlerInfoManager saksbehandlerInfoManager, OpprettJournalpostService opprettJournalpostService) {
     this.journalpostService = journalpostService.get(Discriminator.REGULAR_USER);
     this.hendelserProducer = hendelserProducer;
     this.endreJournalpostService = endreJournalpostService;
@@ -54,6 +58,7 @@ public class AvvikService {
     this.bidragOrganisasjonConsumer = bidragOrganisasjonConsumer;
     this.saksbehandlerInfoManager = saksbehandlerInfoManager;
     this.dokarkivConsumer = dokarkivConsumers.get(Discriminator.REGULAR_USER);
+    this.opprettJournalpostService = opprettJournalpostService;
   }
 
   public List<AvvikType> hentAvvik(Long jpid){
@@ -72,6 +77,7 @@ public class AvvikService {
     }
 
     switch (avvikshendelseIntern.getAvvikstype()){
+      case KOPIER_FRA_ANNEN_FAGOMRADE -> kopierFraAnnenFagomrade(journalpost, avvikshendelseIntern);
       case OVERFOR_TIL_ANNEN_ENHET -> oppdater(avvikshendelseIntern.toOverforEnhetRequest());
       case ENDRE_FAGOMRADE -> endreFagomrade(journalpost, avvikshendelseIntern);
       case SEND_TIL_FAGOMRADE -> onlyLogging();
@@ -89,6 +95,28 @@ public class AvvikService {
     return Optional.of(new BehandleAvvikshendelseResponse(avvikshendelseIntern.getAvvikstype()));
   }
 
+  public void kopierFraAnnenFagomrade(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
+    if (journalpost.isUtgaaendeDokument()){
+      throw new UgyldigAvvikException("Kan ikke kopiere en utgående dokument fra annen fagområde");
+    }
+
+    if (journalpost.isTemaBidrag()){
+      throw new UgyldigAvvikException("Kan ikke kopiere journalpost som allerede tilhører Bidrag");
+    }
+
+    var knyttTilSaker = avvikshendelseIntern.getKnyttTilSaker();
+
+    if (knyttTilSaker.isEmpty()){
+      throw new UgyldigAvvikException("Fant ingen saker i respons. Journalpost må knyttes til minst en sak");
+    }
+
+    var opprettDokumenter = avvikshendelseIntern.getDokumenter().stream().map((dok)-> {
+      var dokumentByte = Strings.isNotEmpty(dok.getDokument()) ? Base64.getDecoder().decode(dok.getDokument()) : null;
+      return new OpprettDokument(dok.getDokumentreferanse(), dokumentByte, dok.getTittel(), dok.getBrevkode());
+    }).collect(Collectors.toList());
+
+    opprettJournalpostService.dupliserJournalpost(journalpost, opprettDokumenter, avvikshendelseIntern.getKnyttTilSaker(), avvikshendelseIntern.getSaksbehandlersEnhet());
+  }
   public void manglerAdresse(Journalpost journalpost){
     oppdaterDistribusjonsInfoIngenDistribusjon(journalpost);
   }

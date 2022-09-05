@@ -6,7 +6,7 @@ import org.apache.commons.lang3.Validate
 
 @JsonIgnoreProperties(ignoreUnknown = true, value = ["journalpostId"])
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class OpprettJournalpostRequest(
+data class JoarkOpprettJournalpostRequest(
     var sak: OpprettJournalpostSak? = null,
     var tittel: String? = null,
     var journalfoerendeEnhet: String? = null,
@@ -19,7 +19,7 @@ data class OpprettJournalpostRequest(
     var kanal: String? = null,
     var datoMottatt: String? = null,
     var bruker: OpprettJournalpostBruker? = null,
-    var dokumenter: List<Dokument> = emptyList(),
+    var dokumenter: MutableList<Dokument> = mutableListOf(),
     var avsenderMottaker: OpprettJournalpostAvsenderMottaker? = null
 ) {
 
@@ -38,21 +38,18 @@ data class OpprettJournalpostRequest(
         avsenderMottaker = OpprettJournalpostAvsenderMottaker(journalpost.avsenderMottaker?.navn, journalpost.avsenderMottaker?.id, journalpost.avsenderMottaker?.type)
         bruker = OpprettJournalpostBruker(journalpost.bruker?.id, journalpost.bruker?.type)
         tilleggsopplysninger = journalpost.tilleggsopplysninger
-        dokumenter = journalpost.dokumenter.map {
+        dokumenter = journalpost.dokumenter.filter{ dokumenterByte[it.dokumentInfoId] != null }.map {
             Dokument(
                 brevkode = it.brevkode,
                 tittel = it.tittel,
-                dokumentvarianter = listOf(
-                    DokumentVariant(
-                        variantformat = "ARKIV",
-                        filtype = "PDFA",
-                        fysiskDokument = dokumenterByte[it.dokumentInfoId]!!,
-                        filnavn = "${journalpost.journalpostId}_${it.dokumentInfoId}.pdf"
-                    ))
+                dokumentvarianter = opprettDokumentVariant("${journalpost.journalpostId}_${it.dokumentInfoId}", dokumenterByte[it.dokumentInfoId]!!)
             )
-        }
+        } as MutableList<Dokument>
     }
 
+    fun addDokument(dokument: Dokument){
+        this.dokumenter.add(dokument)
+    }
     @Suppress("unused") // properties used by jackson
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -70,8 +67,6 @@ data class OpprettJournalpostRequest(
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     data class Dokument(
-        val dokumentInfoId: String? = null,
-        val dokumentKategori: String? = null,
         val tittel: String? = null,
         val brevkode: String? = null,
         val dokumentvarianter: List<DokumentVariant>? = emptyList()
@@ -88,12 +83,29 @@ data class OpprettJournalpostRequest(
     )
 }
 
-data class OpprettJournalpostResponse(
+fun opprettDokumentVariant(filnavn: String?, dokumentByte: ByteArray): List<JoarkOpprettJournalpostRequest.DokumentVariant>{
+    return listOf(JoarkOpprettJournalpostRequest.DokumentVariant(
+        variantformat = "ARKIV",
+        filtype = "PDFA",
+        fysiskDokument = dokumentByte,
+        filnavn = if (filnavn != null) "${filnavn}.pdf" else null
+    ))
+}
+
+data class JoarkOpprettJournalpostResponse(
     var journalpostId: Long? = null,
     val journalstatus: String? = null,
     val melding: String? = null,
     val journalpostferdigstilt: Boolean? = null,
     val dokumenter: List<DokumentInfo>? = emptyList()
+)
+
+
+data class OpprettDokument(
+    var dokumentInfoId: String?,
+    var dokument: ByteArray?,
+    var tittel: String?,
+    var brevkode: String?
 )
 
 data class DokumentInfo(
