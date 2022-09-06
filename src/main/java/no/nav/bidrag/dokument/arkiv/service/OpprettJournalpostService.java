@@ -1,12 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
-import static no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostKt.opprettDokumentVariant;
-import static no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostKt.validerJournalpostKanDupliseres;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import kotlin.Pair;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
@@ -14,9 +8,12 @@ import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.*;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import static no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostKt.*;
 
 @Service
 public class OpprettJournalpostService {
@@ -33,37 +30,45 @@ public class OpprettJournalpostService {
     this.endreJournalpostService = endreJournalpostService;
   }
 
-  public JoarkOpprettJournalpostResponse dupliserJournalpost(Journalpost journalpost, List<OpprettDokument> dokumenter, List<String> knyttTilSaker, String enhet){
-    var opprettJournalpostRequest = new JoarkOpprettJournalpostRequest(journalpost, Collections.emptyMap());
+  public JoarkOpprettJournalpostResponse opprettJournalpost(OpprettJournalpost request, List<String> knyttTilSaker){
     var tilknyttetSak = knyttTilSaker.get(0);
-    dokumenter.forEach((dokument)->{
-      var dokumentByte = hentDokument(journalpost.hentJournalpostIdLong(), dokument);
-      opprettJournalpostRequest.addDokument(new JoarkOpprettJournalpostRequest.Dokument(
-              dokument.getTittel(),
-              dokument.getBrevkode(),
-              opprettDokumentVariant(null, dokumentByte)));
-    });
-    opprettJournalpostRequest.setJournalfoerendeEnhet(enhet);
-    opprettJournalpostRequest.setTema("BID");
-    opprettJournalpostRequest.setKanal(journalpost.getKanal().name());
-    opprettJournalpostRequest.setSak(new JoarkOpprettJournalpostRequest.OpprettJournalpostSak(knyttTilSaker.get(0)));
-    opprettJournalpostRequest.setEksternReferanseId(String.format("BID_kopi_%s", journalpost.getJournalpostId()));
-    var opprettJournalpostResponse =  dokarkivConsumer.opprett(opprettJournalpostRequest);
+    request.medSak(tilknyttetSak);
+    populerMedDokumenterByteData(request);
+    validerKanOppretteJournalpost(request);
 
-    LOGGER.info("Duplisert journalpost {}, ny journalpostId {}", journalpost.getJournalpostId(), opprettJournalpostResponse.getJournalpostId());
+    var opprettJournalpostResponse =  dokarkivConsumer.opprett(request);
+    LOGGER.info("Opprettet ny journalpost {}", opprettJournalpostResponse.getJournalpostId());
 
     var opprettetJournalpost = safConsumer.hentJournalpost(opprettJournalpostResponse.getJournalpostId());
-    knyttTilSaker.stream()
-            .filter((saksnummer)->!saksnummer.equals(tilknyttetSak))
-            .forEach((saksnummer)->{
-                LOGGER.info("Knytter sak {} til opprett journalpost {}", saksnummer, opprettJournalpostResponse.getJournalpostId());
-                endreJournalpostService.tilknyttTilSak(saksnummer, opprettetJournalpost);
-            });
+    knyttSakerTilOpprettetJournalpost(opprettetJournalpost, knyttTilSaker);
+
+    if (Boolean.TRUE.equals(opprettJournalpostResponse.getJournalpostferdigstilt()) && opprettetJournalpost.isInngaaendeDokument()){
+      endreJournalpostService.opprettBehandleDokumentOppgave(opprettetJournalpost);
+    }
     return opprettJournalpostResponse;
+
   }
 
-  public JoarkOpprettJournalpostResponse dupliserJournalpost(Journalpost journalpost, boolean removeDistribusjonMetadata){
-    validerJournalpostKanDupliseres(journalpost);
+  private void knyttSakerTilOpprettetJournalpost(Journalpost opprettetJournalpost, List<String> knyttTilSaker){
+    knyttTilSaker
+            .stream()
+            .filter((saksnummer)->!saksnummer.equals(opprettetJournalpost.getSak().getFagsakId()))
+            .forEach((saksnummer)-> endreJournalpostService.tilknyttTilSak(saksnummer, opprettetJournalpost));
+  }
+
+  public void populerMedDokumenterByteData(OpprettJournalpost request){
+    if (request.getOriginalJournalpostId() != null){
+      request.getDokumenter().forEach((dok)->{
+        if (dok.getDokumentvarianter().isEmpty() && Strings.isNotEmpty(dok.getDokumentInfoId())){
+          var dokument = hentDokument(request.getOriginalJournalpostId(), dok.getDokumentInfoId());
+          dok.setDokumentvarianter(List.of(opprettDokumentVariant(null, dokument)));
+        }
+      });
+    }
+  }
+
+  public JoarkOpprettJournalpostResponse dupliserUtgaaendeJournalpost(Journalpost journalpost, boolean removeDistribusjonMetadata){
+    validerUtgaaendeJournalpostKanDupliseres(journalpost);
 
     var dokumenter = hentDokumenter(journalpost);
     var opprettJournalpostRequest = createOpprettJournalpostRequest(journalpost, dokumenter, removeDistribusjonMetadata);
@@ -74,7 +79,7 @@ public class OpprettJournalpostService {
   }
 
   private JoarkOpprettJournalpostRequest createOpprettJournalpostRequest(Journalpost journalpost, Map<String, byte[]> dokumenter, boolean removeDistribusjonMetadata){
-    var opprettJournalpostRequest = new JoarkOpprettJournalpostRequest(journalpost, dokumenter);
+    var opprettJournalpostRequest = new OpprettJournalpost().dupliser(journalpost, dokumenter);
     if (removeDistribusjonMetadata){
       var tillegssopplysninger = new TilleggsOpplysninger();
       tillegssopplysninger.addAll(journalpost.getTilleggsopplysninger());
@@ -92,10 +97,8 @@ public class OpprettJournalpostService {
             .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
   }
 
-  private byte[] hentDokument(Long journalpostId, OpprettDokument dokument){
-    return Objects.isNull(dokument.getDokument()) ?
-            dokumentService.hentDokument(journalpostId, dokument.getDokumentInfoId()).getBody()
-            : dokument.getDokument();
+  private byte[] hentDokument(Long journalpostId, String dokumentId){
+    return dokumentService.hentDokument(journalpostId, dokumentId).getBody();
   }
 
 }

@@ -8,7 +8,6 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
@@ -89,7 +88,7 @@ public class AvvikService {
       default -> throw new AvvikNotSupportedException("Avvik %s ikke støttet".formatted(avvikshendelseIntern.getAvvikstype()));
     }
 
-    hendelserProducer.publishJournalpostUpdated(journalpost.hentJournalpostIdLong(), avvikshendelseIntern.getSaksbehandlersEnhet());
+//    hendelserProducer.publishJournalpostUpdated(journalpost.hentJournalpostIdLong(), avvikshendelseIntern.getSaksbehandlersEnhet());
     SECURE_LOGGER.info("Avvik {} ble utført på journalpost {} av bruker {} og enhet {} med beskrivelse {} - avvik {}", avvikshendelseIntern.getAvvikstype(), avvikshendelseIntern.getJournalpostId(), saksbehandlerInfoManager.hentSaksbehandlerBrukerId(), avvikshendelseIntern.getSaksbehandlersEnhet(), avvikshendelseIntern.getBeskrivelse(), avvikshendelseIntern);
 
     return Optional.of(new BehandleAvvikshendelseResponse(avvikshendelseIntern.getAvvikstype()));
@@ -110,12 +109,21 @@ public class AvvikService {
       throw new UgyldigAvvikException("Fant ingen saker i respons. Journalpost må knyttes til minst en sak");
     }
 
-    var opprettDokumenter = avvikshendelseIntern.getDokumenter().stream().map((dok)-> {
-      var dokumentByte = Strings.isNotEmpty(dok.getDokument()) ? Base64.getDecoder().decode(dok.getDokument()) : null;
-      return new OpprettDokument(dok.getDokumentreferanse(), dokumentByte, dok.getTittel(), dok.getBrevkode());
-    }).collect(Collectors.toList());
+    var request = new OpprettJournalpost()
+            .dupliser(journalpost)
+            .medJournalforendeEnhet(avvikshendelseIntern.getSaksbehandlersEnhet())
+            .medKanal(journalpost.getKanal());
 
-    opprettJournalpostService.dupliserJournalpost(journalpost, opprettDokumenter, avvikshendelseIntern.getKnyttTilSaker(), avvikshendelseIntern.getSaksbehandlersEnhet());
+
+    avvikshendelseIntern.getDokumenter().forEach((dok)-> {
+      var dokumentByte = Strings.isNotEmpty(dok.getDokument()) ? Base64.getDecoder().decode(dok.getDokument()) : null;
+      request.medDokument(dok.getDokumentreferanse(), dokumentByte, dok.getTittel(), dok.getBrevkode());
+    });
+
+    var response = opprettJournalpostService.opprettJournalpost(request, avvikshendelseIntern.getKnyttTilSaker());
+    LOGGER.info("Duplisert journalpost {}, ny journalpostId {}", journalpost.getJournalpostId(), response.getJournalpostId());
+
+    oppgaveService.ferdigstillVurderDokumentOppgaver(journalpost, avvikshendelseIntern.getSaksbehandlersEnhet());
   }
   public void manglerAdresse(Journalpost journalpost){
     oppdaterDistribusjonsInfoIngenDistribusjon(journalpost);

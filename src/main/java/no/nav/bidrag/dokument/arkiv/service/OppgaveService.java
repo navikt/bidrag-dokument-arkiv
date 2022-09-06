@@ -7,15 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import no.nav.bidrag.dokument.arkiv.consumer.OppgaveConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
-import no.nav.bidrag.dokument.arkiv.dto.EndreForNyttDokumentRequest;
-import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
-import no.nav.bidrag.dokument.arkiv.dto.OppgaveData;
-import no.nav.bidrag.dokument.arkiv.dto.OpprettBehandleDokumentOppgaveRequest;
-import no.nav.bidrag.dokument.arkiv.dto.OpprettOppgaveRequest;
-import no.nav.bidrag.dokument.arkiv.dto.OpprettVurderDokumentOppgaveRequest;
-import no.nav.bidrag.dokument.arkiv.dto.PersonResponse;
-import no.nav.bidrag.dokument.arkiv.dto.Saksbehandler;
-import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerMedEnhet;
+import no.nav.bidrag.dokument.arkiv.dto.*;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
 import no.nav.bidrag.dokument.arkiv.model.OppgaveSokParametre;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
@@ -53,6 +45,15 @@ public class OppgaveService {
     ));
   }
 
+  public void ferdigstillVurderDokumentOppgaver(Journalpost journalpost, String enhetsnr){
+    var oppgaver = finnVurderDokumentOppgaverForJournalpost(journalpost.hentJournalpostIdLong());
+    oppgaver.forEach((oppgave)-> ferdigstillOppgave(oppgave, enhetsnr));
+  }
+
+  private void ferdigstillOppgave(OppgaveData oppgaveData, String enhetsnr){
+    LOGGER.info("Ferdigstiller oppgave {} med oppgavetype {}", oppgaveData.getId(), oppgaveData.getOppgavetype());
+    oppgaveConsumers.get(Discriminator.SERVICE_USER).patchOppgave(new FerdigstillOppgaveRequest(oppgaveData, enhetsnr));
+  }
   public void behandleDokument(Journalpost journalpost) {
     var oppgaver = finnBehandlingsoppgaverForSaker(journalpost.hentTilknyttetSaker(), journalpost.getTema());
     if (!oppgaver.isEmpty()) {
@@ -127,6 +128,15 @@ public class OppgaveService {
         .brukBehandlingSomOppgaveType();
 
     saksnumre.forEach(parametre::leggTilSaksreferanse);
+
+    return oppgaveConsumers.get(Discriminator.SERVICE_USER).finnOppgaver(parametre).getOppgaver();
+  }
+
+  private List<OppgaveData> finnVurderDokumentOppgaverForJournalpost(Long journalpostId) {
+    var parametre = new OppgaveSokParametre()
+            .leggTilFagomrade("BID")
+            .leggTilJournalpostId(journalpostId)
+            .brukVurderDokumentSomOppgaveType();
 
     return oppgaveConsumers.get(Discriminator.SERVICE_USER).finnOppgaver(parametre).getOppgaver();
   }

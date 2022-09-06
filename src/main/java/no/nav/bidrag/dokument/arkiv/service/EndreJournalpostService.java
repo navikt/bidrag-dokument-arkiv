@@ -92,7 +92,7 @@ public class EndreJournalpostService {
     }
   }
 
-  private void opprettBehandleDokumentOppgave(Journalpost journalpost) {
+  public void opprettBehandleDokumentOppgave(Journalpost journalpost) {
     if (journalpost.isInngaaendeDokument() && journalpost.hasSak()) {
       try {
         oppgaveService.behandleDokument(journalpost);
