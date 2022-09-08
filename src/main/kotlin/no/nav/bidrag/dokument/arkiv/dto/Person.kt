@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class PersonResponse(
     var ident: String,
+    var navn: String? = null,
     var aktoerId: String? = null
 )
 

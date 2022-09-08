@@ -41,6 +41,12 @@ data class LagreReturDetaljForSisteReturRequest(private var journalpost: Journal
     }
 }
 
+data class LagreAvsenderNavnRequest(private var journalpostId: Long, private var avsenderNavn: String): OppdaterJournalpostRequest(journalpostId = journalpostId) {
+    init {
+        avsenderMottaker = AvsenderMottaker(avsenderNavn)
+    }
+}
+
 data class LockReturDetaljerRequest(private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {
     init {
         val updatedTillegsopplysninger = TilleggsOpplysninger()
