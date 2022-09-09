@@ -123,7 +123,7 @@ public class AvvikService {
     var response = opprettJournalpostService.opprettJournalpost(request, avvikshendelseIntern.getKnyttTilSaker());
     LOGGER.info("Duplisert journalpost {}, ny journalpostId {}", journalpost.getJournalpostId(), response.getJournalpostId());
 
-    oppgaveService.ferdigstillVurderDokumentOppgaver(journalpost, avvikshendelseIntern.getSaksbehandlersEnhet());
+    oppgaveService.ferdigstillVurderDokumentOppgaver(journalpost.hentJournalpostIdLong(), avvikshendelseIntern.getSaksbehandlersEnhet());
   }
   public void manglerAdresse(Journalpost journalpost){
     oppdaterDistribusjonsInfoIngenDistribusjon(journalpost);

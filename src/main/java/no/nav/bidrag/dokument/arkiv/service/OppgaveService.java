@@ -45,8 +45,8 @@ public class OppgaveService {
     ));
   }
 
-  public void ferdigstillVurderDokumentOppgaver(Journalpost journalpost, String enhetsnr){
-    var oppgaver = finnVurderDokumentOppgaverForJournalpost(journalpost.hentJournalpostIdLong());
+  public void ferdigstillVurderDokumentOppgaver(Long journalpostId, String enhetsnr){
+    var oppgaver = finnVurderDokumentOppgaverForJournalpost(journalpostId);
     oppgaver.forEach((oppgave)-> ferdigstillOppgave(oppgave, enhetsnr));
   }
 
