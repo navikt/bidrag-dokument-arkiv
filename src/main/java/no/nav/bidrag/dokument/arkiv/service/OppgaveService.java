@@ -114,7 +114,7 @@ public class OppgaveService {
 
   private String hentAktorId(String gjelder) {
     return personConsumers.get(Discriminator.SERVICE_USER).hentPerson(gjelder)
-        .orElseGet(()->new PersonResponse(gjelder, gjelder)).getAktoerId();
+        .orElseGet(()->new PersonResponse(gjelder, null, gjelder)).getAktoerId();
   }
 
   private String notNull(String fagomrade) {
