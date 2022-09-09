@@ -79,7 +79,10 @@ data class Journalpost(
     var tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger()
 ) {
 
+    fun isBidragTema(): Boolean = tema == "BID" || tema == "FAR"
     fun hentGjelderId(): String? = bruker?.id
+
+    fun harAvsenderMottaker(): Boolean = avsenderMottaker?.navn != null || avsenderMottaker?.id != null
     fun hentAvsenderMottakerId(): String? = avsenderMottaker?.id
     fun hentJournalStatus(): String? {
         if (isDistribusjonKommetIRetur()){
@@ -255,6 +258,9 @@ data class Journalpost(
     }
 
     fun tilAvvik(): List<AvvikType> {
+        if (!isTemaBidrag()){
+            return emptyList()
+        }
         val avvikTypeList = mutableListOf<AvvikType>()
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)

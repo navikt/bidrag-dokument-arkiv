@@ -41,6 +41,12 @@ data class LagreReturDetaljForSisteReturRequest(private var journalpost: Journal
     }
 }
 
+data class LagreAvsenderNavnRequest(private var journalpostId: Long, private var avsenderNavn: String): OppdaterJournalpostRequest(journalpostId = journalpostId) {
+    init {
+        avsenderMottaker = AvsenderMottaker(avsenderNavn)
+    }
+}
+
 data class LockReturDetaljerRequest(private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {
     init {
         val updatedTillegsopplysninger = TilleggsOpplysninger()
@@ -96,7 +102,7 @@ data class LagreJournalpostRequest(private var journalpostId: Long, private var 
 
         if (journalpost.isUtgaaendeDokument()){
             val endreReturDetaljer = endreJournalpostCommand.endreJournalpostCommand.endreReturDetaljer?.filter { Strings.isNotEmpty(it.beskrivelse) }
-            if (endreReturDetaljer != null && endreReturDetaljer.isNotEmpty()){
+            if (!endreReturDetaljer.isNullOrEmpty()){
                 endreReturDetaljer
                     .forEach { if (it.originalDato != null) journalpost.tilleggsopplysninger.updateReturDetaljLog(it.originalDato!!, ReturDetaljerLogDO(it.beskrivelse, it.nyDato ?: it.originalDato!!))
                                 else if (journalpost.manglerReturDetaljForSisteRetur() && it.nyDato != null && !journalpost.hasReturDetaljerWithDate(it.nyDato!!)) journalpost.tilleggsopplysninger.addReturDetaljLog(ReturDetaljerLogDO(it.beskrivelse, it.nyDato!!)) }
@@ -139,7 +145,7 @@ sealed class OppdaterJournalpostRequest(private var journalpostId: Long? = -1) {
     fun hentJournalpostId() = journalpostId
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    data class AvsenderMottaker(val navn: String? = null)
+    data class AvsenderMottaker(val navn: String? = null, var id: String? = null, var idType: AvsenderMottakerIdType? = null)
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)

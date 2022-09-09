@@ -10,14 +10,8 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
-import no.nav.bidrag.dokument.arkiv.dto.AvvikshendelseIntern;
-import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
-import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
-import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal;
-import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
-import no.nav.bidrag.dokument.arkiv.dto.OpphevEndreFagomradeJournalfortJournalpostRequest;
-import no.nav.bidrag.dokument.arkiv.dto.RegistrerReturRequest;
-import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO;
+import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
+import no.nav.bidrag.dokument.arkiv.dto.*;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
 import no.nav.bidrag.dokument.arkiv.model.AvvikDetaljException;
 import no.nav.bidrag.dokument.arkiv.model.AvvikNotSupportedException;
@@ -43,18 +37,20 @@ public class AvvikService {
   public final DistribuerJournalpostService distribuerJournalpostService;
   public final OppgaveService oppgaveService;
   private final DokarkivConsumer dokarkivConsumer;
+  private final PersonConsumer personConsumer;
   private final BidragOrganisasjonConsumer bidragOrganisasjonConsumer;
   private final SaksbehandlerInfoManager saksbehandlerInfoManager;
 
   public AvvikService(ResourceByDiscriminator<JournalpostService> journalpostService, HendelserProducer hendelserProducer,
-      EndreJournalpostService endreJournalpostService, DistribuerJournalpostService distribuerJournalpostService, OppgaveService oppgaveService,
-      ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers,
-      BidragOrganisasjonConsumer bidragOrganisasjonConsumer, SaksbehandlerInfoManager saksbehandlerInfoManager) {
+                      EndreJournalpostService endreJournalpostService, DistribuerJournalpostService distribuerJournalpostService, OppgaveService oppgaveService,
+                      ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers,
+                      ResourceByDiscriminator<PersonConsumer> personConsumers, BidragOrganisasjonConsumer bidragOrganisasjonConsumer, SaksbehandlerInfoManager saksbehandlerInfoManager) {
     this.journalpostService = journalpostService.get(Discriminator.REGULAR_USER);
     this.hendelserProducer = hendelserProducer;
     this.endreJournalpostService = endreJournalpostService;
     this.distribuerJournalpostService = distribuerJournalpostService;
     this.oppgaveService = oppgaveService;
+    this.personConsumer = personConsumers.get(Discriminator.REGULAR_USER);
     this.bidragOrganisasjonConsumer = bidragOrganisasjonConsumer;
     this.saksbehandlerInfoManager = saksbehandlerInfoManager;
     this.dokarkivConsumer = dokarkivConsumers.get(Discriminator.REGULAR_USER);
@@ -169,6 +165,14 @@ public class AvvikService {
     if (journalpost.isInngaaendeJournalfort()){
       endreFagomradeJournalfortJournalpost(journalpost, avvikshendelseIntern);
     } else {
+      endreFagomradeMottattJournalpost(journalpost, avvikshendelseIntern);
+    }
+  }
+
+  private void endreFagomradeMottattJournalpost(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
+    if (journalpost.hasSak()){
+      oppdater(avvikshendelseIntern.toEndreFagomradeOgKnyttTilSakRequest(journalpost.getBruker()));
+    } else {
       oppdater(avvikshendelseIntern.toEndreFagomradeRequest());
     }
   }
@@ -190,11 +194,27 @@ public class AvvikService {
     validateTrue(journalpost.getTema() != null, new AvvikDetaljException("Kan ikke trekke journalpost uten tilhørende fagområde"));
 
     knyttTilGenerellSak(avvikshendelseIntern, journalpost);
-    leggTilBegrunnelsePaaTittel(avvikshendelseIntern, journalpost);
+    klargjorForFerdigstilling(journalpost);
 
     dokarkivConsumer.ferdigstill(new FerdigstillJournalpostRequest(avvikshendelseIntern.getJournalpostId(), avvikshendelseIntern.getSaksbehandlersEnhet()));
 
+    leggTilBegrunnelsePaaTittel(avvikshendelseIntern, journalpost);
+
     feilregistrerSakstilknytning(avvikshendelseIntern.getJournalpostId());
+  }
+
+  private void klargjorForFerdigstilling(Journalpost journalpost){
+    settAvsenderNavnLikBrukernavnHvisMangler(journalpost);
+  }
+
+  public void settAvsenderNavnLikBrukernavnHvisMangler(Journalpost journalpost){
+    if (!journalpost.harAvsenderMottaker()){
+      var brukerNavn = personConsumer.hentPerson(journalpost.getBruker().getId())
+              .orElseThrow(()->new UgyldigAvvikException("Fant ikke person"))
+              .getNavn();
+      dokarkivConsumer.endre(new LagreAvsenderNavnRequest(journalpost.hentJournalpostIdLong(), brukerNavn));
+      journalpost.setAvsenderMottaker(new AvsenderMottaker(brukerNavn, null, null));
+    }
   }
 
   public void knyttTilGenerellSak(AvvikshendelseIntern avvikshendelseIntern, Journalpost journalpost){

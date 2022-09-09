@@ -3,7 +3,7 @@ package no.nav.bidrag.dokument.arkiv.controller
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.test.context.ActiveProfiles
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig
-import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivLocal
+import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivTest
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
@@ -23,9 +23,9 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 
-@ActiveProfiles(BidragDokumentArkivConfig.PROFILE_TEST, BidragDokumentArkivLocal.PROFILE_INTEGRATION)
+@ActiveProfiles(BidragDokumentArkivConfig.PROFILE_TEST, BidragDokumentArkivTest.PROFILE_INTEGRATION)
 @DisplayName("JournalpostController")
-@SpringBootTest(classes = [BidragDokumentArkivLocal::class], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = [BidragDokumentArkivTest::class], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWireMock(port = 0)
 @EnableMockOAuth2Server
 abstract class AbstractControllerTest {
