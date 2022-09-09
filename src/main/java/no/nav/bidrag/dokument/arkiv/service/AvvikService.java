@@ -103,15 +103,21 @@ public class AvvikService {
       throw new UgyldigAvvikException("Kan ikke kopiere journalpost som allerede tilhører Bidrag");
     }
 
+    if (avvikshendelseIntern.getDokumenter() != null && avvikshendelseIntern.getDokumenter().isEmpty()){
+      throw new UgyldigAvvikException("Kopiert journalpost må inneholde minst en dokument");
+    }
+
     var knyttTilSaker = avvikshendelseIntern.getKnyttTilSaker();
 
     if (knyttTilSaker.isEmpty()){
-      throw new UgyldigAvvikException("Fant ingen saker i respons. Journalpost må knyttes til minst en sak");
+      throw new UgyldigAvvikException("Fant ingen saker i request. Journalpost må knyttes til minst en sak");
     }
 
+    var hoveddokumentTittel = avvikshendelseIntern.getDokumenter().get(0).getTittel();
     var request = new OpprettJournalpost()
-            .dupliser(journalpost)
+            .kopierFra(journalpost)
             .medJournalforendeEnhet(avvikshendelseIntern.getSaksbehandlersEnhet())
+            .medTittel(hoveddokumentTittel != null ? hoveddokumentTittel : journalpost.getTittel())
             .medKanal(journalpost.getKanal());
 
 

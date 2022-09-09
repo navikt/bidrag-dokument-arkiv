@@ -71,7 +71,7 @@ class OpprettJournalpost: JoarkOpprettJournalpostRequest(){
     fun hasAvsenderMottaker(): Boolean {
         return avsenderMottaker?.id != null
     }
-    fun dupliser(journalpost: Journalpost): OpprettJournalpost{
+    fun kopierFra(journalpost: Journalpost): OpprettJournalpost{
         dupliser(journalpost, emptyMap())
         return this;
     }
@@ -101,7 +101,7 @@ class OpprettJournalpost: JoarkOpprettJournalpostRequest(){
         return this
     }
     fun medDokument(dokumentInfoId: String?, dokument: ByteArray?, tittel: String?, brevkode: String?): OpprettJournalpost{
-        this.dokumenter.add(
+        dokumenter.add(
             Dokument(
                 dokumentInfoId = dokumentInfoId,
                 brevkode = brevkode,
@@ -113,22 +113,30 @@ class OpprettJournalpost: JoarkOpprettJournalpostRequest(){
     }
 
     fun medJournalforendeEnhet(enhet: String): OpprettJournalpost{
-        this.journalfoerendeEnhet = enhet
+        journalfoerendeEnhet = enhet
         return this
     }
 
-    fun medKanal(kanal: JournalpostKanal?): OpprettJournalpost{
-        this.kanal = kanal?.name
+    fun medKanal(jpKanal: JournalpostKanal?): OpprettJournalpost{
+        kanal = jpKanal?.name
         return this
     }
 
     fun medSak(saksnummer: String): OpprettJournalpost{
-        this.sak = OpprettJournalpostSak(saksnummer)
+        sak = OpprettJournalpostSak(saksnummer)
         return this
     }
 
-    fun medTema(tema: String): OpprettJournalpost{
-        this.tema = tema
+    fun medTittel(oppdaterTittel: String): OpprettJournalpost{
+        tittel = oppdaterTittel
+        if (dokumenter.size > 0){
+            dokumenter[0].tittel = oppdaterTittel
+        }
+        return this
+    }
+
+    fun medTema(oppdaterTema: String): OpprettJournalpost{
+        tema = oppdaterTema
         return this
     }
 
