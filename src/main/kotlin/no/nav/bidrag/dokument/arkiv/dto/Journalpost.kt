@@ -81,6 +81,8 @@ data class Journalpost(
 
     fun isBidragTema(): Boolean = tema == "BID" || tema == "FAR"
     fun hentGjelderId(): String? = bruker?.id
+
+    fun harAvsenderMottaker(): Boolean = avsenderMottaker?.navn != null || avsenderMottaker?.id != null
     fun hentAvsenderMottakerId(): String? = avsenderMottaker?.id
     fun hentJournalStatus(): String? {
         if (isDistribusjonKommetIRetur()){

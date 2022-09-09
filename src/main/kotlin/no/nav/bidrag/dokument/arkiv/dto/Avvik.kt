@@ -78,6 +78,7 @@ data class EndreTittelRequest(private var journalpostId: Long, override var titt
     init {
         val hoveddokument = journalpost.hentHoveddokument()
         if (hoveddokument != null) dokumenter = listOf(Dokument(hoveddokument.dokumentInfoId, tittel, hoveddokument.brevkode))
+        avsenderMottaker = AvsenderMottaker(journalpost.avsenderMottaker?.navn)
     }
 }
 data class EndreKnyttTilGenerellSakRequest(private var journalpostId: Long, override var bruker: Bruker?, override var tema: String?, override var sak: Sak? = GenerellSak()): OppdaterJournalpostRequest(journalpostId)

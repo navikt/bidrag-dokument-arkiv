@@ -2,15 +2,7 @@ package no.nav.bidrag.dokument.arkiv.controller
 
 
 import no.nav.bidrag.commons.web.EnhetFilter
-import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest
-import no.nav.bidrag.dokument.arkiv.dto.Dokument
-import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
-import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
-import no.nav.bidrag.dokument.arkiv.dto.OppgaveType
-import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
-import no.nav.bidrag.dokument.arkiv.dto.Sak
-import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
-import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
+import no.nav.bidrag.dokument.arkiv.dto.*
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_ID
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
 import no.nav.bidrag.dokument.arkiv.stubs.JOURNALPOST_ID
@@ -471,6 +463,63 @@ class AvvikControllerTest : AbstractControllerTest() {
                     .isEqualTo(HttpStatus.OK)
             },
             { stubs.verifyStub.dokarkivFeilregistrerKalt(journalpostIdFraJson) },
+            { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "GENERELL_SAK") },
+            { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,
+                "\"tittel\":\"Tittel på dokument 1 (En begrunnelse)\"",
+                "\"dokumenter\":[{\"dokumentInfoId\":\"123123\",\"tittel\":\"Tittel på dokument 1 (En begrunnelse)\"}]") },
+            { stubs.verifyStub.dokarkivFerdigstillKalt(journalpostIdFraJson) },
+            {
+                Mockito.verify(kafkaTemplateMock).send(
+                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                        "JOARK-$journalpostIdFraJson"
+                    ), ArgumentMatchers.any()
+                )
+            }
+        )
+    }
+
+    @Test
+    @DisplayName("skal utføre avvik TREKK_JOURNALPOST hvis mottaker mangler")
+    @Throws(IOException::class)
+    fun skalUtforeAvvikTrekkJournalpostOgFeilregistrereHvisAvsenderMottakerMangler() {
+        // given
+        val xEnhet = "1234"
+        val journalpostIdFraJson = 201028011L
+        val avvikHendelse = createAvvikHendelse(AvvikType.TREKK_JOURNALPOST, java.util.Map.of())
+        val detaljer: MutableMap<String, String> = HashMap()
+        avvikHendelse.detaljer = detaljer
+        avvikHendelse.beskrivelse = "En begrunnelse"
+        stubs.mockSafResponseHentJournalpost(opprettSafResponse(journalpostIdFraJson.toString(),
+            avsenderMottaker = AvsenderMottaker(),
+            dokumenter = listOf(
+                Dokument(
+                    dokumentInfoId = DOKUMENT_1_ID,
+                    tittel = DOKUMENT_1_TITTEL
+                ),
+                Dokument(
+                    dokumentInfoId = "123213",
+                    tittel = "tittel"
+                )
+            )
+        ))
+        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, "Personnavn", AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockDokarkivFeilregistrerRequest(journalpostIdFraJson)
+        stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
+        stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson)
+
+        val overforEnhetResponse = sendAvvikRequest(xEnhet, journalpostIdFraJson, avvikHendelse)
+
+        // then
+        assertAll(
+            {
+                Assertions.assertThat(overforEnhetResponse)
+                    .extracting { it.statusCode }
+                    .`as`("statusCode")
+                    .isEqualTo(HttpStatus.OK)
+            },
+            { stubs.verifyStub.dokarkivFeilregistrerKalt(journalpostIdFraJson) },
+            { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "Personnavn") },
+            { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "GENERELL_SAK") },
             { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "GENERELL_SAK") },
             { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,
                 "\"tittel\":\"Tittel på dokument 1 (En begrunnelse)\"",

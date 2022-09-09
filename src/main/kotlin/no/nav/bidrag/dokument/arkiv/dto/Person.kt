@@ -5,8 +5,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class PersonResponse(
     var ident: String,
+    var navn: String? = null,
     var aktoerId: String? = null
-)
+){
+    constructor(ident: String, aktoerId: String?): this(ident, null, aktoerId)
+}
 
 data class HentPostadresseRequest(
     var ident: String
