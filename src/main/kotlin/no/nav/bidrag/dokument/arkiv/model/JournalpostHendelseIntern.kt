@@ -19,7 +19,11 @@ class JournalpostHendelseIntern(var journalpost: Journalpost, var saksbehandler:
         journalpostHendelse.fagomrade = journalforingHendelse?.temaNytt ?: journalpost.tema
         journalpostHendelse.aktorId = hentAktoerIdFraJournalpost()
         journalpostHendelse.fnr = hentFnrFraJournalpost()
+        journalpostHendelse.tittel = journalpost.hentTittel()
         journalpostHendelse.sporing = opprettSporingsData()
+        journalpostHendelse.sakstilknytninger = journalpost.tilknyttedeSaker
+        journalpostHendelse.dokumentDato = journalpost.hentDatoDokument()
+        journalpostHendelse.journalfortDato = journalpost.hentDatoJournalfort()
     }
 
     fun hentFnrFraJournalpost(): String? {
