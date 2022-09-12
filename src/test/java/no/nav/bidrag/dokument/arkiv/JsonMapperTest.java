@@ -26,7 +26,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles(PROFILE_TEST)
 @DisplayName("Mapping av json verdier")
-@SpringBootTest(classes = BidragDokumentArkivLocal.class)
+@SpringBootTest(classes = BidragDokumentArkivTest.class)
 @EnableMockOAuth2Server
 class JsonMapperTest {
 
