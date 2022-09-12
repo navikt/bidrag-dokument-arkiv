@@ -90,6 +90,7 @@ data class EndreForNyttDokumentRequest(private var oppgaveData: OppgaveData,
         versjon = oppgaveData.versjon,
         beskrivelse = "--- ${LocalDateTime.now().format(NORSK_TIDSSTEMPEL_FORMAT)} $saksbehandlersInfo ---\r\n" +
                 "${lagDokumentOppgaveTittelForEndring("Nytt dokument", journalpost.tittel!!, journalpost.hentDatoRegistrert() ?: journalpost.hentDatoDokument()!!)}\r\n\r\n" +
+                "${lagDokumenterVedlagtBeskrivelse(journalpost)}\r\n\r\n" +
                 "${oppgaveData.beskrivelse}"
 )
 
@@ -167,6 +168,10 @@ internal fun lagVurderDokumentOppgaveBeskrivelse(saksbehandlerMedEnhet: Saksbeha
     description += "\n\n Reg.dato: ${regDato.format(NORSK_DATO_FORMAT)}"
     return description
 }
+
+internal fun lagDokumenterVedlagtBeskrivelse(journalpost: Journalpost) =
+    "\u00B7 Dokumenter vedlagt: ${journalpost.dokumenter.joinToString { "JOARK-${journalpost.journalpostId}:${it.dokumentInfoId}" }}"
+
 
 
 enum class OppgaveType {

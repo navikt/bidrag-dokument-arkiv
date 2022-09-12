@@ -196,7 +196,8 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
                     "\"saksreferanse\":\"200001\""
                 )
             },
-             { stubs.verifyStub.oppgaveOppdaterKalt(1, "Nytt dokument") }
+             { stubs.verifyStub.oppgaveOppdaterKalt(1, "Nytt dokument") },
+             { stubs.verifyStub.oppgaveOppdaterKalt(1, "Dokumenter vedlagt: JOARK-201028011:123123") }
         )
     }
 
@@ -263,6 +264,7 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
 
         val journalpostId = 201028011L
         val endreJournalpostCommand = createEndreJournalpostCommand()
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(opprettSafResponse(journalpostId = journalpostId.toString()))
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
