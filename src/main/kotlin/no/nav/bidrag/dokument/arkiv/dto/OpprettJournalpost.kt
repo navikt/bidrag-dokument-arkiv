@@ -86,6 +86,7 @@ class OpprettJournalpost: JoarkOpprettJournalpostRequest(){
             JournalpostType.N -> "NOTAT"
             else -> "UTGAAENDE"
         }
+        kanal = journalpost.kanal?.name
         behandlingstema = journalpost.behandlingstema
         tittel = journalpost.hentTittel()
         avsenderMottaker = OpprettJournalpostAvsenderMottaker(journalpost.avsenderMottaker?.navn, journalpost.avsenderMottaker?.id, journalpost.avsenderMottaker?.type)

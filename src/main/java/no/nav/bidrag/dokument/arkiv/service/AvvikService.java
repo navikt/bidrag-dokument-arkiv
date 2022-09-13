@@ -128,15 +128,14 @@ public class AvvikService {
     var nyJournalpostTittel = hoveddokumentTittel != null ? hoveddokumentTittel : journalpost.hentTittel();
     var request = new OpprettJournalpost()
             .kopierFra(journalpost)
-            .medJournalforendeEnhet(avvikshendelseIntern.getSaksbehandlersEnhet())
-            .medTittel(String.format("%s (Kopiert fra dokument %s)", nyJournalpostTittel, journalpost.hentTittel()))
-            .medKanal(journalpost.getKanal());
-
+            .medJournalforendeEnhet(avvikshendelseIntern.getSaksbehandlersEnhet());
 
     avvikshendelseIntern.getDokumenter().forEach((dok)-> {
       var dokumentByte = Strings.isNotEmpty(dok.getDokument()) ? Base64.getDecoder().decode(dok.getDokument()) : null;
       request.medDokument(dok.getDokumentreferanse(), dokumentByte, dok.getTittel(), dok.getBrevkode());
     });
+
+    request.medTittel(String.format("%s (Kopiert fra dokument: %s)", nyJournalpostTittel, journalpost.hentTittel()));
 
     try {
       var response = opprettJournalpostService.opprettOgFerdigstillJournalpost(request, avvikshendelseIntern.getKnyttTilSaker());
