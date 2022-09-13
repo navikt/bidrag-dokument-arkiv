@@ -114,10 +114,11 @@ public class AvvikService {
     }
 
     var hoveddokumentTittel = avvikshendelseIntern.getDokumenter().get(0).getTittel();
+    var nyJournalpostTittel = hoveddokumentTittel != null ? hoveddokumentTittel : journalpost.hentTittel();
     var request = new OpprettJournalpost()
             .kopierFra(journalpost)
             .medJournalforendeEnhet(avvikshendelseIntern.getSaksbehandlersEnhet())
-            .medTittel(hoveddokumentTittel != null ? hoveddokumentTittel : journalpost.getTittel())
+            .medTittel(String.format("%s (Kopiert fra dokument %s)", nyJournalpostTittel, journalpost.hentTittel()))
             .medKanal(journalpost.getKanal());
 
 
