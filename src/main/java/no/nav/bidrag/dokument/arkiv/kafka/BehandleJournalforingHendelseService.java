@@ -1,25 +1,21 @@
 package no.nav.bidrag.dokument.arkiv.kafka;
 
-import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
-
 import com.google.common.base.Strings;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
-import java.util.stream.Collectors;
 import no.nav.bidrag.dokument.arkiv.dto.Dokument;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal;
-import no.nav.bidrag.dokument.arkiv.model.Discriminator;
-import no.nav.bidrag.dokument.arkiv.model.HendelsesType;
-import no.nav.bidrag.dokument.arkiv.model.JournalforingHendelseIntern;
-import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
-import no.nav.bidrag.dokument.arkiv.model.PersonException;
-import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
+import no.nav.bidrag.dokument.arkiv.model.*;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import java.util.stream.Collectors;
+
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
 
 @Service
 public class BehandleJournalforingHendelseService {
@@ -106,7 +102,7 @@ public class BehandleJournalforingHendelseService {
   }
 
   private Journalpost hentJournalpost(Long journalpostId){
-    return journalpostService.hentJournalpost(journalpostId)
+    return journalpostService.hentJournalpostMedTilknyttedeSaker(journalpostId)
         .orElseThrow(()->new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId)));
   }
 

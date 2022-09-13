@@ -21,7 +21,7 @@ class JournalpostHendelseIntern(var journalpost: Journalpost, var saksbehandler:
         journalpostHendelse.fnr = hentFnrFraJournalpost()
         journalpostHendelse.tittel = journalpost.hentTittel()
         journalpostHendelse.sporing = opprettSporingsData()
-        journalpostHendelse.sakstilknytninger = journalpost.tilknyttedeSaker
+        journalpostHendelse.sakstilknytninger = journalpost.hentTilknyttetSaker().toList()
         journalpostHendelse.dokumentDato = journalpost.hentDatoDokument()
         journalpostHendelse.journalfortDato = journalpost.hentDatoJournalfort()
     }
