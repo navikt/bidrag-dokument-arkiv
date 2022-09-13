@@ -3,11 +3,7 @@ package no.nav.bidrag.dokument.arkiv.hendelser
 import com.fasterxml.jackson.databind.ObjectMapper
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivTest
-import no.nav.bidrag.dokument.arkiv.dto.Bruker
-import no.nav.bidrag.dokument.arkiv.dto.BrukerType
-import no.nav.bidrag.dokument.arkiv.dto.Dokument
-import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
-import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
+import no.nav.bidrag.dokument.arkiv.dto.*
 import no.nav.bidrag.dokument.arkiv.kafka.HendelseListener
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.BRUKER_AKTOER_ID
@@ -32,6 +28,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
+import org.springframework.http.HttpStatus
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.test.context.ActiveProfiles
 
@@ -75,6 +72,7 @@ class JoarkHendelseTest {
                 journalforendeEnhet = BRUKER_ENHET
             )
         )
+        stubs.mockSafResponseTilknyttedeJournalposter(listOf())
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockBidragOrganisasjonSaksbehandler()
         stubs.mockOrganisasjonGeografiskTilknytning(personEnhet)
@@ -109,6 +107,7 @@ class JoarkHendelseTest {
                 journalforendeEnhet = BRUKER_ENHET
             )
         )
+        stubs.mockSafResponseTilknyttedeJournalposter(listOf())
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockBidragOrganisasjonSaksbehandler()
         stubs.mockOrganisasjonGeografiskTilknytning(personEnhet)
@@ -142,7 +141,9 @@ class JoarkHendelseTest {
                 journalforendeEnhet = BRUKER_ENHET
             )
         )
+        stubs.mockSafResponseTilknyttedeJournalposter(listOf())
         stubs.mockBidragOrganisasjonSaksbehandler()
+        stubs.mockPersonResponse(PersonResponse("123", "12321"), HttpStatus.OK)
 
         val record = createHendelseRecord(journalpostId)
 
@@ -189,6 +190,8 @@ class JoarkHendelseTest {
     fun `skal ikke behandle hendelse nar journalpost tilhorer NKS`() {
         val journalpostId = 123213L
         stubs.mockSts()
+        stubs.mockPersonResponse(PersonResponse("123", "12321"), HttpStatus.OK)
+        stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(123123L, JournalStatus.FERDIGSTILT, Sak("5276661"))))
         stubs.mockSafResponseHentJournalpost(
             opprettSafResponse(
                 journalpostId = journalpostId.toString(),

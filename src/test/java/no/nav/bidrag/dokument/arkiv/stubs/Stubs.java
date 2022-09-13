@@ -302,7 +302,6 @@ public class Stubs {
     );
   }
 
-
   public void mockSafResponseTilknyttedeJournalposter(HttpStatus httpStatus) {
     stubFor(
         post(urlEqualTo("/saf/graphql"))

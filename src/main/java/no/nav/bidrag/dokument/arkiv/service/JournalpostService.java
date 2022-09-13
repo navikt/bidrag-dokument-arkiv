@@ -34,10 +34,14 @@ public class JournalpostService {
   }
 
   public Optional<Journalpost> hentJournalpostMedTilknyttedeSaker(Long journalpostId) {
-    return hentJournalpostMedTilknyttedeSaker(journalpostId, null);
+    var jpOptional = hentJournalpost(journalpostId);
+    if (jpOptional.isEmpty()){
+      return jpOptional;
+    }
+    return Optional.of(populerMedTilknyttedeSaker(jpOptional.get()));
   }
 
-  public Optional<Journalpost> hentJournalpostMedTilknyttedeSaker(Long journalpostId, String saksnummer) {
+  public Optional<Journalpost> hentJournalpostMedFnrOgTilknyttedeSaker(Long journalpostId, String saksnummer) {
     var jpOptional = hentJournalpostMedFnr(journalpostId, saksnummer);
     if (jpOptional.isEmpty()){
       return jpOptional;

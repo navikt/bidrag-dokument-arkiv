@@ -63,7 +63,7 @@ class JournalpostServiceTest {
     when(safConsumerMock.hentJournalpost(journalpostIdFraJson)).thenReturn(journalpostDokOversikt);
     when(personConsumerMock.hentPerson(journalpostDokOversikt.getBruker().getId())).thenReturn(Optional.of(new PersonResponse("123123", "","555555")));
 
-    var muligJournalpost = journalpostService.get(Discriminator.REGULAR_USER).hentJournalpostMedTilknyttedeSaker(journalpostIdFraJson, null);
+    var muligJournalpost = journalpostService.get(Discriminator.REGULAR_USER).hentJournalpostMedFnrOgTilknyttedeSaker(journalpostIdFraJson, null);
 
     assertAll(
         () -> {
