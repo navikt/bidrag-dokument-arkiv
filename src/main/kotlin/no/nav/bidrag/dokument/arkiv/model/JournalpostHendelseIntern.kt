@@ -41,16 +41,24 @@ class JournalpostHendelseIntern(var journalpost: Journalpost, var saksbehandler:
     fun hentJournalpostHendelse()=journalpostHendelse
 }
 class JournalforingHendelseIntern(var journalforingHendelse: JournalfoeringHendelseRecord) {
-    var saksbehandler = Saksbehandler("bidrag-dokument-arkiv", "bidrag-dokument-arkiv").tilEnhet("9999")
+    var saksbehandler = Saksbehandler(null, "bidrag-dokument-arkiv").tilEnhet("9999")
 
     fun toJournalpostHendelse(journalpost: Journalpost?): JournalpostHendelse {
         if (journalpost != null){
-            val hendelse = JournalpostHendelseIntern(journalpost, saksbehandler, journalforingHendelse).hentJournalpostHendelse()
+            val hendelse = JournalpostHendelseIntern(journalpost, hentSaksbehandler(journalpost), journalforingHendelse).hentJournalpostHendelse()
             hendelse.enhet = null
             return hendelse
         }
 
         return journalforingHendelseToJournalpostHendelse()
+    }
+
+    fun hentSaksbehandler(journalpost: Journalpost): SaksbehandlerMedEnhet{
+        if (journalpost.isStatusJournalfort()){
+            return Saksbehandler(journalpost.hentJournalfortAvIdent(), journalpost.journalfortAvNavn).tilEnhet(journalpost.journalforendeEnhet)
+        }
+
+        return Saksbehandler(null, "bidrag-dokument-arkiv").tilEnhet("9999")
     }
 
     fun journalforingHendelseToJournalpostHendelse(): JournalpostHendelse {

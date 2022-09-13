@@ -11,6 +11,9 @@ import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.retry.backoff.FixedBackOffPolicy;
+import org.springframework.retry.policy.SimpleRetryPolicy;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.stream.Collectors;
@@ -27,7 +30,6 @@ public class BehandleJournalforingHendelseService {
   private final MeterRegistry meterRegistry;
   private final HendelserProducer producer;
   private final JournalpostService journalpostService;
-
   private final DistributionSummary numberOfDocsDistribution;
 
   public BehandleJournalforingHendelseService(HendelserProducer producer, MeterRegistry registry, ResourceByDiscriminator<JournalpostService> journalpostServices) {
@@ -43,7 +45,7 @@ public class BehandleJournalforingHendelseService {
 
   public void behandleJournalforingHendelse(JournalfoeringHendelseRecord record){
     var journalpostId = record.getJournalpostId();
-    var journalpost = hentJournalpost(journalpostId);
+    var journalpost = hentJournalpostMedSaksbehandlerIdent(journalpostId);
     if (erOpprettetAvNKS(journalpost)){
       var brevKoder = journalpost.getDokumenter().stream().map(Dokument::getBrevkode).collect(Collectors.joining(","));
       LOGGER.warn("Journalpost {} er opprettet av NKS. Stopper videre behandling. opprettetAvNavn={}, brevkoder={}", record.getJournalpostId(), journalpost.getOpprettetAvNavn(), brevKoder);
@@ -101,6 +103,22 @@ public class BehandleJournalforingHendelseService {
     }
   }
 
+  private Journalpost hentJournalpostMedSaksbehandlerIdent(Long journalpostId){
+    try {
+      return retryTemplate().execute(arg0 -> {
+        Journalpost journalpost = hentJournalpost(journalpostId);
+        if (journalpost.isStatusJournalfort() && journalpost.hentJournalfortAvIdent() == null){
+          LOGGER.warn("Fant ingen saksbehandlerident lagret som tilleggsopplysning på journalført journalpost {}, venter før det forsøkes på nytt", journalpostId);
+          throw new JournalfortJournalpostManglerJournalfortAvIdent("Journalført journalpost mangler journaført av ident");
+        }
+        return journalpost;
+      });
+    } catch (Exception e){
+      LOGGER.error("Fant ingen saksbehandlerident lagret som tilleggsopplysning på journalført journalpost {}. Fortsetter behandling uten saksbehandlerident. Dette vil påvirke videre behandling i bidrag-arbeidsflyt.", journalpostId);
+      return hentJournalpost(journalpostId);
+    }
+
+  }
   private Journalpost hentJournalpost(Long journalpostId){
     return journalpostService.hentJournalpostMedTilknyttedeSaker(journalpostId)
         .orElseThrow(()->new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId)));
@@ -111,5 +129,19 @@ public class BehandleJournalforingHendelseService {
     var opprettetAvSalesforce = "NKSsalesforce".equals(journalpost.getOpprettetAvNavn());
     var brevkodeCRM = journalpost.getDokumenter().stream().anyMatch(dokument -> "CRM_MELDINGSKJEDE".equals(dokument.getBrevkode()) || "CRM_CHAT".equals(dokument.getBrevkode()));
     return brevkodeCRM || opprettetAvSalesforce || erKanalNavNoChat;
+  }
+
+  private RetryTemplate retryTemplate() {
+    RetryTemplate retryTemplate = new RetryTemplate();
+
+    FixedBackOffPolicy fixedBackOffPolicy = new FixedBackOffPolicy();
+    fixedBackOffPolicy.setBackOffPeriod(2000L);
+    retryTemplate.setBackOffPolicy(fixedBackOffPolicy);
+
+    SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy();
+    retryPolicy.setMaxAttempts(3);
+    retryTemplate.setRetryPolicy(retryPolicy);
+
+    return retryTemplate;
   }
 }

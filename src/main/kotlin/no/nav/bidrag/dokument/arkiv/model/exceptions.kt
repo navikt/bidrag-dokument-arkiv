@@ -42,3 +42,4 @@ class OppdaterJournalpostFeiletTekniskException(message: String, throwable: Thro
 class JournalpostHarIkkeKommetIRetur(message: String): RuntimeException(message)
 
 class KunneIkkeFerdigstilleOpprettetJournalpost(message: String): RuntimeException(message)
+class JournalfortJournalpostManglerJournalfortAvIdent(message: String): RuntimeException(message)
