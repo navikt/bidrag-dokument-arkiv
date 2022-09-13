@@ -50,9 +50,9 @@ public class DokarkivConsumer extends AbstractConsumer {
     }
   }
 
-  public JoarkOpprettJournalpostResponse opprett(JoarkOpprettJournalpostRequest joarkOpprettJournalpostRequest){
+  public JoarkOpprettJournalpostResponse opprett(JoarkOpprettJournalpostRequest joarkOpprettJournalpostRequest, boolean ferdigstill){
     try {
-      var response = restTemplate.exchange(URL_JOURNALPOSTAPI_V1+"?forsoekFerdigstill=true", HttpMethod.POST, new HttpEntity<>(joarkOpprettJournalpostRequest), JoarkOpprettJournalpostResponse.class);
+      var response = restTemplate.exchange(URL_JOURNALPOSTAPI_V1+ String.format("?forsoekFerdigstill=%s", ferdigstill ? "true" : "false"), HttpMethod.POST, new HttpEntity<>(joarkOpprettJournalpostRequest), JoarkOpprettJournalpostResponse.class);
       var responseBody = response.getBody();
       LOGGER.info("Opprettet journalpost {} med status {}", responseBody.getJournalpostId(), responseBody.getJournalstatus());
       return response.getBody();

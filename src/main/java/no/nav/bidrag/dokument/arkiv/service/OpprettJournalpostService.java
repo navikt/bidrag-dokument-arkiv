@@ -7,6 +7,7 @@ import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.*;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
+import no.nav.bidrag.dokument.arkiv.model.KunneIkkeFerdigstilleOpprettetJournalpost;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -31,20 +32,27 @@ public class OpprettJournalpostService {
     this.endreJournalpostService = endreJournalpostService;
   }
 
-  public JoarkOpprettJournalpostResponse opprettJournalpost(OpprettJournalpost request, List<String> knyttTilSaker){
+  public JoarkOpprettJournalpostResponse opprettOgFerdigstillJournalpost(OpprettJournalpost request, List<String> knyttTilSaker){
     var tilknyttetSak = knyttTilSaker.get(0);
     request.medSak(tilknyttetSak);
     populerMedDokumenterByteData(request);
     validerKanOppretteJournalpost(request);
 
-    var opprettJournalpostResponse =  dokarkivConsumer.opprett(request);
+    var opprettJournalpostResponse =  dokarkivConsumer.opprett(request, true);
     LOGGER.info("Opprettet ny journalpost {}", opprettJournalpostResponse.getJournalpostId());
     SECURE_LOGGER.info("Opprettet ny journalpost {}", opprettJournalpostResponse);
 
+    if (Boolean.FALSE.equals(opprettJournalpostResponse.getJournalpostferdigstilt())){
+      String message = String.format("Kunne ikke ferdigstille journalpost %s med feilmelding %s", opprettJournalpostResponse.getJournalpostId(), opprettJournalpostResponse.getMelding());
+      LOGGER.error(message);
+      throw new KunneIkkeFerdigstilleOpprettetJournalpost(message);
+    }
+
     var opprettetJournalpost = safConsumer.hentJournalpost(opprettJournalpostResponse.getJournalpostId());
+
+    endreJournalpostService.lagreSaksbehandlerIdentForJournalfortJournalpost(opprettetJournalpost);
     knyttSakerTilOpprettetJournalpost(opprettetJournalpost, knyttTilSaker);
     return opprettJournalpostResponse;
-
   }
 
   private void knyttSakerTilOpprettetJournalpost(Journalpost opprettetJournalpost, List<String> knyttTilSaker){
@@ -71,7 +79,7 @@ public class OpprettJournalpostService {
     var dokumenter = hentDokumenter(journalpost);
     var opprettJournalpostRequest = createOpprettJournalpostRequest(journalpost, dokumenter, removeDistribusjonMetadata);
     opprettJournalpostRequest.setEksternReferanseId(String.format("BID_duplikat_%s", journalpost.getJournalpostId()));
-    var opprettJournalpostResponse =  dokarkivConsumer.opprett(opprettJournalpostRequest);
+    var opprettJournalpostResponse =  dokarkivConsumer.opprett(opprettJournalpostRequest, true);
     LOGGER.info("Duplisert journalpost {}, ny journalpostId {}", journalpost.getJournalpostId(), opprettJournalpostResponse.getJournalpostId());
     return opprettJournalpostResponse;
   }

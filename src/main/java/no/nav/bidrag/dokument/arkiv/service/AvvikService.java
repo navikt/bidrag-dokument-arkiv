@@ -12,11 +12,22 @@ import java.util.stream.Stream;
 import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
-import no.nav.bidrag.dokument.arkiv.dto.*;
+import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker;
+import no.nav.bidrag.dokument.arkiv.dto.AvvikshendelseIntern;
+import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal;
+import no.nav.bidrag.dokument.arkiv.dto.LagreAvsenderNavnRequest;
+import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.OpphevEndreFagomradeJournalfortJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpost;
+import no.nav.bidrag.dokument.arkiv.dto.RegistrerReturRequest;
+import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
 import no.nav.bidrag.dokument.arkiv.model.AvvikDetaljException;
 import no.nav.bidrag.dokument.arkiv.model.AvvikNotSupportedException;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
+import no.nav.bidrag.dokument.arkiv.model.KunneIkkeFerdigstilleOpprettetJournalpost;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.model.UgyldigAvvikException;
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager;
@@ -127,10 +138,16 @@ public class AvvikService {
       request.medDokument(dok.getDokumentreferanse(), dokumentByte, dok.getTittel(), dok.getBrevkode());
     });
 
-    var response = opprettJournalpostService.opprettJournalpost(request, avvikshendelseIntern.getKnyttTilSaker());
-    LOGGER.info("Duplisert journalpost {}, ny journalpostId {}", journalpost.getJournalpostId(), response.getJournalpostId());
+    try {
+      var response = opprettJournalpostService.opprettOgFerdigstillJournalpost(request, avvikshendelseIntern.getKnyttTilSaker());
+      LOGGER.info("Kopiert journalpost {} til Bidrag, ny journalpostId {}", journalpost.getJournalpostId(), response.getJournalpostId());
+    } catch (KunneIkkeFerdigstilleOpprettetJournalpost err){
+      // Ferdigstill oppgave slik at saksbehandler ikke kopierer journalpost flere ganger
+      oppgaveService.ferdigstillVurderDokumentOppgaver(journalpost.hentJournalpostIdLong(), avvikshendelseIntern.getSaksbehandlersEnhet());
+      throw err;
+    }
 
-    oppgaveService.ferdigstillVurderDokumentOppgaver(journalpost.hentJournalpostIdLong(), avvikshendelseIntern.getSaksbehandlersEnhet());
+
   }
   public void manglerAdresse(Journalpost journalpost){
     oppdaterDistribusjonsInfoIngenDistribusjon(journalpost);

@@ -12,6 +12,7 @@ import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilAnnenSakRequest;
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilGenerellSakRequest;
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilSakRequest;
+import no.nav.bidrag.dokument.arkiv.dto.LagreJournalfortAvIdentRequest;
 import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostDistribusjonsInfoRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
@@ -19,6 +20,7 @@ import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.Sak;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
+import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -33,18 +35,21 @@ public class EndreJournalpostService {
   private final DokarkivProxyConsumer dokarkivProxyConsumer;
   private final OppgaveService oppgaveService;
   private final HendelserProducer hendelserProducer;
+  private final SaksbehandlerInfoManager saksbehandlerInfoManager;
+
 
   public EndreJournalpostService(
-      JournalpostService journalpostService,
-      DokarkivConsumer dokarkivConsumer,
-      DokarkivProxyConsumer dokarkivProxyConsumer,
-      OppgaveService oppgaveService,
-      HendelserProducer hendelserProducer) {
+          JournalpostService journalpostService,
+          DokarkivConsumer dokarkivConsumer,
+          DokarkivProxyConsumer dokarkivProxyConsumer,
+          OppgaveService oppgaveService,
+          HendelserProducer hendelserProducer, SaksbehandlerInfoManager saksbehandlerInfoManager) {
     this.journalpostService = journalpostService;
     this.dokarkivConsumer = dokarkivConsumer;
     this.dokarkivProxyConsumer = dokarkivProxyConsumer;
     this.oppgaveService = oppgaveService;
     this.hendelserProducer = hendelserProducer;
+    this.saksbehandlerInfoManager = saksbehandlerInfoManager;
   }
 
   public HttpResponse<Void> endre(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand) {
@@ -105,9 +110,13 @@ public class EndreJournalpostService {
   private void journalfoerJournalpostNarMottaksregistrert(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
     if (endreJournalpostCommand.skalJournalfores() && journalpost.isStatusMottatt()) {
       var journalpostId = journalpost.hentJournalpostIdLong();
-      journalfoerJournalpost(journalpostId, endreJournalpostCommand);
+      journalfoerJournalpost(journalpostId, endreJournalpostCommand.getEnhet(), journalpost);
       journalpost.setJournalstatus(JournalStatus.JOURNALFOERT);
     }
+  }
+
+  public void lagreSaksbehandlerIdentForJournalfortJournalpost(Journalpost journalpost){
+    lagreJournalpost(new LagreJournalfortAvIdentRequest(journalpost.hentJournalpostIdLong(), journalpost, saksbehandlerInfoManager.hentSaksbehandlerBrukerId()));
   }
 
   private void tilknyttSakerTilJournalfoertJournalpost(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
@@ -138,10 +147,11 @@ public class EndreJournalpostService {
     return response.getNyJournalpostId();
   }
 
-  private void journalfoerJournalpost(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand){
-    var journalforRequest = new FerdigstillJournalpostRequest(journalpostId, endreJournalpostCommand.getEnhet());
+  private void journalfoerJournalpost(Long journalpostId, String enhet, Journalpost journalpost){
+    var journalforRequest = new FerdigstillJournalpostRequest(journalpostId, enhet);
     dokarkivConsumer.ferdigstill(journalforRequest);
     LOGGER.info("Journalpost med id {} er journalført", journalpostId);
+    lagreSaksbehandlerIdentForJournalfortJournalpost(journalpost);
   }
 
   public void oppdaterJournalpostDistribusjonBestiltStatus(Long journalpostId, Journalpost journalpost){

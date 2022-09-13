@@ -18,6 +18,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 
+import java.util.Optional;
+
 public class HendelserProducer {
   private static final Logger LOGGER = LoggerFactory.getLogger(HendelserProducer.class);
   private final KafkaTemplate<String, String> kafkaTemplate;
@@ -52,7 +54,11 @@ public class HendelserProducer {
   }
 
   private JournalpostHendelse createJournalpostHendelse(Journalpost journalpost, String saksbehandlersEnhet) {
-    var saksbehandler = saksbehandlerInfoManager.hentSaksbehandler().orElse(new Saksbehandler("bidrag-dokument-arkiv", "bidrag-dokument-arkiv"));
+    var saksbehandler = saksbehandlerInfoManager.hentSaksbehandler()
+            .orElse(Optional.ofNullable(journalpost.hentJournalfortAvIdent())
+                    .map((ident) -> new Saksbehandler(ident, journalpost.getJournalfortAvNavn()))
+                    .orElse(new Saksbehandler(null, "bidrag-dokument-arkiv")));
+
     var saksbehandlerMedEnhet = saksbehandler.tilEnhet(saksbehandlersEnhet);
     return new JournalpostHendelseIntern(journalpost, saksbehandlerMedEnhet, null).hentJournalpostHendelse();
   }

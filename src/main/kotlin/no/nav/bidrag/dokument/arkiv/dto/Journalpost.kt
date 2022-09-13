@@ -36,6 +36,7 @@ const val DISTRIBUSJON_BESTILT_KEY = "distribusjonBestilt"
 const val AVVIK_ENDRET_TEMA_KEY = "avvikEndretTema"
 const val AVVIK_NY_DISTRIBUSJON_BESTILT_KEY = "avvikNyDistribusjon"
 const val JOURNALFORT_AV_KEY = "journalfortAv"
+const val JOURNALFORT_AV_IDENT_KEY = "journalfortAvIdent"
 private const val DATO_DOKUMENT = "DATO_DOKUMENT"
 private const val DATO_EKSPEDERT = "DATO_EKSPEDERT"
 private const val DATO_JOURNALFORT = "DATO_JOURNALFOERT"
@@ -142,10 +143,12 @@ data class Journalpost(
     fun hasReturDetaljerWithDate(date: LocalDate) = !tilleggsopplysninger.hentReturDetaljerLogDO().stream().filter { it.dato == date }.findAny().isEmpty
     fun hasLockedReturDetaljerWithDate(date: LocalDate) = !tilleggsopplysninger.hentReturDetaljerLogDO().stream().filter { it.dato == date && it.locked == true}.findAny().isEmpty
 
-    fun hentJournalfortAv(): String? {
+    fun hentJournalfortAvNavn(): String? {
        return tilleggsopplysninger.hentJournalfortAv() ?: journalfortAvNavn
     }
-
+    fun hentJournalfortAvIdent(): String? {
+        return tilleggsopplysninger.hentJournalfortAvIdent()
+    }
     fun hentReturDetaljer(): ReturDetaljer? {
         val returDetaljerLog = hentReturDetaljerLog()
         if (isDistribusjonKommetIRetur() || returDetaljerLog.isNotEmpty()){
@@ -247,7 +250,7 @@ data class Journalpost(
             innhold = tittel,
             journalfortDato = hentDatoJournalfort(),
             journalforendeEnhet = journalforendeEnhet,
-            journalfortAv = hentJournalfortAv(),
+            journalfortAv = hentJournalfortAvNavn(),
             journalpostId = "JOARK-$journalpostId",
             journalstatus = hentJournalStatus(),
             mottattDato = hentDatoRegistrert(),
@@ -377,6 +380,19 @@ class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() 
             -1
         }
     }
+
+    fun setJournalfortAvIdent(journalfortAvIdent: String) {
+        this.removeAll{ it["nokkel"]?.contains(JOURNALFORT_AV_IDENT_KEY) ?: false}
+        this.add(mapOf("nokkel" to JOURNALFORT_AV_IDENT_KEY, "verdi" to journalfortAvIdent))
+    }
+
+    fun hentJournalfortAvIdent(): String? {
+        return this.filter { it["nokkel"]?.contains(JOURNALFORT_AV_IDENT_KEY) ?: false}
+            .filter { Strings.isNotEmpty(it["verdi"]) }
+            .map { it["verdi"] }
+            .firstOrNull()
+    }
+
     fun hentJournalfortAv(): String? {
         return this.filter { it["nokkel"]?.contains(JOURNALFORT_AV_KEY) ?: false}
             .filter { Strings.isNotEmpty(it["verdi"]) }
