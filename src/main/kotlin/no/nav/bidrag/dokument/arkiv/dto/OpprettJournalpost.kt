@@ -87,7 +87,7 @@ class OpprettJournalpost: JoarkOpprettJournalpostRequest(){
             else -> "UTGAAENDE"
         }
         behandlingstema = journalpost.behandlingstema
-        tittel = journalpost.tittel
+        tittel = journalpost.hentTittel()
         avsenderMottaker = OpprettJournalpostAvsenderMottaker(journalpost.avsenderMottaker?.navn, journalpost.avsenderMottaker?.id, journalpost.avsenderMottaker?.type)
         bruker = OpprettJournalpostBruker(journalpost.bruker?.id, journalpost.bruker?.type)
         tilleggsopplysninger = journalpost.tilleggsopplysninger

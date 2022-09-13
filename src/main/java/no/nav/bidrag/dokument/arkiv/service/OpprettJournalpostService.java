@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
 import static no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostKt.*;
 
 @Service
@@ -38,13 +39,10 @@ public class OpprettJournalpostService {
 
     var opprettJournalpostResponse =  dokarkivConsumer.opprett(request);
     LOGGER.info("Opprettet ny journalpost {}", opprettJournalpostResponse.getJournalpostId());
+    SECURE_LOGGER.info("Opprettet ny journalpost {}", opprettJournalpostResponse);
 
     var opprettetJournalpost = safConsumer.hentJournalpost(opprettJournalpostResponse.getJournalpostId());
     knyttSakerTilOpprettetJournalpost(opprettetJournalpost, knyttTilSaker);
-
-    if (Boolean.TRUE.equals(opprettJournalpostResponse.getJournalpostferdigstilt()) && opprettetJournalpost.isInngaaendeDokument()){
-      endreJournalpostService.opprettBehandleDokumentOppgave(opprettetJournalpost);
-    }
     return opprettJournalpostResponse;
 
   }
