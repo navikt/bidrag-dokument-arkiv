@@ -105,13 +105,13 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
                 )
             },
             { stubs.verifyStub.dokarkivFerdigstillKalt(journalpostId) },
-            {
-                stubs.verifyStub.oppgaveSokKalt(
-                    Pair("tema", "BID"),
-                    Pair("saksreferanse", sak)
-                )
-            },
-            { stubs.verifyStub.oppgaveOpprettKalt("\"oppgavetype\":\"BEH_SAK\"", endreJournalpostCommand.tittel) }
+//            {
+//                stubs.verifyStub.oppgaveSokKalt(
+//                    Pair("tema", "BID"),
+//                    Pair("saksreferanse", sak)
+//                )
+//            },
+//            { stubs.verifyStub.oppgaveOpprettKalt("\"oppgavetype\":\"BEH_SAK\"", endreJournalpostCommand.tittel) }
         )
     }
 
@@ -196,8 +196,9 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
                     "\"saksreferanse\":\"200001\""
                 )
             },
-             { stubs.verifyStub.oppgaveOppdaterKalt(1, "Nytt dokument") },
-             { stubs.verifyStub.oppgaveOppdaterKalt(1, "Dokumenter vedlagt: JOARK-201028011:123123") }
+             { stubs.verifyStub.oppgaveOppdaterKalt(0) },
+//             { stubs.verifyStub.oppgaveOppdaterKalt(1, "Nytt dokument") },
+//             { stubs.verifyStub.oppgaveOppdaterKalt(1, "Dokumenter vedlagt: JOARK-201028011:123123") }
         )
     }
 

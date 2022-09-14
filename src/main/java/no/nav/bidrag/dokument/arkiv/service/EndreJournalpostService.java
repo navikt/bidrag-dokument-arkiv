@@ -63,7 +63,7 @@ public class EndreJournalpostService {
     if (journalpost.kanTilknytteSaker() || endreJournalpostCommand.skalJournalfores()){
       journalpost = hentJournalpost(journalpostId);
       tilknyttSakerTilJournalfoertJournalpost(endreJournalpostCommand, journalpost);
-      opprettBehandleDokumentOppgaveVedJournalforing(endreJournalpostCommand, journalpost);
+//      opprettBehandleDokumentOppgaveVedJournalforing(endreJournalpostCommand, journalpost);
     }
 
     publiserJournalpostEndretHendelse(journalpost, journalpostId, endreJournalpostCommand);

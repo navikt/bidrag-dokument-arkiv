@@ -45,7 +45,7 @@ public class BehandleJournalforingHendelseService {
 
   public void behandleJournalforingHendelse(JournalfoeringHendelseRecord record){
     var journalpostId = record.getJournalpostId();
-    var journalpost = hentJournalpostMedSaksbehandlerIdent(journalpostId);
+    var journalpost = hentJournalpostMedSaksbehandlerIdent(journalpostId, record.getJournalpostStatus());
     if (erOpprettetAvNKS(journalpost)){
       var brevKoder = journalpost.getDokumenter().stream().map(Dokument::getBrevkode).collect(Collectors.joining(","));
       LOGGER.warn("Journalpost {} er opprettet av NKS. Stopper videre behandling. opprettetAvNavn={}, brevkoder={}", record.getJournalpostId(), journalpost.getOpprettetAvNavn(), brevKoder);
@@ -103,10 +103,18 @@ public class BehandleJournalforingHendelseService {
     }
   }
 
-  private Journalpost hentJournalpostMedSaksbehandlerIdent(Long journalpostId){
+  private Journalpost hentJournalpostMedSaksbehandlerIdent(Long journalpostId, String journalpostStatus){
+    if ("JOURNALFOERT".equals(journalpostStatus)){
+      return hentJournalfortJournalpost(journalpostId);
+    }
+
+    return hentJournalpost(journalpostId);
+  }
+
+  private Journalpost hentJournalfortJournalpost(Long journalpostId){
     try {
       return retryTemplate().execute(arg0 -> {
-        Journalpost journalpost = hentJournalpost(journalpostId);
+        Journalpost journalpost = hentJournalpostMedSaker(journalpostId);
         if (journalpost.isStatusJournalfort() && journalpost.hentJournalfortAvIdent() == null){
           LOGGER.warn("Fant ingen saksbehandlerident lagret som tilleggsopplysning på journalført journalpost {}, venter før det forsøkes på nytt", journalpostId);
           throw new JournalfortJournalpostManglerJournalfortAvIdent("Journalført journalpost mangler journaført av ident");
@@ -117,9 +125,13 @@ public class BehandleJournalforingHendelseService {
       LOGGER.error("Fant ingen saksbehandlerident lagret som tilleggsopplysning på journalført journalpost {}. Fortsetter behandling uten saksbehandlerident. Dette vil påvirke videre behandling i bidrag-arbeidsflyt.", journalpostId);
       return hentJournalpost(journalpostId);
     }
-
   }
+
   private Journalpost hentJournalpost(Long journalpostId){
+    return journalpostService.hentJournalpost(journalpostId)
+        .orElseThrow(()->new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId)));
+  }
+  private Journalpost hentJournalpostMedSaker(Long journalpostId){
     return journalpostService.hentJournalpostMedTilknyttedeSaker(journalpostId)
         .orElseThrow(()->new JournalpostIkkeFunnetException(String.format("Fant ikke journalpost med id %s", journalpostId)));
   }
