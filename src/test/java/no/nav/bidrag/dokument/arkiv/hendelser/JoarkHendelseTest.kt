@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.hendelser
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.tomakehurst.wiremock.client.WireMock
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivTest
 import no.nav.bidrag.dokument.arkiv.dto.Bruker
@@ -65,6 +66,8 @@ class JoarkHendelseTest {
     @AfterEach
     fun cleanupMocks(){
         Mockito.reset(kafkaTemplateMock)
+        WireMock.reset()
+        WireMock.resetToDefault()
     }
 
     @Test

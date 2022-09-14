@@ -39,19 +39,17 @@ internal class JournalpostKafkdaEventProducerTest: BaseKafkaHendelseTest() {
 
         sendMessageToJoarkTopic(createHendelseRecord(journalpostId))
 
-        await.atMost(10, TimeUnit.SECONDS).untilAsserted {
-            val journalpostHendelse = readFromJournalpostTopic()!!
-            assertThat(journalpostHendelse).isNotNull
-            assertThat(journalpostHendelse.journalpostId).isEqualTo("JOARK-$journalpostId")
-            assertThat(journalpostHendelse.journalstatus).isEqualTo("M")
-            assertThat(journalpostHendelse.fagomrade).isEqualTo("BID")
-            assertThat(journalpostHendelse.aktorId).isEqualTo(BRUKER_AKTOER_ID)
-            assertThat(journalpostHendelse.enhet).isNull()
-            assertThat(journalpostHendelse.dokumentDato).isEqualTo(DATO_DOKUMENT.somDato())
-            assertThat(journalpostHendelse.journalfortDato).isNull()
-            stubs.verifyStub.dokarkivOppdaterIkkeKalt(journalpostId)
-            stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter()
-        }
+        val journalpostHendelse = readFromJournalpostTopic()!!
+        assertThat(journalpostHendelse).isNotNull
+        assertThat(journalpostHendelse.journalpostId).isEqualTo("JOARK-$journalpostId")
+        assertThat(journalpostHendelse.journalstatus).isEqualTo("M")
+        assertThat(journalpostHendelse.fagomrade).isEqualTo("BID")
+        assertThat(journalpostHendelse.aktorId).isEqualTo(BRUKER_AKTOER_ID)
+        assertThat(journalpostHendelse.enhet).isNull()
+        assertThat(journalpostHendelse.dokumentDato).isEqualTo(DATO_DOKUMENT.somDato())
+        assertThat(journalpostHendelse.journalfortDato).isNull()
+        stubs.verifyStub.dokarkivOppdaterIkkeKalt(journalpostId)
+        stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter()
     }
 
     @Test
@@ -83,24 +81,22 @@ internal class JournalpostKafkdaEventProducerTest: BaseKafkaHendelseTest() {
         hendelse.journalpostStatus = "JOURNALFOERT"
         sendMessageToJoarkTopic(hendelse)
 
-        await.atMost(10, TimeUnit.SECONDS).untilAsserted {
-            val journalpostHendelse = readFromJournalpostTopic()!!
-            assertThat(journalpostHendelse).isNotNull
-            assertThat(journalpostHendelse.journalpostId).isEqualTo("JOARK-$journalpostId")
-            assertThat(journalpostHendelse.journalstatus).isEqualTo("J")
-            assertThat(journalpostHendelse.fagomrade).isEqualTo("BID")
-            assertThat(journalpostHendelse.aktorId).isEqualTo(BRUKER_AKTOER_ID)
-            assertThat(journalpostHendelse.enhet).isNull()
-            assertThat(journalpostHendelse.dokumentDato).isEqualTo(LocalDateTime.parse(DATO_DOKUMENT.dato).toLocalDate())
-            assertThat(journalpostHendelse.journalfortDato).isEqualTo(LocalDateTime.parse(DATO_JOURNALFORT.dato).toLocalDate())
-            assertThat(journalpostHendelse.sakstilknytninger?.size).isEqualTo(2)
-            assertThat(journalpostHendelse.sakstilknytninger).contains(sak1, sak2)
-            assertThat(journalpostHendelse.sporing?.brukerident).isEqualTo(journalfortAvIdent)
-            assertThat(journalpostHendelse.sporing?.saksbehandlersNavn).isEqualTo(journalfortAvNavn)
-            assertThat(journalpostHendelse.sporing?.enhetsnummer).isEqualTo(BRUKER_ENHET)
-            stubs.verifyStub.dokarkivOppdaterIkkeKalt(journalpostId)
-            stubs.verifyStub.harSafEnKallEtterDokumentOversiktFagsak()
-        }
+        val journalpostHendelse = readFromJournalpostTopic()!!
+        assertThat(journalpostHendelse).isNotNull
+        assertThat(journalpostHendelse.journalpostId).isEqualTo("JOARK-$journalpostId")
+        assertThat(journalpostHendelse.journalstatus).isEqualTo("J")
+        assertThat(journalpostHendelse.fagomrade).isEqualTo("BID")
+        assertThat(journalpostHendelse.aktorId).isEqualTo(BRUKER_AKTOER_ID)
+        assertThat(journalpostHendelse.enhet).isNull()
+        assertThat(journalpostHendelse.dokumentDato).isEqualTo(LocalDateTime.parse(DATO_DOKUMENT.dato).toLocalDate())
+        assertThat(journalpostHendelse.journalfortDato).isEqualTo(LocalDateTime.parse(DATO_JOURNALFORT.dato).toLocalDate())
+        assertThat(journalpostHendelse.sakstilknytninger?.size).isEqualTo(2)
+        assertThat(journalpostHendelse.sakstilknytninger).contains(sak1, sak2)
+        assertThat(journalpostHendelse.sporing?.brukerident).isEqualTo(journalfortAvIdent)
+        assertThat(journalpostHendelse.sporing?.saksbehandlersNavn).isEqualTo(journalfortAvNavn)
+        assertThat(journalpostHendelse.sporing?.enhetsnummer).isEqualTo(BRUKER_ENHET)
+        stubs.verifyStub.dokarkivOppdaterIkkeKalt(journalpostId)
+        stubs.verifyStub.harEnSafKallEtterTilknyttedeJournalposter()
     }
 
 }

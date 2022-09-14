@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.hendelser
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.tomakehurst.wiremock.client.WireMock
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_KAFKA_TEST
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TEST
@@ -10,10 +11,14 @@ import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.kafka.clients.consumer.ConsumerRecords
+import org.apache.kafka.clients.consumer.internals.MockRebalanceListener
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.assertj.core.api.Assertions
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,7 +31,9 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.kafka.test.utils.KafkaTestUtils
 import org.springframework.test.context.ActiveProfiles
+import java.time.Duration
 import java.util.Collections
+
 
 @SpringBootTest(classes = [BidragDokumentArkivTest::class])
 @ActiveProfiles(value = [PROFILE_KAFKA_TEST, PROFILE_TEST, BidragDokumentArkivTest.PROFILE_INTEGRATION])
@@ -48,6 +55,13 @@ abstract class BaseKafkaHendelseTest {
     @Value("\${TOPIC_JOURNALFOERING}")
     protected val topicJoark: String? = null
 
+    @AfterEach
+    fun resetMocks() {
+        WireMock.reset()
+        WireMock.resetToDefault()
+    }
+
+
     fun sendMessageToJoarkTopic(joarkHendelseRecord: JournalfoeringHendelseRecord){
         val producer = configureProducer()
         producer!!.send(ProducerRecord(topicJoark, joarkHendelseRecord))
@@ -55,25 +69,28 @@ abstract class BaseKafkaHendelseTest {
     }
 
     fun readFromJournalpostTopic(): JournalpostHendelse? {
+        val consumer = configureConsumer(topicJournalpost!!);
         return try {
-            val singleRecord = KafkaTestUtils.getSingleRecord(configureConsumer(topicJournalpost!!), topicJournalpost)
+            val singleRecord = KafkaTestUtils.getSingleRecord(consumer, topicJournalpost, 4000)
             Assertions.assertThat(singleRecord).isNotNull
             objectMapper.readValue(singleRecord.value(), JournalpostHendelse::class.java)
         } catch (e: Exception) {
             LOGGER.error("Det skjedde en feil ved lesing av kafka melding", e)
             null
+        } finally {
+            consumer.close()
         }
 
     }
 
-    fun configureConsumer(topic: String): Consumer<Int, String>? {
+    fun configureConsumer(topic: String): Consumer<Int, String> {
         val consumerProps = KafkaTestUtils.consumerProps("testGroup", "true", embeddedKafkaBroker)
-        consumerProps[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "latest"
+        consumerProps[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
         consumerProps[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = "org.apache.kafka.common.serialization.StringDeserializer"
         consumerProps[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = "org.apache.kafka.common.serialization.StringDeserializer"
         val consumer: Consumer<Int, String> = DefaultKafkaConsumerFactory<Int, String>(consumerProps)
             .createConsumer()
-        consumer.subscribe(Collections.singleton(topic))
+        consumer.subscribe(Collections.singleton(topic), MockRebalanceListener())
         return consumer
     }
 
