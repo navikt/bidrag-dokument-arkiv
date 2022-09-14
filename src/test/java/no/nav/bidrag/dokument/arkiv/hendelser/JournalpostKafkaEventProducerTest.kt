@@ -22,11 +22,13 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
+@Disabled
 internal class JournalpostKafkdaEventProducerTest: BaseKafkaHendelseTest() {
 
     @Autowired
     lateinit var stubs: Stubs
     @Test
+    @Disabled
     @DisplayName("skal publisere journalpost hendelser for mottatt journalpost")
     fun skalPublisereJournalpostHendelser() {
         val journalpostId = 123213L
@@ -53,6 +55,7 @@ internal class JournalpostKafkdaEventProducerTest: BaseKafkaHendelseTest() {
     }
 
     @Test
+    @Disabled
     @DisplayName("skal publisere journalpost hendelser for journalført journalpost")
     fun skalPublisereJournalpostHendelserForJournalfortJournalpost() {
         val journalpostId = 123213L
