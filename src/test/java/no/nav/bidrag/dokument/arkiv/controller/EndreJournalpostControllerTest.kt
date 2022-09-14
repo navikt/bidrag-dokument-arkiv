@@ -177,25 +177,25 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
                     "\"bruker\":{\"id\":\"${endreJournalpostCommand.gjelder}\",\"idType\":\"FNR\"}"
                 )
             },
-             {
-                stubs.verifyStub.oppgaveSokKalt(
-                    Pair("tema", "BID"),
-                    Pair("saksreferanse", saksnummer1),
-                    Pair("saksreferanse", saksnummer2)
-                )
-            },
-             {
-                stubs.verifyStub.oppgaveOpprettKalt(
-                    "\"oppgavetype\":\"BEH_SAK\"",
-                    "\"saksreferanse\":\"200000\""
-                )
-            },
-             {
-                stubs.verifyStub.oppgaveOpprettKalt(
-                    "\"oppgavetype\":\"BEH_SAK\"",
-                    "\"saksreferanse\":\"200001\""
-                )
-            },
+//             {
+//                stubs.verifyStub.oppgaveSokKalt(
+//                    Pair("tema", "BID"),
+//                    Pair("saksreferanse", saksnummer1),
+//                    Pair("saksreferanse", saksnummer2)
+//                )
+//            },
+//             {
+//                stubs.verifyStub.oppgaveOpprettKalt(
+//                    "\"oppgavetype\":\"BEH_SAK\"",
+//                    "\"saksreferanse\":\"200000\""
+//                )
+//            },
+//             {
+//                stubs.verifyStub.oppgaveOpprettKalt(
+//                    "\"oppgavetype\":\"BEH_SAK\"",
+//                    "\"saksreferanse\":\"200001\""
+//                )
+//            },
              { stubs.verifyStub.oppgaveOppdaterKalt(0) },
 //             { stubs.verifyStub.oppgaveOppdaterKalt(1, "Nytt dokument") },
 //             { stubs.verifyStub.oppgaveOppdaterKalt(1, "Dokumenter vedlagt: JOARK-201028011:123123") }

@@ -3,12 +3,21 @@ package no.nav.bidrag.dokument.arkiv.hendelser
 import com.fasterxml.jackson.databind.ObjectMapper
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivTest
-import no.nav.bidrag.dokument.arkiv.dto.*
+import no.nav.bidrag.dokument.arkiv.dto.Bruker
+import no.nav.bidrag.dokument.arkiv.dto.BrukerType
+import no.nav.bidrag.dokument.arkiv.dto.Dokument
+import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
+import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
+import no.nav.bidrag.dokument.arkiv.dto.Sak
+import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
+import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
 import no.nav.bidrag.dokument.arkiv.kafka.HendelseListener
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.BRUKER_AKTOER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.BRUKER_ENHET
 import no.nav.bidrag.dokument.arkiv.stubs.BRUKER_FNR
+import no.nav.bidrag.dokument.arkiv.stubs.BRUKER_TYPE_AKTOERID
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_ID
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
 import no.nav.bidrag.dokument.arkiv.stubs.Stubs
@@ -59,7 +68,97 @@ class JoarkHendelseTest {
     }
 
     @Test
-    fun `skal publisere journalposthendelse med fnr hvis journalpost ikke har bruker`() {
+    fun `skal behandle og publisere journalpost hendelse for mottat journalpost`() {
+        val journalpostId = 123213L
+        val expectedJoarkJournalpostId = "JOARK-$journalpostId"
+        stubs.mockSts()
+        stubs.mockSafResponseHentJournalpost(
+            opprettSafResponse(
+                journalpostId = journalpostId.toString(),
+                journalstatus = JournalStatus.MOTTATT,
+                journalforendeEnhet = null,
+                bruker = Bruker(BRUKER_AKTOER_ID, BRUKER_TYPE_AKTOERID),
+                sak = null
+            )
+        )
+
+        val record = createHendelseRecord(journalpostId)
+
+        hendelseListener.listenJournalforingHendelse(record)
+        val jsonCaptor = ArgumentCaptor.forClass(String::class.java)
+        verify(kafkaTemplateMock).send(ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(expectedJoarkJournalpostId), jsonCaptor.capture())
+        val journalpostHendelse = objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
+
+        assertAll("JournalpostHendelse",
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId).isEqualTo(expectedJoarkJournalpostId) },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isNull() },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::fnr).isEqualTo(AVSENDER_ID) },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::dokumentDato).isEqualTo(no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT.somDato()) },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalfortDato).isNull() },
+            { assertThat(journalpostHendelse.sporing?.brukerident).isNull() },
+            { assertThat(journalpostHendelse.sporing?.saksbehandlersNavn).isEqualTo("bidrag-dokument-arkiv") },
+            { assertThat(journalpostHendelse.sporing?.enhetsnummer).isEqualTo("9999") },
+            { assertThat(journalpostHendelse.sakstilknytninger).isEmpty() },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isEqualTo(BRUKER_AKTOER_ID) },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus).isEqualTo("M") },
+            { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() }
+        )
+    }
+
+    @Test
+    fun `skal behandle og publisere journalpost hendelse for journalfort journalpost`() {
+        val journalpostId = 123213L
+        val tilknyttetJournalpostId = 12344213L
+        val jfEnhet = "4806"
+        val sak1 = "12321323"
+        val sak2 = "2143444"
+        val journalfortAvIdent = "Z123123"
+        val journalfortAvNavn = "Saksbehandler navn"
+        val tilleggsOpplysninger = TilleggsOpplysninger()
+        tilleggsOpplysninger.setJournalfortAvIdent(journalfortAvIdent)
+        val expectedJoarkJournalpostId = "JOARK-$journalpostId"
+        stubs.mockSts()
+        stubs.mockSafResponseHentJournalpost(
+            opprettSafResponse(
+                journalpostId = journalpostId.toString(),
+                journalstatus = JournalStatus.JOURNALFOERT,
+                journalforendeEnhet = jfEnhet,
+                bruker = Bruker(BRUKER_AKTOER_ID, BRUKER_TYPE_AKTOERID),
+                sak = Sak(sak1),
+                relevanteDatoer = listOf(no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT, no.nav.bidrag.dokument.arkiv.stubs.DATO_JOURNALFORT),
+                tilleggsopplysninger = tilleggsOpplysninger,
+                journalfortAvNavn = journalfortAvNavn
+            )
+        )
+        stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(tilknyttetJournalpostId, journalstatus = JournalStatus.JOURNALFOERT, sak = Sak(sak2))))
+
+        val record = createHendelseRecord(journalpostId)
+        record.journalpostStatus = "JOURNALFOERT"
+
+        hendelseListener.listenJournalforingHendelse(record)
+        val jsonCaptor = ArgumentCaptor.forClass(String::class.java)
+        verify(kafkaTemplateMock).send(ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(expectedJoarkJournalpostId), jsonCaptor.capture())
+        val journalpostHendelse = objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
+
+        assertAll("JournalpostHendelse",
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId).isEqualTo(expectedJoarkJournalpostId) },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isNull() },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::fnr).isEqualTo(AVSENDER_ID) },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::dokumentDato).isEqualTo(no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT.somDato()) },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalfortDato).isEqualTo(no.nav.bidrag.dokument.arkiv.stubs.DATO_JOURNALFORT.somDato()) },
+            { assertThat(journalpostHendelse.sporing?.brukerident).isEqualTo(journalfortAvIdent) },
+            { assertThat(journalpostHendelse.sporing?.saksbehandlersNavn).isEqualTo(journalfortAvNavn) },
+            { assertThat(journalpostHendelse.sporing?.enhetsnummer).isEqualTo(jfEnhet) },
+            { assertThat(journalpostHendelse.sakstilknytninger).isNotEmpty() },
+            { assertThat(journalpostHendelse.sakstilknytninger).contains(sak1, sak2) },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isEqualTo(BRUKER_AKTOER_ID) },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus).isEqualTo("J") },
+            { stubs.verifyStub.harEnSafKallEtterTilknyttedeJournalposter() }
+        )
+    }
+
+    @Test
+    fun `skal publisere journalposthendelse med fnr fra avsender hvis journalpost ikke har bruker`() {
         val journalpostId = 123213L
         val expectedJoarkJournalpostId = "JOARK-$journalpostId"
         val personEnhet = "4844"
@@ -94,7 +193,7 @@ class JoarkHendelseTest {
     }
 
     @Test
-    fun `skal publisere journalposthendelse med fnr`() {
+    fun `skal publisere journalposthendelse med fnr fra bruker`() {
         val journalpostId = 123213L
         val expectedJoarkJournalpostId = "JOARK-$journalpostId"
         val personEnhet = "4844"

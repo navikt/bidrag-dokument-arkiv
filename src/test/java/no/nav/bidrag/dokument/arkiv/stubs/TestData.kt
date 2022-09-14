@@ -44,6 +44,7 @@ var BRUKER_TYPE_AKTOERID = "AKTOERID";
 var BREVKODE = "BI01S02";
 var JOURNALFORENDE_ENHET = "4833";
 var DATO_DOKUMENT = DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
+var DATO_JOURNALFORT = DatoType("2022-08-18T13:20:33", "DATO_JOURNALFOERT")
 var DATO_RETUR = DatoType("2021-08-18T13:20:33", "DATO_AVS_RETUR")
 
 var RETUR_DETALJER_DATO_1 = LocalDate.parse("2021-08-20")
@@ -111,13 +112,14 @@ fun opprettSafResponse(
         )
     ),
     tittel: String = DOKUMENT_1_TITTEL,
-    journalforendeEnhet: String = JOURNALFORENDE_ENHET,
+    journalforendeEnhet: String? = JOURNALFORENDE_ENHET,
     journalpostType: JournalpostType = JournalpostType.I,
     journalstatus: JournalStatus = JournalStatus.MOTTATT,
     relevanteDatoer: List<DatoType> = listOf(DATO_DOKUMENT),
     tema: String = "BID",
     sak: Sak? = Sak("5276661"),
-    tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger()
+    tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger(),
+    journalfortAvNavn: String? = null
 ): Journalpost {
     return Journalpost(
         avsenderMottaker = avsenderMottaker,
@@ -131,7 +133,8 @@ fun opprettSafResponse(
         tema = tema,
         tittel = tittel,
         sak = sak,
-        tilleggsopplysninger = tilleggsopplysninger
+        tilleggsopplysninger = tilleggsopplysninger,
+        journalfortAvNavn = journalfortAvNavn
     )
 }
 
