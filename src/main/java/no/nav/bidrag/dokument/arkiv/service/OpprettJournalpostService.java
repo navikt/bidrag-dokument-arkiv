@@ -7,7 +7,8 @@ import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.*;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
-import no.nav.bidrag.dokument.arkiv.model.KunneIkkeFerdigstilleOpprettetJournalpost;
+import no.nav.bidrag.dokument.arkiv.model.HentJournalpostFeilet;
+import no.nav.bidrag.dokument.arkiv.model.KunneIkkeJournalforeOpprettetJournalpost;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -32,7 +33,7 @@ public class OpprettJournalpostService {
     this.endreJournalpostService = endreJournalpostService;
   }
 
-  public JoarkOpprettJournalpostResponse opprettOgFerdigstillJournalpost(OpprettJournalpost request, List<String> knyttTilSaker){
+  public JoarkOpprettJournalpostResponse opprettOgJournalforJournalpost(OpprettJournalpost request, List<String> knyttTilSaker){
     var tilknyttetSak = knyttTilSaker.get(0);
     request.medSak(tilknyttetSak);
     populerMedDokumenterByteData(request);
@@ -42,19 +43,31 @@ public class OpprettJournalpostService {
     LOGGER.info("Opprettet ny journalpost {}", opprettJournalpostResponse.getJournalpostId());
     SECURE_LOGGER.info("Opprettet ny journalpost {}", opprettJournalpostResponse);
 
-    if (Boolean.FALSE.equals(opprettJournalpostResponse.getJournalpostferdigstilt())){
-      String message = String.format("Kunne ikke ferdigstille journalpost %s med feilmelding %s", opprettJournalpostResponse.getJournalpostId(), opprettJournalpostResponse.getMelding());
-      LOGGER.error(message);
-      throw new KunneIkkeFerdigstilleOpprettetJournalpost(message);
+    try {
+      if (Boolean.FALSE.equals(opprettJournalpostResponse.getJournalpostferdigstilt())){
+        String message = String.format("Kunne ikke journalføre journalpost %s med feilmelding %s", opprettJournalpostResponse.getJournalpostId(), opprettJournalpostResponse.getMelding());
+        LOGGER.error(message);
+        throw new KunneIkkeJournalforeOpprettetJournalpost(message);
+      }
+
+      var opprettetJournalpost = hentJournalpost(opprettJournalpostResponse.getJournalpostId());
+
+      endreJournalpostService.lagreSaksbehandlerIdentForJournalfortJournalpost(opprettetJournalpost);
+      knyttSakerTilOpprettetJournalpost(opprettetJournalpost, knyttTilSaker);
+    } catch (Exception e){
+      LOGGER.error("Etterbehandling av opprettet journalpost feilet (knytt til flere saker eller lagre saksbehandler ident). Fortsetter behandling da feilen må behandles manuelt.", e);
     }
 
-    var opprettetJournalpost = safConsumer.hentJournalpost(opprettJournalpostResponse.getJournalpostId());
-
-    endreJournalpostService.lagreSaksbehandlerIdentForJournalfortJournalpost(opprettetJournalpost);
-    knyttSakerTilOpprettetJournalpost(opprettetJournalpost, knyttTilSaker);
     return opprettJournalpostResponse;
   }
 
+  private Journalpost hentJournalpost(Long journalpostId){
+    try {
+      return safConsumer.hentJournalpost(journalpostId);
+    } catch (Exception e){
+      throw new HentJournalpostFeilet("Det skjedde en feil ved henting av journalpost", e);
+    }
+  }
   private void knyttSakerTilOpprettetJournalpost(Journalpost opprettetJournalpost, List<String> knyttTilSaker){
     knyttTilSaker
             .stream()

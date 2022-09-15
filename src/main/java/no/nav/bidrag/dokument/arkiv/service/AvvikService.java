@@ -27,7 +27,6 @@ import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
 import no.nav.bidrag.dokument.arkiv.model.AvvikDetaljException;
 import no.nav.bidrag.dokument.arkiv.model.AvvikNotSupportedException;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
-import no.nav.bidrag.dokument.arkiv.model.KunneIkkeFerdigstilleOpprettetJournalpost;
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
 import no.nav.bidrag.dokument.arkiv.model.UgyldigAvvikException;
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager;
@@ -41,6 +40,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AvvikService {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(AvvikService.class);
 
   public final JournalpostService journalpostService;
@@ -56,9 +56,10 @@ public class AvvikService {
   private final OpprettJournalpostService opprettJournalpostService;
 
   public AvvikService(ResourceByDiscriminator<JournalpostService> journalpostService, HendelserProducer hendelserProducer,
-                      EndreJournalpostService endreJournalpostService, DistribuerJournalpostService distribuerJournalpostService, OppgaveService oppgaveService,
-                      ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers,
-                      ResourceByDiscriminator<PersonConsumer> personConsumers, BidragOrganisasjonConsumer bidragOrganisasjonConsumer, SaksbehandlerInfoManager saksbehandlerInfoManager, OpprettJournalpostService opprettJournalpostService) {
+      EndreJournalpostService endreJournalpostService, DistribuerJournalpostService distribuerJournalpostService, OppgaveService oppgaveService,
+      ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers,
+      ResourceByDiscriminator<PersonConsumer> personConsumers, BidragOrganisasjonConsumer bidragOrganisasjonConsumer,
+      SaksbehandlerInfoManager saksbehandlerInfoManager, OpprettJournalpostService opprettJournalpostService) {
     this.journalpostService = journalpostService.get(Discriminator.REGULAR_USER);
     this.hendelserProducer = hendelserProducer;
     this.endreJournalpostService = endreJournalpostService;
@@ -71,7 +72,7 @@ public class AvvikService {
     this.opprettJournalpostService = opprettJournalpostService;
   }
 
-  public List<AvvikType> hentAvvik(Long jpid){
+  public List<AvvikType> hentAvvik(Long jpid) {
     return journalpostService.hentJournalpost(jpid).get().tilAvvik();
   }
 
@@ -81,12 +82,13 @@ public class AvvikService {
         .orElseThrow(() -> new JournalpostIkkeFunnetException("Fant ikke journalpost med id lik " + behandleAvvikRequest.getJournalpostId()));
   }
 
-  public Optional<BehandleAvvikshendelseResponse> behandleAvvik(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
-    if (!erGyldigAvviksBehandling(journalpost, avvikshendelseIntern.getAvvikstype())){
-        throw new UgyldigAvvikException(String.format("Ikke gyldig avviksbehandling %s for journalpost %s", avvikshendelseIntern.getAvvikstype(), avvikshendelseIntern.getJournalpostId()));
+  public Optional<BehandleAvvikshendelseResponse> behandleAvvik(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern) {
+    if (!erGyldigAvviksBehandling(journalpost, avvikshendelseIntern.getAvvikstype())) {
+      throw new UgyldigAvvikException(String.format("Ikke gyldig avviksbehandling %s for journalpost %s", avvikshendelseIntern.getAvvikstype(),
+          avvikshendelseIntern.getJournalpostId()));
     }
 
-    switch (avvikshendelseIntern.getAvvikstype()){
+    switch (avvikshendelseIntern.getAvvikstype()) {
       case KOPIER_FRA_ANNEN_FAGOMRADE -> kopierFraAnnenFagomrade(journalpost, avvikshendelseIntern);
       case OVERFOR_TIL_ANNEN_ENHET -> oppdater(avvikshendelseIntern.toOverforEnhetRequest());
       case ENDRE_FAGOMRADE -> endreFagomrade(journalpost, avvikshendelseIntern);
@@ -100,120 +102,123 @@ public class AvvikService {
     }
 
     publiserHendelse(journalpost, avvikshendelseIntern.getSaksbehandlersEnhet());
-    SECURE_LOGGER.info("Avvik {} ble utført på journalpost {} av bruker {} og enhet {} med beskrivelse {} - avvik {}", avvikshendelseIntern.getAvvikstype(), avvikshendelseIntern.getJournalpostId(), saksbehandlerInfoManager.hentSaksbehandlerBrukerId(), avvikshendelseIntern.getSaksbehandlersEnhet(), avvikshendelseIntern.getBeskrivelse(), avvikshendelseIntern);
+    SECURE_LOGGER.info("Avvik {} ble utført på journalpost {} av bruker {} og enhet {} med beskrivelse {} - avvik {}",
+        avvikshendelseIntern.getAvvikstype(), avvikshendelseIntern.getJournalpostId(), saksbehandlerInfoManager.hentSaksbehandlerBrukerId(),
+        avvikshendelseIntern.getSaksbehandlersEnhet(), avvikshendelseIntern.getBeskrivelse(), avvikshendelseIntern);
 
     return Optional.of(new BehandleAvvikshendelseResponse(avvikshendelseIntern.getAvvikstype()));
   }
 
-  private void publiserHendelse(Journalpost journalpost, String enhet){
-    if (journalpost.isInngaaendeDokument()){
-      hendelserProducer.publishJournalpostUpdated(journalpost.hentJournalpostIdLong(),enhet);
+  private void publiserHendelse(Journalpost journalpost, String enhet) {
+    if (journalpost.isInngaaendeDokument()) {
+      hendelserProducer.publishJournalpostUpdated(journalpost.hentJournalpostIdLong(), enhet);
     }
   }
 
-  public void kopierFraAnnenFagomrade(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
-    if (journalpost.isUtgaaendeDokument()){
+  public void kopierFraAnnenFagomrade(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern) {
+    if (journalpost.isUtgaaendeDokument()) {
       throw new UgyldigAvvikException("Kan ikke kopiere en utgående dokument fra annen fagområde");
     }
 
-    if (journalpost.isTemaBidrag()){
+    if (journalpost.isTemaBidrag()) {
       throw new UgyldigAvvikException("Kan ikke kopiere journalpost som allerede tilhører Bidrag");
     }
 
-    if (avvikshendelseIntern.getDokumenter() != null && avvikshendelseIntern.getDokumenter().isEmpty()){
+    if (avvikshendelseIntern.getDokumenter() != null && avvikshendelseIntern.getDokumenter().isEmpty()) {
       throw new UgyldigAvvikException("Kopiert journalpost må inneholde minst en dokument");
     }
 
     var knyttTilSaker = avvikshendelseIntern.getKnyttTilSaker();
 
-    if (knyttTilSaker.isEmpty()){
+    if (knyttTilSaker.isEmpty()) {
       throw new UgyldigAvvikException("Fant ingen saker i request. Journalpost må knyttes til minst en sak");
     }
 
     var hoveddokumentTittel = avvikshendelseIntern.getDokumenter().get(0).getTittel();
     var nyJournalpostTittel = hoveddokumentTittel != null ? hoveddokumentTittel : journalpost.hentTittel();
     var request = new OpprettJournalpost()
-            .kopierFra(journalpost)
-            .medJournalforendeEnhet(avvikshendelseIntern.getSaksbehandlersEnhet());
+        .kopierFra(journalpost)
+        .medJournalforendeEnhet(avvikshendelseIntern.getSaksbehandlersEnhet());
 
-    avvikshendelseIntern.getDokumenter().forEach((dok)-> {
+    avvikshendelseIntern.getDokumenter().forEach((dok) -> {
       var dokumentByte = Strings.isNotEmpty(dok.getDokument()) ? Base64.getDecoder().decode(dok.getDokument()) : null;
       request.medDokument(dok.getDokumentreferanse(), dokumentByte, dok.getTittel(), dok.getBrevkode());
     });
 
     request.medTittel(String.format("%s (Kopiert fra dokument: %s)", nyJournalpostTittel, journalpost.hentTittel()));
 
-    try {
-      var response = opprettJournalpostService.opprettOgFerdigstillJournalpost(request, avvikshendelseIntern.getKnyttTilSaker());
-      LOGGER.info("Kopiert journalpost {} til Bidrag, ny journalpostId {}", journalpost.getJournalpostId(), response.getJournalpostId());
-    } finally {
-      oppgaveService.ferdigstillVurderDokumentOppgaver(journalpost.hentJournalpostIdLong(), avvikshendelseIntern.getSaksbehandlersEnhet());
-    }
+    var response = opprettJournalpostService.opprettOgJournalforJournalpost(request, avvikshendelseIntern.getKnyttTilSaker());
+    LOGGER.info("Kopiert journalpost {} til Bidrag, ny journalpostId {}", journalpost.getJournalpostId(), response.getJournalpostId());
+
+    oppgaveService.ferdigstillVurderDokumentOppgaver(journalpost.hentJournalpostIdLong(), avvikshendelseIntern.getSaksbehandlersEnhet());
+
   }
 
-  public void manglerAdresse(Journalpost journalpost){
+  public void manglerAdresse(Journalpost journalpost) {
     oppdaterDistribusjonsInfoIngenDistribusjon(journalpost);
   }
 
-  public void bestillNyDistribusjon(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
-      LOGGER.info("Bestiller ny distribusjon for journalpost {}", journalpost.getJournalpostId());
-      if (avvikshendelseIntern.getAdresse() == null){
-        throw new UgyldigAvvikException("Adresse må settes ved bestilling av ny distribusjon");
-      }
+  public void bestillNyDistribusjon(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern) {
+    LOGGER.info("Bestiller ny distribusjon for journalpost {}", journalpost.getJournalpostId());
+    if (avvikshendelseIntern.getAdresse() == null) {
+      throw new UgyldigAvvikException("Adresse må settes ved bestilling av ny distribusjon");
+    }
 
-      distribuerJournalpostService.bestillNyDistribusjon(journalpost, avvikshendelseIntern.getAdresse());
+    distribuerJournalpostService.bestillNyDistribusjon(journalpost, avvikshendelseIntern.getAdresse());
   }
 
   /**
    * Used when avvikshåndtering is not triggering any action but only used for logging
    */
-  public void onlyLogging(){
+  public void onlyLogging() {
     // noop
   }
 
-  public void sendTilFagomrade(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
+  public void sendTilFagomrade(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern) {
     if (journalpost.isTemaEqualTo(avvikshendelseIntern.getNyttFagomrade())) {
       return;
     }
 
-    if (avvikshendelseIntern.isBidragFagomrade()){
+    if (avvikshendelseIntern.isBidragFagomrade()) {
       throw new UgyldigAvvikException("Kan ikke sende journalpost mellom FAR og BID tema.");
     }
 
     var journalforendeEnhet = bidragOrganisasjonConsumer.hentGeografiskEnhet(journalpost.hentGjelderId(), avvikshendelseIntern.getNyttFagomrade());
     var nyJournalpostId = endreJournalpostService.tilknyttTilGenerellSak(avvikshendelseIntern.getNyttFagomrade(), journalpost);
-    oppgaveService.opprettVurderDokumentOppgave(journalpost, nyJournalpostId, journalforendeEnhet, avvikshendelseIntern.getNyttFagomrade(), avvikshendelseIntern.getBeskrivelse());
+    oppgaveService.opprettVurderDokumentOppgave(journalpost, nyJournalpostId, journalforendeEnhet, avvikshendelseIntern.getNyttFagomrade(),
+        avvikshendelseIntern.getBeskrivelse());
   }
 
-  private void knyttTilSakPaaNyttFagomrade(AvvikshendelseIntern avvikshendelseIntern, Journalpost journalpost){
+  private void knyttTilSakPaaNyttFagomrade(AvvikshendelseIntern avvikshendelseIntern, Journalpost journalpost) {
     var saksnummer = journalpost.getSak().getFagsakId();
     hentFeilregistrerteDupliserteJournalposterMedSakOgTema(saksnummer, avvikshendelseIntern.getNyttFagomrade(), journalpost)
         .findFirst()
         .ifPresentOrElse(
-          jp -> {
-            opphevFeilregistrerSakstilknytning(jp.getJournalpostId());
-            oppdater(new OpphevEndreFagomradeJournalfortJournalpostRequest(jp.hentJournalpostIdLong(), jp));
-          },
-          () -> endreJournalpostService.tilknyttTilSak(saksnummer, avvikshendelseIntern.getNyttFagomrade(), journalpost)
+            jp -> {
+              opphevFeilregistrerSakstilknytning(jp.getJournalpostId());
+              oppdater(new OpphevEndreFagomradeJournalfortJournalpostRequest(jp.hentJournalpostIdLong(), jp));
+            },
+            () -> endreJournalpostService.tilknyttTilSak(saksnummer, avvikshendelseIntern.getNyttFagomrade(), journalpost)
         );
   }
 
-  private Stream<Journalpost> hentFeilregistrerteDupliserteJournalposterMedSakOgTema(String saksnummer, String tema, Journalpost journalpost){
+  private Stream<Journalpost> hentFeilregistrerteDupliserteJournalposterMedSakOgTema(String saksnummer, String tema, Journalpost journalpost) {
     return journalpostService.finnJournalposterForSaksnummer(saksnummer, tema).stream()
         .filter(Journalpost::isStatusFeilregistrert)
         .filter(jp -> harSammeDokumenter(jp, journalpost));
   }
 
-  private boolean harSammeDokumenter(Journalpost journalpost1, Journalpost journalpost2){
-    return journalpost1.getDokumenter().stream().allMatch(dokument1 -> journalpost2.getDokumenter().stream().anyMatch(dokument2-> Objects.equals(dokument2.getDokumentInfoId(), dokument1.getDokumentInfoId())));
+  private boolean harSammeDokumenter(Journalpost journalpost1, Journalpost journalpost2) {
+    return journalpost1.getDokumenter().stream().allMatch(dokument1 -> journalpost2.getDokumenter().stream()
+        .anyMatch(dokument2 -> Objects.equals(dokument2.getDokumentInfoId(), dokument1.getDokumentInfoId())));
   }
 
-  public void endreFagomradeJournalfortJournalpost(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
-    if (journalpost.isTemaEqualTo(avvikshendelseIntern.getNyttFagomrade())){
+  public void endreFagomradeJournalfortJournalpost(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern) {
+    if (journalpost.isTemaEqualTo(avvikshendelseIntern.getNyttFagomrade())) {
       return;
     }
 
-    if (avvikshendelseIntern.isBidragFagomrade()){
+    if (avvikshendelseIntern.isBidragFagomrade()) {
       knyttTilSakPaaNyttFagomrade(avvikshendelseIntern, journalpost);
     } else {
       sendTilFagomrade(journalpost, avvikshendelseIntern);
@@ -223,25 +228,25 @@ public class AvvikService {
     feilregistrerSakstilknytning(avvikshendelseIntern.getJournalpostId());
   }
 
-  public void endreFagomrade(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
-    if (journalpost.isInngaaendeJournalfort()){
+  public void endreFagomrade(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern) {
+    if (journalpost.isInngaaendeJournalfort()) {
       endreFagomradeJournalfortJournalpost(journalpost, avvikshendelseIntern);
     } else {
       endreFagomradeMottattJournalpost(journalpost, avvikshendelseIntern);
     }
   }
 
-  private void endreFagomradeMottattJournalpost(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
-    if (journalpost.hasSak()){
+  private void endreFagomradeMottattJournalpost(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern) {
+    if (journalpost.hasSak()) {
       oppdater(avvikshendelseIntern.toEndreFagomradeOgKnyttTilSakRequest(journalpost.getBruker()));
     } else {
       oppdater(avvikshendelseIntern.toEndreFagomradeRequest());
     }
   }
 
-  public void registrerRetur(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
+  public void registrerRetur(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern) {
     var returDato = LocalDate.parse(avvikshendelseIntern.getReturDato());
-    if (journalpost.hasReturDetaljerWithDate(returDato)){
+    if (journalpost.hasReturDetaljerWithDate(returDato)) {
       throw new UgyldigAvvikException("Journalpost har allerede registrert retur med samme dato");
     }
     var beskrivelse = Strings.isNotEmpty(avvikshendelseIntern.getBeskrivelse()) ? avvikshendelseIntern.getBeskrivelse() : "";
@@ -250,7 +255,7 @@ public class AvvikService {
     oppdater(new RegistrerReturRequest(journalpost.hentJournalpostIdLong(), returDato, tilleggsOpplysninger));
   }
 
-  public void trekkJournalpost(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
+  public void trekkJournalpost(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern) {
     // Journalfør på GENERELL_SAK og feilfør sakstilknytning
     validateTrue(journalpost.getBruker() != null, new AvvikDetaljException("Kan ikke trekke journalpost uten bruker"));
     validateTrue(journalpost.getTema() != null, new AvvikDetaljException("Kan ikke trekke journalpost uten tilhørende fagområde"));
@@ -258,43 +263,44 @@ public class AvvikService {
     knyttTilGenerellSak(avvikshendelseIntern, journalpost);
     klargjorForFerdigstilling(journalpost);
 
-    dokarkivConsumer.ferdigstill(new FerdigstillJournalpostRequest(avvikshendelseIntern.getJournalpostId(), avvikshendelseIntern.getSaksbehandlersEnhet()));
+    dokarkivConsumer.ferdigstill(
+        new FerdigstillJournalpostRequest(avvikshendelseIntern.getJournalpostId(), avvikshendelseIntern.getSaksbehandlersEnhet()));
 
     leggTilBegrunnelsePaaTittel(avvikshendelseIntern, journalpost);
 
     feilregistrerSakstilknytning(avvikshendelseIntern.getJournalpostId());
   }
 
-  private void klargjorForFerdigstilling(Journalpost journalpost){
+  private void klargjorForFerdigstilling(Journalpost journalpost) {
     settAvsenderNavnLikBrukernavnHvisMangler(journalpost);
   }
 
-  public void settAvsenderNavnLikBrukernavnHvisMangler(Journalpost journalpost){
-    if (!journalpost.harAvsenderMottaker()){
+  public void settAvsenderNavnLikBrukernavnHvisMangler(Journalpost journalpost) {
+    if (!journalpost.harAvsenderMottaker()) {
       var brukerNavn = personConsumer.hentPerson(journalpost.getBruker().getId())
-              .orElseThrow(()->new UgyldigAvvikException("Fant ikke person"))
-              .getNavn();
+          .orElseThrow(() -> new UgyldigAvvikException("Fant ikke person"))
+          .getNavn();
       dokarkivConsumer.endre(new LagreAvsenderNavnRequest(journalpost.hentJournalpostIdLong(), brukerNavn));
       journalpost.setAvsenderMottaker(new AvsenderMottaker(brukerNavn, null, null));
     }
   }
 
-  public void knyttTilGenerellSak(AvvikshendelseIntern avvikshendelseIntern, Journalpost journalpost){
+  public void knyttTilGenerellSak(AvvikshendelseIntern avvikshendelseIntern, Journalpost journalpost) {
     oppdater(avvikshendelseIntern.toKnyttTilGenerellSakRequest(journalpost.getTema(), journalpost.getBruker()));
   }
 
-  public void leggTilBegrunnelsePaaTittel(AvvikshendelseIntern avvikshendelseIntern, Journalpost journalpost){
-    if (Strings.isNotEmpty(avvikshendelseIntern.getBeskrivelse())){
+  public void leggTilBegrunnelsePaaTittel(AvvikshendelseIntern avvikshendelseIntern, Journalpost journalpost) {
+    if (Strings.isNotEmpty(avvikshendelseIntern.getBeskrivelse())) {
       validateTrue(avvikshendelseIntern.getBeskrivelse().length() < 100, new AvvikDetaljException("Beskrivelse kan ikke være lengre enn 100 tegn"));
       oppdater(avvikshendelseIntern.toLeggTilBegrunnelsePaaTittelRequest(journalpost));
     }
   }
 
-  public void feilregistrerSakstilknytning(Long journalpostId){
+  public void feilregistrerSakstilknytning(Long journalpostId) {
     dokarkivConsumer.feilregistrerSakstilknytning(journalpostId);
   }
 
-  public void opphevFeilregistrerSakstilknytning(String journalpostId){
+  public void opphevFeilregistrerSakstilknytning(String journalpostId) {
     dokarkivConsumer.opphevFeilregistrerSakstilknytning(Long.valueOf(journalpostId));
   }
 
@@ -302,13 +308,13 @@ public class AvvikService {
     dokarkivConsumer.endre(oppdaterJournalpostRequest);
   }
 
-  public Boolean erGyldigAvviksBehandling(Journalpost journalpost, AvvikType avvikType){
+  public Boolean erGyldigAvviksBehandling(Journalpost journalpost, AvvikType avvikType) {
     return journalpost.tilAvvik().contains(avvikType);
   }
 
-  public void oppdaterDistribusjonsInfoIngenDistribusjon(Journalpost journalpost){
+  public void oppdaterDistribusjonsInfoIngenDistribusjon(Journalpost journalpost) {
     var tilknyttedeJournalpost = journalpostService.hentTilknyttedeJournalposter(journalpost);
     tilknyttedeJournalpost
-        .forEach((jp)-> dokarkivConsumer.oppdaterDistribusjonsInfo(jp.getJournalpostId(), false, JournalpostKanal.INGEN_DISTRIBUSJON));
+        .forEach((jp) -> dokarkivConsumer.oppdaterDistribusjonsInfo(jp.getJournalpostId(), false, JournalpostKanal.INGEN_DISTRIBUSJON));
   }
 }

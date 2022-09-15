@@ -744,6 +744,75 @@ class AvvikControllerTest : AbstractControllerTest() {
         )
     }
 
+    @Test
+    @Throws(IOException::class)
+    fun `Skal utfore avvik KOPIER_FRA_ANNEN_FAGOMRADE and not fail when knytt til sak fails`() {
+        // given
+        val xEnhet = "1234"
+        val journalpostIdAnnenFagomrade = 201028011L
+        val journalpostId2 = 201028012L
+        val vurderDokumentOppgave = createOppgaveDataWithJournalpostId(journalpostIdAnnenFagomrade.toString())
+        vurderDokumentOppgave.oppgavetype = "VUR"
+        val sak1 = "2132131"
+        val sak2 = "213213213"
+        val newJournalpostId = 301028011L
+        val tittelOriginalDokument = "Tittel på original dokument"
+        val tittelDokument1 = "Tittel på dokument 1"
+        val tittelDokument2 = "Tittel på dokument 2"
+        val dokumentData2 = "JVBERi0xLg10cmFpbGVyPDwvUm9vdDw8L1BhZ2VzPDwvS2lkc1s8PC9NZWRpYUJveFswIDAgMyAzXT4"
+        val safResponseAnnenFagomrade = opprettSafResponse(journalpostId = journalpostIdAnnenFagomrade.toString(),
+            dokumenter = listOf(
+                Dokument(
+                    dokumentInfoId = DOKUMENT_1_ID,
+                    tittel = "Tittel på original dokument"
+                )
+            )
+        )
+        safResponseAnnenFagomrade.tema = "BAR"
+        safResponseAnnenFagomrade.sak = Sak("51233aA", "IT01")
+        stubs.mockSafResponseHentJournalpost(safResponseAnnenFagomrade, journalpostIdAnnenFagomrade)
+
+        val avvikHendelse = createAvvikHendelse(AvvikType.KOPIER_FRA_ANNEN_FAGOMRADE, java.util.Map.of("knyttTilSaker", "$sak1,$sak2"))
+        avvikHendelse.dokumenter = listOf(DokumentDto(
+            DOKUMENT_1_ID,
+            tittel = tittelDokument1
+        ))
+        stubs.mockSafResponseTilknyttedeJournalposter(listOf())
+
+        stubs.mockSafResponseHentJournalpost(opprettSafResponse(journalpostId = newJournalpostId.toString(), sak = Sak(sak1)), newJournalpostId)
+        stubs.mockSafHentDokumentResponse()
+        stubs.mockSokOppgave(OppgaveSokResponse(1, listOf(vurderDokumentOppgave)), HttpStatus.OK)
+        stubs.mockDokarkivProxyTilknyttRequest(newJournalpostId, 123213, HttpStatus.INTERNAL_SERVER_ERROR)
+        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockDokarkivOppdaterRequest(newJournalpostId)
+        stubs.mockDokarkivOpprettRequest(newJournalpostId, HttpStatus.OK)
+
+        val utforAvvikResponse = sendAvvikRequest(xEnhet, journalpostIdAnnenFagomrade, avvikHendelse)
+
+        // then
+        assertAll(
+            {
+                Assertions.assertThat(utforAvvikResponse)
+                    .extracting { it.statusCode }
+                    .`as`("statusCode")
+                    .isEqualTo(HttpStatus.OK)
+            },
+            { stubs.verifyStub.dokarkivOppdaterIkkeKalt(journalpostIdAnnenFagomrade)},
+            { stubs.verifyStub.dokarkivOppdaterKalt(newJournalpostId) },
+            { stubs.verifyStub.dokarkivOpprettKalt()},
+            { stubs.verifyStub.dokarkivProxyTilknyttSakerKalt(5, newJournalpostId, sak2) },
+            { stubs.verifyStub.oppgaveOppdaterKalt(1) },
+            { stubs.verifyStub.safHentDokumentKalt(journalpostIdAnnenFagomrade, DOKUMENT_1_ID.toLong()) },
+            {
+                Mockito.verify(kafkaTemplateMock).send(
+                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                        "JOARK-$journalpostIdAnnenFagomrade"
+                    ), ArgumentMatchers.any()
+                )
+            }
+        )
+    }
+
     private fun sendAvvikRequest(enhet: String, journalpostId: Long, avvikHendelse: Avvikshendelse): ResponseEntity<BehandleAvvikshendelseResponse>{
         val headersMedEnhet = HttpHeaders()
         headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, enhet)

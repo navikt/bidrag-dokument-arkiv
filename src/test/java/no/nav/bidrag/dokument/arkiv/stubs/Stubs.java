@@ -225,10 +225,14 @@ public class Stubs {
   }
 
   public void mockDokarkivProxyTilknyttRequest(Long journalpostId) {
-    mockDokarkivProxyTilknyttRequest(journalpostId, 123213213L);
+    mockDokarkivProxyTilknyttRequest(journalpostId, 123213213L, HttpStatus.OK);
   }
 
   public void mockDokarkivProxyTilknyttRequest(Long journalpostId, Long nyJournalpostId) {
+    mockDokarkivProxyTilknyttRequest(journalpostId, nyJournalpostId, HttpStatus.OK);
+  }
+
+  public void mockDokarkivProxyTilknyttRequest(Long journalpostId, Long nyJournalpostId, HttpStatus status) {
     try {
       stubFor(
           put(
@@ -237,7 +241,7 @@ public class Stubs {
               )
           ).willReturn(
               aClosedJsonResponse()
-                  .withStatus(HttpStatus.OK.value())
+                  .withStatus(status.value())
                   .withBody(objectMapper.writeValueAsString(new KnyttTilAnnenSakResponse(nyJournalpostId.toString())))
           )
       );
@@ -519,7 +523,7 @@ public class Stubs {
     }
 
 
-    private void dokarkivProxyTilknyttSakerKalt(Integer times, Long journalpostId, String... contains) {
+    public void dokarkivProxyTilknyttSakerKalt(Integer times, Long journalpostId, String... contains) {
       var verify = putRequestedFor(
           urlMatching(
               "/dokarkivproxy" + String.format(DokarkivProxyConsumer.URL_KNYTT_TIL_ANNEN_SAK, journalpostId)

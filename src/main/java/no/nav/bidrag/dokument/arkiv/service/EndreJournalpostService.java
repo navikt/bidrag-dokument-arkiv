@@ -20,11 +20,11 @@ import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.Sak;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
+import no.nav.bidrag.dokument.arkiv.model.LagreSaksbehandlerIdentForJournalfortJournalpostFeilet;
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.client.HttpStatusCodeException;
 
 public class EndreJournalpostService {
 
@@ -96,7 +96,12 @@ public class EndreJournalpostService {
   }
 
   public void lagreSaksbehandlerIdentForJournalfortJournalpost(Journalpost journalpost){
-    lagreJournalpost(new LagreJournalfortAvIdentRequest(journalpost.hentJournalpostIdLong(), journalpost, saksbehandlerInfoManager.hentSaksbehandlerBrukerId()));
+    try {
+      lagreJournalpost(new LagreJournalfortAvIdentRequest(journalpost.hentJournalpostIdLong(), journalpost, saksbehandlerInfoManager.hentSaksbehandlerBrukerId()));
+    } catch (Exception e){
+      throw new LagreSaksbehandlerIdentForJournalfortJournalpostFeilet(
+          String.format("Lagring av saksbehandler ident for journalført journalpost %s feilet", journalpost.getJournalpostId()), e);
+    }
   }
 
   private void tilknyttSakerTilJournalfoertJournalpost(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){

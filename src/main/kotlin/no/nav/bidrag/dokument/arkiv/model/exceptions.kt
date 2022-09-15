@@ -41,5 +41,9 @@ class OppdaterJournalpostFeiletTekniskException(message: String, throwable: Thro
 
 class JournalpostHarIkkeKommetIRetur(message: String): RuntimeException(message)
 
-class KunneIkkeFerdigstilleOpprettetJournalpost(message: String): RuntimeException(message)
+class KunneIkkeJournalforeOpprettetJournalpost(message: String): RuntimeException(message)
+class LagreSaksbehandlerIdentForJournalfortJournalpostFeilet(message: String, throwable: Throwable): RuntimeException(message, throwable)
+class KunneIkkeKnytteSakTilJournalpost(message: String, throwable: Throwable): RuntimeException(message, throwable)
 class JournalfortJournalpostManglerJournalfortAvIdent(message: String): RuntimeException(message)
+
+class HentJournalpostFeilet(message: String, throwable: Throwable): RuntimeException(message, throwable)
