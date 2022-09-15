@@ -26,6 +26,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
+import org.mockito.Mockito.times
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -577,7 +578,7 @@ class AvvikControllerTest : AbstractControllerTest() {
             { stubs.verifyStub.dokarkivOppdaterDistribusjonsInfoKalt(journalpostId, JournalpostKanal.INGEN_DISTRIBUSJON) },
             { stubs.verifyStub.dokarkivOppdaterDistribusjonsInfoKalt(journalpostId2, JournalpostKanal.INGEN_DISTRIBUSJON) },
             {
-                Mockito.verify(kafkaTemplateMock).send(
+                Mockito.verify(kafkaTemplateMock, times(0)).send(
                     ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
                         "JOARK-$journalpostId"
                     ), ArgumentMatchers.any()
@@ -645,7 +646,7 @@ class AvvikControllerTest : AbstractControllerTest() {
                     "]") },
             { stubs.verifyStub.safHentDokumentKalt(journalpostId, DOKUMENT_1_ID.toLong()) },
             {
-                Mockito.verify(kafkaTemplateMock).send(
+                Mockito.verify(kafkaTemplateMock, times(0)).send(
                     ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
                         "JOARK-$journalpostId"
                     ), ArgumentMatchers.any()
