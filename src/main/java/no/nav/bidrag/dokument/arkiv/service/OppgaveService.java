@@ -1,10 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.service;
 
-import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
-
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import no.nav.bidrag.dokument.arkiv.consumer.OppgaveConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.*;
@@ -54,14 +50,6 @@ public class OppgaveService {
     LOGGER.info("Ferdigstiller oppgave {} med oppgavetype {}", oppgaveData.getId(), oppgaveData.getOppgavetype());
     oppgaveConsumers.get(Discriminator.SERVICE_USER).patchOppgave(new FerdigstillOppgaveRequest(oppgaveData, enhetsnr));
   }
-  public void behandleDokument(Journalpost journalpost) {
-    var oppgaver = finnBehandlingsoppgaverForSaker(journalpost.hentTilknyttetSaker(), journalpost.getTema());
-    if (!oppgaver.isEmpty()) {
-      endreSamtOpprettBehandlingsoppgaver(journalpost, oppgaver, journalpost.getJournalforendeEnhet());
-    } else {
-      opprettOppgaveForBehandleDokument(journalpost, journalpost.hentTilknyttetSaker());
-    }
-  }
 
   private SaksbehandlerMedEnhet hentSaksbehandlerMedEnhet(Journalpost journalpost){
     return saksbehandlerInfoManager.hentSaksbehandler()
@@ -69,67 +57,13 @@ public class OppgaveService {
         .orElseGet(() -> new SaksbehandlerMedEnhet(new Saksbehandler(), journalpost.getJournalforendeEnhet()));
   }
 
-  private void opprettOppgaveForBehandleDokument(Journalpost journalpost, Set<String> unikeSaksnummer) {
-    var aktorId = hentAktorId(journalpost.hentGjelderId());
-
-    unikeSaksnummer.forEach(
-        saksnummer -> opprettOppgave(new OpprettBehandleDokumentOppgaveRequest(
-            journalpost,
-            aktorId,
-            saksnummer,
-            hentSaksbehandlerMedEnhet(journalpost)
-        ))
-    );
-  }
-
-  private long opprettOppgave(OpprettOppgaveRequest request){
-    return oppgaveConsumers.get(Discriminator.REGULAR_USER).opprett(request);
-  }
-
-  private void endreOppgaverForBehandleDokument(Journalpost journalpost, List<OppgaveData> oppgaverMedBeskrivelse, String enhet) {
-    var saksbehandlerInfo = saksbehandlerInfoManager.hentSaksbehandler()
-        .map(saksbehandler -> saksbehandler.hentSaksbehandlerInfo(journalpost.getJournalforendeEnhet()))
-        .orElse(String.format(
-            "Ingen informasjon for saksbehandler (%s, %s)", saksbehandlerInfoManager.hentSaksbehandlerBrukerId(), journalpost.getJournalforendeEnhet()
-        ));
-    LOGGER.info("Antall behandle dokument oppgaver som skal oppdateres: {}", oppgaverMedBeskrivelse.size());
-
-    for (var oppgaveData : oppgaverMedBeskrivelse) {
-      var request = new EndreForNyttDokumentRequest(oppgaveData, saksbehandlerInfo, journalpost, enhet);
-      oppgaveConsumers.get(Discriminator.SERVICE_USER).patchOppgave(request);
-      LOGGER.info("Endret beskrivelse for oppgave {}", oppgaveData.getId());
-      SECURE_LOGGER.info("Endret beskrivelse for oppgave {} med beskrivelse: {}", oppgaveData.getId(), request.getBeskrivelse());
-    }
-  }
-
-  private void endreSamtOpprettBehandlingsoppgaver(Journalpost journalpost, List<OppgaveData> oppgaver, String enhet) {
-    endreOppgaverForBehandleDokument(journalpost, oppgaver, enhet);
-    var saksreferanser = oppgaver.stream().map(OppgaveData::getSaksreferanse).collect(Collectors.toSet());
-    var unikeSaksnummer = journalpost.hentTilknyttetSaker();
-    unikeSaksnummer.removeAll(saksreferanser);
-
-    if (!unikeSaksnummer.isEmpty()) {
-      opprettOppgaveForBehandleDokument(journalpost, unikeSaksnummer);
-    }
+  private void opprettOppgave(OpprettOppgaveRequest request){
+    oppgaveConsumers.get(Discriminator.REGULAR_USER).opprett(request);
   }
 
   private String hentAktorId(String gjelder) {
     return personConsumers.get(Discriminator.SERVICE_USER).hentPerson(gjelder)
         .orElseGet(()->new PersonResponse(gjelder, null, gjelder)).getAktoerId();
-  }
-
-  private String notNull(String fagomrade) {
-    return fagomrade != null ? fagomrade : "BID";
-  }
-
-  private List<OppgaveData> finnBehandlingsoppgaverForSaker(Set<String> saksnumre, String fagomrade) {
-    var parametre = new OppgaveSokParametre()
-        .leggTilFagomrade(notNull(fagomrade))
-        .brukBehandlingSomOppgaveType();
-
-    saksnumre.forEach(parametre::leggTilSaksreferanse);
-
-    return oppgaveConsumers.get(Discriminator.SERVICE_USER).finnOppgaver(parametre).getOppgaver();
   }
 
   private List<OppgaveData> finnVurderDokumentOppgaverForJournalpost(Long journalpostId) {

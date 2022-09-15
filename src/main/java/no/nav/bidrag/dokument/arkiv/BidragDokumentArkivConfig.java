@@ -141,14 +141,13 @@ public class BidragDokumentArkivConfig {
       ResourceByDiscriminator<JournalpostService> journalpostServices,
       ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers,
       DokarkivProxyConsumer dokarkivProxyConsumer,
-      OppgaveService oppgaveService,
       HendelserProducer hendelserProducer,
       SaksbehandlerInfoManager saksbehandlerInfoManager
   ) {
     return new EndreJournalpostService(
         journalpostServices.get(Discriminator.REGULAR_USER),
         dokarkivConsumers.get(Discriminator.REGULAR_USER),
-        dokarkivProxyConsumer, oppgaveService, hendelserProducer, saksbehandlerInfoManager);
+        dokarkivProxyConsumer, hendelserProducer, saksbehandlerInfoManager);
   }
 
   @Bean

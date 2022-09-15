@@ -33,7 +33,6 @@ public class EndreJournalpostService {
   private final JournalpostService journalpostService;
   private final DokarkivConsumer dokarkivConsumer;
   private final DokarkivProxyConsumer dokarkivProxyConsumer;
-  private final OppgaveService oppgaveService;
   private final HendelserProducer hendelserProducer;
   private final SaksbehandlerInfoManager saksbehandlerInfoManager;
 
@@ -42,12 +41,10 @@ public class EndreJournalpostService {
           JournalpostService journalpostService,
           DokarkivConsumer dokarkivConsumer,
           DokarkivProxyConsumer dokarkivProxyConsumer,
-          OppgaveService oppgaveService,
-          HendelserProducer hendelserProducer, SaksbehandlerInfoManager saksbehandlerInfoManager) {
+      HendelserProducer hendelserProducer, SaksbehandlerInfoManager saksbehandlerInfoManager) {
     this.journalpostService = journalpostService;
     this.dokarkivConsumer = dokarkivConsumer;
     this.dokarkivProxyConsumer = dokarkivProxyConsumer;
-    this.oppgaveService = oppgaveService;
     this.hendelserProducer = hendelserProducer;
     this.saksbehandlerInfoManager = saksbehandlerInfoManager;
   }
@@ -63,7 +60,6 @@ public class EndreJournalpostService {
     if (journalpost.kanTilknytteSaker() || endreJournalpostCommand.skalJournalfores()){
       journalpost = hentJournalpost(journalpostId);
       tilknyttSakerTilJournalfoertJournalpost(endreJournalpostCommand, journalpost);
-//      opprettBehandleDokumentOppgaveVedJournalforing(endreJournalpostCommand, journalpost);
     }
 
     publiserJournalpostEndretHendelse(journalpost, journalpostId, endreJournalpostCommand);
@@ -81,12 +77,6 @@ public class EndreJournalpostService {
     return dokarkivConsumer.endre(oppdaterJournalpostRequest);
   }
 
-  private void opprettBehandleDokumentOppgaveVedJournalforing(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost) {
-    if (endreJournalpostCommand.skalJournalfores()) {
-      opprettBehandleDokumentOppgave(journalpost);
-    }
-  }
-
   private void lagreJournalpost(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
     var oppdaterJournalpostRequest = new LagreJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost);
 
@@ -94,16 +84,6 @@ public class EndreJournalpostService {
 
     if (Objects.nonNull(oppdaterJournalpostRequest.getSak())){
       journalpost.setSak(new Sak(oppdaterJournalpostRequest.getSak().getFagsakId()));
-    }
-  }
-
-  public void opprettBehandleDokumentOppgave(Journalpost journalpost) {
-    if (journalpost.isInngaaendeDokument() && journalpost.hasSak()) {
-      try {
-        oppgaveService.behandleDokument(journalpost);
-      } catch (HttpStatusCodeException e) {
-        LOGGER.error("Det oppstod feil ved opprettelse av behandle dokument for journapost {}", journalpost.getJournalpostId(), e);
-      }
     }
   }
 
