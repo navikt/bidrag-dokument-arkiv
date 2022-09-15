@@ -48,8 +48,8 @@ public class HttpStatusRestControllerAdvice {
   }
 
   @ResponseBody
-  @ExceptionHandler
-  public ResponseEntity<?> handleViolationException(KunneIkkeFerdigstilleOpprettetJournalpost exception) {
+  @ExceptionHandler({KunneIkkeFerdigstilleOpprettetJournalpost.class})
+  public ResponseEntity<?> handleBadRequest(Exception exception) {
     LOGGER.warn(exception.getMessage());
 
     return ResponseEntity
