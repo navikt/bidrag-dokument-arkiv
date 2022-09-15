@@ -8,6 +8,8 @@ import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
 import no.nav.bidrag.dokument.arkiv.stubs.JOURNALPOST_ID
 import no.nav.bidrag.dokument.arkiv.stubs.JOURNALPOST_ID_3
 import no.nav.bidrag.dokument.arkiv.stubs.NY_JOURNALPOST_ID_KNYTT_TIL_SAK
+import no.nav.bidrag.dokument.arkiv.stubs.createOppgaveDataWithJournalpostId
+import no.nav.bidrag.dokument.arkiv.stubs.createOppgaveDataWithSaksnummer
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeDistribuertSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
@@ -659,7 +661,8 @@ class AvvikControllerTest : AbstractControllerTest() {
         val xEnhet = "1234"
         val journalpostIdAnnenFagomrade = 201028011L
         val journalpostId2 = 201028012L
-
+        val vurderDokumentOppgave = createOppgaveDataWithJournalpostId(journalpostIdAnnenFagomrade.toString())
+        vurderDokumentOppgave.oppgavetype = "VUR"
         val sak1 = "2132131"
         val sak2 = "213213213"
         val newJournalpostId = 301028011L
@@ -696,6 +699,7 @@ class AvvikControllerTest : AbstractControllerTest() {
 
         stubs.mockSafResponseHentJournalpost(opprettSafResponse(journalpostId = newJournalpostId.toString(), sak = Sak(sak1)), newJournalpostId)
         stubs.mockSafHentDokumentResponse()
+        stubs.mockSokOppgave(OppgaveSokResponse(1, listOf(vurderDokumentOppgave)), HttpStatus.OK)
         stubs.mockDokarkivProxyTilknyttRequest(newJournalpostId)
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(newJournalpostId)
@@ -728,6 +732,7 @@ class AvvikControllerTest : AbstractControllerTest() {
                                 "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"$dokumentData2=\"}]}]," +
                     "\"avsenderMottaker\":{\"navn\":\"Avsender Avsendersen\",\"id\":\"112312385076492416\",\"idType\":\"FNR\"}}") },
             { stubs.verifyStub.dokarkivProxyTilknyttSakerKalt(newJournalpostId, sak2) },
+            { stubs.verifyStub.oppgaveOppdaterKalt(1, "{\"id\":2,\"versjon\":1,\"endretAvEnhetsnr\":\"$xEnhet\",\"status\":\"FERDIGSTILT\"}") },
             { stubs.verifyStub.safHentDokumentKalt(journalpostIdAnnenFagomrade, DOKUMENT_1_ID.toLong()) },
             {
                 Mockito.verify(kafkaTemplateMock).send(

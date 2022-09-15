@@ -99,10 +99,16 @@ public class AvvikService {
       default -> throw new AvvikNotSupportedException("Avvik %s ikke støttet".formatted(avvikshendelseIntern.getAvvikstype()));
     }
 
-    hendelserProducer.publishJournalpostUpdated(journalpost.hentJournalpostIdLong(), avvikshendelseIntern.getSaksbehandlersEnhet());
+    publiserHendelse(journalpost, avvikshendelseIntern.getSaksbehandlersEnhet());
     SECURE_LOGGER.info("Avvik {} ble utført på journalpost {} av bruker {} og enhet {} med beskrivelse {} - avvik {}", avvikshendelseIntern.getAvvikstype(), avvikshendelseIntern.getJournalpostId(), saksbehandlerInfoManager.hentSaksbehandlerBrukerId(), avvikshendelseIntern.getSaksbehandlersEnhet(), avvikshendelseIntern.getBeskrivelse(), avvikshendelseIntern);
 
     return Optional.of(new BehandleAvvikshendelseResponse(avvikshendelseIntern.getAvvikstype()));
+  }
+
+  private void publiserHendelse(Journalpost journalpost, String enhet){
+    if (journalpost.isInngaaendeDokument()){
+      hendelserProducer.publishJournalpostUpdated(journalpost.hentJournalpostIdLong(),enhet);
+    }
   }
 
   public void kopierFraAnnenFagomrade(Journalpost journalpost, AvvikshendelseIntern avvikshendelseIntern){
@@ -140,14 +146,11 @@ public class AvvikService {
     try {
       var response = opprettJournalpostService.opprettOgFerdigstillJournalpost(request, avvikshendelseIntern.getKnyttTilSaker());
       LOGGER.info("Kopiert journalpost {} til Bidrag, ny journalpostId {}", journalpost.getJournalpostId(), response.getJournalpostId());
-    } catch (KunneIkkeFerdigstilleOpprettetJournalpost err){
-      // Ferdigstill oppgave slik at saksbehandler ikke kopierer journalpost flere ganger
+    } finally {
       oppgaveService.ferdigstillVurderDokumentOppgaver(journalpost.hentJournalpostIdLong(), avvikshendelseIntern.getSaksbehandlersEnhet());
-      throw err;
     }
-
-
   }
+
   public void manglerAdresse(Journalpost journalpost){
     oppdaterDistribusjonsInfoIngenDistribusjon(journalpost);
   }

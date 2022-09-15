@@ -72,7 +72,7 @@ open class OppgaveData(
 
 data class OppdaterSakRequest(private var oppgaveHendelse: OppgaveHendelse, override var saksreferanse: String?): OppgaveData(id = oppgaveHendelse.id, versjon = oppgaveHendelse.versjon)
 
-data class FerdigstillOppgaveRequest(private var oppgaveData: OppgaveData, var _endretAvEnhetsnr: String):
+data class FerdigstillOppgaveRequest(private var oppgaveData: OppgaveData, private var _endretAvEnhetsnr: String):
     OppgaveData(
         id = oppgaveData.id,
         versjon = oppgaveData.versjon,
