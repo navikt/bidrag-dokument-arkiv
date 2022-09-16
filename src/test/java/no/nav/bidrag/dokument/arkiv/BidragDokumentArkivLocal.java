@@ -9,7 +9,7 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_KAFKA_TEST;
 
 @SpringBootApplication(exclude = { SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class })
-@EnableJwtTokenValidation(ignore = {"springfox.documentation.swagger.web.ApiResourceController"})
+@EnableJwtTokenValidation(ignore = {"org.springframework", "org.springdoc"})
 public class BidragDokumentArkivLocal {
   public static void main(String[] args) {
     SpringApplication app = new SpringApplication(BidragDokumentArkivLocal.class);

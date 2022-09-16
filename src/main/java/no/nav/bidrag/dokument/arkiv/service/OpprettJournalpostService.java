@@ -99,6 +99,7 @@ public class OpprettJournalpostService {
 
   private JoarkOpprettJournalpostRequest createOpprettJournalpostRequest(Journalpost journalpost, Map<String, byte[]> dokumenter, boolean removeDistribusjonMetadata){
     var opprettJournalpostRequest = new OpprettJournalpost().dupliser(journalpost, dokumenter);
+    opprettJournalpostRequest.medKanal(null);
     if (removeDistribusjonMetadata){
       var tillegssopplysninger = new TilleggsOpplysninger();
       tillegssopplysninger.addAll(journalpost.getTilleggsopplysninger());
