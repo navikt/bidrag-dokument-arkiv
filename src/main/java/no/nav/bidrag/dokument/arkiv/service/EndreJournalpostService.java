@@ -69,7 +69,11 @@ public class EndreJournalpostService {
 
   private void publiserJournalpostEndretHendelse(Journalpost journalpost, Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand){
     if (journalpost.isInngaaendeDokument()){
-      hendelserProducer.publishJournalpostUpdated(journalpostId, endreJournalpostCommand.getEnhet());
+      if (endreJournalpostCommand.skalJournalfores()){
+        hendelserProducer.publishJournalpostJournalfort(journalpostId, endreJournalpostCommand.getEnhet());
+      } else {
+        hendelserProducer.publishJournalpostUpdated(journalpostId, endreJournalpostCommand.getEnhet());
+      }
     }
   }
 

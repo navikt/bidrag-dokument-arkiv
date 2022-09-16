@@ -11,6 +11,7 @@ import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelseIntern;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager;
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService;
+import no.nav.bidrag.dokument.dto.HendelseType;
 import no.nav.bidrag.dokument.dto.JournalpostHendelse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,12 @@ public class HendelserProducer {
 
   public void publishJournalpostUpdated(Long journalpostId, String saksbehandlersEnhet){
     var journalpostHendelse = createJournalpostHendelse(journalpostId, saksbehandlersEnhet);
+    publish(journalpostHendelse);
+  }
+
+  public void publishJournalpostJournalfort(Long journalpostId, String saksbehandlersEnhet){
+    var journalpostHendelse = createJournalpostHendelse(journalpostId, saksbehandlersEnhet);
+    journalpostHendelse.setHendelseType(HendelseType.JOURNALFORING);
     publish(journalpostHendelse);
   }
 
