@@ -17,7 +17,7 @@ import no.nav.bidrag.dokument.dto.EndreDokument
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
 import java.time.LocalDate
 
-
+val DOKUMENT_FIL = "JVBERi0xLjcgQmFzZTY0IGVuY29kZXQgZnlzaXNrIGRva3VtZW50"
 var X_ENHET_HEADER = "1234"
 var BRUKER_ENHET = "4899"
 var JOURNALPOST_ID = 123213213L
