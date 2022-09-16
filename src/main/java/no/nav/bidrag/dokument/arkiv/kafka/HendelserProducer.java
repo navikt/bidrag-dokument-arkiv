@@ -41,12 +41,7 @@ public class HendelserProducer {
 
   public void publishJournalpostUpdated(Long journalpostId, String saksbehandlersEnhet){
     var journalpostHendelse = createJournalpostHendelse(journalpostId, saksbehandlersEnhet);
-    publish(journalpostHendelse);
-  }
-
-  public void publishJournalpostJournalfort(Long journalpostId, String saksbehandlersEnhet){
-    var journalpostHendelse = createJournalpostHendelse(journalpostId, saksbehandlersEnhet);
-    journalpostHendelse.setHendelseType(HendelseType.JOURNALFORING);
+    journalpostHendelse.setHendelseType(HendelseType.ENDRING);
     publish(journalpostHendelse);
   }
 
