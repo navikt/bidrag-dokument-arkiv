@@ -25,7 +25,7 @@ class JournalpostHendelseIntern(var journalpost: Journalpost, var saksbehandler:
         journalpostHendelse.sakstilknytninger = journalpost.hentTilknyttetSaker().toList()
         journalpostHendelse.dokumentDato = journalpost.hentDatoDokument()
         journalpostHendelse.journalfortDato = journalpost.hentDatoJournalfort()
-        journalpostHendelse.hendelseType = if (journalforingHendelse?.hendelsesType == JoarkHendelseType.ENDELIG_JOURNALFORT.name) HendelseType.JOURNALFORING else HendelseType.ENDRING
+        journalpostHendelse.hendelseType = if (journalforingHendelse?.hendelsesType == JoarkHendelseType.ENDELIG_JOURNALFORT.hendelsesType) HendelseType.JOURNALFORING else HendelseType.ENDRING
         journalpostHendelse.journalposttype = journalpost.journalposttype?.name
     }
 

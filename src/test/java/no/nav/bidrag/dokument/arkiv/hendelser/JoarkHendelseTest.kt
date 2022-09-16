@@ -140,7 +140,7 @@ class JoarkHendelseTest {
 
         val record = createHendelseRecord(journalpostId)
         record.journalpostStatus = "JOURNALFOERT"
-        record.hendelsesType = JoarkHendelseType.ENDELIG_JOURNALFORT.name
+        record.hendelsesType = JoarkHendelseType.ENDELIG_JOURNALFORT.hendelsesType
 
         hendelseListener.listenJournalforingHendelse(record)
         val jsonCaptor = ArgumentCaptor.forClass(String::class.java)
