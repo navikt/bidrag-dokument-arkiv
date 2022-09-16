@@ -2,19 +2,16 @@ package no.nav.bidrag.dokument.arkiv.consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Optional;
 import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
-import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterDistribusjonsInfoRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
-import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostRequest;
-import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpostResponse;
+import no.nav.bidrag.dokument.arkiv.dto.JoarkOpprettJournalpostRequest;
+import no.nav.bidrag.dokument.arkiv.dto.JoarkOpprettJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.model.OppdaterJournalpostFeiletFunksjoneltException;
 import no.nav.bidrag.dokument.arkiv.model.OppdaterJournalpostFeiletTekniskException;
-import no.nav.bidrag.dokument.dto.JournalpostResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -53,15 +50,15 @@ public class DokarkivConsumer extends AbstractConsumer {
     }
   }
 
-  public OpprettJournalpostResponse opprett(OpprettJournalpostRequest opprettJournalpostRequest){
+  public JoarkOpprettJournalpostResponse opprett(JoarkOpprettJournalpostRequest joarkOpprettJournalpostRequest, boolean ferdigstill){
     try {
-      var response = restTemplate.exchange(URL_JOURNALPOSTAPI_V1+"?forsoekFerdigstill=true", HttpMethod.POST, new HttpEntity<>(opprettJournalpostRequest), OpprettJournalpostResponse.class);
+      var response = restTemplate.exchange(URL_JOURNALPOSTAPI_V1+ String.format("?forsoekFerdigstill=%s", ferdigstill ? "true" : "false"), HttpMethod.POST, new HttpEntity<>(joarkOpprettJournalpostRequest), JoarkOpprettJournalpostResponse.class);
       var responseBody = response.getBody();
       LOGGER.info("Opprettet journalpost {} med status {}", responseBody.getJournalpostId(), responseBody.getJournalstatus());
       return response.getBody();
     } catch (HttpClientErrorException clientErrorException){
       if (clientErrorException.getStatusCode() == HttpStatus.CONFLICT){
-        LOGGER.info("Journalpost med eksternReferanseId {} er allerede arkivert i Joark", opprettJournalpostRequest.getEksternReferanseId());
+        LOGGER.info("Journalpost med eksternReferanseId {} er allerede arkivert i Joark", joarkOpprettJournalpostRequest.getEksternReferanseId());
         return handleConflictResponse(clientErrorException);
       }
       throw clientErrorException;
@@ -111,12 +108,12 @@ public class DokarkivConsumer extends AbstractConsumer {
     var response = restTemplate.exchange(oppdaterJoarnalpostApiUrl, HttpMethod.PATCH, null, Void.class);
     return new HttpResponse<>(response);
   }
-  private OpprettJournalpostResponse handleConflictResponse(HttpClientErrorException clientErrorException){
+  private JoarkOpprettJournalpostResponse handleConflictResponse(HttpClientErrorException clientErrorException){
     return convertStringToResponse(clientErrorException.getResponseBodyAsString());
   }
-  private OpprettJournalpostResponse convertStringToResponse(String responseString){
+  private JoarkOpprettJournalpostResponse convertStringToResponse(String responseString){
     try {
-      return objectMapper.readValue(responseString, OpprettJournalpostResponse.class);
+      return objectMapper.readValue(responseString, JoarkOpprettJournalpostResponse.class);
     } catch (JsonProcessingException e) {
       return null;
     }

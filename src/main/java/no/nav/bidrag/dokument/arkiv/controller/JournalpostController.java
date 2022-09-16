@@ -81,7 +81,7 @@ public class JournalpostController extends BaseController {
           .build();
     }
 
-    return journalpostService.hentJournalpostMedTilknyttedeSaker(Long.valueOf(journalpostId), saksnummer)
+    return journalpostService.hentJournalpostMedFnrOgTilknyttedeSaker(Long.valueOf(journalpostId), saksnummer)
         .map(journalpost -> ResponseEntity.ok(journalpost.tilJournalpostResponse()))
         .orElse(ResponseEntity.notFound()
             .header(HttpHeaders.WARNING, String.format("Fant ingen journalpost med id %s og saksnummer %s", journalpostId, saksnummer))

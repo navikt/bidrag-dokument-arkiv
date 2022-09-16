@@ -2,7 +2,7 @@ package no.nav.bidrag.dokument.arkiv.dto
 
 
 data class Saksbehandler(
-    var ident: String = "",
+    var ident: String? = null,
     var navn: String? = null
 ) {
     fun hentIdentMedNavn() = "$ident - $navn"

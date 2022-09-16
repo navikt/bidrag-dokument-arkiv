@@ -4,6 +4,7 @@ import java.util.Optional;
 import no.nav.bidrag.commons.security.service.OidcTokenManager;
 import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
 import no.nav.bidrag.dokument.arkiv.dto.Saksbehandler;
+import no.nav.bidrag.dokument.arkiv.utils.TokenUtils;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,7 +22,7 @@ public class SaksbehandlerInfoManager {
 
   public String hentSaksbehandlerBrukerId(){
     try {
-      return oidcTokenManager.fetchToken().getSubject();
+      return TokenUtils.henteSubject(oidcTokenManager.fetchTokenAsString());
     } catch (Exception e){
       return null;
     }

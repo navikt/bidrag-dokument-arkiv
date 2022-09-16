@@ -6,6 +6,7 @@ import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.JournalstatusDto
 import no.nav.bidrag.dokument.arkiv.dto.Saksbehandler
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerMedEnhet
+import no.nav.bidrag.dokument.dto.HendelseType
 import no.nav.bidrag.dokument.dto.JournalpostHendelse
 import no.nav.bidrag.dokument.dto.Sporingsdata
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord
@@ -19,7 +20,13 @@ class JournalpostHendelseIntern(var journalpost: Journalpost, var saksbehandler:
         journalpostHendelse.fagomrade = journalforingHendelse?.temaNytt ?: journalpost.tema
         journalpostHendelse.aktorId = hentAktoerIdFraJournalpost()
         journalpostHendelse.fnr = hentFnrFraJournalpost()
+        journalpostHendelse.tittel = journalpost.hentTittel()
         journalpostHendelse.sporing = opprettSporingsData()
+        journalpostHendelse.sakstilknytninger = journalpost.hentTilknyttetSaker().toList()
+        journalpostHendelse.dokumentDato = journalpost.hentDatoDokument()
+        journalpostHendelse.journalfortDato = journalpost.hentDatoJournalfort()
+        journalpostHendelse.hendelseType = if (journalforingHendelse?.hendelsesType == JoarkHendelseType.ENDELIG_JOURNALFORT.hendelsesType) HendelseType.JOURNALFORING else HendelseType.ENDRING
+        journalpostHendelse.journalposttype = journalpost.journalposttype?.name
     }
 
     fun hentFnrFraJournalpost(): String? {
@@ -37,16 +44,24 @@ class JournalpostHendelseIntern(var journalpost: Journalpost, var saksbehandler:
     fun hentJournalpostHendelse()=journalpostHendelse
 }
 class JournalforingHendelseIntern(var journalforingHendelse: JournalfoeringHendelseRecord) {
-    var saksbehandler = Saksbehandler("bidrag-dokument-arkiv", "bidrag-dokument-arkiv").tilEnhet("9999")
+    var saksbehandler = Saksbehandler(null, "bidrag-dokument-arkiv").tilEnhet("9999")
 
     fun toJournalpostHendelse(journalpost: Journalpost?): JournalpostHendelse {
         if (journalpost != null){
-            val hendelse = JournalpostHendelseIntern(journalpost, saksbehandler, journalforingHendelse).hentJournalpostHendelse()
+            val hendelse = JournalpostHendelseIntern(journalpost, hentSaksbehandler(journalpost), journalforingHendelse).hentJournalpostHendelse()
             hendelse.enhet = null
             return hendelse
         }
 
         return journalforingHendelseToJournalpostHendelse()
+    }
+
+    fun hentSaksbehandler(journalpost: Journalpost): SaksbehandlerMedEnhet{
+        if (journalpost.isStatusJournalfort()){
+            return Saksbehandler(journalpost.hentJournalfortAvIdent(), journalpost.journalfortAvNavn).tilEnhet(journalpost.journalforendeEnhet)
+        }
+
+        return Saksbehandler(null, "bidrag-dokument-arkiv").tilEnhet("9999")
     }
 
     fun journalforingHendelseToJournalpostHendelse(): JournalpostHendelse {

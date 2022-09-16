@@ -12,6 +12,7 @@ import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilAnnenSakRequest;
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilGenerellSakRequest;
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilSakRequest;
+import no.nav.bidrag.dokument.arkiv.dto.LagreJournalfortAvIdentRequest;
 import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostDistribusjonsInfoRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
@@ -19,10 +20,11 @@ import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.Sak;
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
+import no.nav.bidrag.dokument.arkiv.model.LagreSaksbehandlerIdentForJournalfortJournalpostFeilet;
+import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.client.HttpStatusCodeException;
 
 public class EndreJournalpostService {
 
@@ -31,20 +33,20 @@ public class EndreJournalpostService {
   private final JournalpostService journalpostService;
   private final DokarkivConsumer dokarkivConsumer;
   private final DokarkivProxyConsumer dokarkivProxyConsumer;
-  private final OppgaveService oppgaveService;
   private final HendelserProducer hendelserProducer;
+  private final SaksbehandlerInfoManager saksbehandlerInfoManager;
+
 
   public EndreJournalpostService(
-      JournalpostService journalpostService,
-      DokarkivConsumer dokarkivConsumer,
-      DokarkivProxyConsumer dokarkivProxyConsumer,
-      OppgaveService oppgaveService,
-      HendelserProducer hendelserProducer) {
+          JournalpostService journalpostService,
+          DokarkivConsumer dokarkivConsumer,
+          DokarkivProxyConsumer dokarkivProxyConsumer,
+      HendelserProducer hendelserProducer, SaksbehandlerInfoManager saksbehandlerInfoManager) {
     this.journalpostService = journalpostService;
     this.dokarkivConsumer = dokarkivConsumer;
     this.dokarkivProxyConsumer = dokarkivProxyConsumer;
-    this.oppgaveService = oppgaveService;
     this.hendelserProducer = hendelserProducer;
+    this.saksbehandlerInfoManager = saksbehandlerInfoManager;
   }
 
   public HttpResponse<Void> endre(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand) {
@@ -58,7 +60,6 @@ public class EndreJournalpostService {
     if (journalpost.kanTilknytteSaker() || endreJournalpostCommand.skalJournalfores()){
       journalpost = hentJournalpost(journalpostId);
       tilknyttSakerTilJournalfoertJournalpost(endreJournalpostCommand, journalpost);
-      opprettBehandleDokumentOppgaveVedJournalforing(endreJournalpostCommand, journalpost);
     }
 
     publiserJournalpostEndretHendelse(journalpost, journalpostId, endreJournalpostCommand);
@@ -76,12 +77,6 @@ public class EndreJournalpostService {
     return dokarkivConsumer.endre(oppdaterJournalpostRequest);
   }
 
-  private void opprettBehandleDokumentOppgaveVedJournalforing(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost) {
-    if (endreJournalpostCommand.skalJournalfores()) {
-      opprettBehandleDokumentOppgave(journalpost);
-    }
-  }
-
   private void lagreJournalpost(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
     var oppdaterJournalpostRequest = new LagreJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost);
 
@@ -92,21 +87,20 @@ public class EndreJournalpostService {
     }
   }
 
-  private void opprettBehandleDokumentOppgave(Journalpost journalpost) {
-    if (journalpost.isInngaaendeDokument() && journalpost.hasSak()) {
-      try {
-        oppgaveService.behandleDokument(journalpost);
-      } catch (HttpStatusCodeException e) {
-        LOGGER.error("Det oppstod feil ved opprettelse av behandle dokument for journapost {}", journalpost.getJournalpostId(), e);
-      }
-    }
-  }
-
   private void journalfoerJournalpostNarMottaksregistrert(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
     if (endreJournalpostCommand.skalJournalfores() && journalpost.isStatusMottatt()) {
       var journalpostId = journalpost.hentJournalpostIdLong();
-      journalfoerJournalpost(journalpostId, endreJournalpostCommand);
+      journalfoerJournalpost(journalpostId, endreJournalpostCommand.getEnhet(), journalpost);
       journalpost.setJournalstatus(JournalStatus.JOURNALFOERT);
+    }
+  }
+
+  public void lagreSaksbehandlerIdentForJournalfortJournalpost(Journalpost journalpost){
+    try {
+      lagreJournalpost(new LagreJournalfortAvIdentRequest(journalpost.hentJournalpostIdLong(), journalpost, saksbehandlerInfoManager.hentSaksbehandlerBrukerId()));
+    } catch (Exception e){
+      throw new LagreSaksbehandlerIdentForJournalfortJournalpostFeilet(
+          String.format("Lagring av saksbehandler ident for journalført journalpost %s feilet", journalpost.getJournalpostId()), e);
     }
   }
 
@@ -138,10 +132,11 @@ public class EndreJournalpostService {
     return response.getNyJournalpostId();
   }
 
-  private void journalfoerJournalpost(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand){
-    var journalforRequest = new FerdigstillJournalpostRequest(journalpostId, endreJournalpostCommand.getEnhet());
+  private void journalfoerJournalpost(Long journalpostId, String enhet, Journalpost journalpost){
+    var journalforRequest = new FerdigstillJournalpostRequest(journalpostId, enhet);
     dokarkivConsumer.ferdigstill(journalforRequest);
     LOGGER.info("Journalpost med id {} er journalført", journalpostId);
+    lagreSaksbehandlerIdentForJournalfortJournalpost(journalpost);
   }
 
   public void oppdaterJournalpostDistribusjonBestiltStatus(Long journalpostId, Journalpost journalpost){

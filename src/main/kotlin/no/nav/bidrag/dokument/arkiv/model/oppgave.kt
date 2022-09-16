@@ -6,6 +6,7 @@ private const val PARAMETER_JOURNALPOST_ID = "journalpostId"
 private const val PARAMETER_OPPGAVE_TYPE = "oppgavetype"
 private const val PARAMETER_SAKSREFERANSE = "saksreferanse"
 private const val PARAMETER_TEMA = "tema"
+private const val PARAMETER_JOURNALPOSTID = "journalpostId"
 
 internal data class OppgaveSokParametre(private val parametre: StringBuilder = StringBuilder()) {
 
@@ -13,6 +14,13 @@ internal data class OppgaveSokParametre(private val parametre: StringBuilder = S
         return leggTilParameter(PARAMETER_OPPGAVE_TYPE, OppgaveType.BEH_SAK)
     }
 
+    fun brukVurderDokumentSomOppgaveType(): OppgaveSokParametre {
+        return leggTilParameter(PARAMETER_OPPGAVE_TYPE, OppgaveType.VUR)
+    }
+
+    fun leggTilJournalpostId(journalpostId: Long): OppgaveSokParametre {
+        return leggTilParameter(PARAMETER_JOURNALPOSTID, journalpostId)
+    }
     fun leggTilFagomrade(fagomrade: String): OppgaveSokParametre {
         return leggTilParameter(PARAMETER_TEMA, fagomrade)
     }

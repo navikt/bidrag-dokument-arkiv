@@ -4,7 +4,7 @@ import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord
 import java.util.Arrays
 import java.util.Optional
 
-enum class HendelsesType(val hendelsesType: String) {
+enum class JoarkHendelseType(val hendelsesType: String) {
     JOURNALPOST_MOTTATT("JournalpostMottatt"),
     TEMA_ENDRET("TemaEndret"),
     ENDELIG_JOURNALFORT("EndeligJournalført"),
@@ -16,9 +16,9 @@ enum class HendelsesType(val hendelsesType: String) {
     }
 
     companion object {
-        fun from(hendelsesType: CharSequence?): Optional<HendelsesType> {
+        fun from(hendelsesType: CharSequence?): Optional<JoarkHendelseType> {
             return Arrays.stream(values())
-                .filter { enumeration: HendelsesType -> enumeration.erAv(hendelsesType) }
+                .filter { enumeration: JoarkHendelseType -> enumeration.erAv(hendelsesType) }
                 .findFirst()
         }
     }

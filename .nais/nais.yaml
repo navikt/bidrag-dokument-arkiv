@@ -5,11 +5,18 @@ metadata:
   namespace: bidrag
   labels:
     team: bidrag
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "256m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
 spec:
   image: {{ image }}
   azure:
     application:
       enabled: true
+      claims:
+        extra:
+          - "NAVident"
+          - "azp_name"
   webproxy: true
   accessPolicy:
     inbound:

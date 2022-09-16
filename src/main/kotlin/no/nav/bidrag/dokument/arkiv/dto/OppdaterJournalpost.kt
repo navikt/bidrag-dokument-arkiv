@@ -84,6 +84,12 @@ data class LagreAdresseRequest(private var journalpostId: Long, private val mott
     }
 }
 
+data class LagreJournalfortAvIdentRequest(private var journalpostId: Long, private var journalpost: Journalpost, private var journalfortAvIdent: String): OppdaterJournalpostRequest(journalpostId) {
+    init {
+        journalpost.tilleggsopplysninger.setJournalfortAvIdent(journalfortAvIdent)
+        tilleggsopplysninger = journalpost.tilleggsopplysninger
+    }
+}
 data class LagreJournalpostRequest(private var journalpostId: Long, private var endreJournalpostCommand: EndreJournalpostCommandIntern, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId) {
     init {
         tittel = endreJournalpostCommand.endreJournalpostCommand.tittel

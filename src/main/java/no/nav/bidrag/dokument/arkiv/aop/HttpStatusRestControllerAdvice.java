@@ -4,6 +4,7 @@ import no.nav.bidrag.dokument.arkiv.model.HttpStatusException;
 import no.nav.bidrag.dokument.arkiv.model.JournalIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
 import no.nav.bidrag.dokument.arkiv.model.KnyttTilSakManglerTemaException;
+import no.nav.bidrag.dokument.arkiv.model.KunneIkkeJournalforeOpprettetJournalpost;
 import no.nav.bidrag.dokument.arkiv.model.OppdaterJournalpostFeiletFunksjoneltException;
 import no.nav.bidrag.dokument.arkiv.model.PersonException;
 import no.nav.bidrag.dokument.arkiv.model.UgyldigAvvikException;
@@ -38,6 +39,17 @@ public class HttpStatusRestControllerAdvice {
   @ResponseBody
   @ExceptionHandler
   public ResponseEntity<?> handleViolationException(ViolationException exception) {
+    LOGGER.warn(exception.getMessage());
+
+    return ResponseEntity
+        .status(HttpStatus.BAD_REQUEST)
+        .header(HttpHeaders.WARNING, exception.getMessage())
+        .build();
+  }
+
+  @ResponseBody
+  @ExceptionHandler({KunneIkkeJournalforeOpprettetJournalpost.class})
+  public ResponseEntity<?> handleBadRequest(Exception exception) {
     LOGGER.warn(exception.getMessage());
 
     return ResponseEntity

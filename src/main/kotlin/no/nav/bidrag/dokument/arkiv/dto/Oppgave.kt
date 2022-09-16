@@ -72,6 +72,14 @@ open class OppgaveData(
 
 data class OppdaterSakRequest(private var oppgaveHendelse: OppgaveHendelse, override var saksreferanse: String?): OppgaveData(id = oppgaveHendelse.id, versjon = oppgaveHendelse.versjon)
 
+data class FerdigstillOppgaveRequest(private var oppgaveData: OppgaveData, private var _endretAvEnhetsnr: String):
+    OppgaveData(
+        id = oppgaveData.id,
+        versjon = oppgaveData.versjon,
+        status = "FERDIGSTILT",
+        endretAvEnhetsnr = _endretAvEnhetsnr
+    )
+
 data class EndreForNyttDokumentRequest(private var oppgaveData: OppgaveData,
                                        private var saksbehandlersInfo: String,
                                        private var journalpost: Journalpost,
@@ -82,6 +90,7 @@ data class EndreForNyttDokumentRequest(private var oppgaveData: OppgaveData,
         versjon = oppgaveData.versjon,
         beskrivelse = "--- ${LocalDateTime.now().format(NORSK_TIDSSTEMPEL_FORMAT)} $saksbehandlersInfo ---\r\n" +
                 "${lagDokumentOppgaveTittelForEndring("Nytt dokument", journalpost.tittel!!, journalpost.hentDatoRegistrert() ?: journalpost.hentDatoDokument()!!)}\r\n\r\n" +
+                "${lagDokumenterVedlagtBeskrivelse(journalpost)}\r\n\r\n" +
                 "${oppgaveData.beskrivelse}"
 )
 
@@ -159,6 +168,10 @@ internal fun lagVurderDokumentOppgaveBeskrivelse(saksbehandlerMedEnhet: Saksbeha
     description += "\n\n Reg.dato: ${regDato.format(NORSK_DATO_FORMAT)}"
     return description
 }
+
+internal fun lagDokumenterVedlagtBeskrivelse(journalpost: Journalpost) =
+    "\u00B7 Dokumenter vedlagt: ${journalpost.dokumenter.joinToString { "JOARK-${journalpost.journalpostId}:${it.dokumentInfoId}" }}"
+
 
 
 enum class OppgaveType {
