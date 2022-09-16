@@ -14,6 +14,7 @@ import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
 import no.nav.bidrag.dokument.arkiv.kafka.HendelseListener
+import no.nav.bidrag.dokument.arkiv.model.JoarkHendelseType
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.BRUKER_AKTOER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.BRUKER_ENHET
@@ -23,6 +24,7 @@ import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_ID
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
 import no.nav.bidrag.dokument.arkiv.stubs.Stubs
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
+import no.nav.bidrag.dokument.dto.HendelseType
 import no.nav.bidrag.dokument.dto.JournalpostHendelse
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
 import org.assertj.core.api.Assertions.assertThat
@@ -98,6 +100,7 @@ class JoarkHendelseTest {
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::fnr).isEqualTo(AVSENDER_ID) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::dokumentDato).isEqualTo(no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT.somDato()) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalfortDato).isNull() },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::hendelseType).isEqualTo(HendelseType.ENDRING) },
             { assertThat(journalpostHendelse.sporing?.brukerident).isNull() },
             { assertThat(journalpostHendelse.sporing?.saksbehandlersNavn).isEqualTo("bidrag-dokument-arkiv") },
             { assertThat(journalpostHendelse.sporing?.enhetsnummer).isEqualTo("9999") },
@@ -137,6 +140,7 @@ class JoarkHendelseTest {
 
         val record = createHendelseRecord(journalpostId)
         record.journalpostStatus = "JOURNALFOERT"
+        record.hendelsesType = JoarkHendelseType.ENDELIG_JOURNALFORT.name
 
         hendelseListener.listenJournalforingHendelse(record)
         val jsonCaptor = ArgumentCaptor.forClass(String::class.java)
@@ -147,6 +151,7 @@ class JoarkHendelseTest {
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId).isEqualTo(expectedJoarkJournalpostId) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isNull() },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::fnr).isEqualTo(AVSENDER_ID) },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::hendelseType).isEqualTo(HendelseType.JOURNALFORING) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::dokumentDato).isEqualTo(no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT.somDato()) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalfortDato).isEqualTo(no.nav.bidrag.dokument.arkiv.stubs.DATO_JOURNALFORT.somDato()) },
             { assertThat(journalpostHendelse.sporing?.brukerident).isEqualTo(journalfortAvIdent) },

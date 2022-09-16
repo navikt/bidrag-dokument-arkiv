@@ -6,6 +6,7 @@ import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.JournalstatusDto
 import no.nav.bidrag.dokument.arkiv.dto.Saksbehandler
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerMedEnhet
+import no.nav.bidrag.dokument.dto.HendelseType
 import no.nav.bidrag.dokument.dto.JournalpostHendelse
 import no.nav.bidrag.dokument.dto.Sporingsdata
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord
@@ -24,6 +25,8 @@ class JournalpostHendelseIntern(var journalpost: Journalpost, var saksbehandler:
         journalpostHendelse.sakstilknytninger = journalpost.hentTilknyttetSaker().toList()
         journalpostHendelse.dokumentDato = journalpost.hentDatoDokument()
         journalpostHendelse.journalfortDato = journalpost.hentDatoJournalfort()
+        journalpostHendelse.hendelseType = if (journalforingHendelse?.hendelsesType == JoarkHendelseType.ENDELIG_JOURNALFORT.name) HendelseType.JOURNALFORING else HendelseType.ENDRING
+        journalpostHendelse.journalposttype = journalpost.journalposttype?.name
     }
 
     fun hentFnrFraJournalpost(): String? {

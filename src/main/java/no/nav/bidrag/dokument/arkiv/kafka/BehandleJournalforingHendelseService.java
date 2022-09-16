@@ -61,7 +61,7 @@ public class BehandleJournalforingHendelseService {
 
   private void measureHendelse(JournalfoeringHendelseRecord record, Journalpost journalpost){
     try {
-      var hendelsesType = HendelsesType.Companion.from(record.getHendelsesType()).orElse(HendelsesType.UKJENT);
+      var hendelsesType = JoarkHendelseType.Companion.from(record.getHendelsesType()).orElse(JoarkHendelseType.UKJENT);
       var tema = Strings.isNullOrEmpty(journalpost.getTema()) ? record.getTemaNytt() : journalpost.getTema();
       this.meterRegistry.counter(HENDELSE_COUNTER_NAME,
           "hendelse_type", hendelsesType.toString(),
