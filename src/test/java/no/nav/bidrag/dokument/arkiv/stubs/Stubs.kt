@@ -45,7 +45,7 @@ class Stubs(@field:Autowired private val objectMapper: ObjectMapper) {
             WireMock.stubFor(
                 WireMock.put(
                     WireMock.urlMatching(
-                        "/dokarkiv" + String.format(DokarkivKnyttTilSakConsumer.URL_KNYTT_TIL_ANNEN_SAK, journalpostId)
+                        "/dokarkivknytt" + String.format(DokarkivKnyttTilSakConsumer.URL_KNYTT_TIL_ANNEN_SAK, journalpostId)
                     )
                 ).willReturn(
                     aClosedJsonResponse()
@@ -438,7 +438,7 @@ class Stubs(@field:Autowired private val objectMapper: ObjectMapper) {
         fun dokarkivTilknyttSakerKalt(times: Int, journalpostId: Long, vararg contains: String?) {
             val verify = WireMock.putRequestedFor(
                 WireMock.urlMatching(
-                    "/dokarkiv" + String.format(DokarkivKnyttTilSakConsumer.URL_KNYTT_TIL_ANNEN_SAK, journalpostId)
+                    "/dokarkivknytt" + String.format(DokarkivKnyttTilSakConsumer.URL_KNYTT_TIL_ANNEN_SAK, journalpostId)
                 )
             )
             Arrays.stream(contains).forEach { contain: String? ->

@@ -1,6 +1,7 @@
 SAF_URL: http://saf
 DOKARKIV_URL: http://dokarkiv
 OPPGAVE_URL: http://oppgave
+DOKARKIV_KNYTT_TIL_SAK_URL: http://dokarkiv
 ACCESS_TOKEN_URL: http://sts
 BIDRAG_PERSON_URL: http://person
 DOKDISTFORDELING_URL: http://dokdistfordeling

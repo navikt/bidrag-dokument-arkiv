@@ -215,7 +215,7 @@ public class BidragDokumentArkivConfig {
       EnvironmentProperties environmentProperties,
       SecurityTokenService securityTokenService
   ) {
-    httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.dokarkivUrl));
+    httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.dokarkivKnyttTilSakUrl));
     httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
 
     DokarkivKnyttTilSakConsumer dokarkivKnyttTilSakConsumer = new DokarkivKnyttTilSakConsumer(httpHeaderRestTemplate);
@@ -272,6 +272,7 @@ public class BidragDokumentArkivConfig {
   @Bean
   public EnvironmentProperties environmentProperties(
       @Value("${DOKARKIV_URL}") String dokarkivUrl,
+      @Value("${DOKARKIV_KNYTT_TIL_SAK_URL}") String dokarkivKnyttTilSakUrl,
       @Value("${DOKDISTFORDELING_URL}") String dokdistFordelingUrl,
       @Value("${BIDRAG_PERSON_URL}") String bidragPersonUrl,
       @Value("${SAF_URL}") String safUrl,
@@ -281,7 +282,7 @@ public class BidragDokumentArkivConfig {
       @Value("${BIDRAG_ORGANISASJON_URL}") String bidragOrganisasjonUrl,
       @Value("${NAIS_APP_NAME}") String naisAppName
   ) {
-    var environmentProperties = new EnvironmentProperties(dokdistFordelingUrl, dokarkivUrl, safUrl, oppgaveUrl,
+    var environmentProperties = new EnvironmentProperties(dokdistFordelingUrl, dokarkivUrl, dokarkivKnyttTilSakUrl, safUrl, oppgaveUrl,
         secretForServiceUser, securityTokenUrl,
         naisAppName, bidragPersonUrl, bidragOrganisasjonUrl);
     LOGGER.info(String.format("> Environment: %s", environmentProperties));
@@ -292,6 +293,7 @@ public class BidragDokumentArkivConfig {
   public static class EnvironmentProperties {
 
     public final String dokarkivUrl;
+    public final String dokarkivKnyttTilSakUrl;
     public final String dokdistFordelingUrl;
     public final String bidragPersonUrl;
     public final String safUrl;
@@ -303,10 +305,11 @@ public class BidragDokumentArkivConfig {
 
     public EnvironmentProperties(
         String dokdistFordelingUrl,
-        String dokarkivUrl, String safUrl, String oppgaveUrl, String secretForServiceUser,
+        String dokarkivUrl, String dokarkivKnyttTilSakUrl, String safUrl, String oppgaveUrl, String secretForServiceUser,
         String securityTokenUrl, String naisAppName, String bidragPersonUrl, String bidragOrganisasjonUrl
     ) {
       this.dokdistFordelingUrl = dokdistFordelingUrl;
+      this.dokarkivKnyttTilSakUrl = dokarkivKnyttTilSakUrl;
       this.oppgaveUrl = oppgaveUrl;
       this.bidragPersonUrl = bidragPersonUrl;
       this.dokarkivUrl = dokarkivUrl;
@@ -322,6 +325,7 @@ public class BidragDokumentArkivConfig {
       return "dokarkivUrl='" + dokarkivUrl + '\'' +
           ", safUrl='" + safUrl + '\'' +
           ", bidragPersonUrl='" + bidragPersonUrl + '\'' +
+          ", dokarkivKnyttTilSakUrl='" + dokarkivKnyttTilSakUrl + '\'' +
           ", securityTokenUrl='" + securityTokenUrl + '\'' +
           ", bidragOrganisasjonUrl='" + bidragOrganisasjonUrl + '\'' +
           ", naisAppName='" + naisAppName + '\'' +

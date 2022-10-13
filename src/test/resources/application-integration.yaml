@@ -2,6 +2,7 @@ SAF_URL: http://localhost:${wiremock.server.port}/saf
 DOKARKIV_URL: http://localhost:${wiremock.server.port}/dokarkiv
 OPPGAVE_URL: http://localhost:${wiremock.server.port}/oppgave
 DOKDISTFORDELING_URL: http://localhost:${wiremock.server.port}/dokdistfordeling
+DOKARKIV_KNYTT_TIL_SAK_URL: http://localhost:${wiremock.server.port}/dokarkivknytt
 ACCESS_TOKEN_URL: http://localhost:${wiremock.server.port}/sts
 BIDRAG_PERSON_URL: http://localhost:${wiremock.server.port}/person
 BIDRAG_ORGANISASJON_URL: http://localhost:${wiremock.server.port}/organisasjon
