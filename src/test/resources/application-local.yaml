@@ -31,7 +31,6 @@ ACCESS_TOKEN_URL: https://security-token-service.dev.adeo.no
 AKTORREGISTER_URL: https://app-q1.adeo.no/aktoerregister
 DOKARKIV_URL: https://dokarkiv-q1.dev.adeo.no
 DOKDISTFORDELING_URL: https://dokdistfordeling-q1.dev.adeo.no
-DOKARKIV_PROXY_URL: https://dokarkivproxy-q1.dev.intern.nav.no
 BIDRAG_PERSON_URL: https://bidrag-person-feature.dev.adeo.no
 BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon-feature.dev.adeo.no
 SAF_URL: https://saf-q1.dev.adeo.no

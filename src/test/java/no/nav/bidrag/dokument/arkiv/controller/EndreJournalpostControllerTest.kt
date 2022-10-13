@@ -21,7 +21,6 @@ import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
 import no.nav.bidrag.dokument.dto.EndreReturDetaljer
 import no.nav.bidrag.dokument.dto.JournalpostDto
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Condition
 import org.json.JSONException
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
@@ -142,7 +141,7 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockDokarkivFerdigstillRequest(journalpostId)
-        stubs.mockDokarkivProxyTilknyttRequest(journalpostId)
+        stubs.mockDokarkivTilknyttRequest(journalpostId)
 
         // when
         val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
@@ -161,9 +160,9 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
                     .isEqualTo(HttpStatus.OK)
             },
              { stubs.verifyStub.dokarkivFerdigstillKalt(journalpostId) },
-             { stubs.verifyStub.dokarkivProxyTilknyttSakerIkkeKalt(journalpostId, saksnummer1) },
+             { stubs.verifyStub.dokarkivTilknyttSakerIkkeKalt(journalpostId, saksnummer1) },
              {
-                stubs.verifyStub.dokarkivProxyTilknyttSakerKalt(
+                stubs.verifyStub.dokarkivTilknyttSakerKalt(
                     journalpostId,
                     saksnummer2,
                     "\"journalfoerendeEnhet\":\"4806\"",
@@ -195,7 +194,7 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
         stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson)
-        stubs.mockDokarkivProxyTilknyttRequest(journalpostIdFraJson)
+        stubs.mockDokarkivTilknyttRequest(journalpostIdFraJson)
 
         // when
         val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
@@ -220,13 +219,13 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
                  "\"dokumenter\":[{\"dokumentInfoId\":\"1\",\"tittel\":\"In a galazy far far away\",\"brevkode\":\"BLABLA\"}]"
                  ) },
              {
-                stubs.verifyStub.dokarkivProxyTilknyttSakerKalt(
+                stubs.verifyStub.dokarkivTilknyttSakerKalt(
                     journalpostIdFraJson,
                     newSaksnummer,
                     "\"journalfoerendeEnhet\":\"4806\""
                 )
             },
-             { stubs.verifyStub.dokarkivProxyTilknyttSakerIkkeKalt(journalpostIdFraJson, existingSaksnummer) }
+             { stubs.verifyStub.dokarkivTilknyttSakerIkkeKalt(journalpostIdFraJson, existingSaksnummer) }
         )
     }
 
@@ -287,7 +286,7 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
         stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson)
-        stubs.mockDokarkivProxyTilknyttRequest(journalpostIdFraJson)
+        stubs.mockDokarkivTilknyttRequest(journalpostIdFraJson)
 
         // when
         val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
@@ -348,7 +347,7 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockDokarkivFerdigstillRequest(journalpostId)
-        stubs.mockDokarkivProxyTilknyttRequest(journalpostId)
+        stubs.mockDokarkivTilknyttRequest(journalpostId)
 
         val endreJournalpostCommand = no.nav.bidrag.dokument.arkiv.stubs.createEndreJournalpostCommand()
         endreJournalpostCommand.skalJournalfores = false
@@ -413,7 +412,7 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockDokarkivFerdigstillRequest(journalpostId)
-        stubs.mockDokarkivProxyTilknyttRequest(journalpostId)
+        stubs.mockDokarkivTilknyttRequest(journalpostId)
 
         val endreJournalpostCommand = no.nav.bidrag.dokument.arkiv.stubs.createEndreJournalpostCommand()
         endreJournalpostCommand.skalJournalfores = false

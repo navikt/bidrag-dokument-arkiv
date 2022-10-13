@@ -270,7 +270,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
         stubs.mockOpprettOppgave(HttpStatus.OK)
-        stubs.mockDokarkivProxyTilknyttRequest(JOURNALPOST_ID, NY_JOURNALPOST_ID_KNYTT_TIL_SAK)
+        stubs.mockDokarkivTilknyttRequest(JOURNALPOST_ID, NY_JOURNALPOST_ID_KNYTT_TIL_SAK)
         stubs.mockDokarkivFeilregistrerRequest(JOURNALPOST_ID)
 
         val overforEnhetResponse = sendAvvikRequest(xEnhet, JOURNALPOST_ID, avvikHendelse)
@@ -284,7 +284,7 @@ class AvvikControllerTest : AbstractControllerTest() {
                     .isEqualTo(HttpStatus.OK)
             },
             { stubs.verifyStub.oppgaveOpprettIkkeKalt() },
-            { stubs.verifyStub.dokarkivProxyTilknyttSakerKalt(JOURNALPOST_ID, "FAR") },
+            { stubs.verifyStub.dokarkivTilknyttSakerKalt(JOURNALPOST_ID, "FAR") },
             { stubs.verifyStub.dokarkivFeilregistrerKalt(JOURNALPOST_ID) },
             { stubs.verifyStub.dokarkivOppdaterKalt(JOURNALPOST_ID, "\"tilleggsopplysninger\":[{\"nokkel\":\"avvikEndretTema\",\"verdi\":\"true\"}]") },
             {
@@ -338,7 +338,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID_3)
         stubs.mockOpprettOppgave(HttpStatus.OK)
-        stubs.mockDokarkivProxyTilknyttRequest(JOURNALPOST_ID, JOURNALPOST_ID_3)
+        stubs.mockDokarkivTilknyttRequest(JOURNALPOST_ID, JOURNALPOST_ID_3)
         stubs.mockDokarkivFeilregistrerRequest(JOURNALPOST_ID)
         stubs.mockDokarkivOpphevFeilregistrerRequest(JOURNALPOST_ID_3)
 
@@ -353,7 +353,7 @@ class AvvikControllerTest : AbstractControllerTest() {
                     .isEqualTo(HttpStatus.OK)
             },
             { stubs.verifyStub.oppgaveOpprettIkkeKalt() },
-            { stubs.verifyStub.dokarkivProxyTilknyttSakerIkkeKalt(JOURNALPOST_ID) },
+            { stubs.verifyStub.dokarkivTilknyttSakerIkkeKalt(JOURNALPOST_ID) },
             { stubs.verifyStub.dokarkivFeilregistrerKalt(JOURNALPOST_ID) },
             { stubs.verifyStub.dokarkivOpphevFeilregistrerKalt(JOURNALPOST_ID_3) },
             { stubs.verifyStub.dokarkivOppdaterKalt(JOURNALPOST_ID_3, "\"tilleggsopplysninger\":[{\"nokkel\":\"avvikEndretTema\",\"verdi\":\"false\"}]") },
@@ -380,7 +380,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, java.util.Map.of("fagomrade", nyttFagomrade))
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockOrganisasjonGeografiskTilknytning(geografiskEnhet)
-        stubs.mockDokarkivProxyTilknyttRequest(journalpostIdFraJson, nyJournalpostId)
+        stubs.mockDokarkivTilknyttRequest(journalpostIdFraJson, nyJournalpostId)
         stubs.mockSafResponseHentJournalpost(journalpostJournalfortSafResponse, HttpStatus.OK)
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
@@ -724,7 +724,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost(opprettSafResponse(journalpostId = newJournalpostId.toString(), sak = Sak(sak1)), newJournalpostId)
         stubs.mockSafHentDokumentResponse()
         stubs.mockSokOppgave(OppgaveSokResponse(1, listOf(vurderDokumentOppgave)), HttpStatus.OK)
-        stubs.mockDokarkivProxyTilknyttRequest(newJournalpostId)
+        stubs.mockDokarkivTilknyttRequest(newJournalpostId)
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(newJournalpostId)
         stubs.mockDokarkivOpprettRequest(newJournalpostId, HttpStatus.OK)
@@ -755,7 +755,7 @@ class AvvikControllerTest : AbstractControllerTest() {
                         "{\"tittel\":\"$tittelDokument2\"," +
                                 "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"$dokumentData2=\"}]}]," +
                     "\"avsenderMottaker\":{\"navn\":\"Avsender Avsendersen\",\"id\":\"112312385076492416\",\"idType\":\"FNR\"}}") },
-            { stubs.verifyStub.dokarkivProxyTilknyttSakerKalt(newJournalpostId, sak2) },
+            { stubs.verifyStub.dokarkivTilknyttSakerKalt(newJournalpostId, sak2) },
             { stubs.verifyStub.oppgaveOppdaterKalt(1, "{\"id\":2,\"versjon\":1,\"endretAvEnhetsnr\":\"$xEnhet\",\"status\":\"FERDIGSTILT\"}") },
             { stubs.verifyStub.safHentDokumentKalt(journalpostIdAnnenFagomrade, DOKUMENT_1_ID.toLong()) },
             {
@@ -806,7 +806,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost(opprettSafResponse(journalpostId = newJournalpostId.toString(), sak = Sak(sak1)), newJournalpostId)
         stubs.mockSafHentDokumentResponse()
         stubs.mockSokOppgave(OppgaveSokResponse(1, listOf(vurderDokumentOppgave)), HttpStatus.OK)
-        stubs.mockDokarkivProxyTilknyttRequest(newJournalpostId, 123213, HttpStatus.INTERNAL_SERVER_ERROR)
+        stubs.mockDokarkivTilknyttRequest(newJournalpostId, 123213, HttpStatus.INTERNAL_SERVER_ERROR)
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(newJournalpostId)
         stubs.mockDokarkivOpprettRequest(newJournalpostId, HttpStatus.OK)
@@ -824,7 +824,7 @@ class AvvikControllerTest : AbstractControllerTest() {
             { stubs.verifyStub.dokarkivOppdaterIkkeKalt(journalpostIdAnnenFagomrade)},
             { stubs.verifyStub.dokarkivOppdaterKalt(newJournalpostId) },
             { stubs.verifyStub.dokarkivOpprettKalt()},
-            { stubs.verifyStub.dokarkivProxyTilknyttSakerKalt(5, newJournalpostId, sak2) },
+            { stubs.verifyStub.dokarkivTilknyttSakerKalt(5, newJournalpostId, sak2) },
             { stubs.verifyStub.oppgaveOppdaterKalt(1) },
             { stubs.verifyStub.safHentDokumentKalt(journalpostIdAnnenFagomrade, DOKUMENT_1_ID.toLong()) },
             {
