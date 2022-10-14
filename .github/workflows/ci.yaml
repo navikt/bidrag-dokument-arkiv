@@ -28,9 +28,10 @@ jobs:
             ${{ runner.os }}-maven-
       - uses: navikt/bidrag-maven/setup@v7
         with:
-          repositories: maven-central=https://repo.maven.apache.org/maven2,github-packages=https://maven.pkg.github.com/navikt/maven-release,confluent=https://packages.confluent.io/maven/
+          repositories: maven-central=https://repo.maven.apache.org/maven2,github-packages=https://maven.pkg.github.com/navikt/maven-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: navikt/bidrag-maven/verify-dependencies@v7
       - run: mvn install -B -e
       - name: Build and publish Docker image
         env:
@@ -50,7 +51,7 @@ jobs:
         with:
           path: deploy
       - name: Deploy main to dev-fss
-        if: github.ref == 'refs/heads/main'
+        if: github.ref != 'refs/heads/main'
         uses: nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
@@ -135,3 +136,13 @@ jobs:
           cd $RUNNER_WORKSPACE
           echo deleting files in $RUNNER_WORKSPACE
           sudo rm -rf *
+
+  bump_dev_version:
+    runs-on: ubuntu-latest
+    name: Bump SNAPSHOT version
+    if: github.ref == 'refs/heads/main'
+    needs: run_cucumber
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: navikt/bidrag-git/tag-snap@v1-tag-snap
