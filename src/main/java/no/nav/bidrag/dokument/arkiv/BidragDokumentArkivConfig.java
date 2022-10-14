@@ -17,7 +17,7 @@ import no.nav.bidrag.dokument.arkiv.aop.AspectExceptionLogger;
 import no.nav.bidrag.dokument.arkiv.aop.HttpStatusRestControllerAdvice;
 import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
-import no.nav.bidrag.dokument.arkiv.consumer.DokarkivProxyConsumer;
+import no.nav.bidrag.dokument.arkiv.consumer.DokarkivKnyttTilSakConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.DokdistFordelingConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.OppgaveConsumer;
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
@@ -140,14 +140,14 @@ public class BidragDokumentArkivConfig {
   public EndreJournalpostService endreJournalpostService(
       ResourceByDiscriminator<JournalpostService> journalpostServices,
       ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers,
-      DokarkivProxyConsumer dokarkivProxyConsumer,
+      DokarkivKnyttTilSakConsumer dokarkivKnyttTilSakConsumer,
       HendelserProducer hendelserProducer,
       SaksbehandlerInfoManager saksbehandlerInfoManager
   ) {
     return new EndreJournalpostService(
         journalpostServices.get(Discriminator.REGULAR_USER),
         dokarkivConsumers.get(Discriminator.REGULAR_USER),
-        dokarkivProxyConsumer, hendelserProducer, saksbehandlerInfoManager);
+        dokarkivKnyttTilSakConsumer, hendelserProducer, saksbehandlerInfoManager);
   }
 
   @Bean
@@ -210,18 +210,18 @@ public class BidragDokumentArkivConfig {
   }
 
   @Bean
-  public DokarkivProxyConsumer dokarkivProxyConsumer(
+  public DokarkivKnyttTilSakConsumer dokarkivKnyttTilSakConsumer(
       @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
       EnvironmentProperties environmentProperties,
       SecurityTokenService securityTokenService
   ) {
-    httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.dokarkivProxyUrl));
+    httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.dokarkivKnyttTilSakUrl));
     httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
 
-    DokarkivProxyConsumer dokarkivProxyConsumer = new DokarkivProxyConsumer(httpHeaderRestTemplate);
-    dokarkivProxyConsumer.leggTilInterceptor(securityTokenService.authTokenInterceptor());
-    dokarkivProxyConsumer.leggTilInterceptor(securityTokenService.navConsumerTokenInterceptor(true));
-    return dokarkivProxyConsumer;
+    DokarkivKnyttTilSakConsumer dokarkivKnyttTilSakConsumer = new DokarkivKnyttTilSakConsumer(httpHeaderRestTemplate);
+    dokarkivKnyttTilSakConsumer.leggTilInterceptor(securityTokenService.authTokenInterceptor("dokarkiv"));
+    dokarkivKnyttTilSakConsumer.leggTilInterceptor(securityTokenService.navConsumerTokenInterceptor(true));
+    return dokarkivKnyttTilSakConsumer;
   }
 
   @Bean
@@ -272,8 +272,8 @@ public class BidragDokumentArkivConfig {
   @Bean
   public EnvironmentProperties environmentProperties(
       @Value("${DOKARKIV_URL}") String dokarkivUrl,
+      @Value("${DOKARKIV_KNYTT_TIL_SAK_URL}") String dokarkivKnyttTilSakUrl,
       @Value("${DOKDISTFORDELING_URL}") String dokdistFordelingUrl,
-      @Value("${DOKARKIV_PROXY_URL}") String dokarkivProxyUrl,
       @Value("${BIDRAG_PERSON_URL}") String bidragPersonUrl,
       @Value("${SAF_URL}") String safUrl,
       @Value("${OPPGAVE_URL}") String oppgaveUrl,
@@ -282,7 +282,7 @@ public class BidragDokumentArkivConfig {
       @Value("${BIDRAG_ORGANISASJON_URL}") String bidragOrganisasjonUrl,
       @Value("${NAIS_APP_NAME}") String naisAppName
   ) {
-    var environmentProperties = new EnvironmentProperties(dokdistFordelingUrl, dokarkivUrl, dokarkivProxyUrl, safUrl, oppgaveUrl,
+    var environmentProperties = new EnvironmentProperties(dokdistFordelingUrl, dokarkivUrl, dokarkivKnyttTilSakUrl, safUrl, oppgaveUrl,
         secretForServiceUser, securityTokenUrl,
         naisAppName, bidragPersonUrl, bidragOrganisasjonUrl);
     LOGGER.info(String.format("> Environment: %s", environmentProperties));
@@ -293,8 +293,8 @@ public class BidragDokumentArkivConfig {
   public static class EnvironmentProperties {
 
     public final String dokarkivUrl;
+    public final String dokarkivKnyttTilSakUrl;
     public final String dokdistFordelingUrl;
-    public final String dokarkivProxyUrl;
     public final String bidragPersonUrl;
     public final String safUrl;
     public final String oppgaveUrl;
@@ -305,11 +305,11 @@ public class BidragDokumentArkivConfig {
 
     public EnvironmentProperties(
         String dokdistFordelingUrl,
-        String dokarkivUrl, String dokarkivProxyUrl, String safUrl, String oppgaveUrl, String secretForServiceUser,
+        String dokarkivUrl, String dokarkivKnyttTilSakUrl, String safUrl, String oppgaveUrl, String secretForServiceUser,
         String securityTokenUrl, String naisAppName, String bidragPersonUrl, String bidragOrganisasjonUrl
     ) {
       this.dokdistFordelingUrl = dokdistFordelingUrl;
-      this.dokarkivProxyUrl = dokarkivProxyUrl;
+      this.dokarkivKnyttTilSakUrl = dokarkivKnyttTilSakUrl;
       this.oppgaveUrl = oppgaveUrl;
       this.bidragPersonUrl = bidragPersonUrl;
       this.dokarkivUrl = dokarkivUrl;
@@ -325,8 +325,8 @@ public class BidragDokumentArkivConfig {
       return "dokarkivUrl='" + dokarkivUrl + '\'' +
           ", safUrl='" + safUrl + '\'' +
           ", bidragPersonUrl='" + bidragPersonUrl + '\'' +
+          ", dokarkivKnyttTilSakUrl='" + dokarkivKnyttTilSakUrl + '\'' +
           ", securityTokenUrl='" + securityTokenUrl + '\'' +
-          ", dokarkivProxyUrl='" + dokarkivProxyUrl + '\'' +
           ", bidragOrganisasjonUrl='" + bidragOrganisasjonUrl + '\'' +
           ", naisAppName='" + naisAppName + '\'' +
           ", secretForServiceUser '" + notActualValue() + "'.";

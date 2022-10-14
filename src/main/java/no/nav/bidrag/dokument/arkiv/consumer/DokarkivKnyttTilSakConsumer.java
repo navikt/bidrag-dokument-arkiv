@@ -12,12 +12,12 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
-public class DokarkivProxyConsumer {
+public class DokarkivKnyttTilSakConsumer {
 
   public static final String URL_KNYTT_TIL_ANNEN_SAK = "/rest/journalpostapi/v1/journalpost/%s/knyttTilAnnenSak";
   private final RestTemplate restTemplate;
 
-  public DokarkivProxyConsumer(RestTemplate restTemplate) {
+  public DokarkivKnyttTilSakConsumer(RestTemplate restTemplate) {
     this.restTemplate = restTemplate;
   }
 

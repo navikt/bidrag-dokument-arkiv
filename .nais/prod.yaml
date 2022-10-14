@@ -12,7 +12,7 @@ env:
   STS_ISSUER_URL: https://security-token-service.nais.adeo.no
   ACCESS_TOKEN_URL: https://security-token-service.nais.adeo.no
   DOKARKIV_URL: https://dokarkiv.nais.adeo.no/
-  DOKARKIV_PROXY_URL:  https://dokarkivproxy.intern.nav.no
+  DOKARKIV_KNYTT_TIL_SAK_URL:  https://dokarkivproxy.intern.nav.no
   DOKDISTFORDELING_URL: https://dokdistfordeling.nais.adeo.no
   SAF_URL: https://saf.nais.adeo.no
   OPPGAVE_URL: https://oppgave.nais.adeo.no/api/v1/oppgaver
