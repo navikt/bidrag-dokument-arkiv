@@ -28,7 +28,7 @@ jobs:
             ${{ runner.os }}-maven-
       - uses: navikt/bidrag-maven/setup@v7
         with:
-          repositories: maven-central=https://repo.maven.apache.org/maven2,github-packages=https://maven.pkg.github.com/navikt/maven-release
+          repositories: maven-central=https://repo.maven.apache.org/maven2,github-packages=https://maven.pkg.github.com/navikt/maven-release,confluent=https://packages.confluent.io/maven/
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: mvn install -B -e
@@ -50,7 +50,7 @@ jobs:
         with:
           path: deploy
       - name: Deploy main to dev-fss
-        if: github.ref != 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         uses: nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
