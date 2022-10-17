@@ -69,7 +69,7 @@ class OpprettJournalpost: JoarkOpprettJournalpostRequest(){
     }
 
     fun hasAvsenderMottaker(): Boolean {
-        return avsenderMottaker?.id != null
+        return avsenderMottaker?.navn?.isNotEmpty() == true || avsenderMottaker?.id?.isNotEmpty() == true
     }
     fun kopierFra(journalpost: Journalpost): OpprettJournalpost{
         dupliser(journalpost, emptyMap())
