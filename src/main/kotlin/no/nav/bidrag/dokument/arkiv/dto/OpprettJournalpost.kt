@@ -34,7 +34,7 @@ open class JoarkOpprettJournalpostRequest(
     }
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    data class OpprettJournalpostAvsenderMottaker(val navn: String? = null, val id: String? = null, val idType: AvsenderMottakerIdType?)
+    data class OpprettJournalpostAvsenderMottaker(val navn: String? = null, val id: String? = null, val idType: AvsenderMottakerIdType? = null)
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     data class OpprettJournalpostBruker(val id: String? = null, val idType: String? = null)
@@ -69,13 +69,14 @@ class OpprettJournalpost: JoarkOpprettJournalpostRequest(){
     }
 
     fun hasAvsenderMottaker(): Boolean {
-        return avsenderMottaker?.id != null
+        return avsenderMottaker?.navn?.isNotEmpty() == true || avsenderMottaker?.id?.isNotEmpty() == true
     }
     fun kopierFra(journalpost: Journalpost): OpprettJournalpost{
         dupliser(journalpost, emptyMap())
         return this;
     }
     fun dupliser(journalpost: Journalpost, dokumentByte: DokumentByte = emptyMap()): OpprettJournalpost{
+        val avsenderType = if (journalpost.avsenderMottaker?.type == AvsenderMottakerIdType.NULL) null else journalpost.avsenderMottaker?.type
         originalJournalpostId = journalpost.hentJournalpostIdLong()
         sak = OpprettJournalpostSak(journalpost.sak?.fagsakId)
         tema = "BID"
@@ -89,7 +90,7 @@ class OpprettJournalpost: JoarkOpprettJournalpostRequest(){
         kanal = journalpost.kanal?.name
         behandlingstema = journalpost.behandlingstema
         tittel = journalpost.hentTittel()
-        avsenderMottaker = OpprettJournalpostAvsenderMottaker(journalpost.avsenderMottaker?.navn, journalpost.avsenderMottaker?.id, journalpost.avsenderMottaker?.type)
+        avsenderMottaker = OpprettJournalpostAvsenderMottaker(journalpost.avsenderMottaker?.navn, journalpost.avsenderMottaker?.id, avsenderType)
         bruker = OpprettJournalpostBruker(journalpost.bruker?.id, journalpost.bruker?.type)
         tilleggsopplysninger = journalpost.tilleggsopplysninger
         dokumenter = journalpost.dokumenter.filter{ dokumentByte[it.dokumentInfoId] != null }.map {
