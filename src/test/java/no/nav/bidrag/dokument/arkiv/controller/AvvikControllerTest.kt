@@ -909,11 +909,8 @@ class AvvikControllerTest : AbstractControllerTest() {
                 "\"aktoerId\":\"92345678910\"",
                 "\"saksreferanse\":\"5276661\"",
                 "\"journalpostId\":\"201028011\"") },
-            { stubs.verifyStub.oppgaveOpprettKalt("\"beskrivelse\":\"\\n                " +
-                    "Originalbestilling: Vi ber om å få tilsendt papirdokumentet av vedlagte dokumenter. " +
-                    "\\n                \\n                " +
-                    "Dokumentet skal sendes til 1234, og merkes med aud-localhost - navn\\n" +
-                    "                \"")},
+            { stubs.verifyStub.oppgaveOpprettKalt("Originalbestilling: Vi ber om å få tilsendt papirdokumentet av vedlagte dokumenter. " +
+                    "\\n\\nDokumentet skal sendes til 1234, og merkes med aud-localhost - navn")},
             {
                 Mockito.verify(kafkaTemplateMock, times(1)).send(
                     ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(

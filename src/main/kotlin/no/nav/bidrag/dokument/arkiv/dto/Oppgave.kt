@@ -173,7 +173,7 @@ data class BestillOriginalOppgaveRequest(
                 Originalbestilling: Vi ber om å få tilsendt papirdokumentet av vedlagte dokumenter. 
                 
                 Dokumentet skal sendes til ${enhet}, og merkes med ${saksbehandlerMedEnhet.saksbehandler.hentIdentMedNavn()}
-                """
+                """.trimIndent()
         }
     }
 
