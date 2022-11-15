@@ -1,77 +1,110 @@
-package no.nav.bidrag.dokument.arkiv.service;
+package no.nav.bidrag.dokument.arkiv.service
 
-import java.util.List;
-import no.nav.bidrag.dokument.arkiv.consumer.OppgaveConsumer;
-import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer;
-import no.nav.bidrag.dokument.arkiv.dto.*;
-import no.nav.bidrag.dokument.arkiv.model.Discriminator;
-import no.nav.bidrag.dokument.arkiv.model.OppgaveSokParametre;
-import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator;
-import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import no.nav.bidrag.dokument.arkiv.consumer.OppgaveConsumer
+import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer
+import no.nav.bidrag.dokument.arkiv.dto.FerdigstillOppgaveRequest
+import no.nav.bidrag.dokument.arkiv.dto.Journalpost
+import no.nav.bidrag.dokument.arkiv.dto.OppgaveData
+import no.nav.bidrag.dokument.arkiv.dto.OpprettOppgaveFagpostRequest
+import no.nav.bidrag.dokument.arkiv.dto.OpprettOppgaveRequest
+import no.nav.bidrag.dokument.arkiv.dto.OpprettVurderDokumentOppgaveRequest
+import no.nav.bidrag.dokument.arkiv.dto.OverforOppgaveTilFagpost
+import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
+import no.nav.bidrag.dokument.arkiv.dto.Saksbehandler
+import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerMedEnhet
+import no.nav.bidrag.dokument.arkiv.model.Discriminator
+import no.nav.bidrag.dokument.arkiv.model.OppgaveSokParametre
+import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
+import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager
+import org.slf4j.LoggerFactory
+import java.util.function.Consumer
 
-public class OppgaveService {
-  private static final Logger LOGGER = LoggerFactory.getLogger(OppgaveService.class);
+class OppgaveService(
+    private val personConsumers: ResourceByDiscriminator<PersonConsumer>,
+    private val oppgaveConsumers: ResourceByDiscriminator<OppgaveConsumer>,
+    private val saksbehandlerInfoManager: SaksbehandlerInfoManager
+) {
+    fun overforJournalforingsoppgaveTilFagpost(journalpost: Journalpost, saksbehandlerMedEnhet: SaksbehandlerMedEnhet, kommentar: String) {
+        val oppgaver = finnJournalforingOppgaverForJournalpost(journalpost.hentJournalpostIdLong())
+        oppgaver.forEach(Consumer { oppgave: OppgaveData ->
+            oppgaveConsumers.get(Discriminator.SERVICE_USER)
+                .patchOppgave(
+                    OverforOppgaveTilFagpost(
+                        oppgave,
+                        saksbehandlerMedEnhet.enhetsnummer,
+                        saksbehandlerMedEnhet.hentSaksbehandlerInfo(),
+                        kommentar
+                    )
+                )
+        })
+    }
 
-  private final ResourceByDiscriminator<PersonConsumer> personConsumers;
-  private final ResourceByDiscriminator<OppgaveConsumer> oppgaveConsumers;
-  private final SaksbehandlerInfoManager saksbehandlerInfoManager;
+    fun opprettOppgaveTilFagpost(opprettOppgaveFagpostRequest: OpprettOppgaveFagpostRequest) {
+        if (opprettOppgaveFagpostRequest.hasGjelderId()) {
+            val aktorId = hentAktorId(opprettOppgaveFagpostRequest.hentGjelderId())
+            opprettOppgaveFagpostRequest.aktoerId = aktorId
+        }
+        opprettOppgave(opprettOppgaveFagpostRequest)
+    }
 
-  public OppgaveService(
-      ResourceByDiscriminator<PersonConsumer> personConsumers,
-      ResourceByDiscriminator<OppgaveConsumer> oppgaveConsumers,
-      SaksbehandlerInfoManager saksbehandlerInfoManager
-  ) {
-    this.personConsumers = personConsumers;
-    this.oppgaveConsumers = oppgaveConsumers;
-    this.saksbehandlerInfoManager = saksbehandlerInfoManager;
-  }
 
-  public void opprettVurderDokumentOppgave(Journalpost journalpost, String journalpostId, String tildeltEnhetsnr, String tema, String kommentar) {
-    var aktorId = hentAktorId(journalpost.hentGjelderId());
-    opprettOppgave(new OpprettVurderDokumentOppgaveRequest(
-        journalpost,
-        journalpostId,
-        tildeltEnhetsnr,
-        tema,
-        aktorId,
-        hentSaksbehandlerMedEnhet(journalpost),
-        kommentar
-    ));
-  }
+    fun opprettVurderDokumentOppgave(journalpost: Journalpost, journalpostId: String, tildeltEnhetsnr: String, tema: String, kommentar: String?) {
+        val aktorId = hentAktorId(journalpost.hentGjelderId())
+        opprettOppgave(
+            OpprettVurderDokumentOppgaveRequest(
+                journalpost,
+                journalpostId,
+                tildeltEnhetsnr,
+                tema,
+                aktorId!!,
+                hentSaksbehandlerMedEnhet(journalpost.journalforendeEnhet),
+                kommentar
+            )
+        )
+    }
 
-  public void ferdigstillVurderDokumentOppgaver(Long journalpostId, String enhetsnr){
-    var oppgaver = finnVurderDokumentOppgaverForJournalpost(journalpostId);
-    oppgaver.forEach((oppgave)-> ferdigstillOppgave(oppgave, enhetsnr));
-  }
+    fun ferdigstillVurderDokumentOppgaver(journalpostId: Long, enhetsnr: String) {
+        val oppgaver = finnVurderDokumentOppgaverForJournalpost(journalpostId)
+        oppgaver.forEach(Consumer { oppgave: OppgaveData -> ferdigstillOppgave(oppgave, enhetsnr) })
+    }
 
-  private void ferdigstillOppgave(OppgaveData oppgaveData, String enhetsnr){
-    LOGGER.info("Ferdigstiller oppgave {} med oppgavetype {}", oppgaveData.getId(), oppgaveData.getOppgavetype());
-    oppgaveConsumers.get(Discriminator.SERVICE_USER).patchOppgave(new FerdigstillOppgaveRequest(oppgaveData, enhetsnr));
-  }
+    private fun ferdigstillOppgave(oppgaveData: OppgaveData, enhetsnr: String) {
+        LOGGER.info("Ferdigstiller oppgave {} med oppgavetype {}", oppgaveData.id, oppgaveData.oppgavetype)
+        oppgaveConsumers.get(Discriminator.SERVICE_USER).patchOppgave(FerdigstillOppgaveRequest(oppgaveData, enhetsnr))
+    }
 
-  private SaksbehandlerMedEnhet hentSaksbehandlerMedEnhet(Journalpost journalpost){
-    return saksbehandlerInfoManager.hentSaksbehandler()
-        .map(saksbehandler -> saksbehandler.tilEnhet(journalpost.getJournalforendeEnhet()))
-        .orElseGet(() -> new SaksbehandlerMedEnhet(new Saksbehandler(), journalpost.getJournalforendeEnhet()));
-  }
+    private fun hentSaksbehandlerMedEnhet(journalforendeEnhet: String?): SaksbehandlerMedEnhet {
+        return saksbehandlerInfoManager.hentSaksbehandler()
+            .map { saksbehandler: Saksbehandler -> saksbehandler.tilEnhet(journalforendeEnhet) }
+            .orElseGet { SaksbehandlerMedEnhet(Saksbehandler(), journalforendeEnhet!!) }
+    }
 
-  private void opprettOppgave(OpprettOppgaveRequest request){
-    oppgaveConsumers.get(Discriminator.REGULAR_USER).opprett(request);
-  }
+    private fun opprettOppgave(request: OpprettOppgaveRequest) {
+        oppgaveConsumers.get(Discriminator.REGULAR_USER).opprett(request)
+    }
 
-  private String hentAktorId(String gjelder) {
-    return personConsumers.get(Discriminator.SERVICE_USER).hentPerson(gjelder)
-        .orElseGet(()->new PersonResponse(gjelder, null, gjelder)).getAktoerId();
-  }
+    private fun hentAktorId(gjelder: String?): String? {
+        return personConsumers.get(Discriminator.SERVICE_USER).hentPerson(gjelder)
+            .orElseGet { PersonResponse(gjelder!!, null, gjelder) }.aktoerId
+    }
 
-  private List<OppgaveData> finnVurderDokumentOppgaverForJournalpost(Long journalpostId) {
-    var parametre = new OppgaveSokParametre()
+    private fun finnVurderDokumentOppgaverForJournalpost(journalpostId: Long): List<OppgaveData> {
+        val parametre = OppgaveSokParametre()
             .leggTilFagomrade("BID")
             .leggTilJournalpostId(journalpostId)
-            .brukVurderDokumentSomOppgaveType();
+            .brukVurderDokumentSomOppgaveType()
+        return oppgaveConsumers.get(Discriminator.SERVICE_USER).finnOppgaver(parametre).oppgaver
+    }
 
-    return oppgaveConsumers.get(Discriminator.SERVICE_USER).finnOppgaver(parametre).getOppgaver();
-  }
+    private fun finnJournalforingOppgaverForJournalpost(journalpostId: Long?): List<OppgaveData> {
+        val parametre = OppgaveSokParametre()
+            .leggTilFagomrade("BID")
+            .leggTilJournalpostId(journalpostId!!)
+            .brukJournalforingSomOppgaveType()
+        return oppgaveConsumers.get(Discriminator.SERVICE_USER).finnOppgaver(parametre).oppgaver
+    }
+
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(OppgaveService::class.java)
+    }
 }

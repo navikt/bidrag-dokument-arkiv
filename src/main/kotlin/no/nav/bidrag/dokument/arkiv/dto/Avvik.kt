@@ -70,6 +70,13 @@ data class EndreFagomradeJournalfortJournalpostRequest(private var journalpostId
     }
 }
 
+data class OppdaterOriginalBestiltFlagg(private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()){
+    init {
+        journalpost.tilleggsopplysninger.setOriginalBestiltFlagg()
+        tilleggsopplysninger = journalpost.tilleggsopplysninger
+    }
+}
+
 data class OpphevEndreFagomradeJournalfortJournalpostRequest(private var journalpostId: Long, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId){
     init {
         journalpost.tilleggsopplysninger.removeEndretTemaFlagg()

@@ -677,6 +677,252 @@ class AvvikControllerTest : AbstractControllerTest() {
             }
         )
     }
+    @Test
+    fun `Skal utfore avvik BESTILL_RESKANNING`() {
+        // given
+        val xEnhet = "1234"
+        val journalpostId = 201028011L
+        val safResponse = opprettSafResponse(journalpostId = journalpostId.toString());
+        safResponse.kanal = JournalpostKanal.SKAN_IM
+        val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_RESKANNING, mapOf())
+        avvikHendelse.beskrivelse = "Innholdet er uleselig"
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
+        stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
+        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockDokarkivOppdaterRequest(journalpostId)
+        stubs.mockOpprettOppgave(HttpStatus.OK)
+
+        val jfrOppgave = createOppgaveDataWithJournalpostId(journalpostId.toString())
+        jfrOppgave.beskrivelse = "Beskrivelse som var der fra før"
+        stubs.mockSokOppgave(OppgaveSokResponse(1, listOf(jfrOppgave)), HttpStatus.OK)
+        val overforEnhetResponse = sendAvvikRequest(xEnhet, journalpostId, avvikHendelse)
+
+        // then
+        assertAll(
+            {
+                Assertions.assertThat(overforEnhetResponse)
+                    .extracting { it.statusCode }
+                    .`as`("statusCode")
+                    .isEqualTo(HttpStatus.OK)
+            },
+            { stubs.verifyStub.dokarkivFeilregistrerIkkeKalt(journalpostId) },
+            { stubs.verifyStub.oppgaveOppdaterKalt(1,
+                "\"id\":${jfrOppgave.id}",
+                "\"endretAvEnhetsnr\":\"1234\"") },
+            { stubs.verifyStub.oppgaveOppdaterKalt(1,
+                "Bestill reskanning: Vi ber om reskanning av dokument." +
+                        "\\n    \\nBeskrivelse fra saksbehandler: " +
+                        "\\nInnholdet er uleselig" +
+                        "\\r\\n\\r\\nBeskrivelse som var der fra før\"")
+            },
+            {
+                Mockito.verify(kafkaTemplateMock, times(1)).send(
+                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                        "JOARK-$journalpostId"
+                    ), ArgumentMatchers.any()
+                )
+            }
+        )
+    }
+    @Test
+    fun `Skal utfore avvik BESTILL_SPLITTING`() {
+        // given
+        val xEnhet = "1234"
+        val journalpostId = 201028011L
+        val safResponse = opprettSafResponse(journalpostId = journalpostId.toString());
+        safResponse.kanal = JournalpostKanal.SKAN_IM
+        val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_SPLITTING, mapOf("enhetsnummer" to xEnhet))
+        avvikHendelse.beskrivelse = "Jeg ønsker å splitte etter side 5"
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
+        stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
+        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockDokarkivOppdaterRequest(journalpostId)
+        stubs.mockOpprettOppgave(HttpStatus.OK)
+
+        val jfrOppgave = createOppgaveDataWithJournalpostId(journalpostId.toString())
+        jfrOppgave.beskrivelse = "Beskrivelse som var der fra før"
+        stubs.mockSokOppgave(OppgaveSokResponse(1, listOf(jfrOppgave)), HttpStatus.OK)
+        val overforEnhetResponse = sendAvvikRequest(xEnhet, journalpostId, avvikHendelse)
+
+        // then
+        assertAll(
+            {
+                Assertions.assertThat(overforEnhetResponse)
+                    .extracting { it.statusCode }
+                    .`as`("statusCode")
+                    .isEqualTo(HttpStatus.OK)
+            },
+            { stubs.verifyStub.dokarkivFeilregistrerIkkeKalt(journalpostId) },
+            { stubs.verifyStub.oppgaveOppdaterKalt(1,
+                "\"id\":${jfrOppgave.id}",
+                "\"endretAvEnhetsnr\":\"1234\"") },
+            { stubs.verifyStub.oppgaveOppdaterKalt(1,
+                "Bestill splitting av dokument:" +
+                        "\\nSaksbehandler ønsker splitting av dokument:" +
+                        "\\n\\\"Jeg ønsker å splitte etter side 5" +
+                        "\\\"\\r\\n\\r\\nBeskrivelse som var der fra før\"")
+            },
+            {
+                Mockito.verify(kafkaTemplateMock, times(1)).send(
+                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                        "JOARK-$journalpostId"
+                    ), ArgumentMatchers.any()
+                )
+            }
+        )
+    }
+
+    @Test
+    fun `Skal utfore avvik BESTILL_RESKANNING når journalført`() {
+        // given
+        val xEnhet = "1234"
+        val sak = "1232131233"
+        val journalpostId = 201028011L
+        val safResponse = opprettSafResponse(journalpostId = journalpostId.toString());
+        safResponse.kanal = JournalpostKanal.SKAN_IM
+        safResponse.sak = Sak(sak)
+        safResponse.journalstatus = JournalStatus.JOURNALFOERT
+        val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_RESKANNING, mapOf())
+        avvikHendelse.beskrivelse = null
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
+        stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
+        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockDokarkivOppdaterRequest(journalpostId)
+        stubs.mockDokarkivFeilregistrerRequest(journalpostId)
+        stubs.mockOpprettOppgave(HttpStatus.OK)
+
+        val jfrOppgave = createOppgaveDataWithJournalpostId(journalpostId.toString())
+        jfrOppgave.beskrivelse = "Beskrivelse som var der fra før"
+        stubs.mockSokOppgave(OppgaveSokResponse(1, listOf(jfrOppgave)), HttpStatus.OK)
+        val overforEnhetResponse = sendAvvikRequest(xEnhet, journalpostId, avvikHendelse)
+
+        // then
+        assertAll(
+            {
+                Assertions.assertThat(overforEnhetResponse)
+                    .extracting { it.statusCode }
+                    .`as`("statusCode")
+                    .isEqualTo(HttpStatus.OK)
+            },
+            { stubs.verifyStub.dokarkivFeilregistrerKalt(journalpostId) },
+            { stubs.verifyStub.oppgaveOpprettKalt(
+                "\"oppgavetype\":\"BEST_RESCAN\"",
+                "\"tildeltEnhetsnr\":\"2950\"",
+                "\"tema\":\"GEN\"",
+                "\"aktoerId\":\"$AKTOR_IDENT\"",
+                "\"saksreferanse\":\"$sak\"",
+                "\"journalpostId\":\"$journalpostId\"") },
+            { stubs.verifyStub.oppgaveOpprettKalt(
+                "\"Bestill reskanning: Vi ber om reskanning av dokument.\\n    \\nBeskrivelse fra saksbehandler: \\nIngen\"")
+            },
+            {
+                Mockito.verify(kafkaTemplateMock, times(1)).send(
+                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                        "JOARK-$journalpostId"
+                    ), ArgumentMatchers.any()
+                )
+            }
+        )
+    }
+    @Test
+    fun `Skal utfore avvik BESTILL_SPLITTING når journalført`() {
+        // given
+        val xEnhet = "1234"
+        val sak = "1232131233"
+        val journalpostId = 201028011L
+        val safResponse = opprettSafResponse(journalpostId = journalpostId.toString());
+        safResponse.kanal = JournalpostKanal.SKAN_IM
+        safResponse.sak = Sak(sak)
+        safResponse.journalstatus = JournalStatus.JOURNALFOERT
+        val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_SPLITTING, mapOf("enhetsnummer" to xEnhet))
+        avvikHendelse.beskrivelse = "Jeg ønsker å splitte etter side 5"
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
+        stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
+        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockDokarkivOppdaterRequest(journalpostId)
+        stubs.mockDokarkivFeilregistrerRequest(journalpostId)
+        stubs.mockOpprettOppgave(HttpStatus.OK)
+
+        val jfrOppgave = createOppgaveDataWithJournalpostId(journalpostId.toString())
+        jfrOppgave.beskrivelse = "Beskrivelse som var der fra før"
+        stubs.mockSokOppgave(OppgaveSokResponse(1, listOf(jfrOppgave)), HttpStatus.OK)
+        val overforEnhetResponse = sendAvvikRequest(xEnhet, journalpostId, avvikHendelse)
+
+        // then
+        assertAll(
+            {
+                Assertions.assertThat(overforEnhetResponse)
+                    .extracting { it.statusCode }
+                    .`as`("statusCode")
+                    .isEqualTo(HttpStatus.OK)
+            },
+            { stubs.verifyStub.dokarkivFeilregistrerKalt(journalpostId) },
+            { stubs.verifyStub.oppgaveOpprettKalt(
+                "\"oppgavetype\":\"BEST_RESCAN\"",
+                "\"tildeltEnhetsnr\":\"2950\"",
+                "\"tema\":\"GEN\"",
+                "\"aktoerId\":\"$AKTOR_IDENT\"",
+                "\"saksreferanse\":\"$sak\"",
+                "\"journalpostId\":\"$journalpostId\"") },
+            { stubs.verifyStub.oppgaveOpprettKalt("\"Bestill splitting av dokument:" +
+                    "\\nSaksbehandler ønsker splitting av dokument:" +
+                    "\\n\\\"Jeg ønsker å splitte etter side 5\\\"\"")
+            },
+            {
+                Mockito.verify(kafkaTemplateMock, times(1)).send(
+                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                        "JOARK-$journalpostId"
+                    ), ArgumentMatchers.any()
+                )
+            }
+        )
+    }
+
+    @Test
+    fun `Skal utfore avvik BESTILL_ORIGINAL`() {
+        // given
+        val xEnhet = "1234"
+        val journalpostId = 201028011L
+        val safResponse = opprettSafResponse(journalpostId = journalpostId.toString());
+        safResponse.kanal = JournalpostKanal.SKAN_IM
+        val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_ORIGINAL, mapOf("enhetsnummer" to xEnhet))
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
+        stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
+        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockDokarkivOppdaterRequest(journalpostId)
+        stubs.mockOpprettOppgave(HttpStatus.OK)
+        val overforEnhetResponse = sendAvvikRequest(xEnhet, journalpostId, avvikHendelse)
+
+        // then
+        assertAll(
+            {
+                Assertions.assertThat(overforEnhetResponse)
+                    .extracting { it.statusCode }
+                    .`as`("statusCode")
+                    .isEqualTo(HttpStatus.OK)
+            },
+            { stubs.verifyStub.dokarkivOppdaterKalt(journalpostId, "{\"tilleggsopplysninger\":[{\"nokkel\":\"originalBestilt\",\"verdi\":\"true\"}],\"dokumenter\":[]}") },
+            { stubs.verifyStub.oppgaveOpprettKalt(
+                "\"oppgavetype\":\"BEST_ORGINAL\"",
+                "\"tildeltEnhetsnr\":\"2950\"",
+                "\"tema\":\"GEN\"",
+                "\"aktoerId\":\"92345678910\"",
+                "\"saksreferanse\":\"5276661\"",
+                "\"journalpostId\":\"201028011\"") },
+            { stubs.verifyStub.oppgaveOpprettKalt("\"beskrivelse\":\"\\n                " +
+                    "Originalbestilling: Vi ber om å få tilsendt papirdokumentet av vedlagte dokumenter. " +
+                    "\\n                \\n                " +
+                    "Dokumentet skal sendes til 1234, og merkes med aud-localhost - navn\\n" +
+                    "                \"")},
+            {
+                Mockito.verify(kafkaTemplateMock, times(1)).send(
+                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                        "JOARK-$journalpostId"
+                    ), ArgumentMatchers.any()
+                )
+            }
+        )
+    }
 
     @Test
     @Throws(IOException::class)

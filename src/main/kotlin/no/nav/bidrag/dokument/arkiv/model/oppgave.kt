@@ -18,6 +18,11 @@ internal data class OppgaveSokParametre(private val parametre: StringBuilder = S
         return leggTilParameter(PARAMETER_OPPGAVE_TYPE, OppgaveType.VUR)
     }
 
+    fun brukJournalforingSomOppgaveType(): OppgaveSokParametre {
+        return leggTilParameter(PARAMETER_OPPGAVE_TYPE, OppgaveType.JFR)
+    }
+
+
     fun leggTilJournalpostId(journalpostId: Long): OppgaveSokParametre {
         return leggTilParameter(PARAMETER_JOURNALPOSTID, journalpostId)
     }

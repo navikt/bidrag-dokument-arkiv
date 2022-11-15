@@ -72,6 +72,16 @@ open class OppgaveData(
 
 data class OppdaterSakRequest(private var oppgaveHendelse: OppgaveHendelse, override var saksreferanse: String?): OppgaveData(id = oppgaveHendelse.id, versjon = oppgaveHendelse.versjon)
 
+data class OverforOppgaveTilFagpost(private var oppgaveData: OppgaveData, private var _endretAvEnhetsnr: String, private val saksbehandlersInfo: String, private val kommentar: String):
+    OppgaveData(
+        id = oppgaveData.id,
+        versjon = oppgaveData.versjon,
+        endretAvEnhetsnr = _endretAvEnhetsnr,
+        beskrivelse = "--- ${LocalDateTime.now().format(NORSK_TIDSSTEMPEL_FORMAT)} $saksbehandlersInfo ---\r\n" +
+                "$kommentar\r\n\r\n" +
+                "${oppgaveData.beskrivelse}"
+    )
+
 data class FerdigstillOppgaveRequest(private var oppgaveData: OppgaveData, private var _endretAvEnhetsnr: String):
     OppgaveData(
         id = oppgaveData.id,
@@ -80,33 +90,19 @@ data class FerdigstillOppgaveRequest(private var oppgaveData: OppgaveData, priva
         endretAvEnhetsnr = _endretAvEnhetsnr
     )
 
-data class EndreForNyttDokumentRequest(private var oppgaveData: OppgaveData,
-                                       private var saksbehandlersInfo: String,
-                                       private var journalpost: Journalpost,
-                                       override var endretAvEnhetsnr: String?):
-    OppgaveData(
-        id = oppgaveData.id,
-        tema = journalpost.tema,
-        versjon = oppgaveData.versjon,
-        beskrivelse = "--- ${LocalDateTime.now().format(NORSK_TIDSSTEMPEL_FORMAT)} $saksbehandlersInfo ---\r\n" +
-                "${lagDokumentOppgaveTittelForEndring("Nytt dokument", journalpost.tittel!!, journalpost.hentDatoRegistrert() ?: journalpost.hentDatoDokument()!!)}\r\n\r\n" +
-                "${lagDokumenterVedlagtBeskrivelse(journalpost)}\r\n\r\n" +
-                "${oppgaveData.beskrivelse}"
-)
-
 @Suppress("unused") // used by jackson...
 sealed class OpprettOppgaveRequest(
-    open var journalpostId: String,
-    var oppgavetype: OppgaveType,
-    var opprettetAvEnhetsnr: String = "9999",
-    open var prioritet: String = Prioritet.HOY.name,
-    open var tildeltEnhetsnr: String? = "4833",
-    open var tema: String = "BID",
+    open val journalpostId: String,
+    open val oppgavetype: OppgaveType,
+    open val opprettetAvEnhetsnr: String = "9999",
+    open val prioritet: String = Prioritet.HOY.name,
+    open val tildeltEnhetsnr: String? = "4833",
+    open val tema: String = "BID",
     var aktivDato: String = LocalDate.now().format(DateTimeFormatter.ofPattern("YYYY-MM-dd")),
-    var saksreferanse: String? = null,
+    open val saksreferanse: String? = null,
     var beskrivelse: String? = null,
     var tilordnetRessurs: String? = null,
-    var fristFerdigstillelse: String? = null
+    open var fristFerdigstillelse: String? = null
 ) {
 
     fun somHttpEntity(): HttpEntity<*> {
@@ -116,6 +112,93 @@ sealed class OpprettOppgaveRequest(
         return HttpEntity(this, headers)
     }
 }
+
+@Suppress("unused") // påkrevd felt som brukes av jackson men som ikke brukes aktivt
+data class BestillSplittingoppgaveRequest(
+    private val journalpost: Journalpost,
+    private var saksbehandlerMedEnhet: SaksbehandlerMedEnhet,
+    private var beskrivSplitting: String?
+
+):
+    OpprettOppgaveFagpostRequest(
+        journalpostId = journalpost.journalpostId!!,
+        oppgavetype = OppgaveType.BEST_RESCAN,
+        opprettetAvEnhetsnr = saksbehandlerMedEnhet.enhetsnummer,
+        saksreferanse = journalpost.hentSaksnummer(),
+        gjelderId = journalpost.hentGjelderId()
+    ){
+    init {
+        beskrivelse =  bestillSplittingKommentar(beskrivSplitting)
+    }
+}
+
+@Suppress("unused") // påkrevd felt som brukes av jackson men som ikke brukes aktivt
+data class BestillReskanningOppgaveRequest(
+    private val journalpost: Journalpost,
+    private var saksbehandlerMedEnhet: SaksbehandlerMedEnhet,
+    private var kommentar: String?,
+    override var fristFerdigstillelse: String? = LocalDate.now().plusDays(5).toString(),
+
+
+    ):
+    OpprettOppgaveFagpostRequest(
+        journalpostId = journalpost.journalpostId!!,
+        oppgavetype = OppgaveType.BEST_RESCAN,
+        opprettetAvEnhetsnr = saksbehandlerMedEnhet.enhetsnummer,
+        saksreferanse = journalpost.hentSaksnummer(),
+        gjelderId = journalpost.hentGjelderId()
+    ){
+    init {
+        beskrivelse = bestillReskanningKommentar(kommentar)
+    }
+}
+
+@Suppress("unused") // påkrevd felt som brukes av jackson men som ikke brukes aktivt
+data class BestillOriginalOppgaveRequest(
+    private val journalpost: Journalpost,
+    private val enhet: String,
+    private var saksbehandlerMedEnhet: SaksbehandlerMedEnhet,
+    private var kommentar: String?
+
+):
+    OpprettOppgaveFagpostRequest(
+        journalpostId = journalpost.journalpostId!!,
+        oppgavetype = OppgaveType.BEST_ORGINAL,
+        opprettetAvEnhetsnr = saksbehandlerMedEnhet.enhetsnummer,
+        saksreferanse = journalpost.hentSaksnummer(),
+        gjelderId = journalpost.hentGjelderId()
+    ){
+        init {
+            beskrivelse = """
+                Originalbestilling: Vi ber om å få tilsendt papirdokumentet av vedlagte dokumenter. 
+                
+                Dokumentet skal sendes til ${enhet}, og merkes med ${saksbehandlerMedEnhet.saksbehandler.hentIdentMedNavn()}
+                """
+        }
+    }
+
+@Suppress("unused") // påkrevd felt som brukes av jackson men som ikke brukes aktivt
+sealed class OpprettOppgaveFagpostRequest(
+    override var journalpostId: String,
+    override var oppgavetype: OppgaveType,
+    override var saksreferanse: String?,
+    override var opprettetAvEnhetsnr: String,
+    var aktoerId: String? = null,
+    private val gjelderId: String?
+
+    ):
+    OpprettOppgaveRequest(
+        journalpostId = journalpostId,
+        oppgavetype = oppgavetype,
+        prioritet = Prioritet.NORM.name,
+        fristFerdigstillelse = LocalDate.now().plusDays(1).toString(),
+        tildeltEnhetsnr = OppgaveEnhet.FAGPOST,
+        tema = "GEN"
+    ){
+
+       fun hentGjelderId() = gjelderId
+       fun hasGjelderId() = !gjelderId.isNullOrEmpty()
+    }
 
 @Suppress("unused") // påkrevd felt som brukes av jackson men som ikke brukes aktivt
 data class OpprettVurderDokumentOppgaveRequest(
@@ -176,9 +259,29 @@ internal fun lagDokumenterVedlagtBeskrivelse(journalpost: Journalpost) =
 
 enum class OppgaveType {
     BEH_SAK,
-    VUR
+    VUR,
+    JFR,
+    BEST_RESCAN,
+    BEST_ORGINAL
+}
+
+object OppgaveEnhet {
+   val FAGPOST = "2950"
 }
 
 enum class Prioritet {
     HOY, NORM, LAV
 }
+
+fun bestillReskanningKommentar(beskrivReskanning: String?) = """
+        Bestill reskanning: Vi ber om reskanning av dokument.
+            
+        Beskrivelse fra saksbehandler: 
+        ${beskrivReskanning ?: "Ingen"}
+        """.trimIndent()
+
+fun bestillSplittingKommentar(beskrivSplitting: String?) = """
+        Bestill splitting av dokument:
+        Saksbehandler ønsker splitting av dokument:
+        "$beskrivSplitting"
+        """.trimIndent()
