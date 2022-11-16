@@ -1,10 +1,12 @@
 package no.nav.bidrag.dokument.arkiv.service
 
+import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER
 import no.nav.bidrag.dokument.arkiv.consumer.OppgaveConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillOppgaveRequest
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveData
+import no.nav.bidrag.dokument.arkiv.dto.OppgaveEnhet
 import no.nav.bidrag.dokument.arkiv.dto.OpprettOppgaveFagpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.OpprettOppgaveRequest
 import no.nav.bidrag.dokument.arkiv.dto.OpprettVurderDokumentOppgaveRequest
@@ -26,7 +28,7 @@ class OppgaveService(
 ) {
     fun overforJournalforingsoppgaveTilFagpost(journalpost: Journalpost, saksbehandlerMedEnhet: SaksbehandlerMedEnhet, kommentar: String) {
         val oppgaver = finnJournalforingOppgaverForJournalpost(journalpost.hentJournalpostIdLong())
-        oppgaver.forEach(Consumer { oppgave: OppgaveData ->
+        oppgaver.filter { it.tildeltEnhetsnr != OppgaveEnhet.FAGPOST }.forEach(Consumer { oppgave: OppgaveData ->
             oppgaveConsumers.get(Discriminator.SERVICE_USER)
                 .patchOppgave(
                     OverforOppgaveTilFagpost(
@@ -36,6 +38,7 @@ class OppgaveService(
                         kommentar
                     )
                 )
+            LOGGER.info("Journalføringsoppgave ${oppgave.id} for journalpost ${journalpost.journalpostId} ble overført til fagpost")
         })
     }
 
@@ -80,12 +83,13 @@ class OppgaveService(
     }
 
     private fun opprettOppgave(request: OpprettOppgaveRequest) {
-        oppgaveConsumers.get(Discriminator.REGULAR_USER).opprett(request)
+        val oppgaveId = oppgaveConsumers.get(Discriminator.REGULAR_USER).opprett(request)
+        SECURE_LOGGER.info("Oppgave opprettet med id=$oppgaveId og request=${request.asJson()}")
     }
 
     private fun hentAktorId(gjelder: String?): String? {
         return personConsumers.get(Discriminator.SERVICE_USER).hentPerson(gjelder)
-            .orElseGet { PersonResponse(gjelder!!, null, gjelder) }.aktoerId
+            .orElseGet { PersonResponse(gjelder ?: "", null, gjelder) }.aktoerId
     }
 
     private fun finnVurderDokumentOppgaverForJournalpost(journalpostId: Long): List<OppgaveData> {
@@ -93,7 +97,7 @@ class OppgaveService(
             .leggTilFagomrade("BID")
             .leggTilJournalpostId(journalpostId)
             .brukVurderDokumentSomOppgaveType()
-        return oppgaveConsumers.get(Discriminator.SERVICE_USER).finnOppgaver(parametre).oppgaver
+        return oppgaveConsumers.get(Discriminator.SERVICE_USER).finnOppgaver(parametre)?.oppgaver ?: emptyList()
     }
 
     private fun finnJournalforingOppgaverForJournalpost(journalpostId: Long?): List<OppgaveData> {
@@ -101,7 +105,7 @@ class OppgaveService(
             .leggTilFagomrade("BID")
             .leggTilJournalpostId(journalpostId!!)
             .brukJournalforingSomOppgaveType()
-        return oppgaveConsumers.get(Discriminator.SERVICE_USER).finnOppgaver(parametre).oppgaver
+        return oppgaveConsumers.get(Discriminator.SERVICE_USER).finnOppgaver(parametre)?.oppgaver ?: emptyList()
     }
 
     companion object {

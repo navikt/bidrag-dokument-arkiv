@@ -2,6 +2,7 @@ package no.nav.bidrag.dokument.arkiv.dto
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.ObjectMapper
 import no.nav.bidrag.dokument.arkiv.model.OppgaveHendelse
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -57,18 +58,7 @@ open class OppgaveData(
     var prioritet: String? = null,
     var status: String? = null,
     var metadata: Map<String, String>? = null
-) {
-
-    fun endreForNyttDokument(
-        saksbehandlersInfo: String,
-        dokumentbeskrivelse: String,
-        dokumentdato: LocalDate
-    ) {
-        beskrivelse = "--- ${LocalDateTime.now().format(NORSK_TIDSSTEMPEL_FORMAT)} $saksbehandlersInfo ---\r\n" +
-                "${lagDokumentOppgaveTittelForEndring("Nytt dokument", dokumentbeskrivelse, dokumentdato)}\r\n\r\n" +
-                "$beskrivelse"
-    }
-}
+)
 
 data class OppdaterSakRequest(private var oppgaveHendelse: OppgaveHendelse, override var saksreferanse: String?): OppgaveData(id = oppgaveHendelse.id, versjon = oppgaveHendelse.versjon)
 
@@ -77,8 +67,10 @@ data class OverforOppgaveTilFagpost(private var oppgaveData: OppgaveData, privat
         id = oppgaveData.id,
         versjon = oppgaveData.versjon,
         endretAvEnhetsnr = _endretAvEnhetsnr,
-        beskrivelse = "--- ${LocalDateTime.now().format(NORSK_TIDSSTEMPEL_FORMAT)} $saksbehandlersInfo ---\r\n" +
-                "$kommentar\r\n\r\n" +
+        tildeltEnhetsnr = OppgaveEnhet.FAGPOST,
+        beskrivelse = beskrivelseHeader(saksbehandlersInfo) +
+                "\u00B7 $kommentar\r\n" +
+                "\u00B7 Oppgave overført fra enhet ${oppgaveData.tildeltEnhetsnr} til ${OppgaveEnhet.FAGPOST}\r\n\r\n" +
                 "${oppgaveData.beskrivelse}"
     )
 
@@ -111,6 +103,8 @@ sealed class OpprettOppgaveRequest(
 
         return HttpEntity(this, headers)
     }
+
+    fun asJson(): String = ObjectMapper().findAndRegisterModules().writeValueAsString(this)
 }
 
 @Suppress("unused") // påkrevd felt som brukes av jackson men som ikke brukes aktivt
@@ -128,7 +122,10 @@ data class BestillSplittingoppgaveRequest(
         gjelderId = journalpost.hentGjelderId()
     ){
     init {
-        beskrivelse =  bestillSplittingKommentar(beskrivSplitting)
+        beskrivelse =  """
+            ${beskrivelseHeader(saksbehandlerMedEnhet.hentSaksbehandlerInfo())} 
+            ${bestillSplittingKommentar(beskrivSplitting)}
+            """.trimIndent()
     }
 }
 
@@ -149,7 +146,10 @@ data class BestillReskanningOppgaveRequest(
         gjelderId = journalpost.hentGjelderId()
     ){
     init {
-        beskrivelse = bestillReskanningKommentar(kommentar)
+        beskrivelse =  """
+            ${beskrivelseHeader(saksbehandlerMedEnhet.hentSaksbehandlerInfo())} 
+            ${bestillReskanningKommentar(kommentar)}
+            """.trimIndent()
     }
 }
 
@@ -169,11 +169,12 @@ data class BestillOriginalOppgaveRequest(
         gjelderId = journalpost.hentGjelderId()
     ){
         init {
-            beskrivelse = """
-                Originalbestilling: Vi ber om å få tilsendt papirdokumentet av vedlagte dokumenter. 
+            beskrivelse =  """
+            ${beskrivelseHeader(saksbehandlerMedEnhet.hentSaksbehandlerInfo())} 
+            Originalbestilling: Vi ber om å få tilsendt papiroriginalen av vedlagte dokumenter. 
                 
-                Dokumentet skal sendes til ${enhet}, og merkes med ${saksbehandlerMedEnhet.saksbehandler.hentIdentMedNavn()}
-                """.trimIndent()
+            Dokumentet skal sendes til ${enhet}, og merkes med ${saksbehandlerMedEnhet.saksbehandler.hentIdentMedNavn()}
+            """.trimIndent()
         }
     }
 
@@ -273,6 +274,7 @@ enum class Prioritet {
     HOY, NORM, LAV
 }
 
+fun beskrivelseHeader(saksbehandlerInfo: String) = "--- ${LocalDateTime.now().format(NORSK_TIDSSTEMPEL_FORMAT)} $saksbehandlerInfo ---\r\n"
 fun bestillReskanningKommentar(beskrivReskanning: String?) = """
         Bestill reskanning: Vi ber om reskanning av dokument.
             
@@ -282,6 +284,7 @@ fun bestillReskanningKommentar(beskrivReskanning: String?) = """
 
 fun bestillSplittingKommentar(beskrivSplitting: String?) = """
         Bestill splitting av dokument:
+        
         Saksbehandler ønsker splitting av dokument:
         "$beskrivSplitting"
         """.trimIndent()

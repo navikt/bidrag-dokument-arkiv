@@ -8,11 +8,7 @@ private const val PARAMETER_SAKSREFERANSE = "saksreferanse"
 private const val PARAMETER_TEMA = "tema"
 private const val PARAMETER_JOURNALPOSTID = "journalpostId"
 
-internal data class OppgaveSokParametre(private val parametre: StringBuilder = StringBuilder()) {
-
-    fun brukBehandlingSomOppgaveType(): OppgaveSokParametre {
-        return leggTilParameter(PARAMETER_OPPGAVE_TYPE, OppgaveType.BEH_SAK)
-    }
+data class OppgaveSokParametre(private val parametre: StringBuilder = StringBuilder()) {
 
     fun brukVurderDokumentSomOppgaveType(): OppgaveSokParametre {
         return leggTilParameter(PARAMETER_OPPGAVE_TYPE, OppgaveType.VUR)
@@ -28,10 +24,6 @@ internal data class OppgaveSokParametre(private val parametre: StringBuilder = S
     }
     fun leggTilFagomrade(fagomrade: String): OppgaveSokParametre {
         return leggTilParameter(PARAMETER_TEMA, fagomrade)
-    }
-
-    fun leggTilSaksreferanse(saksnummer: String?) {
-        leggTilParameter(PARAMETER_SAKSREFERANSE, saksnummer)
     }
 
     private fun leggTilParameter(navn: String?, verdi: Any?): OppgaveSokParametre {
