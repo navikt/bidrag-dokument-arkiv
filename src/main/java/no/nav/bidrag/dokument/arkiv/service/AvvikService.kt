@@ -16,8 +16,10 @@ import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
 import no.nav.bidrag.dokument.arkiv.dto.LagreAvsenderNavnRequest
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterOriginalBestiltFlagg
+import no.nav.bidrag.dokument.arkiv.dto.OppgaveEnhet
 import no.nav.bidrag.dokument.arkiv.dto.OpphevEndreFagomradeJournalfortJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpost
+import no.nav.bidrag.dokument.arkiv.dto.OverforEnhetRequest
 import no.nav.bidrag.dokument.arkiv.dto.RegistrerReturRequest
 import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO
 import no.nav.bidrag.dokument.arkiv.dto.Saksbehandler
@@ -138,6 +140,7 @@ class AvvikService(
         } else {
             val beskrivelse = bestillSplittingKommentar(avvikshendelseIntern.beskrivelse)
             oppgaveService.overforJournalforingsoppgaveTilFagpost(journalpost, saksbehandler, beskrivelse)
+            endreJournalpostJournalforendeEnhetTilFagpost(journalpost)
         }
     }
 
@@ -149,6 +152,7 @@ class AvvikService(
         } else {
             val beskrivelse = bestillReskanningKommentar(avvikshendelseIntern.beskrivelse)
             oppgaveService.overforJournalforingsoppgaveTilFagpost(journalpost, saksbehandler, beskrivelse)
+            endreJournalpostJournalforendeEnhetTilFagpost(journalpost)
         }
     }
 
@@ -156,8 +160,14 @@ class AvvikService(
         val saksbehandler = hentSaksbehandler(avvikshendelseIntern.saksbehandlersEnhet!!)
         oppgaveService.opprettOppgaveTilFagpost(BestillOriginalOppgaveRequest(journalpost, avvikshendelseIntern.enhetsnummer, saksbehandler, avvikshendelseIntern.beskrivelse))
         dokarkivConsumer.endre(OppdaterOriginalBestiltFlagg(journalpost))
+        endreJournalpostJournalforendeEnhetTilFagpost(journalpost)
     }
 
+    private fun endreJournalpostJournalforendeEnhetTilFagpost(journalpost: Journalpost) {
+        if (!journalpost.journalforendeEnhet.isNullOrEmpty() && journalpost.journalforendeEnhet != OppgaveEnhet.FAGPOST) {
+            dokarkivConsumer.endre(OverforEnhetRequest(journalpost.hentJournalpostIdLong()!!, OppgaveEnhet.FAGPOST))
+        }
+    }
     private fun hentSaksbehandler(enhet: String): SaksbehandlerMedEnhet {
        return saksbehandlerInfoManager.hentSaksbehandler()
             .map{ it.tilEnhet(enhet)}

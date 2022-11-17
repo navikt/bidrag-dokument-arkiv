@@ -719,6 +719,7 @@ class AvvikControllerTest : AbstractControllerTest() {
                         "\\r\\n\\r\\nOppgave overført fra enhet null til 2950" +
                         "\\r\\n\\r\\nBeskrivelse som var der fra før\"")
             },
+            { stubs.verifyStub.dokarkivOppdaterKalt(journalpostId, "\"journalfoerendeEnhet\":\"2950\"")},
             {
                 Mockito.verify(kafkaTemplateMock, times(1)).send(
                     ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
@@ -735,6 +736,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val journalpostId = 201028011L
         val safResponse = opprettSafResponse(journalpostId = journalpostId.toString());
         safResponse.kanal = JournalpostKanal.SKAN_IM
+        safResponse.journalforendeEnhet = null
         val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_SPLITTING, mapOf("enhetsnummer" to xEnhet))
         avvikHendelse.beskrivelse = "Jeg ønsker å splitte etter side 5"
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
@@ -769,6 +771,7 @@ class AvvikControllerTest : AbstractControllerTest() {
                         "\\\"\\r\\n\\r\\nOppgave overført fra enhet 4806 til 2950" +
                         "\\r\\n\\r\\nBeskrivelse som var der fra før\"")
             },
+            { stubs.verifyStub.dokarkivOppdaterIkkeKalt(journalpostId)},
             {
                 Mockito.verify(kafkaTemplateMock, times(1)).send(
                     ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
@@ -786,6 +789,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val journalpostId = 201028011L
         val safResponse = opprettSafResponse(journalpostId = journalpostId.toString());
         safResponse.kanal = JournalpostKanal.SKAN_IM
+        safResponse.journalforendeEnhet = OppgaveEnhet.FAGPOST
         val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_SPLITTING, mapOf())
         avvikHendelse.beskrivelse = "Jeg ønsker å splitte etter side 5"
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
@@ -810,6 +814,7 @@ class AvvikControllerTest : AbstractControllerTest() {
             },
             { stubs.verifyStub.dokarkivFeilregistrerIkkeKalt(journalpostId) },
             { stubs.verifyStub.oppgaveOppdaterKalt(0) },
+            { stubs.verifyStub.dokarkivOppdaterIkkeKalt(journalpostId) },
             {
                 Mockito.verify(kafkaTemplateMock, times(1)).send(
                     ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
