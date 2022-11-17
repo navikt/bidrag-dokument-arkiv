@@ -120,10 +120,7 @@ data class BestillSplittingoppgaveRequest(
         gjelderId = journalpost.hentGjelderId()
     ){
     init {
-        beskrivelse =  """
-            ${beskrivelseHeader(saksbehandlerMedEnhet.hentSaksbehandlerInfo())} 
-            ${bestillSplittingKommentar(beskrivSplitting)}
-            """.trimIndent()
+        beskrivelse =  "${beskrivelseHeader(saksbehandlerMedEnhet.hentSaksbehandlerInfo())}\n${bestillSplittingKommentar(beskrivSplitting)}"
     }
 }
 
@@ -144,10 +141,7 @@ data class BestillReskanningOppgaveRequest(
         gjelderId = journalpost.hentGjelderId()
     ){
     init {
-        beskrivelse =  """
-            ${beskrivelseHeader(saksbehandlerMedEnhet.hentSaksbehandlerInfo())} 
-            ${bestillReskanningKommentar(kommentar)}
-            """.trimIndent()
+        beskrivelse =  "${beskrivelseHeader(saksbehandlerMedEnhet.hentSaksbehandlerInfo())}\n${bestillReskanningKommentar(kommentar)}"
     }
 }
 
@@ -172,7 +166,7 @@ data class BestillOriginalOppgaveRequest(
             Originalbestilling: Vi ber om å få tilsendt papiroriginalen av vedlagte dokumenter. 
                 
             Dokumentet skal sendes til ${enhet}, og merkes med ${saksbehandlerMedEnhet.saksbehandler.hentIdentMedNavn()}
-            """.trimIndent()
+            """.trimIndent().trim()
         }
     }
 
@@ -278,10 +272,10 @@ fun bestillReskanningKommentar(beskrivReskanning: String?) = """
         Vi ber om reskanning av dokument.
         Beskrivelse fra saksbehandler: 
         ${beskrivReskanning ?: "Ingen"}
-        """.trimIndent()
+        """.trimIndent().trim()
 
 fun bestillSplittingKommentar(beskrivSplitting: String?) = """
         Bestill splitting av dokument: 
         Saksbehandler ønsker splitting av dokument:
-        "$beskrivSplitting"
-        """.trimIndent()
+        $beskrivSplitting
+        """.trimIndent().trim()

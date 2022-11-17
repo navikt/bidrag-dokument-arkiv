@@ -765,8 +765,8 @@ class AvvikControllerTest : AbstractControllerTest() {
             { stubs.verifyStub.oppgaveOppdaterKalt(1,
                 "Bestill splitting av dokument:" +
                         " \\nSaksbehandler ønsker splitting av dokument:" +
-                        "\\n\\\"Jeg ønsker å splitte etter side 5" +
-                        "\\\"\\r\\n\\r\\nBeskrivelse som var der fra før\"")
+                        "\\nJeg ønsker å splitte etter side 5" +
+                        "\\r\\n\\r\\nBeskrivelse som var der fra før\"")
             },
             { stubs.verifyStub.dokarkivOppdaterKalt(journalpostId, "\"journalfoerendeEnhet\":\"2950\"")},
             {
@@ -916,7 +916,7 @@ class AvvikControllerTest : AbstractControllerTest() {
                 "\"journalpostId\":\"$journalpostId\"") },
             { stubs.verifyStub.oppgaveOpprettKalt("Bestill splitting av dokument: " +
                     "\\nSaksbehandler ønsker splitting av dokument:" +
-                    "\\n\\\"Jeg ønsker å splitte etter side 5\\\"")
+                    "\\nJeg ønsker å splitte etter side 5")
             },
             {
                 Mockito.verify(kafkaTemplateMock, times(1)).send(
