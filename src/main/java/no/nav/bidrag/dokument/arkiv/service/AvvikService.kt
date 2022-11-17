@@ -160,7 +160,6 @@ class AvvikService(
         val saksbehandler = hentSaksbehandler(avvikshendelseIntern.saksbehandlersEnhet!!)
         oppgaveService.opprettOppgaveTilFagpost(BestillOriginalOppgaveRequest(journalpost, avvikshendelseIntern.enhetsnummer, saksbehandler, avvikshendelseIntern.beskrivelse))
         dokarkivConsumer.endre(OppdaterOriginalBestiltFlagg(journalpost))
-        endreJournalpostJournalforendeEnhetTilFagpost(journalpost)
     }
 
     private fun endreJournalpostJournalforendeEnhetTilFagpost(journalpost: Journalpost) {
