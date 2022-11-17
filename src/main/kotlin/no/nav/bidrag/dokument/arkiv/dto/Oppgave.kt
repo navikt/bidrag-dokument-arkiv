@@ -184,7 +184,7 @@ sealed class OpprettOppgaveFagpostRequest(
         journalpostId = journalpostId,
         oppgavetype = oppgavetype,
         prioritet = Prioritet.NORM.name,
-        fristFerdigstillelse = LocalDate.now().plusDays(1).toString(),
+        fristFerdigstillelse = LocalDate.now().plusDays(5).toString(),
         tildeltEnhetsnr = OppgaveEnhet.FAGPOST,
         tema = "GEN"
     ){
