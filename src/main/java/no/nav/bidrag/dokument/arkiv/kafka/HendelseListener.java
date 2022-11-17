@@ -32,7 +32,7 @@ public class HendelseListener {
     this.jsonMapperService = jsonMapperService;
   }
 
-  @KafkaListener(containerFactory="oppgaveKafkaListenerContainerFactory", topics = "${TOPIC_OPPGAVE_OPPRETTET}")
+//  @KafkaListener(containerFactory="oppgaveKafkaListenerContainerFactory", topics = "${TOPIC_OPPGAVE_OPPRETTET}")
   public void lesOppgaveOpprettetHendelse(ConsumerRecord<String, String> consumerRecord) {
     OppgaveHendelse oppgaveOpprettetHendelse = jsonMapperService.mapOppgaveHendelse(consumerRecord.value());
 
@@ -45,7 +45,7 @@ public class HendelseListener {
     }
   }
 
-  @KafkaListener(groupId = "bidrag-dokument-arkiv", topics = "${TOPIC_JOURNALFOERING}")
+//  @KafkaListener(groupId = "bidrag-dokument-arkiv", topics = "${TOPIC_JOURNALFOERING}")
   public void listenJournalforingHendelse(@Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
     JournalpostTema journalpostTema = new JournalpostTema(journalfoeringHendelseRecord);
     if (!journalpostTema.erOmhandlingAvBidrag()) {

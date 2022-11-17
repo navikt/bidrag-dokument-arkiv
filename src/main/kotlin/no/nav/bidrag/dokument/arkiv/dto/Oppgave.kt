@@ -69,8 +69,8 @@ data class OverforOppgaveTilFagpost(private var oppgaveData: OppgaveData, privat
         endretAvEnhetsnr = _endretAvEnhetsnr,
         tildeltEnhetsnr = OppgaveEnhet.FAGPOST,
         beskrivelse = beskrivelseHeader(saksbehandlersInfo) +
-                "\u00B7 $kommentar\r\n" +
-                "\u00B7 Oppgave overført fra enhet ${oppgaveData.tildeltEnhetsnr} til ${OppgaveEnhet.FAGPOST}\r\n\r\n" +
+                "$kommentar\r\n\r\n" +
+                "Oppgave overført fra enhet ${oppgaveData.tildeltEnhetsnr} til ${OppgaveEnhet.FAGPOST}\r\n\r\n" +
                 "${oppgaveData.beskrivelse}"
     )
 
@@ -276,15 +276,14 @@ enum class Prioritet {
 
 fun beskrivelseHeader(saksbehandlerInfo: String) = "--- ${LocalDateTime.now().format(NORSK_TIDSSTEMPEL_FORMAT)} $saksbehandlerInfo ---\r\n"
 fun bestillReskanningKommentar(beskrivReskanning: String?) = """
-        Bestill reskanning: Vi ber om reskanning av dokument.
-            
+        Bestill reskanning: 
+        Vi ber om reskanning av dokument.
         Beskrivelse fra saksbehandler: 
         ${beskrivReskanning ?: "Ingen"}
         """.trimIndent()
 
 fun bestillSplittingKommentar(beskrivSplitting: String?) = """
-        Bestill splitting av dokument:
-        
+        Bestill splitting av dokument: 
         Saksbehandler ønsker splitting av dokument:
         "$beskrivSplitting"
         """.trimIndent()
