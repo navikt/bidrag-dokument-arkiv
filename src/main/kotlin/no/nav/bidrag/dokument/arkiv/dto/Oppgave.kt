@@ -62,15 +62,13 @@ open class OppgaveData(
 
 data class OppdaterSakRequest(private var oppgaveHendelse: OppgaveHendelse, override var saksreferanse: String?): OppgaveData(id = oppgaveHendelse.id, versjon = oppgaveHendelse.versjon)
 
-data class OverforOppgaveTilFagpost(private var oppgaveData: OppgaveData, private var _endretAvEnhetsnr: String, private val saksbehandlersInfo: String, private val kommentar: String):
+data class LeggTilKommentarPaaOppgave(private var oppgaveData: OppgaveData, private var _endretAvEnhetsnr: String, private val saksbehandlersInfo: String, private val kommentar: String):
     OppgaveData(
         id = oppgaveData.id,
         versjon = oppgaveData.versjon,
         endretAvEnhetsnr = _endretAvEnhetsnr,
-        tildeltEnhetsnr = OppgaveEnhet.FAGPOST,
         beskrivelse = beskrivelseHeader(saksbehandlersInfo) +
                 "$kommentar\r\n\r\n" +
-                "Oppgave overført fra enhet ${oppgaveData.tildeltEnhetsnr} til ${OppgaveEnhet.FAGPOST}\r\n\r\n" +
                 "${oppgaveData.beskrivelse}"
     )
 

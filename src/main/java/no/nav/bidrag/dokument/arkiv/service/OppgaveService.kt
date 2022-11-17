@@ -10,7 +10,7 @@ import no.nav.bidrag.dokument.arkiv.dto.OppgaveEnhet
 import no.nav.bidrag.dokument.arkiv.dto.OpprettOppgaveFagpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.OpprettOppgaveRequest
 import no.nav.bidrag.dokument.arkiv.dto.OpprettVurderDokumentOppgaveRequest
-import no.nav.bidrag.dokument.arkiv.dto.OverforOppgaveTilFagpost
+import no.nav.bidrag.dokument.arkiv.dto.LeggTilKommentarPaaOppgave
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.dto.Saksbehandler
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerMedEnhet
@@ -26,12 +26,12 @@ class OppgaveService(
     private val oppgaveConsumers: ResourceByDiscriminator<OppgaveConsumer>,
     private val saksbehandlerInfoManager: SaksbehandlerInfoManager
 ) {
-    fun overforJournalforingsoppgaveTilFagpost(journalpost: Journalpost, saksbehandlerMedEnhet: SaksbehandlerMedEnhet, kommentar: String) {
+    fun leggTilKommentarPaaJournalforingsoppgave(journalpost: Journalpost, saksbehandlerMedEnhet: SaksbehandlerMedEnhet, kommentar: String) {
         val oppgaver = finnJournalforingOppgaverForJournalpost(journalpost.hentJournalpostIdLong())
         oppgaver.filter { it.tildeltEnhetsnr != OppgaveEnhet.FAGPOST }.forEach(Consumer { oppgave: OppgaveData ->
             oppgaveConsumers.get(Discriminator.SERVICE_USER)
                 .patchOppgave(
-                    OverforOppgaveTilFagpost(
+                    LeggTilKommentarPaaOppgave(
                         oppgave,
                         saksbehandlerMedEnhet.enhetsnummer,
                         saksbehandlerMedEnhet.hentSaksbehandlerInfo(),

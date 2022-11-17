@@ -104,7 +104,7 @@ class AvvikService(
             AvvikType.BESTILL_SPLITTING -> bestillSplitting(journalpost, avvikshendelseIntern)
             AvvikType.BESTILL_RESKANNING -> bestillReskanning(journalpost, avvikshendelseIntern)
             AvvikType.KOPIER_FRA_ANNEN_FAGOMRADE -> kopierFraAnnenFagomrade(journalpost, avvikshendelseIntern)
-            AvvikType.OVERFOR_TIL_ANNEN_ENHET -> oppdater(avvikshendelseIntern.toOverforEnhetRequest())
+            AvvikType.OVERFOR_TIL_ANNEN_ENHET -> overforJournalpostTilEnhet(journalpost, avvikshendelseIntern.enhetsnummerNytt)
             AvvikType.ENDRE_FAGOMRADE -> endreFagomrade(journalpost, avvikshendelseIntern)
             AvvikType.SEND_TIL_FAGOMRADE -> onlyLogging()
             AvvikType.TREKK_JOURNALPOST -> trekkJournalpost(journalpost, avvikshendelseIntern)
@@ -139,8 +139,8 @@ class AvvikService(
             dokarkivConsumer.feilregistrerSakstilknytning(journalpost.hentJournalpostIdLong())
         } else {
             val beskrivelse = bestillSplittingKommentar(avvikshendelseIntern.beskrivelse)
-            oppgaveService.overforJournalforingsoppgaveTilFagpost(journalpost, saksbehandler, beskrivelse)
-            endreJournalpostJournalforendeEnhetTilFagpost(journalpost)
+            oppgaveService.leggTilKommentarPaaJournalforingsoppgave(journalpost, saksbehandler, beskrivelse)
+            overforJournalpostTilEnhet(journalpost, OppgaveEnhet.FAGPOST)
         }
     }
 
@@ -151,8 +151,8 @@ class AvvikService(
             dokarkivConsumer.feilregistrerSakstilknytning(journalpost.hentJournalpostIdLong())
         } else {
             val beskrivelse = bestillReskanningKommentar(avvikshendelseIntern.beskrivelse)
-            oppgaveService.overforJournalforingsoppgaveTilFagpost(journalpost, saksbehandler, beskrivelse)
-            endreJournalpostJournalforendeEnhetTilFagpost(journalpost)
+            oppgaveService.leggTilKommentarPaaJournalforingsoppgave(journalpost, saksbehandler, beskrivelse)
+            overforJournalpostTilEnhet(journalpost, OppgaveEnhet.FAGPOST)
         }
     }
 
@@ -162,9 +162,9 @@ class AvvikService(
         dokarkivConsumer.endre(OppdaterOriginalBestiltFlagg(journalpost))
     }
 
-    private fun endreJournalpostJournalforendeEnhetTilFagpost(journalpost: Journalpost) {
-        if (!journalpost.journalforendeEnhet.isNullOrEmpty() && journalpost.journalforendeEnhet != OppgaveEnhet.FAGPOST) {
-            dokarkivConsumer.endre(OverforEnhetRequest(journalpost.hentJournalpostIdLong()!!, OppgaveEnhet.FAGPOST))
+    private fun overforJournalpostTilEnhet(journalpost: Journalpost, enhet: String) {
+        if (journalpost.journalforendeEnhet != enhet) {
+            dokarkivConsumer.endre(OverforEnhetRequest(journalpost.hentJournalpostIdLong()!!, enhet))
         }
     }
     private fun hentSaksbehandler(enhet: String): SaksbehandlerMedEnhet {

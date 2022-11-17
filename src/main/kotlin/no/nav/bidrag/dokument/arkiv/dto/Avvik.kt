@@ -49,7 +49,6 @@ data class AvvikshendelseIntern(
         adresse=avvikshendelse.adresse
     )
 
-    fun toOverforEnhetRequest() = OverforEnhetRequest(journalpostId, enhetsnummerNytt)
     fun toEndreFagomradeRequest() = EndreFagomradeRequest(journalpostId, nyttFagomrade)
     fun toEndreFagomradeOgKnyttTilSakRequest(bruker: Bruker) = EndreFagomradeOgKnyttTilSakRequest(journalpostId, nyttFagomrade, OppdaterJournalpostRequest.Bruker(bruker.id, bruker.type))
     fun toEndreFagomradeJournalfortJournalpostRequest(journalpost: Journalpost) = EndreFagomradeJournalfortJournalpostRequest(journalpostId, journalpost)

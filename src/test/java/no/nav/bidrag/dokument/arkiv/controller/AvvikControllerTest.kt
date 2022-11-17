@@ -709,14 +709,12 @@ class AvvikControllerTest : AbstractControllerTest() {
             { stubs.verifyStub.dokarkivFeilregistrerIkkeKalt(journalpostId) },
             { stubs.verifyStub.oppgaveOppdaterKalt(1,
                 "\"id\":${jfrOppgave.id}",
-                "\"tildeltEnhetsnr\":\"${OppgaveEnhet.FAGPOST}\"",
                 "\"endretAvEnhetsnr\":\"1234\"") },
             { stubs.verifyStub.oppgaveOppdaterKalt(1,
                 "Bestill reskanning: " +
                         "\\nVi ber om reskanning av dokument." +
                         "\\nBeskrivelse fra saksbehandler: " +
                         "\\nInnholdet er uleselig" +
-                        "\\r\\n\\r\\nOppgave overført fra enhet null til 2950" +
                         "\\r\\n\\r\\nBeskrivelse som var der fra før\"")
             },
             { stubs.verifyStub.dokarkivOppdaterKalt(journalpostId, "\"journalfoerendeEnhet\":\"2950\"")},
@@ -748,6 +746,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val jfrOppgave = createOppgaveDataWithJournalpostId(journalpostId.toString())
         jfrOppgave.tildeltEnhetsnr = "4806"
         jfrOppgave.beskrivelse = "Beskrivelse som var der fra før"
+        jfrOppgave.tilordnetRessurs = "Z999999"
         stubs.mockSokOppgave(OppgaveSokResponse(1, listOf(jfrOppgave)), HttpStatus.OK)
         val overforEnhetResponse = sendAvvikRequest(xEnhet, journalpostId, avvikHendelse)
 
@@ -762,16 +761,14 @@ class AvvikControllerTest : AbstractControllerTest() {
             { stubs.verifyStub.dokarkivFeilregistrerIkkeKalt(journalpostId) },
             { stubs.verifyStub.oppgaveOppdaterKalt(1,
                 "\"id\":${jfrOppgave.id}",
-                "\"tildeltEnhetsnr\":\"${OppgaveEnhet.FAGPOST}\"",
                 "\"endretAvEnhetsnr\":\"1234\"") },
             { stubs.verifyStub.oppgaveOppdaterKalt(1,
-                "Bestill splitting av dokument: " +
-                        "\\nSaksbehandler ønsker splitting av dokument:" +
+                "Bestill splitting av dokument:" +
+                        " \\nSaksbehandler ønsker splitting av dokument:" +
                         "\\n\\\"Jeg ønsker å splitte etter side 5" +
-                        "\\\"\\r\\n\\r\\nOppgave overført fra enhet 4806 til 2950" +
-                        "\\r\\n\\r\\nBeskrivelse som var der fra før\"")
+                        "\\\"\\r\\n\\r\\nBeskrivelse som var der fra før\"")
             },
-            { stubs.verifyStub.dokarkivOppdaterIkkeKalt(journalpostId)},
+            { stubs.verifyStub.dokarkivOppdaterKalt(journalpostId, "\"journalfoerendeEnhet\":\"2950\"")},
             {
                 Mockito.verify(kafkaTemplateMock, times(1)).send(
                     ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
