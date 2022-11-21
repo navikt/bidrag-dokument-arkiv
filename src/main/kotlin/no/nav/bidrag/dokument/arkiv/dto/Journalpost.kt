@@ -268,7 +268,7 @@ data class Journalpost(
         val avvikTypeList = mutableListOf<AvvikType>()
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
-        if (isSkanning() && !tilleggsopplysninger.isOriginalBestilt()) avvikTypeList.add(AvvikType.BESTILL_ORIGINAL)
+        if (isSkanning() && !tilleggsopplysninger.isOriginalBestilt() && !isFeilregistrert()) avvikTypeList.add(AvvikType.BESTILL_ORIGINAL)
         if (isSkanning() && !isFeilregistrert()) avvikTypeList.add(AvvikType.BESTILL_RESKANNING)
         if (isSkanning() && !isFeilregistrert()) avvikTypeList.add(AvvikType.BESTILL_SPLITTING)
         if (!isStatusMottatt() && hasSak() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.FEILFORE_SAK)
