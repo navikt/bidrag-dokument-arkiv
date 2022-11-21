@@ -157,7 +157,7 @@ public class BidragDokumentArkivConfig {
   ) {
     var journalpostServiceRegularUser = new JournalpostService(
         safConsumers.get(Discriminator.REGULAR_USER),
-        personConsumers.get(Discriminator.REGULAR_USER));
+        personConsumers.get(Discriminator.SERVICE_USER));
     var journalpostServiceServiceUser = new JournalpostService(
         safConsumers.get(Discriminator.SERVICE_USER),
         personConsumers.get(Discriminator.SERVICE_USER));
