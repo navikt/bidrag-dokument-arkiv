@@ -100,7 +100,7 @@ jobs:
             -H 'accept: */*' \
             -H 'Content-Type: application/json' \
             -d '{
-              "tags":["@bidrag-dokument-arkiv"], "navUsername": "c151787", "testUsername": "z992903",
+              "tags":["@bidrag-dokument-arkiv"],
               "noContextPathForApps":["dokarkiv-api", "oppgave-api"],
               "ingressesForApps":[
                   "${{ env.INGRESS_ARKIV }}@bidrag-dokument-arkiv", 
@@ -114,7 +114,7 @@ jobs:
             -H 'accept: */*' \
             -H 'Content-Type: application/json' \
             -d '{
-              "tags":["@arkiv-saf"], "navUsername": "c151787", "testUsername": "z992903",
+              "tags":["@arkiv-saf"],
               "noContextPathForApps":["dokarkiv-api"],"ingressesForApps":[
                 "${{ env.INGRESS_ARKIV }}@bidrag-dokument-arkiv",
                 "${{ env.INGRESS_DOKARKIV }}@dokarkiv-api"

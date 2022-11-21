@@ -219,6 +219,49 @@ internal class JournalpostTest {
     }
 
     @Test
+    fun `Skal hente avvik BESTILL__ hvis kanal skanning`() {
+        val journalpost = Journalpost()
+        journalpost.journalstatus = JournalStatus.MOTTATT
+        journalpost.journalposttype = JournalpostType.I
+        journalpost.tema = "BID"
+        journalpost.kanal = JournalpostKanal.SKAN_IM
+        val avvikListe = journalpost.tilAvvik()
+        assertThat(avvikListe).hasSize(6)
+        assertThat(avvikListe).contains(AvvikType.BESTILL_ORIGINAL)
+        assertThat(avvikListe).contains(AvvikType.BESTILL_SPLITTING)
+        assertThat(avvikListe).contains(AvvikType.BESTILL_RESKANNING)
+    }
+
+    @Test
+    fun `Skal ikke hente avvik BESTILL_ORIGINAL hvis bestilt hvis kanal skanning`() {
+        val journalpost = Journalpost()
+        journalpost.journalstatus = JournalStatus.MOTTATT
+        journalpost.journalposttype = JournalpostType.I
+        journalpost.tema = "BID"
+        journalpost.kanal = JournalpostKanal.SKAN_IM
+        journalpost.tilleggsopplysninger.setOriginalBestiltFlagg()
+        val avvikListe = journalpost.tilAvvik()
+        assertThat(avvikListe).hasSize(5)
+        assertThat(avvikListe).doesNotContain(AvvikType.BESTILL_ORIGINAL)
+        assertThat(avvikListe).contains(AvvikType.BESTILL_SPLITTING)
+        assertThat(avvikListe).contains(AvvikType.BESTILL_RESKANNING)
+    }
+
+    @Test
+    fun `Skal ikke hente avvik BESTILL_SPLITTING og BESTILL_RESKANNING hvis feilført`() {
+        val journalpost = Journalpost()
+        journalpost.journalstatus = JournalStatus.FEILREGISTRERT
+        journalpost.journalposttype = JournalpostType.I
+        journalpost.tema = "BID"
+        journalpost.kanal = JournalpostKanal.SKAN_IM
+        val avvikListe = journalpost.tilAvvik()
+        assertThat(avvikListe).hasSize(0)
+        assertThat(avvikListe).doesNotContain(AvvikType.BESTILL_ORIGINAL)
+        assertThat(avvikListe).doesNotContain(AvvikType.BESTILL_SPLITTING)
+        assertThat(avvikListe).doesNotContain(AvvikType.BESTILL_RESKANNING)
+    }
+
+    @Test
     @DisplayName("skal ikke tillate avvik FEILFORE_SAK hvis status feilregistrert")
     fun skalHenteAvvikHvisStatusFeilregistrert() {
         val journalpost = Journalpost()

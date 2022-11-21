@@ -18,7 +18,7 @@ env:
   SAF_URL: https://saf-q1.dev.adeo.no
   OPPGAVE_URL: https://oppgave.nais.preprod.local/api/v1/oppgaver
   OPPGAVE_SCOPE: dev-fss.oppgavehandtering.oppgave-q1
-  SAF_SCOPE: dev-fss.teamdokumenthandtering.saf
+  SAF_SCOPE: dev-fss.teamdokumenthandtering.saf-q1
   DOKARKIV_SCOPE: dev-fss.teamdokumenthandtering.dokarkiv-q1
   TOPIC_JOURNALPOST: bidrag.journalpost-feature
   TOPIC_OPPGAVE_OPPRETTET: aapen-oppgave-opprettet-v1-preprod
@@ -33,5 +33,8 @@ vault:
   kvPath: dev
 azureAccessInbound:
   - application: bidrag-dokument-feature
+    namespace: bidrag
+    cluster: dev-fss
+  - application: bidrag-cucumber-onprem-feature
     namespace: bidrag
     cluster: dev-fss

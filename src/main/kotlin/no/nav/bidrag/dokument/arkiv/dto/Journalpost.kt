@@ -34,6 +34,7 @@ const val RETUR_DETALJER_KEY = "retur"
 const val DISTRIBUERT_ADRESSE_KEY = "distAdresse"
 const val DISTRIBUSJON_BESTILT_KEY = "distribusjonBestilt"
 const val AVVIK_ENDRET_TEMA_KEY = "avvikEndretTema"
+const val ORIGINAL_BESTILT_KEY = "originalBestilt"
 const val AVVIK_NY_DISTRIBUSJON_BESTILT_KEY = "avvikNyDistribusjon"
 const val JOURNALFORT_AV_KEY = "journalfortAv"
 const val JOURNALFORT_AV_IDENT_KEY = "journalfortAvIdent"
@@ -267,6 +268,9 @@ data class Journalpost(
         val avvikTypeList = mutableListOf<AvvikType>()
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
+        if (isSkanning() && !tilleggsopplysninger.isOriginalBestilt() && !isFeilregistrert()) avvikTypeList.add(AvvikType.BESTILL_ORIGINAL)
+        if (isSkanning() && !isFeilregistrert()) avvikTypeList.add(AvvikType.BESTILL_RESKANNING)
+        if (isSkanning() && !isFeilregistrert()) avvikTypeList.add(AvvikType.BESTILL_SPLITTING)
         if (!isStatusMottatt() && hasSak() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.FEILFORE_SAK)
         if (isInngaaendeDokument() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.ENDRE_FAGOMRADE)
         if (isInngaaendeDokument() && isStatusJournalfort()) avvikTypeList.add(AvvikType.SEND_TIL_FAGOMRADE)
@@ -288,6 +292,8 @@ data class Journalpost(
     fun kanTilknytteSaker(): Boolean = journalstatus == JournalStatus.JOURNALFOERT || journalstatus == JournalStatus.FERDIGSTILT || journalstatus == JournalStatus.EKSPEDERT
     fun isInngaaendeDokument(): Boolean = journalposttype == JournalpostType.I
     fun isUtgaaendeDokument(): Boolean = journalposttype == JournalpostType.U
+
+    fun isSkanning(): Boolean = kanal == JournalpostKanal.SKAN_IM
 
     fun tilJournalpostResponse(): JournalpostResponse {
         val journalpost = tilJournalpostDto()
@@ -426,6 +432,15 @@ class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() 
     fun setEndretTemaFlagg() {
         this.removeAll{ it["nokkel"]?.contains(AVVIK_ENDRET_TEMA_KEY) ?: false}
         this.add(mapOf("nokkel" to AVVIK_ENDRET_TEMA_KEY, "verdi" to "true"))
+    }
+
+    fun setOriginalBestiltFlagg() {
+        this.removeAll{ it["nokkel"]?.contains(ORIGINAL_BESTILT_KEY) ?: false}
+        this.add(mapOf("nokkel" to ORIGINAL_BESTILT_KEY, "verdi" to "true"))
+    }
+
+    fun isOriginalBestilt(): Boolean {
+        return this.filter { it["nokkel"]?.contains(ORIGINAL_BESTILT_KEY) ?: false }.any { it["verdi"] == "true" }
     }
 
     fun removeEndretTemaFlagg() {
@@ -690,7 +705,9 @@ data class TilknyttetJournalpost(
     var journalpostId: Long,
     var journalstatus: JournalStatus,
     var sak: Sak?
-)
+) {
+    fun isNotFeilregistrert() = journalstatus != JournalStatus.FEILREGISTRERT
+}
 
 fun returDetaljerDOListDoToMap(returDetaljerLog: List<ReturDetaljerLogDO>): Map<String, String>{
     return mapOf("nokkel" to RETUR_DETALJER_KEY, "verdi" to jacksonObjectMapper().registerModule(JavaTimeModule()).writeValueAsString(returDetaljerLog))

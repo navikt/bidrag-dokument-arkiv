@@ -49,7 +49,6 @@ data class AvvikshendelseIntern(
         adresse=avvikshendelse.adresse
     )
 
-    fun toOverforEnhetRequest() = OverforEnhetRequest(journalpostId, enhetsnummerNytt)
     fun toEndreFagomradeRequest() = EndreFagomradeRequest(journalpostId, nyttFagomrade)
     fun toEndreFagomradeOgKnyttTilSakRequest(bruker: Bruker) = EndreFagomradeOgKnyttTilSakRequest(journalpostId, nyttFagomrade, OppdaterJournalpostRequest.Bruker(bruker.id, bruker.type))
     fun toEndreFagomradeJournalfortJournalpostRequest(journalpost: Journalpost) = EndreFagomradeJournalfortJournalpostRequest(journalpostId, journalpost)
@@ -66,6 +65,13 @@ data class EndreFagomradeOgKnyttTilSakRequest(private var journalpostId: Long, o
 data class EndreFagomradeJournalfortJournalpostRequest(private var journalpostId: Long, private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId){
     init {
         journalpost.tilleggsopplysninger.setEndretTemaFlagg()
+        tilleggsopplysninger = journalpost.tilleggsopplysninger
+    }
+}
+
+data class OppdaterOriginalBestiltFlagg(private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()){
+    init {
+        journalpost.tilleggsopplysninger.setOriginalBestiltFlagg()
         tilleggsopplysninger = journalpost.tilleggsopplysninger
     }
 }

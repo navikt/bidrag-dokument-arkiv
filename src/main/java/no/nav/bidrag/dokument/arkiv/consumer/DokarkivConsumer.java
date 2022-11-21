@@ -76,6 +76,7 @@ public class DokarkivConsumer extends AbstractConsumer {
     try {
       var oppdaterJoarnalpostApiUrl = String.format(URL_JOURNALPOSTAPI_V1_FEILREGISTRER + "/feilregistrerSakstilknytning", journalpostId);
       var response = restTemplate.exchange(oppdaterJoarnalpostApiUrl, HttpMethod.PATCH, null, Void.class);
+      LOGGER.info("Sakstilknytning til journalpost {} ble feilregistrert", journalpostId);
       return new HttpResponse<>(response);
     } catch (HttpStatusCodeException e){
       var erSakstilknytningAlleredeFeilregistrert = e.getStatusCode().equals(HttpStatus.BAD_REQUEST);

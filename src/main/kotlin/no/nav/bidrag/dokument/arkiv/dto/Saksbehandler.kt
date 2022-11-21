@@ -6,7 +6,8 @@ data class Saksbehandler(
     var navn: String? = null
 ) {
     fun hentIdentMedNavn() = "$ident - $navn"
-    fun hentSaksbehandlerInfo(journalforendeEnhet: String) = "$navn ($ident - $journalforendeEnhet)"
+    fun hentSaksbehandlerInfo(saksbehandlerEnhet: String) = if (ident == null && navn == null) "ukjent saksbehandler" else hentBrukeridentMedSaksbehandler(saksbehandlerEnhet)
+    private fun hentBrukeridentMedSaksbehandler(enhetsnummer: String) = "${navn?:"Ukjent"} (${ident?:"Ukjent"} - $enhetsnummer)"
     fun tilEnhet(enhetsnummer: String?): SaksbehandlerMedEnhet {
         return SaksbehandlerMedEnhet(this, enhetsnummer?:"9999")
     }
