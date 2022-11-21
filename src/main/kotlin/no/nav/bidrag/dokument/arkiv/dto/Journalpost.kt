@@ -705,7 +705,9 @@ data class TilknyttetJournalpost(
     var journalpostId: Long,
     var journalstatus: JournalStatus,
     var sak: Sak?
-)
+) {
+    fun isNotFeilregistrert() = journalstatus != JournalStatus.FEILREGISTRERT
+}
 
 fun returDetaljerDOListDoToMap(returDetaljerLog: List<ReturDetaljerLogDO>): Map<String, String>{
     return mapOf("nokkel" to RETUR_DETALJER_KEY, "verdi" to jacksonObjectMapper().registerModule(JavaTimeModule()).writeValueAsString(returDetaljerLog))

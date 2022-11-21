@@ -80,6 +80,7 @@ public class JournalpostService {
     var journalpostFagsakId = journalpost.getSak() != null ? journalpost.getSak().getFagsakId() : "";
     var tilknytteteJournalposter = hentTilknyttedeJournalposter(journalpost);
     var saker = tilknytteteJournalposter.stream()
+        .filter(TilknyttetJournalpost::isNotFeilregistrert)
         .map(TilknyttetJournalpost::getSak)
         .filter(Objects::nonNull)
         .map(Sak::getFagsakId)
