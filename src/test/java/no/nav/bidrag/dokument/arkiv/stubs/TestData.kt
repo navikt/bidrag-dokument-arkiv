@@ -12,10 +12,15 @@ import no.nav.bidrag.dokument.arkiv.dto.OppgaveData
 import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
+import no.nav.bidrag.dokument.dto.AvsenderMottakerDto
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 import no.nav.bidrag.dokument.dto.EndreDokument
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
+import no.nav.bidrag.dokument.dto.MottakUtsendingKanal
+import no.nav.bidrag.dokument.dto.OpprettDokumentDto
+import no.nav.bidrag.dokument.dto.OpprettJournalpostRequest
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 val DOKUMENT_FIL = "JVBERi0xLjcgQmFzZTY0IGVuY29kZXQgZnlzaXNrIGRva3VtZW50"
 var X_ENHET_HEADER = "1234"
@@ -224,4 +229,35 @@ fun createEndreJournalpostCommand(): EndreJournalpostCommand {
         EndreDokument("BLABLA", 1, "In a galazy far far away")
     )
     return endreJournalpostCommand
+}
+
+
+val TITTEL_HOVEDDOKUMENT = "Tittel på hoveddokument"
+val TITTEL_VEDLEGG1 = "Tittel på vedlegg"
+val BEHANDLINGSTEMA = "BEHTEMA"
+val REFID = "REFID"
+val GJELDER_ID = "12345678910"
+val DATO_MOTTATT = LocalDateTime.parse("2022-11-29T16:00:00.00000")
+
+fun createOpprettJournalpostRequest(): OpprettJournalpostRequest {
+    return OpprettJournalpostRequest(
+        skalJournalføres = false,
+        datoMottatt = DATO_MOTTATT,
+        dokumenter = listOf(
+            OpprettDokumentDto(
+                tittel = TITTEL_HOVEDDOKUMENT,
+                fysiskDokument = "Innhold på dokumentet".toByteArray()
+            ),
+            OpprettDokumentDto(
+                tittel = TITTEL_VEDLEGG1,
+                fysiskDokument = "Innhold på dokumentet vedlegg".toByteArray()
+            )
+        ),
+        journalposttype = no.nav.bidrag.dokument.dto.JournalpostType.INNGÅENDE,
+        gjelderIdent = GJELDER_ID,
+        avsenderMottaker = AvsenderMottakerDto(ident = GJELDER_ID),
+        behandlingstema = BEHANDLINGSTEMA,
+        kanal = MottakUtsendingKanal.DIGITALT,
+        referanseId = REFID,
+    )
 }

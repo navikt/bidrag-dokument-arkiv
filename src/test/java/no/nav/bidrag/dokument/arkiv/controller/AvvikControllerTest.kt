@@ -655,7 +655,7 @@ class AvvikControllerTest : AbstractControllerTest() {
                 )
             },
             { stubs.verifyStub.dokarkivOppdaterKalt(newJournalpostId, "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}") },
-            { stubs.verifyStub.dokarkivOpprettKalt("{" +
+            { stubs.verifyStub.dokarkivOpprettKalt(true, "{" +
                     "\"sak\":{\"fagsakId\":\"$sakId\",\"fagsaksystem\":\"BISYS\",\"sakstype\":\"FAGSAK\"}," +
                     "\"tittel\":\"Tittel på dokument 1\"," +
                     "\"journalfoerendeEnhet\":\"4833\"," +
@@ -1034,7 +1034,7 @@ class AvvikControllerTest : AbstractControllerTest() {
             },
             { stubs.verifyStub.dokarkivOppdaterIkkeKalt(journalpostIdAnnenFagomrade)},
             { stubs.verifyStub.dokarkivOppdaterKalt(newJournalpostId, "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"aud-localhost\"}") },
-            { stubs.verifyStub.dokarkivOpprettKalt("{" +
+            { stubs.verifyStub.dokarkivOpprettKalt(true, "{" +
                     "\"sak\":{\"fagsakId\":\"$sak1\",\"fagsaksystem\":\"BISYS\",\"sakstype\":\"FAGSAK\"}," +
                     "\"tittel\":\"$tittelDokument1 (Kopiert fra dokument: $tittelOriginalDokument)\"," +
                     "\"journalfoerendeEnhet\":\"$xEnhet\"," +
@@ -1116,7 +1116,7 @@ class AvvikControllerTest : AbstractControllerTest() {
             },
             { stubs.verifyStub.dokarkivOppdaterIkkeKalt(journalpostIdAnnenFagomrade)},
             { stubs.verifyStub.dokarkivOppdaterKalt(newJournalpostId) },
-            { stubs.verifyStub.dokarkivOpprettKalt()},
+            { stubs.verifyStub.dokarkivOpprettKalt(true)},
             { stubs.verifyStub.dokarkivTilknyttSakerKalt(5, newJournalpostId, sak2) },
             { stubs.verifyStub.oppgaveOppdaterKalt(1) },
             { stubs.verifyStub.safHentDokumentKalt(journalpostIdAnnenFagomrade, DOKUMENT_1_ID.toLong()) },

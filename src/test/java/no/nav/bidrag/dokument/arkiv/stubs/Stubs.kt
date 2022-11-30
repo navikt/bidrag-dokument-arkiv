@@ -4,11 +4,18 @@ import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
 import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.extension.Parameters
+import com.github.tomakehurst.wiremock.http.Request
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
+import com.github.tomakehurst.wiremock.matching.ContentPattern
+import com.github.tomakehurst.wiremock.matching.MatchResult
+import com.github.tomakehurst.wiremock.matching.RequestMatcherExtension
+import com.github.tomakehurst.wiremock.matching.StringValuePattern
 import com.github.tomakehurst.wiremock.stubbing.Scenario
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivKnyttTilSakConsumer
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostResponse
+import no.nav.bidrag.dokument.arkiv.dto.DokumentInfo
 import no.nav.bidrag.dokument.arkiv.dto.GeografiskTilknytningResponse
 import no.nav.bidrag.dokument.arkiv.dto.HentPostadresseResponse
 import no.nav.bidrag.dokument.arkiv.dto.JoarkOpprettJournalpostResponse
@@ -21,14 +28,14 @@ import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerInfoResponse
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import org.junit.Assert
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.stereotype.Component
+import wiremock.com.fasterxml.jackson.annotation.JsonProperty
 import java.util.Arrays
 
-@Component
-class Stubs(@field:Autowired private val objectMapper: ObjectMapper) {
+
+class Stubs {
+    private val objectMapper: ObjectMapper = ObjectMapper().findAndRegisterModules()
     val verifyStub = VerifyStub()
     private fun aClosedJsonResponse(): ResponseDefinitionBuilder {
         return WireMock.aResponse()
@@ -131,19 +138,19 @@ class Stubs(@field:Autowired private val objectMapper: ObjectMapper) {
     }
 
     @Throws(JsonProcessingException::class)
-    fun mockDokarkivOpprettRequest(nyJournalpostId: Long?, status: HttpStatus) {
+    fun mockDokarkivOpprettRequest(nyJournalpostId: Long?, status: HttpStatus = HttpStatus.OK, ferdigstill: Boolean = true, dokumentList: List<DokumentInfo> = emptyList()) {
         WireMock.stubFor(
-            WireMock.post(WireMock.urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "?forsoekFerdigstill=true")).willReturn(
+            WireMock.post(WireMock.urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "?forsoekFerdigstill=$ferdigstill")).willReturn(
                 aClosedJsonResponse()
                     .withStatus(status.value())
                     .withBody(
                         objectMapper.writeValueAsString(
                             JoarkOpprettJournalpostResponse(
                                 nyJournalpostId,
-                                "FERDIGTILT",
+                                if (ferdigstill) "FERDIGTILT" else "MIDLERTIDIG",
                                 null,
-                                true,
-                                ArrayList()
+                                ferdigstill,
+                                dokumentList
                             )
                         )
                     )
@@ -513,10 +520,17 @@ class Stubs(@field:Autowired private val objectMapper: ObjectMapper) {
             WireMock.verify(requestPattern)
         }
 
-        fun dokarkivOpprettKalt(vararg contains: String?) {
+        fun dokarkivOpprettKalt(ferdigstill: Boolean = true, vararg contains: String?) {
             val requestPattern =
-                WireMock.postRequestedFor(WireMock.urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "?forsoekFerdigstill=true"))
+                WireMock.postRequestedFor(WireMock.urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "?forsoekFerdigstill=$ferdigstill"))
             Arrays.stream(contains).forEach { contain: String? -> requestPattern.withRequestBody(ContainsPattern(contain)) }
+            WireMock.verify(requestPattern)
+        }
+
+        fun dokarkivOpprettKaltNotContains(ferdigstill: Boolean = true, vararg contains: String?) {
+            val requestPattern =
+                WireMock.postRequestedFor(WireMock.urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "?forsoekFerdigstill=$ferdigstill"))
+            Arrays.stream(contains).forEach { requestPattern.withRequestBody(NotContainsPattern(it))}
             WireMock.verify(requestPattern)
         }
 
@@ -665,5 +679,14 @@ class Stubs(@field:Autowired private val objectMapper: ObjectMapper) {
         var SAKSNUMMER_TILKNYTTET_1 = "2106585"
         var BRUKER_ENHET = "4899"
         var SAKSNUMMER_TILKNYTTET_2 = "9999999"
+    }
+}
+
+class NotContainsPattern(@JsonProperty("contains") expectedValue: String?): StringValuePattern(expectedValue) {
+    val contains: String
+        get() = expectedValue as String
+
+    override fun match(value: String?): MatchResult {
+        return MatchResult.of(value?.contains((expectedValue as CharSequence)) == false)
     }
 }

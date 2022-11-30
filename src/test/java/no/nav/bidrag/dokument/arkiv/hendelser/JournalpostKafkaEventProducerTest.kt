@@ -21,8 +21,8 @@ import java.util.concurrent.TimeUnit
 @Disabled
 internal class JournalpostKafkdaEventProducerTest: BaseKafkaHendelseTest() {
 
-    @Autowired
-    lateinit var stubs: Stubs
+    val stubs: Stubs = Stubs()
+
     @Test
     @Disabled
     @DisplayName("skal publisere journalpost hendelser for mottatt journalpost")
