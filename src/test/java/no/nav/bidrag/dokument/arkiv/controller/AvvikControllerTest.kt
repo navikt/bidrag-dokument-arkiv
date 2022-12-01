@@ -88,102 +88,6 @@ class AvvikControllerTest : AbstractControllerTest() {
     }
 
     @Test
-    @Disabled
-    @DisplayName("skal utføre avvik REGISTRER_RETUR")
-    @Throws(IOException::class, JSONException::class)
-    fun skalSendeAvvikRegistrerRetur() {
-        // given
-        val xEnhet = "1234"
-        val returDato = "2021-02-03"
-        val beskrivelse = "Dette er en beskrivelse i en test"
-        val journalpostIdFraJson = 201028011L
-        val avvikHendelse = createAvvikHendelse(AvvikType.REGISTRER_RETUR, java.util.Map.of("returDato", returDato))
-        avvikHendelse.beskrivelse = beskrivelse
-        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        stubs.mockSafResponseHentJournalpost(responseJournalpostJsonWithReturDetaljer, HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
-        stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
-        stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson)
-
-        val overforEnhetResponse = sendAvvikRequest(xEnhet, journalpostIdFraJson, avvikHendelse)
-
-        // then
-        assertAll(
-            {
-                Assertions.assertThat(overforEnhetResponse)
-                    .extracting { it.statusCode }
-                    .`as`("statusCode")
-                    .isEqualTo(HttpStatus.OK)
-            },
-            {
-                stubs.verifyStub.dokarkivOppdaterKalt(
-                    journalpostIdFraJson, "\"tilleggsopplysninger\":["
-                            + "{\"nokkel\":\"retur0_2020-11-15\",\"verdi\":\"Beskrivelse av retur\"},"
-                            + "{\"nokkel\":\"retur0_2020-12-14\",\"verdi\":\"Beskrivelse av retur\"},"
-                            + "{\"nokkel\":\"retur1_2020-12-15\",\"verdi\":\" mer tekst for å teste lengre verdier\"},"
-                            + "{\"nokkel\":\"retur1_2020-12-14\",\"verdi\":\" mer tekst for å teste lengre verdier\"},"
-                            + "{\"nokkel\":\"retur0_2020-12-15\",\"verdi\":\"Beskrivelse av retur 2\"},"
-                            + "{\"nokkel\":\"retur0_2021-02-03\",\"verdi\":\"Dette er en beskrivelse i en test\"}]", "\"datoRetur\":\"2021-02-03\""
-                )
-            },
-            {
-                Mockito.verify(kafkaTemplateMock).send(
-                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
-                        "JOARK-$journalpostIdFraJson"
-                    ), ArgumentMatchers.any()
-                )
-            }
-        )
-    }
-
-    @Test
-    @Disabled
-    @DisplayName("skal utføre avvik REGISTRER_RETUR with long beskrivelse")
-    @Throws(IOException::class, JSONException::class)
-    fun skalSendeAvvikRegistrerReturLangBeskrivelse() {
-        // given
-        val xEnhet = "1234"
-        val returDato = "2021-02-03"
-        val beskrivelse = ("Dette er en veldig lang beskrivelse i en test. "
-                + "Batman nanananana nananana nananana nananana nananan. Batman nanananana nananana nananana nananana nananan. Batman nanananana nananana nananana nananana nananan")
-        val journalpostIdFraJson = 201028011L
-        val avvikHendelse = createAvvikHendelse(AvvikType.REGISTRER_RETUR, java.util.Map.of("returDato", returDato))
-        avvikHendelse.beskrivelse = beskrivelse
-        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        stubs.mockSafResponseHentJournalpost(responseJournalpostJsonUtgaaende, HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
-        stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
-        stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson)
-
-        val overforEnhetResponse = sendAvvikRequest(xEnhet, journalpostIdFraJson, avvikHendelse)
-
-        // then
-        assertAll(
-            {
-                Assertions.assertThat(overforEnhetResponse)
-                    .extracting { it.statusCode }
-                    .`as`("statusCode")
-                    .isEqualTo(HttpStatus.OK)
-            },
-            {
-                stubs.verifyStub.dokarkivOppdaterKalt(
-                    journalpostIdFraJson, "\"tilleggsopplysninger\":["
-                            + "{\"nokkel\":\"retur0_2021-02-03\",\"verdi\":\"Dette er en veldig lang beskrivelse i en test. Batman nanananana nananana nananana nananana nananan.\"},"
-                            + "{\"nokkel\":\"retur1_2021-02-03\",\"verdi\":\" Batman nanananana nananana nananana nananana nananan. Batman nanananana nananana nananana nananana \"},"
-                            + "{\"nokkel\":\"retur2_2021-02-03\",\"verdi\":\"nananan\"}]", "\"datoRetur\":\"2021-02-03\""
-                )
-            },
-            {
-                Mockito.verify(kafkaTemplateMock).send(
-                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
-                        "JOARK-$journalpostIdFraJson"
-                    ), ArgumentMatchers.any()
-                )
-            }
-        )
-    }
-
-    @Test
     @DisplayName("skal ikke sende journalpostHendelse når avvik OVER_TIL_ANNEN_ENHET feiler")
     @Throws(
         IOException::class, JSONException::class
@@ -666,7 +570,7 @@ class AvvikControllerTest : AbstractControllerTest() {
                     "\"dokumenter\":[" +
                     "{\"tittel\":\"Tittel på dokument 1\"," +
                     "\"dokumentvarianter\":[" +
-                    "{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"${Base64.getEncoder().encodeToString(DOKUMENT_FIL.encodeToByteArray())}\",\"filnavn\":\"201028011_123123.pdf\"}]}]," +
+                    "{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"${Base64.getEncoder().encodeToString(DOKUMENT_FIL.encodeToByteArray())}\"}]}]," +
                     "\"avsenderMottaker\":{\"navn\":\"Avsender Avsendersen\",\"id\":\"112312385076492416\",\"idType\":\"FNR\"}}") },
             { stubs.verifyStub.safHentDokumentKalt(journalpostId, DOKUMENT_1_ID.toLong()) },
             {
@@ -1067,16 +971,12 @@ class AvvikControllerTest : AbstractControllerTest() {
         // given
         val xEnhet = "1234"
         val journalpostIdAnnenFagomrade = 201028011L
-        val journalpostId2 = 201028012L
         val vurderDokumentOppgave = createOppgaveDataWithJournalpostId(journalpostIdAnnenFagomrade.toString())
         vurderDokumentOppgave.oppgavetype = "VUR"
         val sak1 = "2132131"
         val sak2 = "213213213"
         val newJournalpostId = 301028011L
-        val tittelOriginalDokument = "Tittel på original dokument"
         val tittelDokument1 = "Tittel på dokument 1"
-        val tittelDokument2 = "Tittel på dokument 2"
-        val dokumentData2 = "JVBERi0xLg10cmFpbGVyPDwvUm9vdDw8L1BhZ2VzPDwvS2lkc1s8PC9NZWRpYUJveFswIDAgMyAzXT4"
         val safResponseAnnenFagomrade = opprettSafResponse(journalpostId = journalpostIdAnnenFagomrade.toString(),
             dokumenter = listOf(
                 Dokument(
