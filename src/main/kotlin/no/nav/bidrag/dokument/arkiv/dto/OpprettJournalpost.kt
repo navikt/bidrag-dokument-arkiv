@@ -68,9 +68,6 @@ data class JoarkOpprettJournalpostRequest(
 annotation class OpprettJournalpostRequestBuilderDsl
 
 @OpprettJournalpostRequestBuilderDsl
-object kopier
-
-@OpprettJournalpostRequestBuilderDsl
 object med
 
 @OpprettJournalpostRequestBuilderDsl
