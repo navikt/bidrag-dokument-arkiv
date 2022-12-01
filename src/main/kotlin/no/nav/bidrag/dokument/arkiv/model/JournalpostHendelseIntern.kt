@@ -28,6 +28,7 @@ class JournalpostHendelseIntern(var journalpost: Journalpost, var saksbehandler:
             journalfortDato = journalpost.hentDatoJournalfort(),
             hendelseType = if (journalforingHendelse?.hendelsesType == JoarkHendelseType.ENDELIG_JOURNALFORT.hendelsesType) HendelseType.JOURNALFORING else HendelseType.ENDRING,
             journalposttype = journalpost.journalposttype?.name,
+            behandlingstema = journalpost.behandlingstema
         )
 
     }
