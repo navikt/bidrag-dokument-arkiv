@@ -12,21 +12,24 @@ import no.nav.bidrag.dokument.dto.Sporingsdata
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord
 
 class JournalpostHendelseIntern(var journalpost: Journalpost, var saksbehandler: SaksbehandlerMedEnhet?, var journalforingHendelse: JournalfoeringHendelseRecord?) {
-    var journalpostHendelse: JournalpostHendelse = JournalpostHendelse()
+    val journalpostHendelse: JournalpostHendelse
     init {
-        journalpostHendelse.journalpostId = journalpost.hentJournalpostIdMedPrefix()
-        journalpostHendelse.journalstatus = journalpost.hentJournalStatus()
-        journalpostHendelse.enhet = journalpost.journalforendeEnhet
-        journalpostHendelse.fagomrade = journalforingHendelse?.temaNytt ?: journalpost.tema
-        journalpostHendelse.aktorId = hentAktoerIdFraJournalpost()
-        journalpostHendelse.fnr = hentFnrFraJournalpost()
-        journalpostHendelse.tittel = journalpost.hentTittel()
-        journalpostHendelse.sporing = opprettSporingsData()
-        journalpostHendelse.sakstilknytninger = journalpost.hentTilknyttetSaker().toList()
-        journalpostHendelse.dokumentDato = journalpost.hentDatoDokument()
-        journalpostHendelse.journalfortDato = journalpost.hentDatoJournalfort()
-        journalpostHendelse.hendelseType = if (journalforingHendelse?.hendelsesType == JoarkHendelseType.ENDELIG_JOURNALFORT.hendelsesType) HendelseType.JOURNALFORING else HendelseType.ENDRING
-        journalpostHendelse.journalposttype = journalpost.journalposttype?.name
+        journalpostHendelse = JournalpostHendelse(
+            journalpostId = journalpost.hentJournalpostIdMedPrefix(),
+            journalstatus = journalpost.hentJournalStatus(),
+            enhet = journalpost.journalforendeEnhet,
+            fagomrade = journalforingHendelse?.temaNytt ?: journalpost.tema,
+            aktorId = hentAktoerIdFraJournalpost(),
+            fnr = hentFnrFraJournalpost(),
+            tittel = journalpost.hentTittel(),
+            sporing = opprettSporingsData(),
+            sakstilknytninger = journalpost.hentTilknyttetSaker().toList(),
+            dokumentDato = journalpost.hentDatoDokument(),
+            journalfortDato = journalpost.hentDatoJournalfort(),
+            hendelseType = if (journalforingHendelse?.hendelsesType == JoarkHendelseType.ENDELIG_JOURNALFORT.hendelsesType) HendelseType.JOURNALFORING else HendelseType.ENDRING,
+            journalposttype = journalpost.journalposttype?.name,
+        )
+
     }
 
     fun hentFnrFraJournalpost(): String? {
@@ -49,8 +52,7 @@ class JournalforingHendelseIntern(var journalforingHendelse: JournalfoeringHende
     fun toJournalpostHendelse(journalpost: Journalpost?): JournalpostHendelse {
         if (journalpost != null){
             val hendelse = JournalpostHendelseIntern(journalpost, hentSaksbehandler(journalpost), journalforingHendelse).hentJournalpostHendelse()
-            hendelse.enhet = null
-            return hendelse
+            return hendelse.copy(enhet = null)
         }
 
         return journalforingHendelseToJournalpostHendelse()
@@ -65,18 +67,18 @@ class JournalforingHendelseIntern(var journalforingHendelse: JournalfoeringHende
     }
 
     fun journalforingHendelseToJournalpostHendelse(): JournalpostHendelse {
-        val journalpostHendelse = JournalpostHendelse()
-        journalpostHendelse.sporing = opprettSporingsData()
-        journalpostHendelse.journalpostId = "JOARK-${journalforingHendelse.journalpostId}"
-        journalpostHendelse.journalstatus = when(journalforingHendelse.journalpostStatus){
-            "MOTTATT"-> JournalstatusDto.MOTTAKSREGISTRERT
-            "JOURNALFOERT"-> JournalstatusDto.JOURNALFORT
-            "UTGAAR"-> JournalstatusDto.UTGAR
-            else -> null
-        }
-        journalpostHendelse.enhet = null
-        journalpostHendelse.fagomrade = journalforingHendelse.temaNytt ?: journalforingHendelse.temaGammelt
-        return journalpostHendelse
+        return JournalpostHendelse(
+            sporing = opprettSporingsData(),
+            journalpostId = "JOARK-${journalforingHendelse.journalpostId}",
+            journalstatus = when(journalforingHendelse.journalpostStatus){
+                "MOTTATT"-> JournalstatusDto.MOTTAKSREGISTRERT
+                "JOURNALFOERT"-> JournalstatusDto.JOURNALFORT
+                "UTGAAR"-> JournalstatusDto.UTGAR
+                else -> null
+            },
+            enhet = null,
+            fagomrade = journalforingHendelse.temaNytt ?: journalforingHendelse.temaGammelt,
+        )
     }
 
     private fun opprettSporingsData(): Sporingsdata = Sporingsdata(CorrelationId.fetchCorrelationIdForThread(), saksbehandler.saksbehandler.ident, saksbehandler.saksbehandler.navn, saksbehandler.enhetsnummer)

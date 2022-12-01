@@ -241,7 +241,7 @@ val DATO_MOTTATT = LocalDateTime.parse("2022-11-29T16:00:00.00000")
 
 fun createOpprettJournalpostRequest(): OpprettJournalpostRequest {
     return OpprettJournalpostRequest(
-        skalJournalføres = false,
+        skalFerdigstilles = false,
         datoMottatt = DATO_MOTTATT,
         dokumenter = listOf(
             OpprettDokumentDto(
