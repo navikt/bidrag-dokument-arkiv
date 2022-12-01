@@ -38,11 +38,11 @@ class KafkaRequestScopeAttributes : RequestAttributes {
         return null
     }
 
-    override fun getSessionId(): String? {
-        return null
+    override fun getSessionId(): String {
+        return ""
     }
 
-    override fun getSessionMutex(): Any? {
-        return null
+    override fun getSessionMutex(): Any {
+        return ""
     }
 }

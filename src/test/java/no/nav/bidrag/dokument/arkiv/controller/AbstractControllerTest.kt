@@ -7,7 +7,6 @@ import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivTest
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
-import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.beans.factory.annotation.Autowired
 import no.nav.bidrag.commons.web.test.HttpHeaderTestRestTemplate
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -20,6 +19,7 @@ import no.nav.bidrag.dokument.arkiv.stubs.Stubs
 import no.nav.bidrag.dokument.arkiv.stubs.X_ENHET_HEADER
 import org.junit.jupiter.api.DisplayName
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 
@@ -29,23 +29,15 @@ import org.springframework.http.HttpStatus
 @AutoConfigureWireMock(port = 0)
 @EnableMockOAuth2Server
 abstract class AbstractControllerTest {
-    @JvmField
     protected var PERSON_IDENT = "12345678910"
-    @JvmField
     protected var AKTOR_IDENT = "92345678910"
-    @JvmField
     protected var responseJournalpostJson = "journalpostSafResponse.json"
     protected var responseJournalpostJsonUtgaaende = "journalpostSafUtgaaendeResponse.json"
-    @JvmField
     protected var responseJournalpostJsonWithReturDetaljer = "journalpostSafReturDetaljerResponse.json"
-    @JvmField
     protected var responseJournalpostJsonWithAdresse = "journalpostSafAdresseResponse.json"
-    @JvmField
     protected var journalpostSafNotFoundResponse = "journalpostSafNotFoundResponse.json"
-    @JvmField
     protected var journalpostJournalfortSafResponse = "journalpostJournalfortSafResponse.json"
 
-    @JvmField
     @LocalServerPort
     protected var port = 0
 
@@ -55,8 +47,7 @@ abstract class AbstractControllerTest {
     @Autowired
     lateinit var httpHeaderTestRestTemplate: HttpHeaderTestRestTemplate
 
-    @Autowired
-    lateinit var stubs: Stubs
+    var stubs: Stubs = Stubs()
 
     @MockBean
     lateinit var kafkaTemplateMock: KafkaTemplate<String, String>

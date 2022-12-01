@@ -11,6 +11,7 @@ import no.nav.bidrag.dokument.arkiv.dto.BestillReskanningOppgaveRequest
 import no.nav.bidrag.dokument.arkiv.dto.BestillSplittingoppgaveRequest
 import no.nav.bidrag.dokument.arkiv.dto.Dokument
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest
+import no.nav.bidrag.dokument.arkiv.dto.JoarkOpprettJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
 import no.nav.bidrag.dokument.arkiv.dto.LagreAvsenderNavnRequest
@@ -18,7 +19,6 @@ import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterOriginalBestiltFlagg
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveEnhet
 import no.nav.bidrag.dokument.arkiv.dto.OpphevEndreFagomradeJournalfortJournalpostRequest
-import no.nav.bidrag.dokument.arkiv.dto.OpprettJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.OverforEnhetRequest
 import no.nav.bidrag.dokument.arkiv.dto.RegistrerReturRequest
 import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO
@@ -27,6 +27,9 @@ import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerMedEnhet
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.bestillReskanningKommentar
 import no.nav.bidrag.dokument.arkiv.dto.bestillSplittingKommentar
+import no.nav.bidrag.dokument.arkiv.dto.med
+import no.nav.bidrag.dokument.arkiv.dto.dupliserJournalpost
+import no.nav.bidrag.dokument.arkiv.dto.opprettDokumentVariant
 import no.nav.bidrag.dokument.arkiv.dto.validateTrue
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer
 import no.nav.bidrag.dokument.arkiv.model.AvvikDetaljException
@@ -39,6 +42,7 @@ import no.nav.bidrag.dokument.dto.AvvikType
 import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse
 import no.nav.bidrag.dokument.dto.DokumentDto
 import no.nav.bidrag.dokument.dto.JournalpostIkkeFunnetException
+import no.nav.bidrag.dokument.dto.OpprettDokumentDto
 import org.apache.logging.log4j.util.Strings
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -50,34 +54,25 @@ import java.util.stream.Stream
 
 @Service
 class AvvikService(
-    journalpostService: ResourceByDiscriminator<JournalpostService?>, hendelserProducer: HendelserProducer,
-    endreJournalpostService: EndreJournalpostService, distribuerJournalpostService: DistribuerJournalpostService, oppgaveService: OppgaveService,
+    val hendelserProducer: HendelserProducer,
+    val endreJournalpostService: EndreJournalpostService,
+    val distribuerJournalpostService: DistribuerJournalpostService,
+    val oppgaveService: OppgaveService,
+    val bidragOrganisasjonConsumer: BidragOrganisasjonConsumer,
+    val saksbehandlerInfoManager: SaksbehandlerInfoManager,
+    val opprettJournalpostService: OpprettJournalpostService,
     dokarkivConsumers: ResourceByDiscriminator<DokarkivConsumer?>,
-    personConsumers: ResourceByDiscriminator<PersonConsumer?>, bidragOrganisasjonConsumer: BidragOrganisasjonConsumer,
-    saksbehandlerInfoManager: SaksbehandlerInfoManager, opprettJournalpostService: OpprettJournalpostService
+    personConsumers: ResourceByDiscriminator<PersonConsumer?>,
+    journalpostService: ResourceByDiscriminator<JournalpostService?>,
 ) {
-    val journalpostService: JournalpostService
-    val hendelserProducer: HendelserProducer
-    val endreJournalpostService: EndreJournalpostService
-    val distribuerJournalpostService: DistribuerJournalpostService
-    val oppgaveService: OppgaveService
-    private val dokarkivConsumer: DokarkivConsumer
-    private val personConsumer: PersonConsumer
-    private val bidragOrganisasjonConsumer: BidragOrganisasjonConsumer
-    private val saksbehandlerInfoManager: SaksbehandlerInfoManager
-    private val opprettJournalpostService: OpprettJournalpostService
+    private final val journalpostService: JournalpostService
+    private final val dokarkivConsumer: DokarkivConsumer
+    private final val personConsumer: PersonConsumer
 
     init {
         this.journalpostService = journalpostService.get(Discriminator.REGULAR_USER)
-        this.hendelserProducer = hendelserProducer
-        this.endreJournalpostService = endreJournalpostService
-        this.distribuerJournalpostService = distribuerJournalpostService
-        this.oppgaveService = oppgaveService
-        personConsumer = personConsumers.get(Discriminator.REGULAR_USER)
-        this.bidragOrganisasjonConsumer = bidragOrganisasjonConsumer
-        this.saksbehandlerInfoManager = saksbehandlerInfoManager
-        dokarkivConsumer = dokarkivConsumers.get(Discriminator.REGULAR_USER)
-        this.opprettJournalpostService = opprettJournalpostService
+        this.personConsumer = personConsumers.get(Discriminator.REGULAR_USER)
+        this.dokarkivConsumer = dokarkivConsumers.get(Discriminator.REGULAR_USER)
     }
 
     fun hentAvvik(jpid: Long?): List<AvvikType> {
@@ -188,22 +183,27 @@ class AvvikService(
         if (knyttTilSaker.isEmpty()) {
             throw UgyldigAvvikException("Fant ingen saker i request. Journalpost må knyttes til minst en sak")
         }
+
         val hoveddokumentTittel = avvikshendelseIntern.dokumenter!![0].tittel
         val nyJournalpostTittel = hoveddokumentTittel ?: journalpost.hentTittel()!!
-        val request = OpprettJournalpost()
-            .kopierFra(journalpost)
-            .medJournalforendeEnhet(avvikshendelseIntern.saksbehandlersEnhet!!)
-        avvikshendelseIntern.dokumenter!!.forEach(Consumer { (dokumentreferanse, _, tittel, dokument, brevkode): DokumentDto ->
-            val dokumentByte = if (Strings.isNotEmpty(
-                    dokument
+
+        val request = dupliserJournalpost(journalpost){
+            med journalførendeenhet avvikshendelseIntern.saksbehandlersEnhet
+            med tittel "$nyJournalpostTittel (Kopiert fra dokument: ${journalpost.hentTittel()})"
+            avvikshendelseIntern.dokumenter!!.forEach(Consumer { (dokumentreferanse, _, tittel, dokument, brevkode): DokumentDto ->
+                val dokumentByte = if (Strings.isNotEmpty(dokument)) Base64.getDecoder().decode(dokument) else null
+                +JoarkOpprettJournalpostRequest.Dokument(
+                    dokumentInfoId = dokumentreferanse,
+                    brevkode = brevkode,
+                    tittel = tittel,
+                    dokumentvarianter = if (dokumentByte != null) listOf(opprettDokumentVariant(null, dokumentByte)) else emptyList()
                 )
-            ) Base64.getDecoder().decode(dokument) else null
-            request.medDokument(dokumentreferanse, dokumentByte, tittel, brevkode)
-        })
-        request.medTittel("$nyJournalpostTittel (Kopiert fra dokument: ${journalpost.hentTittel()})")
-        val (journalpostId) = opprettJournalpostService.opprettOgJournalforJournalpost(request, avvikshendelseIntern.knyttTilSaker)
+            })
+        }
+
+        val (journalpostId) = opprettJournalpostService.opprettOgJournalforJournalpost(request, avvikshendelseIntern.knyttTilSaker, journalpost.hentJournalpostIdLong())
         LOGGER.info("Kopiert journalpost {} til Bidrag, ny journalpostId {}", journalpost.journalpostId, journalpostId)
-        oppgaveService.ferdigstillVurderDokumentOppgaver(journalpost.hentJournalpostIdLong()!!, avvikshendelseIntern.saksbehandlersEnhet)
+        oppgaveService.ferdigstillVurderDokumentOppgaver(journalpost.hentJournalpostIdLong()!!, avvikshendelseIntern.saksbehandlersEnhet!!)
     }
 
     fun manglerAdresse(journalpost: Journalpost?) {

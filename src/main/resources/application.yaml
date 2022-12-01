@@ -6,9 +6,10 @@ management:
     web:
       exposure:
         include: "prometheus,health"
+spring.main.banner-mode: off
 springdoc:
   packages-to-scan: no.nav.bidrag.dokument.arkiv.controller
-
+spring.main.allow-bean-definition-overriding: true
 STS_ISSUER_URL: ${STS_ISSUER_URL:${ACCESS_TOKEN_URL}}
 KAFKA_GROUP_ID: bidrag-dokument-arkiv-oppgave-consumer
 SERVICE_USER_USERNAME: srvbdarkiv

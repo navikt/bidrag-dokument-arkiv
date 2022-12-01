@@ -10,9 +10,11 @@ import java.util.HashMap;
 import no.nav.bidrag.commons.ExceptionLogger;
 import no.nav.bidrag.commons.security.api.EnableSecurityConfiguration;
 import no.nav.bidrag.commons.security.service.SecurityTokenService;
+import no.nav.bidrag.commons.security.service.StsTokenService;
 import no.nav.bidrag.commons.web.CorrelationIdFilter;
 import no.nav.bidrag.commons.web.EnhetFilter;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
+import no.nav.bidrag.commons.web.UserMdcFilter;
 import no.nav.bidrag.dokument.arkiv.aop.AspectExceptionLogger;
 import no.nav.bidrag.dokument.arkiv.aop.HttpStatusRestControllerAdvice;
 import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer;
@@ -36,6 +38,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RootUriTemplateHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
@@ -55,6 +58,7 @@ import org.springframework.retry.annotation.EnableRetry;
     scheme = "bearer",
     type = SecuritySchemeType.HTTP
 )
+@Import(StsTokenService.class)
 public class BidragDokumentArkivConfig {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BidragDokumentArkivConfig.class);
@@ -251,15 +255,18 @@ public class BidragDokumentArkivConfig {
   }
 
   @Bean
-  @Order(1)
   public CorrelationIdFilter correlationIdFilter() {
     return new CorrelationIdFilter();
   }
 
   @Bean
-  @Order(2)
   public EnhetFilter enhetFilter() {
     return new EnhetFilter();
+  }
+
+  @Bean
+  public UserMdcFilter userMdcFilter() {
+    return new UserMdcFilter();
   }
 
   @Bean

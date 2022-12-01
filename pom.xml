@@ -26,9 +26,9 @@
 
     <!-- dependent versions other than from spring-boot -->
     <apache-avro-version>1.11.1</apache-avro-version>
-    <bidrag-commons.version>0.7.6</bidrag-commons.version>
+    <bidrag-commons.version>0.7.21</bidrag-commons.version>
     <bidrag-commons-test.version>0.2.2</bidrag-commons-test.version>
-    <bidrag-dokument-dto.version>1.5.12</bidrag-dokument-dto.version>
+    <bidrag-dokument-dto.version>1.5.15</bidrag-dokument-dto.version>
     <bidrag-tilgangskontroll.version>1.9.21</bidrag-tilgangskontroll.version>
     <commons-codec.version>1.15</commons-codec.version>
     <graphq-dgs-client.version>5.4.3</graphq-dgs-client.version>
@@ -36,10 +36,10 @@
     <kafka-avro-serializer.version>6.2.1</kafka-avro-serializer.version>
     <logback-encoder.version>7.2</logback-encoder.version>
     <nimbus-jose-jwt.version>9.15.2</nimbus-jose-jwt.version>
-    <springdoc-openapi-ui.version>1.6.11</springdoc-openapi-ui.version>
-    <springframework-cloud.version>3.1.0</springframework-cloud.version>
-    <squareup.version>4.9.3</squareup.version>
-    <token-support.version>2.0.14</token-support.version>
+    <springdoc-openapi-ui.version>1.6.13</springdoc-openapi-ui.version>
+    <springframework-cloud.version>3.1.5</springframework-cloud.version>
+    <squareup.version>4.10.0</squareup.version>
+    <token-support.version>2.1.8</token-support.version>
 
     <!-- build -->
     <build-helper-maven.version>3.2.0</build-helper-maven.version>
@@ -85,7 +85,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-compress</artifactId>
-      <version>1.21</version>
+      <version>1.22</version>
     </dependency>
     <dependency>
       <groupId>org.apache.avro</groupId>
@@ -264,6 +264,19 @@
       <artifactId>spring-kafka-test</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>io.kotest</groupId>
+      <artifactId>kotest-assertions-core-jvm</artifactId>
+      <version>5.5.3</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.ninja-squad</groupId>
+      <artifactId>springmockk</artifactId>
+      <version>3.1.1</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -285,6 +298,7 @@
             <goals>
               <goal>compile</goal>
             </goals>
+
             <configuration>
               <sourceDirs>
                 <source>src/main/java</source>
@@ -305,8 +319,30 @@
               </sourceDirs>
             </configuration>
           </execution>
-
         </executions>
+        <configuration>
+          <compilerPlugins>
+            <plugin>spring</plugin>
+            <plugin>jpa</plugin>
+          </compilerPlugins>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-maven-allopen</artifactId>
+            <version>${kotlin.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-maven-noarg</artifactId>
+            <version>${kotlin.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-maven-noarg</artifactId>
+            <version>${kotlin.version}</version>
+          </dependency>
+        </dependencies>
       </plugin>
 
       <plugin>
