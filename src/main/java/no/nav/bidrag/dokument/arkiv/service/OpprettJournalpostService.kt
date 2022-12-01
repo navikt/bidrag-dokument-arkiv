@@ -173,14 +173,14 @@ class OpprettJournalpostService(
                 request.avsenderMottaker?.type?.let { AvsenderMottakerIdType.valueOf(it.name)  } ?: AvsenderMottakerIdType.FNR
             ) else null,
             sak = if (erInngaendeOgSkalIkkeJournalfores || tilknyttSaker.isEmpty()) null
-            else JoarkOpprettJournalpostRequest.OpprettJournalpostSak(tilknyttSaker[0]),
+                  else JoarkOpprettJournalpostRequest.OpprettJournalpostSak(tilknyttSaker[0]),
             dokumenter = request.dokumenter.mapIndexed { i, it ->
                 JoarkOpprettJournalpostRequest.Dokument(
                     brevkode = it.brevkode,
                     tittel = it.tittel,
                     dokumentvarianter = listOf(opprettDokumentVariant(null, it.fysiskDokument ?: Base64.getDecoder().decode(it.dokument)))
                 )
-            }.toMutableList()
+            }
         )
 
     }
