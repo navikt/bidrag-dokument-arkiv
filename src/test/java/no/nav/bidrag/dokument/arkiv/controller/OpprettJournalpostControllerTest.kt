@@ -73,7 +73,7 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
         val saksnummer2 = "1233333"
         val request = createOpprettJournalpostRequest()
             .copy(
-                skalJournalføres = true,
+                skalFerdigstilles = true,
                 journalposttype = JournalpostType.UTGÅENDE,
                 tilknyttSaker = listOf(saksnummer1, saksnummer2),
                 journalførendeEnhet = "4806"
@@ -124,7 +124,7 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
         val saksnummer2 = "1233333"
         val request = createOpprettJournalpostRequest()
             .copy(
-                skalJournalføres = true,
+                skalFerdigstilles = true,
                 journalposttype = JournalpostType.NOTAT,
                 tilknyttSaker = listOf(saksnummer1, saksnummer2),
                 journalførendeEnhet = "4806"

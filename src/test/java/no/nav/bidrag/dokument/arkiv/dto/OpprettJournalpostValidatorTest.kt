@@ -72,7 +72,7 @@ class OpprettJournalpostValidatorTest {
 
     @Test
     fun `Validering skal feile hvis journalførendeenhet mangler på journalpost som skal journalføres`(){
-        val request = createOpprettJournalpostRequest().copy(skalJournalføres = true, tilknyttSaker = listOf(""))
+        val request = createOpprettJournalpostRequest().copy(skalFerdigstilles = true, tilknyttSaker = listOf(""))
         val result = shouldThrow<IllegalArgumentException>{ validerKanOppretteJournalpost(request) }
 
         result.message shouldBe "Journalpost som skal journalføres må ha satt journalførendeEnhet"
@@ -80,7 +80,7 @@ class OpprettJournalpostValidatorTest {
 
     @Test
     fun `Validering skal feile hvis sak mangler på journalpost som skal journalføres`(){
-        val request = createOpprettJournalpostRequest().copy(skalJournalføres = true, journalførendeEnhet = "4214")
+        val request = createOpprettJournalpostRequest().copy(skalFerdigstilles = true, journalførendeEnhet = "4214")
         val result = shouldThrow<IllegalArgumentException>{ validerKanOppretteJournalpost(request) }
 
         result.message shouldBe "Journalpost som skal journalføres må ha minst en sak"

@@ -4,7 +4,7 @@ import no.nav.bidrag.dokument.dto.JournalpostType
 import no.nav.bidrag.dokument.dto.OpprettJournalpostRequest
 
 fun OpprettJournalpostRequest.hasAvsenderMottaker(): Boolean = !avsenderMottaker?.navn.isNullOrEmpty() || !avsenderMottaker?.ident.isNullOrEmpty()
-fun OpprettJournalpostRequest.hasSak(): Boolean = skalJournalføres && tilknyttSaker.isNotEmpty()
+fun OpprettJournalpostRequest.hasSak(): Boolean = skalFerdigstilles && tilknyttSaker.isNotEmpty()
 fun OpprettJournalpostRequest.hasGjelder(): Boolean = !gjelder?.ident.isNullOrEmpty() || !gjelderIdent.isNullOrEmpty()
 fun OpprettJournalpostRequest.hentJournalførendeEnhet(): String? = journalførendeEnhet ?: journalfoerendeEnhet
 fun OpprettJournalpostRequest.hentGjelderIdent() = gjelderIdent ?: gjelder?.ident

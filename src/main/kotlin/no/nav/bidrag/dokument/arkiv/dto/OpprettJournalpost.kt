@@ -231,7 +231,7 @@ fun validerKanOppretteJournalpost(request: OpprettJournalpostRequest) {
         Validate.isTrue(it.fysiskDokument != null || !it.dokument.isNullOrEmpty(), "Dokument \"${it.tittel}\" må minst ha en dokumentvariant")
     }
 
-    if (request.skalJournalføres) {
+    if (request.skalFerdigstilles) {
         Validate.isTrue(!request.hentJournalførendeEnhet().isNullOrEmpty(), "Journalpost som skal journalføres må ha satt journalførendeEnhet")
         Validate.isTrue(request.hasSak(), "Journalpost som skal journalføres må ha minst en sak")
     }

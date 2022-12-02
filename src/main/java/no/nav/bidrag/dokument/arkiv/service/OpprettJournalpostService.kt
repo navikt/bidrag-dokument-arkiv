@@ -51,7 +51,7 @@ class OpprettJournalpostService(
     fun opprettJournalpost(request: OpprettJournalpostRequest): OpprettJournalpostResponse {
         validerKanOppretteJournalpost(request)
         val opprettJournalpostRequest = mapTilJoarkOpprettJournalpostRequest(request)
-        return opprettJournalpost(opprettJournalpostRequest, request.tilknyttSaker, skalJournalføres = request.skalJournalføres)
+        return opprettJournalpost(opprettJournalpostRequest, request.tilknyttSaker, skalFerdigstilles = request.skalFerdigstilles)
     }
 
     fun opprettOgJournalforJournalpost(_request: JoarkOpprettJournalpostRequest, knyttTilSaker: List<String> = emptyList(), originalJournalpostId: Long?): OpprettJournalpostResponse {
@@ -62,12 +62,12 @@ class OpprettJournalpostService(
         return opprettJournalpost(request, knyttTilSaker, true)
     }
 
-    private fun opprettJournalpost(request: JoarkOpprettJournalpostRequest, knyttTilSaker: List<String> = emptyList(), skalJournalføres: Boolean = false): OpprettJournalpostResponse {
-        val response = dokarkivConsumer.opprett(request, skalJournalføres)
+    private fun opprettJournalpost(request: JoarkOpprettJournalpostRequest, knyttTilSaker: List<String> = emptyList(), skalFerdigstilles: Boolean = false): OpprettJournalpostResponse {
+        val response = dokarkivConsumer.opprett(request, skalFerdigstilles)
         LOGGER.info("Opprettet ny journalpost {}", response.journalpostId)
         SECURE_LOGGER.info("Opprettet ny journalpost {}", response)
 
-        validerOpprettJournalpostResponse(skalJournalføres, response)
+        validerOpprettJournalpostResponse(skalFerdigstilles, response)
 
         try {
             knyttSakerOgLagreSaksbehandlerForJournalførtJournalpost(response, knyttTilSaker)
@@ -85,8 +85,8 @@ class OpprettJournalpostService(
         )
     }
 
-    private fun validerOpprettJournalpostResponse(skalJournalføres: Boolean, response: JoarkOpprettJournalpostResponse){
-        if (skalJournalføres && !response.journalpostferdigstilt) {
+    private fun validerOpprettJournalpostResponse(skalFerdigstilles: Boolean, response: JoarkOpprettJournalpostResponse){
+        if (skalFerdigstilles && !response.journalpostferdigstilt) {
             val message = String.format(
                 "Kunne ikke journalføre journalpost %s med feilmelding %s",
                 response.journalpostId,
@@ -139,7 +139,7 @@ class OpprettJournalpostService(
         val hoveddokument = request.dokumenter[0]
         val tilknyttSaker = request.tilknyttSaker
         val hovedTittel = hoveddokument.tittel
-        val erInngaendeOgSkalIkkeJournalfores = request.journalposttype == JournalpostType.INNGÅENDE && !request.skalJournalføres
+        val erInngaendeOgSkalIkkeJournalfores = request.journalposttype == JournalpostType.INNGÅENDE && !request.skalFerdigstilles
         val erInngaende = request.journalposttype == JournalpostType.INNGÅENDE
         return JoarkOpprettJournalpostRequest(
             tittel = hovedTittel,

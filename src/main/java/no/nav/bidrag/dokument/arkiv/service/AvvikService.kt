@@ -120,7 +120,7 @@ class AvvikService(
 
     private fun publiserHendelse(journalpost: Journalpost, enhet: String?) {
         if (journalpost.isInngaaendeDokument()) {
-            hendelserProducer.publishJournalpostUpdated(journalpost.hentJournalpostIdLong(), enhet)
+            hendelserProducer.publishJournalpostUpdated(journalpost.hentJournalpostIdLong()!!, enhet)
         }
     }
 

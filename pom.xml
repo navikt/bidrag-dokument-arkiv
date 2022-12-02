@@ -28,7 +28,7 @@
     <apache-avro-version>1.11.1</apache-avro-version>
     <bidrag-commons.version>0.7.21</bidrag-commons.version>
     <bidrag-commons-test.version>0.2.2</bidrag-commons-test.version>
-    <bidrag-dokument-dto.version>1.5.15</bidrag-dokument-dto.version>
+    <bidrag-dokument-dto.version>1.5.16</bidrag-dokument-dto.version>
     <bidrag-tilgangskontroll.version>1.9.21</bidrag-tilgangskontroll.version>
     <commons-codec.version>1.15</commons-codec.version>
     <graphq-dgs-client.version>5.4.3</graphq-dgs-client.version>
@@ -298,7 +298,6 @@
             <goals>
               <goal>compile</goal>
             </goals>
-
             <configuration>
               <sourceDirs>
                 <source>src/main/java</source>
@@ -323,18 +322,12 @@
         <configuration>
           <compilerPlugins>
             <plugin>spring</plugin>
-            <plugin>jpa</plugin>
           </compilerPlugins>
         </configuration>
         <dependencies>
           <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-maven-allopen</artifactId>
-            <version>${kotlin.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-maven-noarg</artifactId>
             <version>${kotlin.version}</version>
           </dependency>
           <dependency>
