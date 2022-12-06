@@ -9,6 +9,7 @@ import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostResponse;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.model.DistribusjonFeiletFunksjoneltException;
 import no.nav.bidrag.dokument.arkiv.model.DistribusjonFeiletTekniskException;
+import no.nav.bidrag.dokument.arkiv.model.KunneIkkeKnytteSakTilJournalpost;
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse;
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse;
 import org.apache.logging.log4j.util.Strings;
@@ -18,6 +19,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
@@ -34,6 +37,7 @@ public class DokdistFordelingConsumer {
   }
 
 
+  @Retryable(value = DistribusjonFeiletTekniskException.class, backoff = @Backoff(delay = 500, maxDelay = 2000, multiplier = 2.0))
   public DistribuerJournalpostResponse distribuerJournalpost(Journalpost journalpost, String batchId, DistribuerTilAdresse adresse) {
     var journalpostId = journalpost.hentJournalpostIdLong();
     var request = new DokDistDistribuerJournalpostRequest(journalpostId, journalpost.hentBrevkode(), journalpost.hentTittel(), adresse, batchId);

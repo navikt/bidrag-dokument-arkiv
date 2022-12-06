@@ -300,15 +300,8 @@ class Stubs {
                         aClosedJsonResponse()
                             .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                             .withStatus(HttpStatus.OK.value())
-                            .withBody(
-                                "{\"data\":{\"tilknyttedeJournalposter\": %s }}".formatted(
-                                    objectMapper.writeValueAsString(
-                                        tilknyttetJournalposts
-                                    )
-                                )
-                            )
-                    )
-            )
+                            .withBody("{\"data\":{\"tilknyttedeJournalposter\": ${objectMapper.writeValueAsString(tilknyttetJournalposts)}}}")
+            ))
         } catch (e: Exception) {
             Assert.fail(e.message)
         }

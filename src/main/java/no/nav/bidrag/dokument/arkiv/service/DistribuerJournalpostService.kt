@@ -59,7 +59,7 @@ class DistribuerJournalpostService(
             med eksternReferanseId "BID_duplikat_${journalpost.journalpostId}"
             med dokumenter journalpost.dokumenter
         }
-        val (journalpostId) = opprettJournalpostService.opprettOgJournalforJournalpost(request, originalJournalpostId = journalpost.hentJournalpostIdLong())
+        val (journalpostId) = opprettJournalpostService.opprettJournalpost(request, originalJournalpostId = journalpost.hentJournalpostIdLong(), skalFerdigstilles = true)
         distribuerJournalpost(journalpostId?.toLong(), null, DistribuerJournalpostRequestInternal(distribuerTilAdresse))
         endreJournalpostService.lagreJournalpost(OppdaterFlaggNyDistribusjonBestiltRequest(journalpost.hentJournalpostIdLong()!!, journalpost))
     }
