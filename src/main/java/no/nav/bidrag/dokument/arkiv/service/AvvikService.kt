@@ -58,7 +58,6 @@ class AvvikService(
     val endreJournalpostService: EndreJournalpostService,
     val distribuerJournalpostService: DistribuerJournalpostService,
     val oppgaveService: OppgaveService,
-    val bidragOrganisasjonConsumer: BidragOrganisasjonConsumer,
     val saksbehandlerInfoManager: SaksbehandlerInfoManager,
     val opprettJournalpostService: OpprettJournalpostService,
     dokarkivConsumers: ResourceByDiscriminator<DokarkivConsumer?>,
@@ -196,7 +195,7 @@ class AvvikService(
                     dokumentInfoId = dokumentreferanse,
                     brevkode = brevkode,
                     tittel = tittel,
-                    dokumentvarianter = if (dokumentByte != null) listOf(opprettDokumentVariant(null, dokumentByte)) else emptyList()
+                    dokumentvarianter = if (dokumentByte != null) listOf(opprettDokumentVariant(dokumentByte=dokumentByte)) else emptyList()
                 )
             })
         }
@@ -239,21 +238,6 @@ class AvvikService(
             med dokumenter journalpost.dokumenter
             fjern sakstilknytning true
         }, originalJournalpostId = journalpost.hentJournalpostIdLong(), skalFerdigstilles = false)
-    }
-
-    fun sendTilFagomrad2e(journalpost: Journalpost, avvikshendelseIntern: AvvikshendelseIntern) {
-        if (journalpost.isTemaEqualTo(avvikshendelseIntern.nyttFagomrade)) {
-            return
-        }
-        if (avvikshendelseIntern.isBidragFagomrade) {
-            throw UgyldigAvvikException("Kan ikke sende journalpost mellom FAR og BID tema.")
-        }
-        val journalforendeEnhet = bidragOrganisasjonConsumer.hentGeografiskEnhet(journalpost.hentGjelderId(), avvikshendelseIntern.nyttFagomrade)
-        val nyJournalpostId = endreJournalpostService.tilknyttTilGenerellSak(avvikshendelseIntern.nyttFagomrade, journalpost)
-        oppgaveService.opprettVurderDokumentOppgave(
-            journalpost, nyJournalpostId, journalforendeEnhet, avvikshendelseIntern.nyttFagomrade,
-            avvikshendelseIntern.beskrivelse
-        )
     }
 
     private fun knyttTilSakPaaNyttFagomrade(avvikshendelseIntern: AvvikshendelseIntern, journalpost: Journalpost) {

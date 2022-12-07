@@ -291,6 +291,7 @@ data class Journalpost(
     fun isStatusEkspedert(): Boolean = journalstatus == JournalStatus.EKSPEDERT
     fun kanTilknytteSaker(): Boolean = journalstatus == JournalStatus.JOURNALFOERT || journalstatus == JournalStatus.FERDIGSTILT || journalstatus == JournalStatus.EKSPEDERT
     fun isInngaaendeDokument(): Boolean = journalposttype == JournalpostType.I
+    fun isNotat(): Boolean = journalposttype == JournalpostType.N
     fun isUtgaaendeDokument(): Boolean = journalposttype == JournalpostType.U
 
     fun isSkanning(): Boolean = kanal == JournalpostKanal.SKAN_IM

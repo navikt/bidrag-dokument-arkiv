@@ -147,7 +147,14 @@ class OpprettJournalpostRequestBuilder {
                 JournalpostType.N -> JoarkJournalpostType.NOTAT
                 else -> JoarkJournalpostType.UTGAAENDE
             },
-            kanal = if (fjernDistribusjonMetadata) null else journalpost.kanal?.name,
+            kanal = if (fjernDistribusjonMetadata) null
+                    else if (journalpost.isNotat()) null
+                    else when(journalpost.kanal?.name){
+                         JournalpostKanal.SENTRAL_UTSKRIFT.name -> "S"
+                         JournalpostKanal.LOKAL_UTSKRIFT.name -> "L"
+                         JournalpostKanal.UKJENT.name -> null
+                         else -> journalpost.kanal?.name
+                    },
             behandlingstema = journalpost.behandlingstema,
             eksternReferanseId = eksternReferanseId,
             tittel = tittel ?: journalpost.hentTittel(),
@@ -179,7 +186,7 @@ fun dupliserJournalpost(journalpost: Journalpost, setup: OpprettJournalpostReque
     return opprettJournalpostBuilder.build(journalpost)
 }
 
-fun opprettDokumentVariant(filnavn: String?, dokumentByte: ByteArray): JoarkOpprettJournalpostRequest.DokumentVariant {
+fun opprettDokumentVariant(filnavn: String? = null, dokumentByte: ByteArray): JoarkOpprettJournalpostRequest.DokumentVariant {
     return JoarkOpprettJournalpostRequest.DokumentVariant(
         variantformat = "ARKIV",
         filtype = "PDFA",
@@ -240,13 +247,13 @@ fun validerKanOppretteJournalpost(opprettJournalpost: JoarkOpprettJournalpostReq
     }
 
     if (opprettJournalpost.journalpostType == JoarkJournalpostType.INNGAAENDE){
-        Validate.isTrue(opprettJournalpost.kanal != null, "Kanal skal må settes for inngående journalpost")
+        Validate.isTrue(opprettJournalpost.kanal != null, "Kanal må settes for inngående journalpost")
     }
 
     if (skalFerdigstilles) {
-        Validate.isTrue(opprettJournalpost.tema == "BID" || opprettJournalpost.tema == "FAR", "Journalpost som skal journalføres må ha tema BID/FAR")
-        Validate.isTrue(!opprettJournalpost.journalfoerendeEnhet.isNullOrEmpty(), "Journalpost som skal journalføres må ha satt journalførendeEnhet")
-        Validate.isTrue(opprettJournalpost.hasSak(), "Journalpost som skal journalføres må ha minst en sak")
+        Validate.isTrue(opprettJournalpost.tema == "BID" || opprettJournalpost.tema == "FAR", "Journalpost som skal ferdigstilles må ha tema BID/FAR")
+        Validate.isTrue(!opprettJournalpost.journalfoerendeEnhet.isNullOrEmpty(), "Journalpost som skal ferdigstilles må ha satt journalførendeEnhet")
+        Validate.isTrue(opprettJournalpost.hasSak(), "Journalpost som skal ferdigstilles må ha minst en sak")
     }
 }
 

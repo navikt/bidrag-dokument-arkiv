@@ -44,7 +44,7 @@ class JoarkOpprettJournalpostValidatorTest {
         val request = createJoarkOpprettJournalpostRequest().copy(tema = "NOE_ANNET")
         val result = shouldThrow<IllegalArgumentException>{ validerKanOppretteJournalpost(request, true) }
 
-        result.message shouldBe "Journalpost som skal journalføres må ha tema BID/FAR"
+        result.message shouldBe "Journalpost som skal ferdigstilles må ha tema BID/FAR"
     }
 
     @Test
@@ -75,7 +75,7 @@ class JoarkOpprettJournalpostValidatorTest {
         val request = createJoarkOpprettJournalpostRequest().copy(sak = null)
         val result = shouldThrow<IllegalArgumentException>{ validerKanOppretteJournalpost(request, true) }
 
-        result.message shouldBe "Journalpost som skal journalføres må ha satt journalførendeEnhet"
+        result.message shouldBe "Journalpost som skal ferdigstilles må ha satt journalførendeEnhet"
     }
 
     @Test
@@ -83,6 +83,6 @@ class JoarkOpprettJournalpostValidatorTest {
         val request = createJoarkOpprettJournalpostRequest().copy(journalfoerendeEnhet =  "4214")
         val result = shouldThrow<IllegalArgumentException>{ validerKanOppretteJournalpost(request, true) }
 
-        result.message shouldBe "Journalpost som skal journalføres må ha minst en sak"
+        result.message shouldBe "Journalpost som skal ferdigstilles må ha minst en sak"
     }
 }
