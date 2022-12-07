@@ -9,11 +9,12 @@ import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveEnhet
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse
-import no.nav.bidrag.dokument.arkiv.dto.OppgaveType
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
+import no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT
+import no.nav.bidrag.dokument.arkiv.stubs.DATO_REGISTRERT
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_ID
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_FIL
@@ -32,7 +33,6 @@ import no.nav.bidrag.dokument.dto.DokumentDto
 import org.assertj.core.api.Assertions
 import org.json.JSONException
 import org.junit.jupiter.api.Assertions.assertAll
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
@@ -273,26 +273,30 @@ class AvvikControllerTest : AbstractControllerTest() {
     }
 
     @Test
-    @DisplayName("skal utføre avvik ENDRE_FAGOMRADE når journalpost journalført")
     @Throws(IOException::class, JSONException::class)
-    fun skalSendeAvvikEndreFagomradeNarJournalpostJournalfort() {
+    fun `skal utføre avvik ENDRE_FAGOMRADE hvis jp journalført og opprette ny journalpost på nytt fagområde`() {
         // given
         val xEnhet = "1234"
-        val geografiskEnhet = "1234"
         val nyttFagomrade = "AAP"
-        val journalpostIdFraJson = 201028011L
+        val originalJournalpostId = 201028011L
         val nyJournalpostId = 301028011L
         val avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, java.util.Map.of("fagomrade", nyttFagomrade))
-        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        stubs.mockOrganisasjonGeografiskTilknytning(geografiskEnhet)
-        stubs.mockDokarkivTilknyttRequest(journalpostIdFraJson, nyJournalpostId)
-        stubs.mockSafResponseHentJournalpost(journalpostJournalfortSafResponse, HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
-        stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
-        stubs.mockOpprettOppgave(HttpStatus.OK)
-        stubs.mockDokarkivFeilregistrerRequest(journalpostIdFraJson)
+        val journalpost = opprettSafResponse(originalJournalpostId.toString())
+            .copy(
+                journalstatus = JournalStatus.JOURNALFOERT,
+                relevanteDatoer = listOf(DATO_DOKUMENT, DATO_REGISTRERT),
+                kanal = JournalpostKanal.NAV_NO
 
-        val overforEnhetResponse = sendAvvikRequest(xEnhet, journalpostIdFraJson, avvikHendelse)
+            )
+        stubs.mockSafResponseHentJournalpost(journalpost)
+        stubs.mockSafResponseTilknyttedeJournalposter(listOf())
+        stubs.mockSafHentDokumentResponse()
+        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockDokarkivOppdaterRequest(originalJournalpostId)
+        stubs.mockDokarkivOpprettRequest(nyJournalpostId, ferdigstill = false)
+        stubs.mockDokarkivFeilregistrerRequest(originalJournalpostId)
+
+        val overforEnhetResponse = sendAvvikRequest(xEnhet, originalJournalpostId, avvikHendelse)
 
         // then
         assertAll(
@@ -302,13 +306,22 @@ class AvvikControllerTest : AbstractControllerTest() {
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.OK)
             },
-            { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "\"tilleggsopplysninger\":[{\"nokkel\":\"something\",\"verdi\":\"something\"},{\"nokkel\":\"avvikEndretTema\",\"verdi\":\"true\"}]") },
-            { stubs.verifyStub.oppgaveOpprettKalt(OppgaveType.VUR.name, nyJournalpostId.toString()) },
-            { stubs.verifyStub.dokarkivFeilregistrerKalt(journalpostIdFraJson) },
+            { stubs.verifyStub.dokarkivOpprettKalt(false, "" +
+                    "{\"tittel\":\"Tittel på dokument 1\"," +
+                    "\"journalpostType\":\"INNGAAENDE\"," +
+                    "\"tilleggsopplysninger\":[]," +
+                    "\"tema\":\"AAP\"," +
+                    "\"kanal\":\"NAV_NO\"," +
+                    "\"datoMottatt\":\"2021-04-20\"," +
+                    "\"bruker\":{\"id\":\"123213213213\",\"idType\":\"AKTOERID\"}," +
+                    "\"dokumenter\":[{\"tittel\":\"Tittel på dokument 1\",\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SlZCRVJpMHhMamNnUW1GelpUWTBJR1Z1WTI5a1pYUWdabmx6YVhOcklHUnZhM1Z0Wlc1MA==\"}]}]," +
+                    "\"avsenderMottaker\":{\"navn\":\"Avsender Avsendersen\",\"id\":\"112312385076492416\",\"idType\":\"FNR\"}}") },
+            { stubs.verifyStub.oppgaveOpprettIkkeKalt() },
+            { stubs.verifyStub.dokarkivFeilregistrerKalt(originalJournalpostId) },
             {
                 Mockito.verify(kafkaTemplateMock).send(
                     ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
-                        "JOARK-$journalpostIdFraJson"
+                        "JOARK-$originalJournalpostId"
                     ), ArgumentMatchers.any()
                 )
             }
@@ -945,6 +958,8 @@ class AvvikControllerTest : AbstractControllerTest() {
                     "\"journalpostType\":\"INNGAAENDE\"," +
                     "\"tilleggsopplysninger\":[],"+
                     "\"tema\":\"BID\"," +
+                    "\"kanal\":\"NAV_NO\","+
+                    "\"datoMottatt\":\"2021-08-18\"",
                     "\"bruker\":{\"id\":\"123213213213\",\"idType\":\"AKTOERID\"}," +
                     "\"dokumenter\":[" +
                         "{\"tittel\":\"$tittelDokument1 (Kopiert fra dokument: $tittelOriginalDokument)\"," +

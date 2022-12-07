@@ -49,20 +49,21 @@ class OpprettJournalpostService(
     }
 
     fun opprettJournalpost(request: OpprettJournalpostRequest): OpprettJournalpostResponse {
-        validerKanOppretteJournalpost(request)
         val opprettJournalpostRequest = mapTilJoarkOpprettJournalpostRequest(request)
         return opprettJournalpost(opprettJournalpostRequest, request.tilknyttSaker, skalFerdigstilles = request.skalFerdigstilles)
     }
 
-    fun opprettOgJournalforJournalpost(_request: JoarkOpprettJournalpostRequest, knyttTilSaker: List<String> = emptyList(), originalJournalpostId: Long?): OpprettJournalpostResponse {
+    fun opprettJournalpost(_request: JoarkOpprettJournalpostRequest, knyttTilSaker: List<String> = emptyList(), originalJournalpostId: Long?, skalFerdigstilles: Boolean = false): OpprettJournalpostResponse {
         val tilknyttetSak = if(knyttTilSaker.isNotEmpty()) knyttTilSaker[0] else _request.sak?.fagsakId
-        var request = _request.copy(sak = JoarkOpprettJournalpostRequest.OpprettJournalpostSak(tilknyttetSak))
+        var request = _request.copy(sak = if (tilknyttetSak.isNullOrEmpty()) null else JoarkOpprettJournalpostRequest.OpprettJournalpostSak(tilknyttetSak))
         request = populerMedDokumenterByteData(request, originalJournalpostId)
-        validerKanOppretteJournalpost(request)
-        return opprettJournalpost(request, knyttTilSaker, true)
+        return opprettJournalpost(request, knyttTilSaker, skalFerdigstilles)
     }
 
     private fun opprettJournalpost(request: JoarkOpprettJournalpostRequest, knyttTilSaker: List<String> = emptyList(), skalFerdigstilles: Boolean = false): OpprettJournalpostResponse {
+
+        validerKanOppretteJournalpost(request, skalFerdigstilles)
+
         val response = dokarkivConsumer.opprett(request, skalFerdigstilles)
         LOGGER.info("Opprettet ny journalpost {}", response.journalpostId)
         SECURE_LOGGER.info("Opprettet ny journalpost {}", response)

@@ -38,10 +38,10 @@ class OpprettJournalpostValidatorTest {
 
     @Test
     fun `Validering skal feile hvis tema er satt til noe annet en Bidragstema`(){
-        val request = createOpprettJournalpostRequest().copy(tema = "NOE_ANNET")
+        val request = createOpprettJournalpostRequest().copy(tema = "NOE_ANNET", skalFerdigstilles = true)
         val result = shouldThrow<IllegalArgumentException>{ validerKanOppretteJournalpost(request) }
 
-        result.message shouldBe "Journalpost må ha tema BID/FAR"
+        result.message shouldBe "Journalpost som skal ferdigstilles må ha tema BID/FAR"
     }
 
     @Test
@@ -58,31 +58,18 @@ class OpprettJournalpostValidatorTest {
     }
 
     @Test
-    fun `Validering skal feile hvis fysiskDokument ikke er satt på dokument`(){
-        val request = createOpprettJournalpostRequest().copy(dokumenter = listOf(
-            OpprettDokumentDto(
-                tittel = "Tittel",
-                fysiskDokument = null
-            )
-        ))
-        val result = shouldThrow<IllegalArgumentException>{ validerKanOppretteJournalpost(request) }
-
-        result.message shouldBe "Dokument \"Tittel\" må minst ha en dokumentvariant"
-    }
-
-    @Test
     fun `Validering skal feile hvis journalførendeenhet mangler på journalpost som skal journalføres`(){
-        val request = createOpprettJournalpostRequest().copy(skalFerdigstilles = true, tilknyttSaker = listOf(""))
+        val request = createOpprettJournalpostRequest().copy(skalFerdigstilles = true, tilknyttSaker = listOf(""), tema = "BID")
         val result = shouldThrow<IllegalArgumentException>{ validerKanOppretteJournalpost(request) }
 
-        result.message shouldBe "Journalpost som skal journalføres må ha satt journalførendeEnhet"
+        result.message shouldBe "Journalpost som skal ferdigstilles må ha satt journalførendeEnhet"
     }
 
     @Test
     fun `Validering skal feile hvis sak mangler på journalpost som skal journalføres`(){
-        val request = createOpprettJournalpostRequest().copy(skalFerdigstilles = true, journalførendeEnhet = "4214")
+        val request = createOpprettJournalpostRequest().copy(skalFerdigstilles = true, journalførendeEnhet = "4214", tema = "BID")
         val result = shouldThrow<IllegalArgumentException>{ validerKanOppretteJournalpost(request) }
 
-        result.message shouldBe "Journalpost som skal journalføres må ha minst en sak"
+        result.message shouldBe "Journalpost som skal ferdigstilles må ha minst en sak"
     }
 }

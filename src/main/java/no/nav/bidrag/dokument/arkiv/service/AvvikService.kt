@@ -29,6 +29,7 @@ import no.nav.bidrag.dokument.arkiv.dto.bestillReskanningKommentar
 import no.nav.bidrag.dokument.arkiv.dto.bestillSplittingKommentar
 import no.nav.bidrag.dokument.arkiv.dto.med
 import no.nav.bidrag.dokument.arkiv.dto.dupliserJournalpost
+import no.nav.bidrag.dokument.arkiv.dto.fjern
 import no.nav.bidrag.dokument.arkiv.dto.opprettDokumentVariant
 import no.nav.bidrag.dokument.arkiv.dto.validateTrue
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer
@@ -42,7 +43,6 @@ import no.nav.bidrag.dokument.dto.AvvikType
 import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse
 import no.nav.bidrag.dokument.dto.DokumentDto
 import no.nav.bidrag.dokument.dto.JournalpostIkkeFunnetException
-import no.nav.bidrag.dokument.dto.OpprettDokumentDto
 import org.apache.logging.log4j.util.Strings
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -58,7 +58,6 @@ class AvvikService(
     val endreJournalpostService: EndreJournalpostService,
     val distribuerJournalpostService: DistribuerJournalpostService,
     val oppgaveService: OppgaveService,
-    val bidragOrganisasjonConsumer: BidragOrganisasjonConsumer,
     val saksbehandlerInfoManager: SaksbehandlerInfoManager,
     val opprettJournalpostService: OpprettJournalpostService,
     dokarkivConsumers: ResourceByDiscriminator<DokarkivConsumer?>,
@@ -196,12 +195,12 @@ class AvvikService(
                     dokumentInfoId = dokumentreferanse,
                     brevkode = brevkode,
                     tittel = tittel,
-                    dokumentvarianter = if (dokumentByte != null) listOf(opprettDokumentVariant(null, dokumentByte)) else emptyList()
+                    dokumentvarianter = if (dokumentByte != null) listOf(opprettDokumentVariant(dokumentByte=dokumentByte)) else emptyList()
                 )
             })
         }
 
-        val (journalpostId) = opprettJournalpostService.opprettOgJournalforJournalpost(request, avvikshendelseIntern.knyttTilSaker, journalpost.hentJournalpostIdLong())
+        val (journalpostId) = opprettJournalpostService.opprettJournalpost(request, avvikshendelseIntern.knyttTilSaker, journalpost.hentJournalpostIdLong(), skalFerdigstilles = true)
         LOGGER.info("Kopiert journalpost {} til Bidrag, ny journalpostId {}", journalpost.journalpostId, journalpostId)
         oppgaveService.ferdigstillVurderDokumentOppgaver(journalpost.hentJournalpostIdLong()!!, avvikshendelseIntern.saksbehandlersEnhet!!)
     }
@@ -232,12 +231,13 @@ class AvvikService(
         if (avvikshendelseIntern.isBidragFagomrade) {
             throw UgyldigAvvikException("Kan ikke sende journalpost mellom FAR og BID tema.")
         }
-        val journalforendeEnhet = bidragOrganisasjonConsumer.hentGeografiskEnhet(journalpost.hentGjelderId(), avvikshendelseIntern.nyttFagomrade)
-        val nyJournalpostId = endreJournalpostService.tilknyttTilGenerellSak(avvikshendelseIntern.nyttFagomrade, journalpost)
-        oppgaveService.opprettVurderDokumentOppgave(
-            journalpost, nyJournalpostId, journalforendeEnhet, avvikshendelseIntern.nyttFagomrade,
-            avvikshendelseIntern.beskrivelse
-        )
+
+        opprettJournalpostService.opprettJournalpost(dupliserJournalpost(journalpost){
+            med tema avvikshendelseIntern.nyttFagomrade
+            fjern journalførendeenhet true
+            med dokumenter journalpost.dokumenter
+            fjern sakstilknytning true
+        }, originalJournalpostId = journalpost.hentJournalpostIdLong(), skalFerdigstilles = false)
     }
 
     private fun knyttTilSakPaaNyttFagomrade(avvikshendelseIntern: AvvikshendelseIntern, journalpost: Journalpost) {

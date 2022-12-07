@@ -5,8 +5,11 @@ import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottakerIdType
 import no.nav.bidrag.dokument.arkiv.dto.Bruker
 import no.nav.bidrag.dokument.arkiv.dto.DatoType
 import no.nav.bidrag.dokument.arkiv.dto.Dokument
+import no.nav.bidrag.dokument.arkiv.dto.JoarkJournalpostType
+import no.nav.bidrag.dokument.arkiv.dto.JoarkOpprettJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostType
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveData
 import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO
@@ -16,6 +19,7 @@ import no.nav.bidrag.dokument.dto.AvsenderMottakerDto
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 import no.nav.bidrag.dokument.dto.EndreDokument
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
+import no.nav.bidrag.dokument.dto.Kanal
 import no.nav.bidrag.dokument.dto.MottakUtsendingKanal
 import no.nav.bidrag.dokument.dto.OpprettDokumentDto
 import no.nav.bidrag.dokument.dto.OpprettJournalpostRequest
@@ -48,6 +52,7 @@ var BRUKER_TYPE_AKTOERID = "AKTOERID";
 
 var BREVKODE = "BI01S02";
 var JOURNALFORENDE_ENHET = "4833";
+var DATO_REGISTRERT = DatoType("2021-04-20T13:20:33", "DATO_REGISTRERT")
 var DATO_DOKUMENT = DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
 var DATO_JOURNALFORT = DatoType("2022-08-18T13:20:33", "DATO_JOURNALFOERT")
 var DATO_RETUR = DatoType("2021-08-18T13:20:33", "DATO_AVS_RETUR")
@@ -113,7 +118,7 @@ fun opprettSafResponse(
     dokumenter: List<Dokument> = listOf(
         Dokument(
             dokumentInfoId = DOKUMENT_1_ID,
-            tittel = DOKUMENT_1_TITTEL
+            tittel = DOKUMENT_1_TITTEL,
         )
     ),
     tittel: String = DOKUMENT_1_TITTEL,
@@ -127,6 +132,7 @@ fun opprettSafResponse(
     journalfortAvNavn: String? = null
 ): Journalpost {
     return Journalpost(
+        kanal = JournalpostKanal.NAV_NO,
         avsenderMottaker = avsenderMottaker,
         bruker = bruker,
         dokumenter = dokumenter,
@@ -238,6 +244,36 @@ val BEHANDLINGSTEMA = "BEHTEMA"
 val REFID = "REFID"
 val GJELDER_ID = "12345678910"
 val DATO_MOTTATT = LocalDateTime.parse("2022-11-29T16:00:00.00000")
+
+fun createJoarkOpprettJournalpostRequest(): JoarkOpprettJournalpostRequest {
+    return JoarkOpprettJournalpostRequest(
+        datoMottatt = DATO_MOTTATT.toString(),
+        dokumenter = listOf(
+            JoarkOpprettJournalpostRequest.Dokument(
+                tittel = TITTEL_HOVEDDOKUMENT,
+                dokumentvarianter = listOf(
+                    JoarkOpprettJournalpostRequest.DokumentVariant(
+                        fysiskDokument = "Innhold på dokumentet".toByteArray()
+                    )
+                )),
+                JoarkOpprettJournalpostRequest.Dokument(
+                    tittel = TITTEL_VEDLEGG1,
+                    dokumentvarianter = listOf(
+                        JoarkOpprettJournalpostRequest.DokumentVariant(
+                            fysiskDokument = "Innhold på dokumentet vedlegg".toByteArray()
+                        )
+                    )
+                )
+        ),
+        journalpostType = JoarkJournalpostType.INNGAAENDE,
+        bruker = JoarkOpprettJournalpostRequest.OpprettJournalpostBruker(GJELDER_ID, idType = null),
+        avsenderMottaker = JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(GJELDER_ID),
+        behandlingstema = BEHANDLINGSTEMA,
+        kanal = Kanal.NAV_NO.name,
+        tema = "BID",
+        eksternReferanseId = REFID,
+    )
+}
 
 fun createOpprettJournalpostRequest(): OpprettJournalpostRequest {
     return OpprettJournalpostRequest(
