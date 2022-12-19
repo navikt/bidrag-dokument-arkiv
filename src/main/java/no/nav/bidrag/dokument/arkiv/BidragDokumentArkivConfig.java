@@ -40,7 +40,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Scope;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.retry.annotation.EnableRetry;
@@ -63,8 +62,6 @@ public class BidragDokumentArkivConfig {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BidragDokumentArkivConfig.class);
 
-  public static final String ISSUER_ISSO = "isso";
-  public static final String ISSUER_STS = "sts";
   public static final String PROFILE_LIVE = "live";
   public static final String PROFILE_KAFKA_TEST = "kafka_test";
   public static final String PROFILE_TEST = "test";

@@ -57,6 +57,6 @@ no.nav.security.jwt:
           client-id: 123
           client-secret: 123
           client-auth-method: client_secret_basic
-  issuer.isso:
-    discovery_url: http://localhost:${mock-oauth2-server.port}/isso/.well-known/openid-configuration
+  issuer.aad:
+    discovery_url: http://localhost:${mock-oauth2-server.port}/aad/.well-known/openid-configuration
     accepted_audience: aud-localhost
