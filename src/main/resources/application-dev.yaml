@@ -1,6 +1,6 @@
 no.nav.security.oidc:
-  issuers: isso
-  issuer.isso :
+  issuers: aad
+  issuer.aad :
     discoveryurl: http://metadata
     accepted_audience: aud-localhost
     cookie_name: localhost-idtoken

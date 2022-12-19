@@ -6,9 +6,7 @@ ingresses:
 kafka:
   pool: nav-prod
 env:
-  ACCEPTED_AUDIENCE: bisys-p,bidrag-ui-p
   ACCEPTED_SERVICE_USER_AUDIENCE: srvbdarkivering,srvbisys
-  ISSO_ISSUER_URL: https://isso.adeo.no:443/isso/oauth2
   STS_ISSUER_URL: https://security-token-service.nais.adeo.no
   ACCESS_TOKEN_URL: https://security-token-service.nais.adeo.no
   DOKARKIV_URL: https://dokarkiv.nais.adeo.no/
