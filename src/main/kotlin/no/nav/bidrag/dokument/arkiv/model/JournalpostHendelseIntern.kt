@@ -52,8 +52,7 @@ class JournalforingHendelseIntern(var journalforingHendelse: JournalfoeringHende
 
     fun toJournalpostHendelse(journalpost: Journalpost?): JournalpostHendelse {
         if (journalpost != null){
-            val hendelse = JournalpostHendelseIntern(journalpost, hentSaksbehandler(journalpost), journalforingHendelse).hentJournalpostHendelse()
-            return hendelse.copy(enhet = null)
+            return JournalpostHendelseIntern(journalpost, hentSaksbehandler(journalpost), journalforingHendelse).hentJournalpostHendelse()
         }
 
         return journalforingHendelseToJournalpostHendelse()

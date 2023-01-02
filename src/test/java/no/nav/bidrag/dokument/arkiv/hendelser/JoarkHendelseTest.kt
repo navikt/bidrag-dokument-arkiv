@@ -148,7 +148,7 @@ class JoarkHendelseTest {
 
         assertAll("JournalpostHendelse",
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId).isEqualTo(expectedJoarkJournalpostId) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isNull() },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isEqualTo(jfEnhet) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::fnr).isEqualTo(AVSENDER_ID) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::hendelseType).isEqualTo(HendelseType.JOURNALFORING) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::dokumentDato).isEqualTo(no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT.somDato()) },
@@ -192,7 +192,7 @@ class JoarkHendelseTest {
 
         assertAll("JournalpostHendelse",
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId).isEqualTo(expectedJoarkJournalpostId) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isNull() },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isEqualTo(BRUKER_ENHET) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isNull() },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::fnr).isEqualTo(AVSENDER_ID) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus).isEqualTo("M") },
@@ -227,7 +227,7 @@ class JoarkHendelseTest {
 
         assertAll("JournalpostHendelse",
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId).isEqualTo(expectedJoarkJournalpostId) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isNull() },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isEqualTo(BRUKER_ENHET) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isNull() },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::fnr).isEqualTo(BRUKER_FNR) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus).isEqualTo("M") },
@@ -236,7 +236,7 @@ class JoarkHendelseTest {
     }
 
     @Test
-    fun `skal publisere journalpost hendelse med enhet lik null`() {
+    fun `skal publisere journalpost hendelse med enhet`() {
         val journalpostId = 123213L
         val expectedJoarkJournalpostId = "JOARK-$journalpostId"
         stubs.mockSts()
@@ -260,7 +260,7 @@ class JoarkHendelseTest {
 
         assertAll("JournalpostHendelse",
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId).isEqualTo(expectedJoarkJournalpostId) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isNull() },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isEqualTo(BRUKER_ENHET) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isEqualTo(BRUKER_AKTOER_ID) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus).isEqualTo("M") },
             { stubs.verifyStub.dokarkivOppdaterIkkeKalt(journalpostId) }
