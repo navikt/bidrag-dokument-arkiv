@@ -95,9 +95,9 @@ public class EndreJournalpostService {
     }
   }
 
-  public void lagreSaksbehandlerIdentForJournalfortJournalpost(Journalpost journalpost){
+  public void lagreSaksbehandlerIdentForJournalfortJournalpost(Journalpost journalpost, String saksbehandlerIdent){
     try {
-      lagreJournalpost(new LagreJournalfortAvIdentRequest(journalpost.hentJournalpostIdLong(), journalpost, saksbehandlerInfoManager.hentSaksbehandlerBrukerId()));
+      lagreJournalpost(new LagreJournalfortAvIdentRequest(journalpost.hentJournalpostIdLong(), journalpost, saksbehandlerIdent != null ? saksbehandlerIdent : saksbehandlerInfoManager.hentSaksbehandlerBrukerId()));
     } catch (Exception e){
       throw new LagreSaksbehandlerIdentForJournalfortJournalpostFeilet(
           String.format("Lagring av saksbehandler ident for journalført journalpost %s feilet", journalpost.getJournalpostId()), e);
@@ -129,7 +129,7 @@ public class EndreJournalpostService {
     var journalforRequest = new FerdigstillJournalpostRequest(journalpostId, enhet);
     dokarkivConsumer.ferdigstill(journalforRequest);
     LOGGER.info("Journalpost med id {} er journalført", journalpostId);
-    lagreSaksbehandlerIdentForJournalfortJournalpost(journalpost);
+    lagreSaksbehandlerIdentForJournalfortJournalpost(journalpost, null);
   }
 
   public void oppdaterJournalpostDistribusjonBestiltStatus(Long journalpostId, Journalpost journalpost){

@@ -25,7 +25,7 @@ class JournalpostService(private val safConsumer: SafConsumer, private val perso
         else Optional.of(populerMedTilknyttedeSaker(jpOptional.get()))
     }
 
-    fun hentJournalpostMedFnrOgTilknyttedeSaker(journalpostId: Long, saksnummer: String): Optional<Journalpost> {
+    fun hentJournalpostMedFnrOgTilknyttedeSaker(journalpostId: Long, saksnummer: String?): Optional<Journalpost> {
         return hentJournalpostMedFnr(journalpostId, saksnummer)?.let { Optional.ofNullable(populerMedTilknyttedeSaker(it)) } ?: Optional.empty()
     }
 
@@ -71,7 +71,7 @@ class JournalpostService(private val safConsumer: SafConsumer, private val perso
         return journalpost
     }
 
-    private fun hentJournalpostMedFnr(journalpostId: Long, saksummer: String): Journalpost? {
+    private fun hentJournalpostMedFnr(journalpostId: Long, saksummer: String?): Journalpost? {
         return hentJournalpost(journalpostId, saksummer)?.let { konverterAktoerIdTilFnr(it) }
     }
 

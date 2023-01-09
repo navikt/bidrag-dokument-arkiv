@@ -4,6 +4,7 @@ import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottakerIdType
+import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.JoarkJournalpostType
 import no.nav.bidrag.dokument.arkiv.dto.JoarkMottakUtsendingKanal
 import no.nav.bidrag.dokument.arkiv.dto.JoarkOpprettJournalpostRequest
@@ -18,6 +19,8 @@ import no.nav.bidrag.dokument.arkiv.model.Discriminator
 import no.nav.bidrag.dokument.arkiv.model.HentJournalpostFeilet
 import no.nav.bidrag.dokument.arkiv.model.KunneIkkeJournalforeOpprettetJournalpost
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
+import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager
+import no.nav.bidrag.dokument.arkiv.service.utvidelser.erNotat
 import no.nav.bidrag.dokument.dto.JournalpostType
 import no.nav.bidrag.dokument.dto.MottakUtsendingKanal
 import no.nav.bidrag.dokument.dto.OpprettDokumentDto
@@ -33,6 +36,7 @@ import java.util.Base64
 class OpprettJournalpostService(
     dokarkivConsumers: ResourceByDiscriminator<DokarkivConsumer?>,
     safConsumers: ResourceByDiscriminator<SafConsumer?>,
+    private val saksbehandlerInfoManager: SaksbehandlerInfoManager,
     private val dokumentService: DokumentService,
     private val endreJournalpostService: EndreJournalpostService
 ) {
@@ -50,7 +54,19 @@ class OpprettJournalpostService(
 
     fun opprettJournalpost(request: OpprettJournalpostRequest): OpprettJournalpostResponse {
         val opprettJournalpostRequest = mapTilJoarkOpprettJournalpostRequest(request)
+        if (request.skalFerdigstilles && request.erNotat && !request.saksbehandlerIdent.isNullOrEmpty()){
+            val respons = opprettJournalpost(opprettJournalpostRequest, request.tilknyttSaker, skalFerdigstilles = false)
+            val journalpostId = respons.journalpostId!!.toLong()
+            ferdigstillJournalpost(journalpostId, request.hentJournalførendeEnhet()!!, request.saksbehandlerIdent)
+            lagreSaksbehandlerIdentOgKnyttFerdigstiltJournalpostTilSaker(journalpostId, request.tilknyttSaker, request.saksbehandlerIdent)
+            return respons
+        }
         return opprettJournalpost(opprettJournalpostRequest, request.tilknyttSaker, skalFerdigstilles = request.skalFerdigstilles)
+    }
+
+    private fun ferdigstillJournalpost(journalpostId: Long, journalfoerendeEnhet: String, saksbehandlerIdent: String?) {
+        val saksbehandlerNavn = saksbehandlerIdent?.let {  saksbehandlerInfoManager.hentSaksbehandler(it) }?.orElse(null)?.navn
+        dokarkivConsumer.ferdigstill(FerdigstillJournalpostRequest(journalpostId = journalpostId, journalfoerendeEnhet = journalfoerendeEnhet, opprettetAvNavn = saksbehandlerNavn, journalfortAvNavn = saksbehandlerNavn))
     }
 
     fun opprettJournalpost(_request: JoarkOpprettJournalpostRequest, knyttTilSaker: List<String> = emptyList(), originalJournalpostId: Long?, skalFerdigstilles: Boolean = false): OpprettJournalpostResponse {
@@ -70,14 +86,10 @@ class OpprettJournalpostService(
 
         validerOpprettJournalpostResponse(skalFerdigstilles, response)
 
-        try {
-            knyttSakerOgLagreSaksbehandlerForJournalførtJournalpost(response, knyttTilSaker)
-        } catch (e: Exception) {
-            LOGGER.error(
-                "Etterbehandling av opprettet journalpost feilet (knytt til flere saker eller lagre saksbehandler ident). Fortsetter behandling da feilen må behandles manuelt.",
-                e
-            )
+        if (response.journalpostferdigstilt){
+            lagreSaksbehandlerIdentOgKnyttFerdigstiltJournalpostTilSaker(response.journalpostId!!, knyttTilSaker)
         }
+
         return OpprettJournalpostResponse(
             journalpostId = response.journalpostId.toString(),
             dokumenter = response.dokumenter?.map {
@@ -86,6 +98,18 @@ class OpprettJournalpostService(
         )
     }
 
+    private fun lagreSaksbehandlerIdentOgKnyttFerdigstiltJournalpostTilSaker(journalpostId: Long, knyttTilSaker: List<String>, saksbehandlerIdent: String? = null){
+        try {
+            val opprettetJournalpost = hentJournalpost(journalpostId)
+            endreJournalpostService.lagreSaksbehandlerIdentForJournalfortJournalpost(opprettetJournalpost, saksbehandlerIdent)
+            knyttSakerTilOpprettetJournalpost(opprettetJournalpost, knyttTilSaker)
+        } catch (e: Exception) {
+            LOGGER.error(
+                "Etterbehandling av opprettet journalpost feilet (knytt til flere saker eller lagre saksbehandler ident). Fortsetter behandling da feilen må behandles manuelt.",
+                e
+            )
+        }
+    }
     private fun validerOpprettJournalpostResponse(skalFerdigstilles: Boolean, response: JoarkOpprettJournalpostResponse){
         if (skalFerdigstilles && !response.journalpostferdigstilt) {
             val message = String.format(
@@ -97,14 +121,6 @@ class OpprettJournalpostService(
             throw KunneIkkeJournalforeOpprettetJournalpost(message)
         }
 
-    }
-
-    private fun knyttSakerOgLagreSaksbehandlerForJournalførtJournalpost(opprettJournalpostResponse: JoarkOpprettJournalpostResponse, tilknyttSaker: List<String>){
-        if (opprettJournalpostResponse.journalpostferdigstilt){
-            val opprettetJournalpost = hentJournalpost(opprettJournalpostResponse.journalpostId)
-            endreJournalpostService.lagreSaksbehandlerIdentForJournalfortJournalpost(opprettetJournalpost)
-            knyttSakerTilOpprettetJournalpost(opprettetJournalpost, tilknyttSaker)
-        }
     }
 
     private fun hentJournalpost(journalpostId: Long?): Journalpost {

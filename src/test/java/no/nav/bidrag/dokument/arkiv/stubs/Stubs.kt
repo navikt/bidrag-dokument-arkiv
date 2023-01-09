@@ -76,13 +76,13 @@ class Stubs {
         }
     }
 
-    fun mockBidragOrganisasjonSaksbehandler() {
+    fun mockBidragOrganisasjonSaksbehandler(ident: String = "ident", navn: String = "navn") {
         try {
             WireMock.stubFor(
                 WireMock.get(WireMock.urlPathMatching("/organisasjon/bidrag-organisasjon/saksbehandler/info/.*")).willReturn(
                     aClosedJsonResponse()
                         .withStatus(HttpStatus.OK.value())
-                        .withBody(objectMapper.writeValueAsString(SaksbehandlerInfoResponse("ident", "navn")))
+                        .withBody(objectMapper.writeValueAsString(SaksbehandlerInfoResponse(ident, navn)))
                 )
             )
         } catch (e: JsonProcessingException) {
@@ -549,14 +549,11 @@ class Stubs {
             )
         }
 
-        private fun dokarkivFerdigstillKalt(times: Int, journalpostId: Long) {
-            WireMock.verify(
-                WireMock.exactly(times), WireMock.patchRequestedFor(
-                    WireMock.urlMatching(
-                        "/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" + journalpostId + "/ferdigstill"
-                    )
-                )
-            )
+        fun dokarkivFerdigstillKalt(times: Int, journalpostId: Long, vararg contains: String?) {
+            val requestPattern =
+                WireMock.patchRequestedFor(WireMock.urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" + journalpostId + "/ferdigstill"))
+            Arrays.stream(contains).forEach { contain: String? -> requestPattern.withRequestBody(ContainsPattern(contain)) }
+            WireMock.verify(WireMock.exactly(times), requestPattern)
         }
 
         fun dokarkivFerdigstillIkkeKalt(journalpostId: Long) {

@@ -16,7 +16,9 @@ import no.nav.bidrag.dokument.dto.AvsenderMottakerDto
 import no.nav.bidrag.dokument.dto.AvsenderMottakerDtoIdType
 import no.nav.bidrag.dokument.dto.AvvikType
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
+import no.nav.bidrag.dokument.dto.DokumentArkivSystemDto
 import no.nav.bidrag.dokument.dto.DokumentDto
+import no.nav.bidrag.dokument.dto.DokumentStatusDto
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
 import no.nav.bidrag.dokument.dto.JournalpostDto
 import no.nav.bidrag.dokument.dto.JournalpostResponse
@@ -576,8 +578,11 @@ data class Dokument(
     var brevkode: String? = null,
 ) {
     fun tilDokumentDto(journalposttype: String?): DokumentDto = DokumentDto(
+        arkivSystem = DokumentArkivSystemDto.JOARK,
+        dokumentmalId = brevkode,
         dokumentreferanse = this.dokumentInfoId,
         dokumentType = journalposttype,
+        status = DokumentStatusDto.FERDIGSTILT,
         tittel = this.tittel,
     )
 }

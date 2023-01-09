@@ -189,7 +189,7 @@ class AvvikService(
         val request = dupliserJournalpost(journalpost){
             med journalførendeenhet avvikshendelseIntern.saksbehandlersEnhet
             med tittel "$nyJournalpostTittel (Kopiert fra dokument: ${journalpost.hentTittel()})"
-            avvikshendelseIntern.dokumenter!!.forEach(Consumer { (dokumentreferanse, _, tittel, dokument, brevkode): DokumentDto ->
+            avvikshendelseIntern.dokumenter!!.forEach(Consumer { (dokumentreferanse, _, _, tittel, dokument, brevkode): DokumentDto ->
                 val dokumentByte = if (Strings.isNotEmpty(dokument)) Base64.getDecoder().decode(dokument) else null
                 +JoarkOpprettJournalpostRequest.Dokument(
                     dokumentInfoId = dokumentreferanse,

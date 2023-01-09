@@ -1,6 +1,8 @@
 package no.nav.bidrag.dokument.arkiv;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
@@ -42,6 +44,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.retry.annotation.EnableRetry;
 
 @Configuration
@@ -87,6 +90,14 @@ public class BidragDokumentArkivConfig {
     httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
     return new OppgaveConsumer(httpHeaderRestTemplate);
   }
+
+//  @Bean
+//  public Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder() {
+//    return new Jackson2ObjectMapperBuilder()
+//        .dateFormat(new StdDateFormat())
+//        .failOnUnknownProperties(false)
+//        .serializationInclusion(JsonInclude.Include.NON_NULL);
+//  }
 
   @Bean
   @Scope("prototype")

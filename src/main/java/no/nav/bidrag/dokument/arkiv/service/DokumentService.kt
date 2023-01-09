@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.service
 
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer
+import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.model.Discriminator
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
 import no.nav.bidrag.dokument.dto.DokumentArkivSystemDto
@@ -25,7 +26,7 @@ class DokumentService(
     }
 
     fun hentDokument(journalpostId: Long?, dokumentReferanse: String?): ResponseEntity<ByteArray> {
-        LOGGER.info("Henter dokument med journalpostId={} og dokumentReferanse={}", journalpostId, dokumentReferanse)
+        LOGGER.info("Henter dokument med journalpostId=$journalpostId og dokumentReferanse=$dokumentReferanse")
         return safConsumer.hentDokument(journalpostId, java.lang.Long.valueOf(dokumentReferanse))
     }
 
@@ -37,20 +38,28 @@ class DokumentService(
                     dokumentreferanse = dokumentReferanse,
                     journalpostId = "JOARK-${it.journalpostId}",
                     format = DokumentFormatDto.PDF,
-                    status = DokumentStatusDto.FERDIGSTILT
+                    status = when(it.journalstatus){
+                        JournalStatus.RESERVERT, JournalStatus.UNDER_ARBEID -> DokumentStatusDto.UNDER_REDIGERING
+                        JournalStatus.AVBRUTT, JournalStatus.FEILREGISTRERT, JournalStatus.UTGAAR -> DokumentStatusDto.AVBRUTT
+                        else -> DokumentStatusDto.FERDIGSTILT
+                    }
                 ) }.first())
         }
 
-        return journalpostService.hentJournalpost(journalpostId).orElse(null)?.dokumenter?.map {
+        val journalpost = journalpostService.hentJournalpost(journalpostId).orElse(null)
+        return journalpost?.dokumenter?.map {
             ÅpneDokumentMetadata(
                 arkivsystem = DokumentArkivSystemDto.JOARK,
                 dokumentreferanse = it.dokumentInfoId,
                 journalpostId = "JOARK-$journalpostId",
                 format = DokumentFormatDto.PDF,
-                status = DokumentStatusDto.FERDIGSTILT
+                status = when(journalpost.journalstatus){
+                    JournalStatus.RESERVERT, JournalStatus.UNDER_ARBEID -> DokumentStatusDto.UNDER_REDIGERING
+                    JournalStatus.AVBRUTT, JournalStatus.FEILREGISTRERT, JournalStatus.UTGAAR -> DokumentStatusDto.AVBRUTT
+                    else -> DokumentStatusDto.FERDIGSTILT
+                }
             )
         }?.filter { dokumentReferanse.isNullOrEmpty() || it.dokumentreferanse == dokumentReferanse } ?: emptyList()
-
     }
 
     companion object {

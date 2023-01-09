@@ -918,10 +918,10 @@ class AvvikControllerTest : AbstractControllerTest() {
 
         val avvikHendelse = createAvvikHendelse(AvvikType.KOPIER_FRA_ANNEN_FAGOMRADE, java.util.Map.of("knyttTilSaker", "$sak1,$sak2"))
         avvikHendelse.dokumenter = listOf(DokumentDto(
-            DOKUMENT_1_ID,
+            dokumentreferanse = DOKUMENT_1_ID,
             tittel = tittelDokument1
         ), DokumentDto(
-                null,
+                dokumentreferanse = null,
                 tittel = tittelDokument2,
                 dokument = dokumentData2
             ))
