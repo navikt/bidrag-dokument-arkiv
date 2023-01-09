@@ -222,7 +222,7 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivOpprettKaltNotContains(false, "avsenderMottaker")
             stubs.verifyStub.dokarkivTilknyttSakerKalt(1, nyJpId)
             stubs.verifyStub.dokarkivTilknyttSakerKalt(nyJpId, saksnummer2)
-            stubs.verifyStub.dokarkivOppdaterKalt(nyJpId, "aud-localhost")
+            stubs.verifyStub.dokarkivOppdaterKalt(nyJpId, "Z9494124")
         }
     }
 
