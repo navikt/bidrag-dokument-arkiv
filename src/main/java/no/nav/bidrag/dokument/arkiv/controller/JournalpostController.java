@@ -1,6 +1,5 @@
 package no.nav.bidrag.dokument.arkiv.controller;
 
-import static no.nav.bidrag.commons.KildesystemIdenfikator.PREFIX_JOARK_COMPLETE;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,7 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import java.util.List;
-import no.nav.bidrag.commons.KildesystemIdenfikator;
+import no.nav.bidrag.commons.util.KildesystemIdenfikator;
 import no.nav.bidrag.commons.web.EnhetFilter;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.model.Discriminator;
@@ -52,7 +51,7 @@ public class JournalpostController extends BaseController {
 
   @GetMapping(ROOT_JOURNAL+"/{joarkJournalpostId}")
   @Operation(
-      description = "Hent en journalpost for en id på formatet '" + PREFIX_JOARK_COMPLETE + "<journalpostId>'",
+      description = "Hent en journalpost for en id på formatet '" + KildesystemIdenfikator.PREFIX_JOARK_COMPLETE + "<journalpostId>'",
       security = {@SecurityRequirement(name = "bearer-key")}
   )
   @ApiResponses(value = {
@@ -93,7 +92,7 @@ public class JournalpostController extends BaseController {
   }
 
   private boolean erIkkePrefixetMedJoark(String joarkJournalpostId) {
-    return !joarkJournalpostId.startsWith(PREFIX_JOARK_COMPLETE);
+    return !joarkJournalpostId.startsWith(KildesystemIdenfikator.PREFIX_JOARK_COMPLETE);
   }
 
   @GetMapping("/sak/{saksnummer}/journal")
@@ -110,7 +109,7 @@ public class JournalpostController extends BaseController {
   }
 
   @PatchMapping(ROOT_JOURNAL+"/{joarkJournalpostId}")
-  @Operation(description = "endre eksisterende journalpost med journalpostId på formatet '" + PREFIX_JOARK_COMPLETE + "<journalpostId>'")
+  @Operation(description = "endre eksisterende journalpost med journalpostId på formatet '" + KildesystemIdenfikator.PREFIX_JOARK_COMPLETE + "<journalpostId>'")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "203", description = "Journalpost er endret"),
       @ApiResponse(responseCode = "400", description = "Prefiks på journalpostId er ugyldig, JournalpostEndreJournalpostCommandDto.gjelder er ikke satt eller det ikke finnes en journalpost på gitt id"),

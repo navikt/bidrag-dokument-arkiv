@@ -125,13 +125,6 @@ public class EndreJournalpostService {
     journalpost.leggTilTilknyttetSak(saksnummer);
   }
 
-  public String tilknyttTilGenerellSak(String tema, Journalpost journalpost){
-    KnyttTilGenerellSakRequest knyttTilGenerellSakRequest = new KnyttTilGenerellSakRequest(journalpost, tema);
-    var response = dokarkivKnyttTilSakConsumer.knyttTilSak(journalpost.hentJournalpostIdLong(), knyttTilGenerellSakRequest);
-    LOGGER.info("Tilknyttet journalpost {} til GENERELL_SAK med ny journalpostId {} og tema {}",journalpost.getJournalpostId(), response.getNyJournalpostId(), tema);
-    return response.getNyJournalpostId();
-  }
-
   private void journalfoerJournalpost(Long journalpostId, String enhet, Journalpost journalpost){
     var journalforRequest = new FerdigstillJournalpostRequest(journalpostId, enhet);
     dokarkivConsumer.ferdigstill(journalforRequest);

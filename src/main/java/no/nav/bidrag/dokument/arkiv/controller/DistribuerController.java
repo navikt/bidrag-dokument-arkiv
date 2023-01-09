@@ -3,7 +3,7 @@ package no.nav.bidrag.dokument.arkiv.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import no.nav.bidrag.commons.KildesystemIdenfikator;
+import no.nav.bidrag.commons.util.KildesystemIdenfikator;
 import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal;
 import no.nav.bidrag.dokument.arkiv.service.DistribuerJournalpostService;
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest;

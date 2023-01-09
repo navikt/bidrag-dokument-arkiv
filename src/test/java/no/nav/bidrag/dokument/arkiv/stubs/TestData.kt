@@ -232,7 +232,7 @@ fun createEndreJournalpostCommand(): EndreJournalpostCommand {
     endreJournalpostCommand.gjelder = "06127412345"
     endreJournalpostCommand.tittel = "So Tired"
     endreJournalpostCommand.endreDokumenter = java.util.List.of(
-        EndreDokument("BLABLA", 1, "In a galazy far far away")
+        EndreDokument("BLABLA", "1", "In a galazy far far away")
     )
     return endreJournalpostCommand
 }

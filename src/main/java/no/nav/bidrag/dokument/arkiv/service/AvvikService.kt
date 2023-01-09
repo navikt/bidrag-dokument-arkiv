@@ -205,7 +205,7 @@ class AvvikService(
         oppgaveService.ferdigstillVurderDokumentOppgaver(journalpost.hentJournalpostIdLong()!!, avvikshendelseIntern.saksbehandlersEnhet!!)
     }
 
-    fun manglerAdresse(journalpost: Journalpost?) {
+    fun manglerAdresse(journalpost: Journalpost) {
         oppdaterDistribusjonsInfoIngenDistribusjon(journalpost)
     }
 
@@ -363,7 +363,7 @@ class AvvikService(
         return journalpost.tilAvvik().contains(avvikType)
     }
 
-    fun oppdaterDistribusjonsInfoIngenDistribusjon(journalpost: Journalpost?) {
+    fun oppdaterDistribusjonsInfoIngenDistribusjon(journalpost: Journalpost) {
         val tilknyttedeJournalpost = journalpostService.hentTilknyttedeJournalposter(journalpost)
         tilknyttedeJournalpost
             .forEach(Consumer { (journalpostId): TilknyttetJournalpost ->

@@ -39,9 +39,7 @@ class JsonMapperTest {
     var journalpost = new Journalpost();
     journalpost.setJournalstatus(JournalStatus.MOTTATT);
     journalpost.setJournalposttype(JournalpostType.I);
-    var endreDokument = new EndreDokument();
-    endreDokument.setTittel("Tittelen på dokument");
-    endreDokument.setDokId(55555);
+    var endreDokument = new EndreDokument(null, "55555","55555", "Tittelen på dokument");
 
     var endreJournalpostCommand = new EndreJournalpostCommand();
     endreJournalpostCommand.setAvsenderNavn("AvsenderNavn");

@@ -176,9 +176,14 @@ data class OppdaterJournalpostResponse(var journalpostId: Long? = null)
 
 data class FerdigstillJournalpostRequest(
         @JsonIgnore
-        var journalpostId: Long,
-        var journalfoerendeEnhet: String
-)
+        val journalpostId: Long,
+        val journalfoerendeEnhet: String,
+        val journalfortAvNavn: String? = null,
+        val opprettetAvNavn: String? = null,
+        val datoJournal: LocalDate? = null,
+){
+    constructor(journalpostId: Long, journalfoerendeEnhet: String): this(journalpostId, journalfoerendeEnhet, null, null, null)
+}
 
 enum class Sakstype {
     FAGSAK, GENERELL_SAK
