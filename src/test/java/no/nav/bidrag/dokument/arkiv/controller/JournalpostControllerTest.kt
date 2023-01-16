@@ -443,7 +443,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val distribuerTilAdresse = createDistribuerTilAdresse()
         distribuerTilAdresse.adresselinje2 = "Adresselinje2"
         distribuerTilAdresse.adresselinje3 = "Adresselinje3"
-        val request = DistribuerJournalpostRequest(distribuerTilAdresse)
+        val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
         val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
@@ -497,7 +497,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val distribuerTilAdresse = createDistribuerTilAdresse()
         distribuerTilAdresse.adresselinje2 = "Adresselinje2"
         distribuerTilAdresse.adresselinje3 = "Adresselinje3"
-        val request = DistribuerJournalpostRequest(distribuerTilAdresse)
+        val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
         val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
@@ -601,7 +601,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val distribuerTilAdresse = createDistribuerTilAdresse()
         distribuerTilAdresse.adresselinje2 = "Adresselinje2"
         distribuerTilAdresse.adresselinje3 = "Adresselinje3"
-        val request = DistribuerJournalpostRequest(distribuerTilAdresse)
+        val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
         val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
@@ -656,7 +656,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val distribuerTilAdresse = createDistribuerTilAdresse()
         distribuerTilAdresse.adresselinje2 = "Adresselinje2"
         distribuerTilAdresse.adresselinje3 = "Adresselinje3"
-        val request = DistribuerJournalpostRequest(distribuerTilAdresse)
+        val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
         val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
@@ -691,7 +691,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponseNoMottaker.json", HttpStatus.OK)
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        val request = DistribuerJournalpostRequest(createDistribuerTilAdresse())
+        val request = DistribuerJournalpostRequest(adresse = createDistribuerTilAdresse())
 
         // when
         val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(

@@ -14,6 +14,7 @@ import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.JoarkOpprettJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostUtsendingKanal
 import no.nav.bidrag.dokument.arkiv.dto.LagreAvsenderNavnRequest
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterOriginalBestiltFlagg
@@ -368,7 +369,7 @@ class AvvikService(
         tilknyttedeJournalpost
             .forEach(Consumer { (journalpostId): TilknyttetJournalpost ->
                 dokarkivConsumer.oppdaterDistribusjonsInfo(
-                    journalpostId, false, JournalpostKanal.INGEN_DISTRIBUSJON
+                    journalpostId, false, JournalpostUtsendingKanal.INGEN_DISTRIBUSJON
                 )
             })
     }

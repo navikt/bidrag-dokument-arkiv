@@ -16,8 +16,8 @@ data class OppdaterFlaggNyDistribusjonBestiltRequest(private var journalpostId: 
 }
 
 data class OppdaterDistribusjonsInfoRequest(
-    var settStatusEkspedert: Boolean,
-    var utsendingsKanal: JournalpostKanal
+    val settStatusEkspedert: Boolean,
+    val utsendingsKanal: JournalpostUtsendingKanal
 )
 
 data class OpprettNyReturLoggRequest(private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {

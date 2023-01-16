@@ -6,10 +6,13 @@ import no.nav.bidrag.dokument.arkiv.consumer.DokdistFordelingConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer
 import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal
 import no.nav.bidrag.dokument.arkiv.dto.JoarkOpprettJournalpostRequest
+import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostUtsendingKanal
 import no.nav.bidrag.dokument.arkiv.dto.LagreAdresseRequest
 import no.nav.bidrag.dokument.arkiv.dto.LagreReturDetaljForSisteReturRequest
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterFlaggNyDistribusjonBestiltRequest
+import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.dupliserJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.fjern
 import no.nav.bidrag.dokument.arkiv.dto.med
@@ -60,7 +63,7 @@ class DistribuerJournalpostService(
             med dokumenter journalpost.dokumenter
         }
         val (journalpostId) = opprettJournalpostService.opprettJournalpost(request, originalJournalpostId = journalpost.hentJournalpostIdLong(), skalFerdigstilles = true)
-        distribuerJournalpost(journalpostId?.toLong(), null, DistribuerJournalpostRequestInternal(distribuerTilAdresse))
+        distribuerJournalpost(journalpostId!!.toLong(), null, DistribuerJournalpostRequestInternal(distribuerTilAdresse))
         endreJournalpostService.lagreJournalpost(OppdaterFlaggNyDistribusjonBestiltRequest(journalpost.hentJournalpostIdLong()!!, journalpost))
     }
 
@@ -74,14 +77,14 @@ class DistribuerJournalpostService(
     }
 
     fun distribuerJournalpost(
-        journalpostId: Long?,
+        journalpostId: Long,
         batchId: String?,
         distribuerJournalpostRequest: DistribuerJournalpostRequestInternal
     ): DistribuerJournalpostResponse {
         val journalpost = journalpostService.hentJournalpost(journalpostId)
             .orElseThrow { JournalpostIkkeFunnetException(String.format("Fant ingen journalpost med id %s", journalpostId)) }
         journalpostService.populerMedTilknyttedeSaker(journalpost)
-        if (journalpost.tilleggsopplysninger.isDistribusjonBestilt()) {
+        if (journalpost.tilleggsopplysninger.isDistribusjonBestilt() || journalpost.journalstatus == JournalStatus.EKSPEDERT) {
             LOGGER.warn(
                 "Distribusjon er allerede bestillt for journalpostid {}{}. Stopper videre behandling",
                 journalpostId,
@@ -90,6 +93,13 @@ class DistribuerJournalpostService(
             return DistribuerJournalpostResponse("JOARK-$journalpostId", null)
         }
         validerKanDistribueres(journalpost)
+
+        if (distribuerJournalpostRequest.erLokalUtksrift()){
+            LOGGER.info("Journalpost $journalpostId er distribuert via lokal utksrift. Oppdaterer journalpost status", journalpostId)
+            oppdaterDistribusjonsInfoLokalUtskrift(journalpostId)
+            return DistribuerJournalpostResponse("JOARK-$journalpostId", null)
+        }
+
         val adresse = hentAdresse(distribuerJournalpostRequest, journalpost)
         if (adresse != null) {
             validerAdresse(adresse)
@@ -125,6 +135,10 @@ class DistribuerJournalpostService(
             adresseResponse.postnummer,
             adresseResponse.poststed
         )
+    }
+
+    fun oppdaterDistribusjonsInfoLokalUtskrift(journalpostId: Long) {
+        endreJournalpostService.oppdaterDistribusjonsInfo(journalpostId, true, JournalpostUtsendingKanal.L)
     }
 
     fun kanDistribuereJournalpost(journalpostId: Long?) {

@@ -9,6 +9,7 @@ import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostUtsendingKanal;
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilAnnenSakRequest;
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilGenerellSakRequest;
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilSakRequest;
@@ -142,4 +143,9 @@ public class EndreJournalpostService {
         () -> new JournalpostIkkeFunnetException("Kunne ikke finne journalpost med id: " + journalpostId)
     );
   }
+
+  public void oppdaterDistribusjonsInfo(Long journalpostId, boolean settStatusEkspedert, JournalpostUtsendingKanal utsendingsKanal) {
+      dokarkivConsumer.oppdaterDistribusjonsInfo(journalpostId, settStatusEkspedert, utsendingsKanal);
+  }
+
 }

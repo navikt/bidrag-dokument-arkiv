@@ -354,6 +354,20 @@ enum class JournalpostKanal {
     DPV,
     DPVS
 }
+
+enum class JournalpostUtsendingKanal {
+    NAV_NO,
+    NAV_NO_CHAT,
+    L, // Lokal utskrift
+    S, // Sentral utksrift
+    INGEN_DISTRIBUSJON,
+    UKJENT,
+    ALTINN,
+    EIA,
+    EESSI,
+    TRYGDERETTEN,
+    HELSENETTET,
+}
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class DistribuertTilAdresseDo(
