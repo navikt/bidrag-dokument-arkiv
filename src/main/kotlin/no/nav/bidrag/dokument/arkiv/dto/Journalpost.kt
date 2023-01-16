@@ -48,6 +48,7 @@ object JournalstatusDto {
     const val EKSPEDERT = "E"
     const val AVBRUTT = "A"
     const val KLAR_TIL_PRINT = "KP"
+    const val UNDER_PRODUKSJON = "D"
     const val RETUR = "RE"
     const val JOURNALFORT = "J"
     const val FERDIGSTILT = "FS"
@@ -100,7 +101,7 @@ data class Journalpost(
                         if(isDistribusjonBestilt()) JournalstatusDto.EKSPEDERT
                         else JournalstatusDto.KLAR_TIL_PRINT
                     else JournalstatusDto.JOURNALFORT
-                JournalStatus.RESERVERT -> JournalstatusDto.RESERVERT
+                JournalStatus.UNDER_ARBEID, JournalStatus.RESERVERT -> JournalstatusDto.UNDER_PRODUKSJON
                 JournalStatus.UTGAAR -> JournalstatusDto.UTGAR
                 JournalStatus.AVBRUTT -> JournalstatusDto.AVBRUTT
                 else -> journalstatus?.name
