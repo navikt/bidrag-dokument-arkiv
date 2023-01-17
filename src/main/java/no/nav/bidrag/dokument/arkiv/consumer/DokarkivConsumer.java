@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import no.nav.bidrag.commons.web.HttpResponse;
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal;
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostUtsendingKanal;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterDistribusjonsInfoRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
@@ -87,7 +88,7 @@ public class DokarkivConsumer extends AbstractConsumer {
     }
   }
 
-  public HttpResponse<Void> oppdaterDistribusjonsInfo(Long journalpostId, boolean settStatusEkspedert, JournalpostKanal utsendingsKanal) {
+  public HttpResponse<Void> oppdaterDistribusjonsInfo(Long journalpostId, boolean settStatusEkspedert, JournalpostUtsendingKanal utsendingsKanal) {
     var endpoint = URL_JOURNALPOSTAPI_V1 + "/%s";
     var oppdaterJoarnalpostApiUrl = String.format(endpoint + "/oppdaterDistribusjonsinfo", journalpostId);
     var request = new OppdaterDistribusjonsInfoRequest(settStatusEkspedert, utsendingsKanal);

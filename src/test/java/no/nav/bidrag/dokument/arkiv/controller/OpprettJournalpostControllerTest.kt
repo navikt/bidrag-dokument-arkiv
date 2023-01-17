@@ -168,6 +168,64 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
         }
     }
 
+    @Test
+    fun `skal opprette og journalføre notat med saksbehandlerident`(){
+        val saksnummer1 = "132213"
+        val saksnummer2 = "1233333"
+        val request = createOpprettJournalpostRequest()
+            .copy(
+                skalFerdigstilles = true,
+                journalposttype = JournalpostType.NOTAT,
+                tilknyttSaker = listOf(saksnummer1, saksnummer2),
+                journalførendeEnhet = "4806",
+                saksbehandlerIdent = "Z9494124"
+            )
+
+        val nyJpId = 123123123L
+
+        val journalpost = opprettSafResponse(nyJpId.toString()).copy(
+            sak = Sak(saksnummer1)
+        )
+        stubs.mockBidragOrganisasjonSaksbehandler(navn = "Hansen, Hans")
+        stubs.mockSafResponseHentJournalpost(journalpost)
+        stubs.mockDokarkivOppdaterRequest(nyJpId)
+        stubs.mockDokarkivFerdigstillRequest(nyJpId)
+        stubs.mockDokarkivTilknyttRequest(nyJpId)
+        stubs.mockDokarkivOpprettRequest(nyJpId,
+            ferdigstill = false,
+            dokumentList = request.dokumenter.map { DokumentInfo("DOK_ID_${it.tittel}") })
+
+        val response = httpHeaderTestRestTemplate.exchange(
+            initUrl() + "/journalpost",
+            HttpMethod.POST,
+            HttpEntity(request),
+            OpprettJournalpostResponse::class.java
+        )
+
+        response.statusCode shouldBe HttpStatus.OK
+
+        val responseBody = response.body!!
+        assertSoftly {
+            responseBody.journalpostId shouldBe nyJpId.toString()
+            responseBody.dokumenter shouldHaveSize 2
+            stubs.verifyStub.dokarkivOpprettKalt(false,
+                "{\"sak\":{\"fagsakId\":\"132213\",\"fagsaksystem\":\"BISYS\",\"sakstype\":\"FAGSAK\"}",
+                "\"tittel\":\"Tittel på hoveddokument\"",
+                "\"journalpostType\":\"NOTAT\"",
+                "\"bruker\":{\"id\":\"12345678910\",\"idType\":\"FNR\"}"
+            )
+            stubs.verifyStub.dokarkivFerdigstillKalt(1, nyJpId, "{\"journalfoerendeEnhet\":\"4806\"," +
+                    "\"journalfortAvNavn\":\"Hansen, Hans\"," +
+                    "\"opprettetAvNavn\":\"Hansen, Hans\"," +
+                    "\"datoJournal\":null}"
+            )
+            stubs.verifyStub.dokarkivOpprettKaltNotContains(false, "avsenderMottaker")
+            stubs.verifyStub.dokarkivTilknyttSakerKalt(1, nyJpId)
+            stubs.verifyStub.dokarkivTilknyttSakerKalt(nyJpId, saksnummer2)
+            stubs.verifyStub.dokarkivOppdaterKalt(nyJpId, "Z9494124")
+        }
+    }
+
 
     @Nested
     inner class Feilhåndtering {

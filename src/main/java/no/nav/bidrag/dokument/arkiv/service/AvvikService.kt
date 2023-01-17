@@ -14,6 +14,7 @@ import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.JoarkOpprettJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostUtsendingKanal
 import no.nav.bidrag.dokument.arkiv.dto.LagreAvsenderNavnRequest
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterOriginalBestiltFlagg
@@ -189,7 +190,7 @@ class AvvikService(
         val request = dupliserJournalpost(journalpost){
             med journalførendeenhet avvikshendelseIntern.saksbehandlersEnhet
             med tittel "$nyJournalpostTittel (Kopiert fra dokument: ${journalpost.hentTittel()})"
-            avvikshendelseIntern.dokumenter!!.forEach(Consumer { (dokumentreferanse, _, tittel, dokument, brevkode): DokumentDto ->
+            avvikshendelseIntern.dokumenter!!.forEach(Consumer { (dokumentreferanse, _, _, tittel, dokument, brevkode): DokumentDto ->
                 val dokumentByte = if (Strings.isNotEmpty(dokument)) Base64.getDecoder().decode(dokument) else null
                 +JoarkOpprettJournalpostRequest.Dokument(
                     dokumentInfoId = dokumentreferanse,
@@ -205,7 +206,7 @@ class AvvikService(
         oppgaveService.ferdigstillVurderDokumentOppgaver(journalpost.hentJournalpostIdLong()!!, avvikshendelseIntern.saksbehandlersEnhet!!)
     }
 
-    fun manglerAdresse(journalpost: Journalpost?) {
+    fun manglerAdresse(journalpost: Journalpost) {
         oppdaterDistribusjonsInfoIngenDistribusjon(journalpost)
     }
 
@@ -363,12 +364,12 @@ class AvvikService(
         return journalpost.tilAvvik().contains(avvikType)
     }
 
-    fun oppdaterDistribusjonsInfoIngenDistribusjon(journalpost: Journalpost?) {
+    fun oppdaterDistribusjonsInfoIngenDistribusjon(journalpost: Journalpost) {
         val tilknyttedeJournalpost = journalpostService.hentTilknyttedeJournalposter(journalpost)
         tilknyttedeJournalpost
             .forEach(Consumer { (journalpostId): TilknyttetJournalpost ->
                 dokarkivConsumer.oppdaterDistribusjonsInfo(
-                    journalpostId, false, JournalpostKanal.INGEN_DISTRIBUSJON
+                    journalpostId, false, JournalpostUtsendingKanal.INGEN_DISTRIBUSJON
                 )
             })
     }

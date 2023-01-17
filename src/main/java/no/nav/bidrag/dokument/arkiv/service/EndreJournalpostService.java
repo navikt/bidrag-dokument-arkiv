@@ -9,6 +9,7 @@ import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostUtsendingKanal;
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilAnnenSakRequest;
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilGenerellSakRequest;
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilSakRequest;
@@ -95,9 +96,9 @@ public class EndreJournalpostService {
     }
   }
 
-  public void lagreSaksbehandlerIdentForJournalfortJournalpost(Journalpost journalpost){
+  public void lagreSaksbehandlerIdentForJournalfortJournalpost(Journalpost journalpost, String saksbehandlerIdent){
     try {
-      lagreJournalpost(new LagreJournalfortAvIdentRequest(journalpost.hentJournalpostIdLong(), journalpost, saksbehandlerInfoManager.hentSaksbehandlerBrukerId()));
+      lagreJournalpost(new LagreJournalfortAvIdentRequest(journalpost.hentJournalpostIdLong(), journalpost, saksbehandlerIdent != null ? saksbehandlerIdent : saksbehandlerInfoManager.hentSaksbehandlerBrukerId()));
     } catch (Exception e){
       throw new LagreSaksbehandlerIdentForJournalfortJournalpostFeilet(
           String.format("Lagring av saksbehandler ident for journalført journalpost %s feilet", journalpost.getJournalpostId()), e);
@@ -125,18 +126,11 @@ public class EndreJournalpostService {
     journalpost.leggTilTilknyttetSak(saksnummer);
   }
 
-  public String tilknyttTilGenerellSak(String tema, Journalpost journalpost){
-    KnyttTilGenerellSakRequest knyttTilGenerellSakRequest = new KnyttTilGenerellSakRequest(journalpost, tema);
-    var response = dokarkivKnyttTilSakConsumer.knyttTilSak(journalpost.hentJournalpostIdLong(), knyttTilGenerellSakRequest);
-    LOGGER.info("Tilknyttet journalpost {} til GENERELL_SAK med ny journalpostId {} og tema {}",journalpost.getJournalpostId(), response.getNyJournalpostId(), tema);
-    return response.getNyJournalpostId();
-  }
-
   private void journalfoerJournalpost(Long journalpostId, String enhet, Journalpost journalpost){
     var journalforRequest = new FerdigstillJournalpostRequest(journalpostId, enhet);
     dokarkivConsumer.ferdigstill(journalforRequest);
     LOGGER.info("Journalpost med id {} er journalført", journalpostId);
-    lagreSaksbehandlerIdentForJournalfortJournalpost(journalpost);
+    lagreSaksbehandlerIdentForJournalfortJournalpost(journalpost, null);
   }
 
   public void oppdaterJournalpostDistribusjonBestiltStatus(Long journalpostId, Journalpost journalpost){
@@ -149,4 +143,9 @@ public class EndreJournalpostService {
         () -> new JournalpostIkkeFunnetException("Kunne ikke finne journalpost med id: " + journalpostId)
     );
   }
+
+  public void oppdaterDistribusjonsInfo(Long journalpostId, boolean settStatusEkspedert, JournalpostUtsendingKanal utsendingsKanal) {
+      dokarkivConsumer.oppdaterDistribusjonsInfo(journalpostId, settStatusEkspedert, utsendingsKanal);
+  }
+
 }

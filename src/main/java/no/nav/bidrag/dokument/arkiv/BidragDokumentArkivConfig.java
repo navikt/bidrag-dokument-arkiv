@@ -111,7 +111,7 @@ public class BidragDokumentArkivConfig {
     httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.dokdistFordelingUrl));
     httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
     DokdistFordelingConsumer dokdistFordelingConsumer = new DokdistFordelingConsumer(httpHeaderRestTemplate, objectMapper);
-    dokdistFordelingConsumer.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor());
+    dokdistFordelingConsumer.leggTilInterceptor(securityTokenService.clientCredentialsTokenInterceptor(null));
     return dokdistFordelingConsumer;
   }
 
@@ -175,7 +175,7 @@ public class BidragDokumentArkivConfig {
       SecurityTokenService securityTokenService
   ) {
     safConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor("saf"));
-    safConsumerServiceUser.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor("saf"));
+    safConsumerServiceUser.leggTilInterceptor(securityTokenService.clientCredentialsTokenInterceptor("saf"));
     var safConsumers = new HashMap<Discriminator, SafConsumer>();
     safConsumers.put(Discriminator.REGULAR_USER, safConsumerRegularUser);
     safConsumers.put(Discriminator.SERVICE_USER, safConsumerServiceUser);
@@ -189,7 +189,7 @@ public class BidragDokumentArkivConfig {
       SecurityTokenService securityTokenService
   ) {
     oppgaveConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor("oppgave"));
-    oppgaveConsumerServiceUser.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor("oppgave"));
+    oppgaveConsumerServiceUser.leggTilInterceptor(securityTokenService.clientCredentialsTokenInterceptor("oppgave"));
     var safConsumers = new HashMap<Discriminator, OppgaveConsumer>();
     safConsumers.put(Discriminator.REGULAR_USER, oppgaveConsumerRegularUser);
     safConsumers.put(Discriminator.SERVICE_USER, oppgaveConsumerServiceUser);
@@ -203,7 +203,7 @@ public class BidragDokumentArkivConfig {
       SecurityTokenService securityTokenService
   ) {
     personConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor("bidrag-person"));
-    personConsumerServiceUser.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor("bidrag-person"));
+    personConsumerServiceUser.leggTilInterceptor(securityTokenService.clientCredentialsTokenInterceptor("bidrag-person"));
     var personConsumers = new HashMap<Discriminator, PersonConsumer>();
     personConsumers.put(Discriminator.REGULAR_USER, personConsumerRegularUser);
     personConsumers.put(Discriminator.SERVICE_USER, personConsumerServiceUser);
@@ -221,7 +221,6 @@ public class BidragDokumentArkivConfig {
 
     DokarkivKnyttTilSakConsumer dokarkivKnyttTilSakConsumer = new DokarkivKnyttTilSakConsumer(httpHeaderRestTemplate);
     dokarkivKnyttTilSakConsumer.leggTilInterceptor(securityTokenService.authTokenInterceptor("dokarkiv"));
-    dokarkivKnyttTilSakConsumer.leggTilInterceptor(securityTokenService.navConsumerTokenInterceptor(true));
     return dokarkivKnyttTilSakConsumer;
   }
 
@@ -232,8 +231,7 @@ public class BidragDokumentArkivConfig {
       SecurityTokenService securityTokenService
   ) {
     dokarkivConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor("dokarkiv"));
-    dokarkivConsumerRegularUser.leggTilInterceptor(securityTokenService.navConsumerTokenInterceptor(true));
-    dokarkivConsumerServiceUser.leggTilInterceptor(securityTokenService.serviceUserAuthTokenInterceptor("dokarkiv"));
+    dokarkivConsumerServiceUser.leggTilInterceptor(securityTokenService.clientCredentialsTokenInterceptor("dokarkiv"));
     var dokarkivConsumers = new HashMap<Discriminator, DokarkivConsumer>();
     dokarkivConsumers.put(Discriminator.REGULAR_USER, dokarkivConsumerRegularUser);
     dokarkivConsumers.put(Discriminator.SERVICE_USER, dokarkivConsumerServiceUser);
@@ -247,7 +245,7 @@ public class BidragDokumentArkivConfig {
       EnvironmentProperties environmentProperties
   ) {
     httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.bidragOrganisasjonUrl + "/bidrag-organisasjon"));
-    httpHeaderRestTemplate.getInterceptors().add(securityTokenService.serviceUserAuthTokenInterceptor("bidrag-organisasjon"));
+    httpHeaderRestTemplate.getInterceptors().add(securityTokenService.clientCredentialsTokenInterceptor("bidrag-organisasjon"));
     return new BidragOrganisasjonConsumer(httpHeaderRestTemplate);
   }
 

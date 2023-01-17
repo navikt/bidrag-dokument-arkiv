@@ -69,7 +69,9 @@ data class DistribuerJournalpostRequestInternal(
     var request: DistribuerJournalpostRequest? = null
 ) {
 
-    constructor(distribuerTilAdresse: DistribuerTilAdresse?): this(DistribuerJournalpostRequest(distribuerTilAdresse))
+    constructor(distribuerTilAdresse: DistribuerTilAdresse?): this(DistribuerJournalpostRequest(adresse = distribuerTilAdresse))
+
+    fun erLokalUtskrift(): Boolean = request?.lokalUtskrift ?: false
     fun hasAdresse(): Boolean = request?.adresse != null
     fun getAdresse(): DistribuerTilAdresse? {
         val adresse = request?.adresse
@@ -77,7 +79,7 @@ data class DistribuerJournalpostRequestInternal(
             adresselinje1 = StringUtils.stripToNull(adresse.adresselinje1),
             adresselinje2 = StringUtils.stripToNull(adresse.adresselinje2),
             adresselinje3 = StringUtils.stripToNull(adresse.adresselinje3),
-            land = adresse.land!!,
+            land = adresse.land ?: ALPHA2_NORGE,
             poststed = StringUtils.stripToNull(adresse.poststed),
             postnummer = StringUtils.stripToNull(adresse.postnummer)
         ) else null

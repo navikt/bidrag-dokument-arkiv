@@ -1,9 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.controller;
 
 
-import static no.nav.bidrag.commons.KildesystemIdenfikator.PREFIX_BIDRAG_COMPLETE;
-import static no.nav.bidrag.commons.KildesystemIdenfikator.PREFIX_JOARK;
-import static no.nav.bidrag.commons.KildesystemIdenfikator.PREFIX_JOARK_COMPLETE;
 import static no.nav.bidrag.commons.web.WebUtil.initHttpHeadersWith;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
 
@@ -16,7 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import java.util.List;
 import java.util.Optional;
-import no.nav.bidrag.commons.KildesystemIdenfikator;
+import no.nav.bidrag.commons.util.KildesystemIdenfikator;
 import no.nav.bidrag.commons.web.EnhetFilter;
 import no.nav.bidrag.dokument.arkiv.dto.AvvikshendelseIntern;
 import no.nav.bidrag.dokument.arkiv.service.AvvikService;
@@ -53,7 +50,7 @@ public class AvvikController extends BaseController {
   @GetMapping(ROOT_JOURNAL+"/{journalpostId}/avvik")
   @Operation(
       security = {@SecurityRequirement(name = "bearer-key")},
-      summary = "Henter mulige avvik for en journalpost, id på formatet '" + PREFIX_JOARK + "<journalpostId>'"
+      summary = "Henter mulige avvik for en journalpost, id på formatet '" + KildesystemIdenfikator.PREFIX_JOARK + "<journalpostId>'"
   )
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Tilgjengelig avvik for journalpost er hentet"),
@@ -84,7 +81,7 @@ public class AvvikController extends BaseController {
   @PostMapping(value = ROOT_JOURNAL + "/{journalpostId}/avvik", consumes = MediaType.APPLICATION_JSON_VALUE)
   @Operation(
       security = {@SecurityRequirement(name = "bearer-key")},
-      summary = "Behandler et avvik for en journalpost, id på formatet '" + PREFIX_JOARK_COMPLETE + "<journalpostId>'"
+      summary = "Behandler et avvik for en journalpost, id på formatet '" + KildesystemIdenfikator.PREFIX_JOARK_COMPLETE + "<journalpostId>'"
   )
   @Transactional
   @ApiResponses(value = {

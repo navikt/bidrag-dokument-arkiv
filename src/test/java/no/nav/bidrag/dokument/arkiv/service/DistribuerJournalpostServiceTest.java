@@ -129,7 +129,7 @@ public class DistribuerJournalpostServiceTest {
   }
 
   private DistribuerJournalpostRequest createValidDistribuerJournalpostRequest(){
-    return new DistribuerJournalpostRequest(createDistribuerTilAdresse());
+    return new DistribuerJournalpostRequest(null, false, createDistribuerTilAdresse());
   }
 
   private Journalpost createValidJournalpost(){

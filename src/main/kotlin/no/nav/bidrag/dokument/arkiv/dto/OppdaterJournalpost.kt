@@ -16,8 +16,8 @@ data class OppdaterFlaggNyDistribusjonBestiltRequest(private var journalpostId: 
 }
 
 data class OppdaterDistribusjonsInfoRequest(
-    var settStatusEkspedert: Boolean,
-    var utsendingsKanal: JournalpostKanal
+    val settStatusEkspedert: Boolean,
+    val utsendingsKanal: JournalpostUtsendingKanal
 )
 
 data class OpprettNyReturLoggRequest(private var journalpost: Journalpost): OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {
@@ -176,9 +176,14 @@ data class OppdaterJournalpostResponse(var journalpostId: Long? = null)
 
 data class FerdigstillJournalpostRequest(
         @JsonIgnore
-        var journalpostId: Long,
-        var journalfoerendeEnhet: String
-)
+        val journalpostId: Long,
+        val journalfoerendeEnhet: String,
+        val journalfortAvNavn: String? = null,
+        val opprettetAvNavn: String? = null,
+        val datoJournal: LocalDate? = null,
+){
+    constructor(journalpostId: Long, journalfoerendeEnhet: String): this(journalpostId, journalfoerendeEnhet, null, null, null)
+}
 
 enum class Sakstype {
     FAGSAK, GENERELL_SAK
