@@ -8,8 +8,7 @@ import mu.KotlinLogging
 import no.nav.bidrag.commons.util.KildesystemIdenfikator
 import no.nav.bidrag.commons.web.WebUtil
 import no.nav.bidrag.dokument.arkiv.service.DokumentService
-import no.nav.bidrag.dokument.arkiv.service.JournalpostService
-import no.nav.bidrag.dokument.dto.ÅpneDokumentMetadata
+import no.nav.bidrag.dokument.dto.DokumentMetadata
 import no.nav.security.token.support.core.api.Protected
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -46,7 +45,7 @@ class DokumentController(private val dokumentService: DokumentService) {
 
     @RequestMapping(value = ["/dokument/{journalpostId}/{dokumentreferanse}", "/dokument/{journalpostId}", "/dokumentreferanse/{dokumentreferanse}"], method = [RequestMethod.OPTIONS])
     @Operation(security = [SecurityRequirement(name = "bearer-key")], summary = "Henter dokument for journalpostid og dokumentreferanse. ")
-    fun hentDokumentMetadata(@PathVariable(required = false) journalpostId: String?, @PathVariable(required = false) dokumentreferanse: String?): ResponseEntity<List<ÅpneDokumentMetadata>> {
+    fun hentDokumentMetadata(@PathVariable(required = false) journalpostId: String?, @PathVariable(required = false) dokumentreferanse: String?): ResponseEntity<List<DokumentMetadata>> {
         LOGGER.info("Henter dokument for journalpost $journalpostId og dokumentId $dokumentreferanse")
         if (journalpostId.isNullOrEmpty() && dokumentreferanse.isNullOrEmpty()) {
             return ResponseEntity

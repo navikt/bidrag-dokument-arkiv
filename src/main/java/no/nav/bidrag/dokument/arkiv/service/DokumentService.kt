@@ -2,13 +2,12 @@ package no.nav.bidrag.dokument.arkiv.service
 
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
-import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.model.Discriminator
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
 import no.nav.bidrag.dokument.dto.DokumentArkivSystemDto
 import no.nav.bidrag.dokument.dto.DokumentFormatDto
+import no.nav.bidrag.dokument.dto.DokumentMetadata
 import no.nav.bidrag.dokument.dto.DokumentStatusDto
-import no.nav.bidrag.dokument.dto.ÅpneDokumentMetadata
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
@@ -31,7 +30,7 @@ class DokumentService(
         return safConsumer.hentDokument(journalpostId, java.lang.Long.valueOf(dokumentReferanse))
     }
 
-    fun tilÅpneDokumentMetadata(journalStatus: JournalStatus?, dokumentReferanse: String?, journalpostId: Long?) = ÅpneDokumentMetadata(
+    fun tilÅpneDokumentMetadata(journalStatus: JournalStatus?, dokumentReferanse: String?, journalpostId: Long?) = DokumentMetadata(
         arkivsystem = DokumentArkivSystemDto.JOARK,
         dokumentreferanse = dokumentReferanse,
         journalpostId = "JOARK-$journalpostId",
@@ -42,7 +41,7 @@ class DokumentService(
             else -> DokumentStatusDto.FERDIGSTILT
         }
     )
-    fun hentDokumentMetadata(journalpostId: Long? = null, dokumentReferanse: String?): List<ÅpneDokumentMetadata> {
+    fun hentDokumentMetadata(journalpostId: Long? = null, dokumentReferanse: String?): List<DokumentMetadata> {
         if (journalpostId == null && dokumentReferanse != null){
             return listOf(journalpostService.finnTilknyttedeJournalposter(dokumentReferanse)
                 .map { tilÅpneDokumentMetadata(it.journalstatus, dokumentReferanse, it.journalpostId) }.first())
