@@ -71,7 +71,7 @@ data class DistribuerJournalpostRequestInternal(
 
     constructor(distribuerTilAdresse: DistribuerTilAdresse?): this(DistribuerJournalpostRequest(adresse = distribuerTilAdresse))
 
-    fun erLokalUtksrift(): Boolean = request?.lokalUtskrift ?: false
+    fun erLokalUtskrift(): Boolean = request?.lokalUtskrift ?: false
     fun hasAdresse(): Boolean = request?.adresse != null
     fun getAdresse(): DistribuerTilAdresse? {
         val adresse = request?.adresse

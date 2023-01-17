@@ -5,18 +5,15 @@ import io.micrometer.core.instrument.MeterRegistry
 import no.nav.bidrag.dokument.arkiv.consumer.DokdistFordelingConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer
 import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal
-import no.nav.bidrag.dokument.arkiv.dto.JoarkOpprettJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostUtsendingKanal
 import no.nav.bidrag.dokument.arkiv.dto.LagreAdresseRequest
 import no.nav.bidrag.dokument.arkiv.dto.LagreReturDetaljForSisteReturRequest
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterFlaggNyDistribusjonBestiltRequest
-import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.dupliserJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.fjern
 import no.nav.bidrag.dokument.arkiv.dto.med
-import no.nav.bidrag.dokument.arkiv.dto.opprettDokumentVariant
 import no.nav.bidrag.dokument.arkiv.dto.validerAdresse
 import no.nav.bidrag.dokument.arkiv.dto.validerKanDistribueres
 import no.nav.bidrag.dokument.arkiv.dto.validerUtgaaendeJournalpostKanDupliseres
@@ -26,10 +23,8 @@ import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
 import no.nav.bidrag.dokument.arkiv.model.UgyldigDistribusjonException
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
-import no.nav.bidrag.dokument.dto.DokumentDto
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import java.util.Base64
 import java.util.Objects
 
 @Service
@@ -94,8 +89,8 @@ class DistribuerJournalpostService(
         }
         validerKanDistribueres(journalpost)
 
-        if (distribuerJournalpostRequest.erLokalUtksrift()){
-            LOGGER.info("Journalpost $journalpostId er distribuert via lokal utksrift. Oppdaterer journalpost status", journalpostId)
+        if (distribuerJournalpostRequest.erLokalUtskrift()){
+            LOGGER.info("Journalpost $journalpostId er distribuert via lokal utskrift. Oppdaterer journalpost status")
             oppdaterDistribusjonsInfoLokalUtskrift(journalpostId)
             return DistribuerJournalpostResponse("JOARK-$journalpostId", null)
         }
