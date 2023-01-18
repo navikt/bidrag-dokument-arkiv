@@ -22,7 +22,7 @@
 
     <!-- language -->
     <java.version>17</java.version>
-    <kotlin.version>1.7.21</kotlin.version>
+    <kotlin.version>1.8.0</kotlin.version>
 
     <!-- dependent versions other than from spring-boot -->
     <apache-avro-version>1.11.1</apache-avro-version>
