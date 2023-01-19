@@ -25,6 +25,7 @@ env:
   PERSON_SCOPE: prod-fss.bidrag.bidrag-person
   BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon.nais.adeo.no
   ORGANISASJON_SCOPE: prod-fss.bidrag.bidrag-organisasjon
+  JAVA_OPTS: -Xmx1500m
 vault:
   kvPath: prod
 azureAccessInbound:

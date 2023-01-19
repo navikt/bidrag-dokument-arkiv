@@ -26,7 +26,7 @@ env:
     PERSON_SCOPE: dev-fss.bidrag.bidrag-person
     BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon.dev.adeo.no
     ORGANISASJON_SCOPE: dev-fss.bidrag.bidrag-organisasjon
-    JAVA_OPTS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
+    JAVA_OPTS: -Xmx1500m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
 vault:
   kvPath: dev
 azureAccessInbound:
