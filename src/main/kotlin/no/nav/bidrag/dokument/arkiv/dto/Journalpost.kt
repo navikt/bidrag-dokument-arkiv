@@ -102,6 +102,7 @@ data class Journalpost(
                     if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON)
                         if(isDistribusjonBestilt()) JournalstatusDto.EKSPEDERT
                         else JournalstatusDto.KLAR_TIL_PRINT
+                    else if (isNotat()) JournalstatusDto.RESERVERT
                     else JournalstatusDto.JOURNALFORT
                 JournalStatus.UNDER_ARBEID, JournalStatus.RESERVERT -> JournalstatusDto.UNDER_PRODUKSJON
                 JournalStatus.UTGAAR -> JournalstatusDto.UTGAR

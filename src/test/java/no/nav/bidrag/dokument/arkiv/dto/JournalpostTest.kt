@@ -144,7 +144,7 @@ internal class JournalpostTest {
         journalpost.journalposttype = JournalpostType.N
         journalpost.tilleggsopplysninger.setDistribusjonBestillt()
         org.junit.jupiter.api.Assertions.assertAll(
-            Executable { assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.JOURNALFORT) },
+            Executable { assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.RESERVERT) },
             Executable { assertThat(journalpost.hentJournalpostType()).isEqualTo("X") }
         )
     }
