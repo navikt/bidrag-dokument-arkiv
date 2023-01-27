@@ -72,17 +72,17 @@ jobs:
     needs: deploy
 
     env:
-      INGRESS_OPPGAVE: https://oppgave-q2.nais.preprod.local
-      INGRESS_ARKIV: https://bidrag-dokument-arkiv.dev.adeo.no
-      INGRESS_CUCUMBER: https://bidrag-cucumber-onprem.dev.adeo.no
-      INGRESS_DOKARKIV: https://dokarkiv-q2.dev.adeo.no
+      INGRESS_OPPGAVE: https://oppgave.dev.intern.nav.no
+      INGRESS_ARKIV: https://bidrag-dokument-arkiv.dev.intern.nav.no
+      INGRESS_CUCUMBER: https://bidrag-cucumber-onprem.dev.intern.nav.no
+      INGRESS_DOKARKIV: https://dokarkiv-q2.dev.intern.nav.no
 
     steps:
       - run: |
-          echo "INGRESS_OPPGAVE=https://oppgave.nais.preprod.local" >> $GITHUB_ENV
-          echo "INGRESS_ARKIV=https://bidrag-dokument-arkiv-feature.dev.adeo.no" >> $GITHUB_ENV
-          echo "INGRESS_CUCUMBER=https://bidrag-cucumber-onprem-feature.dev.adeo.no" >> $GITHUB_ENV
-          echo "INGRESS_DOKARKIV=https://dokarkiv-q1.dev.adeo.no" >> $GITHUB_ENV
+          echo "INGRESS_OPPGAVE=https://oppgave-q1.dev.intern.nav.no" >> $GITHUB_ENV
+          echo "INGRESS_ARKIV=https://bidrag-dokument-arkiv-feature.dev.intern.nav.no" >> $GITHUB_ENV
+          echo "INGRESS_CUCUMBER=https://bidrag-cucumber-onprem-feature.dev.intern.nav.no >> $GITHUB_ENV
+          echo "INGRESS_DOKARKIV=https://dokarkiv-q1.dev.intern.nav.no" >> $GITHUB_ENV
         if: github.ref != 'refs/heads/main'
       - name: "@arkiv-swagger"
         run: |
