@@ -29,8 +29,8 @@ class JournalpostService(private val safConsumer: SafConsumer, private val perso
         return hentJournalpostMedFnr(journalpostId, saksnummer)?.let { Optional.ofNullable(populerMedTilknyttedeSaker(it)) } ?: Optional.empty()
     }
 
-    fun finnJournalposter(saksnummer: String?, fagomrade: String?): List<JournalpostDto> {
-        return finnJournalposterForSaksnummer(saksnummer, fagomrade)
+    fun finnJournalposter(saksnummer: String?, fagomrade: String = "BID"): List<JournalpostDto> {
+        return finnJournalposterForSaksnummer(saksnummer, listOf("FAR", fagomrade))
             .map { journalpost: Journalpost -> konverterAktoerIdTilFnr(journalpost) }
             .filter { !(it.tilleggsopplysninger.isEndretTema() || it.tilleggsopplysninger.isNyDistribusjonBestilt()) }
             .map { it.tilJournalpostDto() }
@@ -75,7 +75,7 @@ class JournalpostService(private val safConsumer: SafConsumer, private val perso
         return hentJournalpost(journalpostId, saksummer)?.let { konverterAktoerIdTilFnr(it) }
     }
 
-    fun finnJournalposterForSaksnummer(saksnummer: String?, fagomrade: String?): List<Journalpost> {
+    fun finnJournalposterForSaksnummer(saksnummer: String?, fagomrade: List<String> = emptyList()): List<Journalpost> {
         return safConsumer.finnJournalposter(saksnummer, fagomrade)
     }
 

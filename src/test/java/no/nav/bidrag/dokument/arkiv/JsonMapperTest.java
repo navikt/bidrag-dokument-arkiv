@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
@@ -108,7 +109,7 @@ class JsonMapperTest {
   @Test
   @DisplayName("skal mappe saf dokumentOversiktFagsak query til java.util.Map")
   void skalMappeSafDokumentOversiktQueryTilMap() {
-    var safQuery = new DokumentoversiktFagsakQuery("666", "BID");
+    var safQuery = new DokumentoversiktFagsakQuery("666", Arrays.asList("BID"));
 
     assertAll(
         () -> assertThat(safQuery.getQuery()).as("querystring")
