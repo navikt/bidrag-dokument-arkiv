@@ -117,7 +117,7 @@ class JsonMapperTest {
             .contains("tema:$tema"),
         () -> assertThat(safQuery.getVariables()).as("Variables")
             .containsEntry("fagsakId", "666")
-            .containsEntry("tema", "BID")
+            .containsEntry("tema", Arrays.asList("BID"))
     );
   }
 

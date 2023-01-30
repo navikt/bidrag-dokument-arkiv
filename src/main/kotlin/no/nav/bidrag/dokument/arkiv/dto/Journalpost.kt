@@ -24,6 +24,7 @@ import no.nav.bidrag.dokument.dto.JournalpostDto
 import no.nav.bidrag.dokument.dto.JournalpostResponse
 import no.nav.bidrag.dokument.dto.Kanal
 import no.nav.bidrag.dokument.dto.KodeDto
+import no.nav.bidrag.dokument.dto.MottakerAdresseTo
 import no.nav.bidrag.dokument.dto.ReturDetaljer
 import no.nav.bidrag.dokument.dto.ReturDetaljerLog
 import org.apache.logging.log4j.util.Strings
@@ -241,7 +242,8 @@ data class Journalpost(
                         AvsenderMottakerIdType.FNR -> AvsenderMottakerDtoIdType.FNR
                         AvsenderMottakerIdType.ORGNR -> AvsenderMottakerDtoIdType.ORGNR
                         else -> AvsenderMottakerDtoIdType.UKJENT
-                }
+                },
+                adresse = tilleggsopplysninger.hentAdresseDo()?.toMottakerAdresse()
             ) else null,
             dokumenter = dokumenter.stream().map { dok -> dok?.tilDokumentDto(hentJournalpostType()) }.collect(toList()) as List<DokumentDto>,
             dokumentDato = hentDokumentDato(),
@@ -387,6 +389,17 @@ data class DistribuertTilAdresseDo(
             adresselinje2 = adresselinje2,
             adresselinje3 = adresselinje3,
             land = land,
+            postnummer = postnummer,
+            poststed = poststed
+        )
+    }
+
+    fun toMottakerAdresse(): MottakerAdresseTo {
+        return MottakerAdresseTo(
+            adresselinje1 = adresselinje1 ?: "",
+            adresselinje2 = adresselinje2,
+            adresselinje3 = adresselinje3,
+            landkode = land,
             postnummer = postnummer,
             poststed = poststed
         )
