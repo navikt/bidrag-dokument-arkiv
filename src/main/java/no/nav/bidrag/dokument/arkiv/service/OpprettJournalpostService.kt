@@ -216,11 +216,11 @@ class OpprettJournalpostService(
     ) else JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
         navn = request.avsenderMottaker?.navn,
         id = request.avsenderMottaker?.ident,
-        idType = when(request.avsenderMottaker?.type){
+        idType = request.avsenderMottaker?.ident?.let { when(request.avsenderMottaker?.type){
             AvsenderMottakerDtoIdType.FNR -> AvsenderMottakerIdType.FNR
             AvsenderMottakerDtoIdType.ORGNR -> AvsenderMottakerIdType.ORGNR
             AvsenderMottakerDtoIdType.UTENLANDSK_ORGNR -> AvsenderMottakerIdType.UTL_ORG
-            else -> null
+            else -> AvsenderMottakerIdType.FNR }
         }
     )
 
