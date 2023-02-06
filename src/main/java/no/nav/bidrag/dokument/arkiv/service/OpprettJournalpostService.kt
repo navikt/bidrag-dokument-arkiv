@@ -11,6 +11,7 @@ import no.nav.bidrag.dokument.arkiv.dto.JoarkOpprettJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.JoarkOpprettJournalpostResponse
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
+import no.nav.bidrag.dokument.arkiv.dto.erSamhandler
 import no.nav.bidrag.dokument.arkiv.dto.hentGjelderIdent
 import no.nav.bidrag.dokument.arkiv.dto.hentGjelderType
 import no.nav.bidrag.dokument.arkiv.dto.hentJournalførendeEnhet
@@ -35,7 +36,6 @@ import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.util.Base64
 
-fun AvsenderMottakerDto.erSamhandler(): Boolean = type == AvsenderMottakerDtoIdType.SAMHANDLER
 @Service
 class OpprettJournalpostService(
     dokarkivConsumers: ResourceByDiscriminator<DokarkivConsumer?>,
