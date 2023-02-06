@@ -10,6 +10,7 @@ import no.nav.bidrag.dokument.arkiv.dto.JoarkMottakUtsendingKanal
 import no.nav.bidrag.dokument.arkiv.dto.JoarkOpprettJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.JoarkOpprettJournalpostResponse
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
+import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
 import no.nav.bidrag.dokument.arkiv.dto.hentGjelderIdent
 import no.nav.bidrag.dokument.arkiv.dto.hentGjelderType
 import no.nav.bidrag.dokument.arkiv.dto.hentJournalførendeEnhet
@@ -21,6 +22,8 @@ import no.nav.bidrag.dokument.arkiv.model.KunneIkkeJournalforeOpprettetJournalpo
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager
 import no.nav.bidrag.dokument.arkiv.service.utvidelser.erNotat
+import no.nav.bidrag.dokument.dto.AvsenderMottakerDto
+import no.nav.bidrag.dokument.dto.AvsenderMottakerDtoIdType
 import no.nav.bidrag.dokument.dto.JournalpostType
 import no.nav.bidrag.dokument.dto.MottakUtsendingKanal
 import no.nav.bidrag.dokument.dto.OpprettDokumentDto
@@ -32,6 +35,7 @@ import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.util.Base64
 
+fun AvsenderMottakerDto.erSamhandler(): Boolean = type == AvsenderMottakerDtoIdType.SAMHANDLER
 @Service
 class OpprettJournalpostService(
     dokarkivConsumers: ResourceByDiscriminator<DokarkivConsumer?>,
@@ -158,6 +162,13 @@ class OpprettJournalpostService(
         val hovedTittel = hoveddokument.tittel
         val erInngaendeOgSkalIkkeJournalfores = request.journalposttype == JournalpostType.INNGÅENDE && !request.skalFerdigstilles
         val erInngaende = request.journalposttype == JournalpostType.INNGÅENDE
+        val samhandlerId = request.avsenderMottaker?.takeIf { it.type == AvsenderMottakerDtoIdType.SAMHANDLER }?.ident
+        val tilleggsOpplysninger = TilleggsOpplysninger()
+
+        samhandlerId?.let {
+            tilleggsOpplysninger.leggTilSamhandlerId(it)
+        }
+
         return JoarkOpprettJournalpostRequest(
             tittel = hovedTittel,
             tema = request.tema ?: "BID",
@@ -184,11 +195,7 @@ class OpprettJournalpostService(
                 id = request.hentGjelderIdent(),
                 idType = request.hentGjelderType()?.name
             ),
-            avsenderMottaker = if (request.journalposttype != JournalpostType.NOTAT) JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
-                request.avsenderMottaker?.navn,
-                request.avsenderMottaker?.ident,
-                request.avsenderMottaker?.type?.let { AvsenderMottakerIdType.valueOf(it.name)  } ?: AvsenderMottakerIdType.FNR
-            ) else null,
+            avsenderMottaker = if (request.journalposttype != JournalpostType.NOTAT) mapMottaker(request) else null,
             sak = if (erInngaendeOgSkalIkkeJournalfores || tilknyttSaker.isEmpty()) null
                   else JoarkOpprettJournalpostRequest.OpprettJournalpostSak(tilknyttSaker[0]),
             dokumenter = request.dokumenter.mapIndexed { i, it ->
@@ -197,10 +204,25 @@ class OpprettJournalpostService(
                     tittel = it.tittel,
                     dokumentvarianter = listOf(opprettDokumentVariant(null, it.fysiskDokument ?: Base64.getDecoder().decode(it.dokument)))
                 )
-            }
+            },
+            tilleggsopplysninger = tilleggsOpplysninger
         )
 
     }
+
+    private fun mapMottaker(request: OpprettJournalpostRequest): JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker = if (request.avsenderMottaker?.erSamhandler() == true)
+    JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
+       navn = request.avsenderMottaker?.navn,
+    ) else JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
+        navn = request.avsenderMottaker?.navn,
+        id = request.avsenderMottaker?.ident,
+        idType = when(request.avsenderMottaker?.type){
+            AvsenderMottakerDtoIdType.FNR -> AvsenderMottakerIdType.FNR
+            AvsenderMottakerDtoIdType.ORGNR -> AvsenderMottakerIdType.ORGNR
+            AvsenderMottakerDtoIdType.UTENLANDSK_ORGNR -> AvsenderMottakerIdType.UTL_ORG
+            else -> null
+        }
+    )
 
     private fun hentDokument(journalpostId: Long, dokumentId: String): ByteArray {
         return dokumentService.hentDokument(journalpostId, dokumentId).body!!

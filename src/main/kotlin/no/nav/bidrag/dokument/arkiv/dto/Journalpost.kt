@@ -35,6 +35,7 @@ import java.util.stream.Collectors.toList
 // Max key length is 20
 const val RETUR_DETALJER_KEY = "retur"
 const val DISTRIBUERT_ADRESSE_KEY = "distAdresse"
+const val SAMHANDLER_ID_KEY = "samhandlerId"
 const val DISTRIBUSJON_BESTILT_KEY = "distribusjonBestilt"
 const val AVVIK_ENDRET_TEMA_KEY = "avvikEndretTema"
 const val ORIGINAL_BESTILT_KEY = "originalBestilt"
@@ -232,13 +233,14 @@ data class Journalpost(
     fun hentTittel(): String? = hentHoveddokument()?.tittel ?: tittel
     fun tilJournalpostDto(): JournalpostDto {
 
+        val erSamhandlerId =  tilleggsopplysninger.hentSamhandlerId() != null
         @Suppress("UNCHECKED_CAST")
         return JournalpostDto(
             avsenderNavn = avsenderMottaker?.navn,
             avsenderMottaker = if (avsenderMottaker != null) AvsenderMottakerDto(
                 navn = avsenderMottaker!!.navn,
-                ident = avsenderMottaker!!.id,
-                type = when(avsenderMottaker!!.type){
+                ident = tilleggsopplysninger.hentSamhandlerId() ?: avsenderMottaker!!.id,
+                type = if(erSamhandlerId) null else when(avsenderMottaker!!.type){
                         AvsenderMottakerIdType.FNR -> AvsenderMottakerDtoIdType.FNR
                         AvsenderMottakerIdType.ORGNR -> AvsenderMottakerDtoIdType.ORGNR
                         else -> AvsenderMottakerDtoIdType.UKJENT
@@ -489,6 +491,17 @@ class TilleggsOpplysninger: MutableList<Map<String, String>> by mutableListOf() 
         this.addAll(adresseDo.toMap())
     }
 
+    fun leggTilSamhandlerId(samhandlerId: String){
+        this.removeAll{ it["nokkel"]?.contains(SAMHANDLER_ID_KEY) ?: false}
+        this.add(mapOf("nokkel" to SAMHANDLER_ID_KEY, "verdi" to samhandlerId))
+    }
+
+    fun hentSamhandlerId(): String?{
+        return this.filter { it["nokkel"]?.contains(SAMHANDLER_ID_KEY) ?: false}
+            .filter { Strings.isNotEmpty(it["verdi"]) }
+            .map { it["verdi"] }
+            .firstOrNull()
+    }
     fun addReturDetaljLog(returDetaljerLogDO: ReturDetaljerLogDO){
         this.addAll(returDetaljerLogDO.toMap())
     }

@@ -1,151 +1,149 @@
-package no.nav.bidrag.dokument.arkiv.service;
+package no.nav.bidrag.dokument.arkiv.service
 
-import java.util.Objects;
-import java.util.stream.Collectors;
-import no.nav.bidrag.commons.web.HttpResponse;
-import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer;
-import no.nav.bidrag.dokument.arkiv.consumer.DokarkivKnyttTilSakConsumer;
-import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
-import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest;
-import no.nav.bidrag.dokument.arkiv.dto.JournalStatus;
-import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
-import no.nav.bidrag.dokument.arkiv.dto.JournalpostUtsendingKanal;
-import no.nav.bidrag.dokument.arkiv.dto.KnyttTilAnnenSakRequest;
-import no.nav.bidrag.dokument.arkiv.dto.KnyttTilGenerellSakRequest;
-import no.nav.bidrag.dokument.arkiv.dto.KnyttTilSakRequest;
-import no.nav.bidrag.dokument.arkiv.dto.LagreJournalfortAvIdentRequest;
-import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest;
-import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostDistribusjonsInfoRequest;
-import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest;
-import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse;
-import no.nav.bidrag.dokument.arkiv.dto.Sak;
-import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer;
-import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
-import no.nav.bidrag.dokument.arkiv.model.LagreSaksbehandlerIdentForJournalfortJournalpostFeilet;
-import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
+import no.nav.bidrag.commons.web.HttpResponse
+import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer
+import no.nav.bidrag.dokument.arkiv.consumer.DokarkivKnyttTilSakConsumer
+import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern
+import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest
+import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
+import no.nav.bidrag.dokument.arkiv.dto.Journalpost
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostUtsendingKanal
+import no.nav.bidrag.dokument.arkiv.dto.KnyttTilAnnenSakRequest
+import no.nav.bidrag.dokument.arkiv.dto.KnyttTilSakRequest
+import no.nav.bidrag.dokument.arkiv.dto.LagreJournalfortAvIdentRequest
+import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest
+import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostDistribusjonsInfoRequest
+import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest
+import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse
+import no.nav.bidrag.dokument.arkiv.dto.Sak
+import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer
+import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException
+import no.nav.bidrag.dokument.arkiv.model.LagreSaksbehandlerIdentForJournalfortJournalpostFeilet
+import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager
+import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
+import java.util.Objects
+import java.util.function.Consumer
+import java.util.stream.Collectors
 
-public class EndreJournalpostService {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(EndreJournalpostService.class);
-
-  private final JournalpostService journalpostService;
-  private final DokarkivConsumer dokarkivConsumer;
-  private final DokarkivKnyttTilSakConsumer dokarkivKnyttTilSakConsumer;
-  private final HendelserProducer hendelserProducer;
-  private final SaksbehandlerInfoManager saksbehandlerInfoManager;
-
-
-  public EndreJournalpostService(
-          JournalpostService journalpostService,
-          DokarkivConsumer dokarkivConsumer,
-          DokarkivKnyttTilSakConsumer dokarkivKnyttTilSakConsumer,
-      HendelserProducer hendelserProducer, SaksbehandlerInfoManager saksbehandlerInfoManager) {
-    this.journalpostService = journalpostService;
-    this.dokarkivConsumer = dokarkivConsumer;
-    this.dokarkivKnyttTilSakConsumer = dokarkivKnyttTilSakConsumer;
-    this.hendelserProducer = hendelserProducer;
-    this.saksbehandlerInfoManager = saksbehandlerInfoManager;
-  }
-
-  public HttpResponse<Void> endre(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand) {
-    var journalpost = hentJournalpost(journalpostId);
-
-    endreJournalpostCommand.sjekkGyldigEndring(journalpost);
-
-    lagreJournalpost(journalpostId, endreJournalpostCommand, journalpost);
-    journalfoerJournalpostNarMottaksregistrert(endreJournalpostCommand, journalpost);
-
-    if (journalpost.kanTilknytteSaker() || endreJournalpostCommand.skalJournalfores()){
-      journalpost = hentJournalpost(journalpostId);
-      tilknyttSakerTilJournalfoertJournalpost(endreJournalpostCommand, journalpost);
+class EndreJournalpostService(
+    private val journalpostService: JournalpostService,
+    private val dokarkivConsumer: DokarkivConsumer,
+    private val dokarkivKnyttTilSakConsumer: DokarkivKnyttTilSakConsumer,
+    private val hendelserProducer: HendelserProducer, private val saksbehandlerInfoManager: SaksbehandlerInfoManager
+) {
+    fun endre(journalpostId: Long, endreJournalpostCommand: EndreJournalpostCommandIntern): HttpResponse<Void> {
+        var journalpost = hentJournalpost(journalpostId)
+        endreJournalpostCommand.sjekkGyldigEndring(journalpost)
+        lagreJournalpost(journalpostId, endreJournalpostCommand, journalpost)
+        journalfoerJournalpostNarMottaksregistrert(endreJournalpostCommand, journalpost)
+        if (journalpost.kanTilknytteSaker() || endreJournalpostCommand.skalJournalfores()) {
+            journalpost = hentJournalpost(journalpostId)
+            tilknyttSakerTilJournalfoertJournalpost(endreJournalpostCommand, journalpost)
+        }
+        publiserJournalpostEndretHendelse(journalpost, journalpostId, endreJournalpostCommand)
+        return HttpResponse.from(HttpStatus.OK)
     }
 
-    publiserJournalpostEndretHendelse(journalpost, journalpostId, endreJournalpostCommand);
-
-    return HttpResponse.from(HttpStatus.OK);
-  }
-
-  private void publiserJournalpostEndretHendelse(Journalpost journalpost, Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand){
-    if (journalpost.isInngaaendeDokument()){
-      hendelserProducer.publishJournalpostUpdated(journalpostId, endreJournalpostCommand.getEnhet());
+    private fun publiserJournalpostEndretHendelse(
+        journalpost: Journalpost,
+        journalpostId: Long,
+        endreJournalpostCommand: EndreJournalpostCommandIntern
+    ) {
+        if (journalpost.isInngaaendeDokument()) {
+            hendelserProducer.publishJournalpostUpdated(journalpostId, endreJournalpostCommand.enhet)
+        }
     }
-  }
 
-  public OppdaterJournalpostResponse lagreJournalpost(OppdaterJournalpostRequest oppdaterJournalpostRequest){
-    return dokarkivConsumer.endre(oppdaterJournalpostRequest);
-  }
-
-  private void lagreJournalpost(Long journalpostId, EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
-    var oppdaterJournalpostRequest = new LagreJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost);
-
-    lagreJournalpost(oppdaterJournalpostRequest);
-
-    if (Objects.nonNull(oppdaterJournalpostRequest.getSak())){
-      journalpost.setSak(new Sak(oppdaterJournalpostRequest.getSak().getFagsakId()));
+    fun lagreJournalpost(oppdaterJournalpostRequest: OppdaterJournalpostRequest): OppdaterJournalpostResponse {
+        return dokarkivConsumer.endre(oppdaterJournalpostRequest)
     }
-  }
 
-  private void journalfoerJournalpostNarMottaksregistrert(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
-    if (endreJournalpostCommand.skalJournalfores() && journalpost.isStatusMottatt()) {
-      var journalpostId = journalpost.hentJournalpostIdLong();
-      journalfoerJournalpost(journalpostId, endreJournalpostCommand.getEnhet(), journalpost);
-      journalpost.setJournalstatus(JournalStatus.JOURNALFOERT);
+    private fun lagreJournalpost(journalpostId: Long, endreJournalpostCommand: EndreJournalpostCommandIntern, journalpost: Journalpost) {
+        val oppdaterJournalpostRequest = LagreJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost)
+        lagreJournalpost(oppdaterJournalpostRequest)
+        if (Objects.nonNull(oppdaterJournalpostRequest.sak)) {
+            journalpost.sak = Sak(oppdaterJournalpostRequest.sak!!.fagsakId)
+        }
     }
-  }
 
-  public void lagreSaksbehandlerIdentForJournalfortJournalpost(Journalpost journalpost, String saksbehandlerIdent){
-    try {
-      lagreJournalpost(new LagreJournalfortAvIdentRequest(journalpost.hentJournalpostIdLong(), journalpost, saksbehandlerIdent != null ? saksbehandlerIdent : saksbehandlerInfoManager.hentSaksbehandlerBrukerId()));
-    } catch (Exception e){
-      throw new LagreSaksbehandlerIdentForJournalfortJournalpostFeilet(
-          String.format("Lagring av saksbehandler ident for journalført journalpost %s feilet", journalpost.getJournalpostId()), e);
+    private fun journalfoerJournalpostNarMottaksregistrert(endreJournalpostCommand: EndreJournalpostCommandIntern, journalpost: Journalpost) {
+        if (endreJournalpostCommand.skalJournalfores() && journalpost.isStatusMottatt()) {
+            val journalpostId = journalpost.hentJournalpostIdLong()
+            journalfoerJournalpost(journalpostId, endreJournalpostCommand.enhet, journalpost)
+            journalpost.journalstatus = JournalStatus.JOURNALFOERT
+        }
     }
-  }
 
-  private void tilknyttSakerTilJournalfoertJournalpost(EndreJournalpostCommandIntern endreJournalpostCommand, Journalpost journalpost){
-    if (journalpost.kanTilknytteSaker()) {
-      journalpostService.populerMedTilknyttedeSaker(journalpost);
-      endreJournalpostCommand.hentTilknyttetSaker().stream()
-          .filter(sak -> !journalpost.hentTilknyttetSaker().contains(sak))
-          .collect(Collectors.toSet())
-          .forEach(saksnummer -> tilknyttTilSak(saksnummer, journalpost));
+    fun lagreSaksbehandlerIdentForJournalfortJournalpost(journalpost: Journalpost, saksbehandlerIdent: String?) {
+        try {
+            lagreJournalpost(
+                LagreJournalfortAvIdentRequest(
+                    journalpost.hentJournalpostIdLong()!!,
+                    journalpost,
+                    (saksbehandlerIdent ?: saksbehandlerInfoManager.hentSaksbehandlerBrukerId())!!
+                )
+            )
+        } catch (e: Exception) {
+            throw LagreSaksbehandlerIdentForJournalfortJournalpostFeilet(
+                String.format(
+                    "Lagring av saksbehandler ident for journalført journalpost %s feilet",
+                    journalpost.journalpostId
+                ), e
+            )
+        }
     }
-  }
 
-  public void tilknyttTilSak(String saksnummer, Journalpost journalpost){
-    tilknyttTilSak(saksnummer, journalpost.isBidragTema() ? null : "BID", journalpost);
-  }
+    private fun tilknyttSakerTilJournalfoertJournalpost(endreJournalpostCommand: EndreJournalpostCommandIntern, journalpost: Journalpost) {
+        if (journalpost.kanTilknytteSaker()) {
+            journalpostService.populerMedTilknyttedeSaker(journalpost)
+            endreJournalpostCommand.hentTilknyttetSaker().stream()
+                .filter { sak: String? -> !journalpost.hentTilknyttetSaker().contains(sak) }
+                .collect(Collectors.toSet())
+                .forEach(Consumer { saksnummer: String? -> tilknyttTilSak(saksnummer, journalpost) })
+        }
+    }
 
-  public void tilknyttTilSak(String saksnummer, String tema, Journalpost journalpost){
-    KnyttTilAnnenSakRequest knyttTilAnnenSakRequest = new KnyttTilSakRequest(saksnummer, journalpost, tema);
-    var response = dokarkivKnyttTilSakConsumer.knyttTilSak(journalpost.hentJournalpostIdLong(), knyttTilAnnenSakRequest);
-    LOGGER.info("Tilknyttet journalpost {} til sak {} med ny journalpostId {} og tema {}",journalpost.getJournalpostId(), saksnummer, response.getNyJournalpostId(), tema);
-    journalpost.leggTilTilknyttetSak(saksnummer);
-  }
+    fun tilknyttTilSak(saksnummer: String?, journalpost: Journalpost) {
+        tilknyttTilSak(saksnummer, if (journalpost.isBidragTema()) null else "BID", journalpost)
+    }
 
-  private void journalfoerJournalpost(Long journalpostId, String enhet, Journalpost journalpost){
-    var journalforRequest = new FerdigstillJournalpostRequest(journalpostId, enhet);
-    dokarkivConsumer.ferdigstill(journalforRequest);
-    LOGGER.info("Journalpost med id {} er journalført", journalpostId);
-    lagreSaksbehandlerIdentForJournalfortJournalpost(journalpost, null);
-  }
+    fun tilknyttTilSak(saksnummer: String?, tema: String?, journalpost: Journalpost) {
+        val knyttTilAnnenSakRequest: KnyttTilAnnenSakRequest = KnyttTilSakRequest(saksnummer!!, journalpost, tema)
+        val (nyJournalpostId) = dokarkivKnyttTilSakConsumer.knyttTilSak(journalpost.hentJournalpostIdLong(), knyttTilAnnenSakRequest)
+        LOGGER.info(
+            "Tilknyttet journalpost {} til sak {} med ny journalpostId {} og tema {}",
+            journalpost.journalpostId,
+            saksnummer,
+            nyJournalpostId,
+            tema
+        )
+        journalpost.leggTilTilknyttetSak(saksnummer)
+    }
 
-  public void oppdaterJournalpostDistribusjonBestiltStatus(Long journalpostId, Journalpost journalpost){
-    lagreJournalpost(new OppdaterJournalpostDistribusjonsInfoRequest(journalpostId, journalpost));
-  }
+    private fun journalfoerJournalpost(journalpostId: Long?, enhet: String?, journalpost: Journalpost) {
+        val journalforRequest = FerdigstillJournalpostRequest(journalpostId!!, enhet!!)
+        dokarkivConsumer.ferdigstill(journalforRequest)
+        LOGGER.info("Journalpost med id $journalpostId er journalført")
+        lagreSaksbehandlerIdentForJournalfortJournalpost(journalpost, null)
+    }
 
-  private Journalpost hentJournalpost(Long journalpostId){
-    LOGGER.info("Henter jouranlpost {}", journalpostId);
-    return journalpostService.hentJournalpost(journalpostId).orElseThrow(
-        () -> new JournalpostIkkeFunnetException("Kunne ikke finne journalpost med id: " + journalpostId)
-    );
-  }
+    fun oppdaterJournalpostDistribusjonBestiltStatus(journalpostId: Long?, journalpost: Journalpost?) {
+        lagreJournalpost(OppdaterJournalpostDistribusjonsInfoRequest(journalpostId!!, journalpost!!))
+    }
 
-  public void oppdaterDistribusjonsInfo(Long journalpostId, boolean settStatusEkspedert, JournalpostUtsendingKanal utsendingsKanal) {
-      dokarkivConsumer.oppdaterDistribusjonsInfo(journalpostId, settStatusEkspedert, utsendingsKanal);
-  }
+    private fun hentJournalpost(journalpostId: Long): Journalpost {
+        LOGGER.info("Henter jouranlpost $journalpostId")
+        return journalpostService.hentJournalpost(journalpostId).orElseThrow {
+            JournalpostIkkeFunnetException("Kunne ikke finne journalpost med id: $journalpostId")
+        }
+    }
 
+    fun oppdaterDistribusjonsInfo(journalpostId: Long?, settStatusEkspedert: Boolean, utsendingsKanal: JournalpostUtsendingKanal?) {
+        dokarkivConsumer.oppdaterDistribusjonsInfo(journalpostId, settStatusEkspedert, utsendingsKanal)
+    }
+
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(EndreJournalpostService::class.java)
+    }
 }
