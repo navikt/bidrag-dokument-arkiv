@@ -506,6 +506,52 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
     }
 
     @Test
+    @DisplayName("skal distribuere journalpost med bare mottakernavn")
+    @Throws(IOException::class, JSONException::class)
+    fun skalDistribuereJournalpostMedBareMottakerNavn() {
+        // given
+        val xEnhet = "1234"
+        val bestillingId = "TEST_BEST_ID"
+        val journalpostId = 201028011L
+        val headersMedEnhet = HttpHeaders()
+        headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
+        val safresponse = opprettSafResponse(journalpostId.toString(), journalpostType = JournalpostType.U, journalstatus = JournalStatus.FERDIGSTILT, avsenderMottaker = AvsenderMottaker(navn = "Samhandler Navnesen"))
+        stubs.mockSafResponseHentJournalpost(safresponse)
+        stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
+        stubs.mockDokarkivOppdaterRequest(journalpostId)
+        stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(journalpostId, JournalStatus.FERDIGSTILT, Sak("5276661"))))
+        val distribuerTilAdresse = createDistribuerTilAdresse()
+        distribuerTilAdresse.adresselinje2 = "Adresselinje2"
+        distribuerTilAdresse.adresselinje3 = "Adresselinje3"
+        val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
+
+        // when
+        val response = httpHeaderTestRestTemplate.exchange(
+            initUrl() + "/journal/distribuer/JOARK-" + journalpostId,
+            HttpMethod.POST,
+            HttpEntity(request, headersMedEnhet),
+            JournalpostDto::class.java
+        )
+
+        assertSoftly {
+            response.statusCode shouldBe HttpStatus.OK
+            stubs.verifyStub.dokdistFordelingKalt(
+                objectMapper.writeValueAsString(
+                    DokDistDistribuerJournalpostRequest(
+                        journalpostId,
+                        "BI01A06",
+                        null,
+                        request.adresse,
+                        null
+                    )
+                )
+            )
+            stubs.verifyStub.dokarkivOppdaterKalt(journalpostId, "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}")
+        }
+    }
+
+
+    @Test
     fun `skal markere journalpost distribuert lokalt`() {
         // given
         val xEnhet = "1234"
