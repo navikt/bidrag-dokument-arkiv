@@ -16,6 +16,7 @@ import no.nav.bidrag.dokument.arkiv.dto.fjern
 import no.nav.bidrag.dokument.arkiv.dto.med
 import no.nav.bidrag.dokument.arkiv.dto.validerAdresse
 import no.nav.bidrag.dokument.arkiv.dto.validerKanDistribueres
+import no.nav.bidrag.dokument.arkiv.dto.validerKanDistribueresUtenAdresse
 import no.nav.bidrag.dokument.arkiv.dto.validerUtgaaendeJournalpostKanDupliseres
 import no.nav.bidrag.dokument.arkiv.model.Discriminator
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException
@@ -99,6 +100,8 @@ class DistribuerJournalpostService(
         if (adresse != null) {
             validerAdresse(adresse)
             lagreAdresse(journalpostId, adresse, journalpost)
+        } else {
+            validerKanDistribueresUtenAdresse(journalpost)
         }
 
         //TODO: Lagre bestillingsid når bd-arkiv er koblet mot database
