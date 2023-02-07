@@ -101,7 +101,6 @@ fun validerKanDistribueres(journalpost: Journalpost?) {
     Validate.isTrue(journalpost?.tilleggsopplysninger?.isDistribusjonBestilt() == false, "Journalpost er allerede distribuert")
     Validate.isTrue(journalpost?.tema == "BID", "Journalpost må ha tema BID")
     Validate.isTrue(journalpost?.hasMottakerId() == true || journalpost?.hentAvsenderNavn()?.isNotEmpty() == true, "Journalpost må ha satt mottakerId eller mottakerNavn")
-//    Validate.isTrue(journalpost?.isMottakerIdSamhandlerId() == false, "Journalpost mottakerId kan ikke være samhandlerId")
 }
 
 fun validerKanDistribueresUtenAdresse(journalpost: Journalpost?) {
