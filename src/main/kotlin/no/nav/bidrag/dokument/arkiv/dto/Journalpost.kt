@@ -240,7 +240,7 @@ data class Journalpost(
             avsenderMottaker = if (avsenderMottaker != null) AvsenderMottakerDto(
                 navn = avsenderMottaker!!.navn,
                 ident = tilleggsopplysninger.hentSamhandlerId() ?: avsenderMottaker!!.id,
-                type = if(erSamhandlerId) null else when(avsenderMottaker!!.type){
+                type = if(erSamhandlerId) AvsenderMottakerDtoIdType.UKJENT else when(avsenderMottaker!!.type){
                         AvsenderMottakerIdType.FNR -> AvsenderMottakerDtoIdType.FNR
                         AvsenderMottakerIdType.ORGNR -> AvsenderMottakerDtoIdType.ORGNR
                         else -> AvsenderMottakerDtoIdType.UKJENT
