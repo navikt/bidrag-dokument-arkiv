@@ -258,7 +258,7 @@ class AvvikService(
         tema: String,
         journalpost: Journalpost
     ): Stream<Journalpost> {
-        return journalpostService.finnJournalposterForSaksnummer(saksnummer, listOf(tema)).stream()
+        return journalpostService.finnJournalposterForSaksnummer(saksnummer, tema).stream()
             .filter { obj: Journalpost -> obj.isStatusFeilregistrert() }
             .filter { jp: Journalpost -> harSammeDokumenter(jp, journalpost) }
     }

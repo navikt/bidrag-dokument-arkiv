@@ -40,7 +40,7 @@ public class SafConsumer {
     return consumeEnkelJournalpostQuery(new JournalpostQuery(journalpostId));
   }
 
-  public List<Journalpost> finnJournalposter(String saksnummer, List<String> fagomrade) {
+  public List<Journalpost> finnJournalposter(String saksnummer, String fagomrade) {
     var response = consumeQuery(new DokumentoversiktFagsakQuery(saksnummer, fagomrade), this::journalIkkeFunnetException);
     return Arrays.asList(response.extractValueAsObject("dokumentoversiktFagsak.journalposter", Journalpost[].class));
   }
