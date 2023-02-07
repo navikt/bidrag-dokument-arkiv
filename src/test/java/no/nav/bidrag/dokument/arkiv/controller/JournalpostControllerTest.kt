@@ -3,6 +3,7 @@ package no.nav.bidrag.dokument.arkiv.controller
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import no.nav.bidrag.commons.web.EnhetFilter
+import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsTidspunkt
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsType
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest
@@ -13,6 +14,7 @@ import no.nav.bidrag.dokument.arkiv.dto.JournalstatusDto
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
+import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_NAVN
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
@@ -397,6 +399,37 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
     }
 
     @Test
+    @DisplayName("skal hente Journalpost når den eksisterer")
+    @Throws(IOException::class)
+    fun skalHenteJournalpostMedSamhandlerId() {
+        val journalpostId = 201028011
+        val samhandlerId = "123213"
+        val tilleggsOpplysninger = TilleggsOpplysninger()
+        tilleggsOpplysninger.leggTilSamhandlerId(samhandlerId)
+        stubs.mockSafResponseHentJournalpost(opprettSafResponse(
+            journalpostId = journalpostId.toString(),
+            journalstatus = JournalStatus.JOURNALFOERT,
+            tilleggsopplysninger = tilleggsOpplysninger,
+            sak = Sak("5276661"),
+            avsenderMottaker = AvsenderMottaker(navn = "Samhandler navn")
+        ))
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
+        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        val responseEntity = httpHeaderTestRestTemplate.exchange(
+            initUrl() + "/journal/JOARK-" + journalpostId + "?saksnummer=5276661",
+            HttpMethod.GET,
+            null,
+            JournalpostResponse::class.java
+        )
+        assertSoftly {
+            responseEntity.statusCode shouldBe HttpStatus.OK
+
+            val journalpost = responseEntity.body.journalpost
+            journalpost!!.avsenderMottaker!!.ident shouldBe samhandlerId
+        }
+    }
+
+    @Test
     @DisplayName("skal hente journalposter for en bidragssak")
     @Throws(IOException::class)
     fun skalHenteJournalposterForEnBidragssak() {
@@ -471,6 +504,52 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             Executable { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}") }
         )
     }
+
+    @Test
+    @DisplayName("skal distribuere journalpost med bare mottakernavn")
+    @Throws(IOException::class, JSONException::class)
+    fun skalDistribuereJournalpostMedBareMottakerNavn() {
+        // given
+        val xEnhet = "1234"
+        val bestillingId = "TEST_BEST_ID"
+        val journalpostId = 201028011L
+        val headersMedEnhet = HttpHeaders()
+        headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
+        val safresponse = opprettSafResponse(journalpostId.toString(), journalpostType = JournalpostType.U, journalstatus = JournalStatus.FERDIGSTILT, avsenderMottaker = AvsenderMottaker(navn = "Samhandler Navnesen"))
+        stubs.mockSafResponseHentJournalpost(safresponse)
+        stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
+        stubs.mockDokarkivOppdaterRequest(journalpostId)
+        stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(journalpostId, JournalStatus.FERDIGSTILT, Sak("5276661"))))
+        val distribuerTilAdresse = createDistribuerTilAdresse()
+        distribuerTilAdresse.adresselinje2 = "Adresselinje2"
+        distribuerTilAdresse.adresselinje3 = "Adresselinje3"
+        val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
+
+        // when
+        val response = httpHeaderTestRestTemplate.exchange(
+            initUrl() + "/journal/distribuer/JOARK-" + journalpostId,
+            HttpMethod.POST,
+            HttpEntity(request, headersMedEnhet),
+            JournalpostDto::class.java
+        )
+
+        assertSoftly {
+            response.statusCode shouldBe HttpStatus.OK
+            stubs.verifyStub.dokdistFordelingKalt(
+                objectMapper.writeValueAsString(
+                    DokDistDistribuerJournalpostRequest(
+                        journalpostId,
+                        "BI01A06",
+                        null,
+                        request.adresse,
+                        null
+                    )
+                )
+            )
+            stubs.verifyStub.dokarkivOppdaterKalt(journalpostId, "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}")
+        }
+    }
+
 
     @Test
     fun `skal markere journalpost distribuert lokalt`() {

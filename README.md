@@ -58,3 +58,28 @@ og lim inn eks:
 og deretter trykk Ctrl+D. Da vil meldingen bli sendt til topic oppgave-opprettet
 
 Det er ikke mulig å sende hendelse til journalforinghendelse topic da lytteren forventer avro melding og kcat støtter ikke å serialisere json til avro på en enkel måte
+
+#### Kjøre lokalt mot sky
+For å kunne kjøre lokalt mot sky må du gjøre følgende
+
+Åpne terminal på root mappen til `bidrag-dokument-arkiv`
+Konfigurer kubectl til å gå mot kluster `dev-fss`
+```bash
+# Sett cluster til dev-fss
+kubectx dev-fss
+# Sett namespace til bidrag
+kubens bidrag 
+
+# -- Eller hvis du ikke har kubectx/kubens installert 
+# (da må -n=bidrag legges til etter exec i neste kommando)
+kubectl config use dev-fss
+```
+Deretter kjør følgende kommando for å importere secrets. Viktig at filen som opprettes ikke committes til git
+
+```bash
+kubectl exec --tty deployment/bidrag-dokument-arkiv-feature printenv | grep -E 'AZURE_|_URL|SCOPE|SRV|NAIS_APP_NAME|TOPIC' > src/test/resources/application-lokal-nais-secrets.properties
+```
+
+Kjør filen [BidragDokumentArkivLokalNais](src/test/java/no/nav/bidrag/dokument/arkiv/BidragDokumentArkivLokalNais.java)
+
+Deretter kan tokenet brukes til å logge inn på swagger-ui http://localhost:8082/swagger-ui.html

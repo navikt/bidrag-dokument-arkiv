@@ -1,5 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
+import no.nav.bidrag.dokument.dto.AvsenderMottakerDto
+import no.nav.bidrag.dokument.dto.AvsenderMottakerDtoIdType
 import no.nav.bidrag.dokument.dto.JournalpostType
 import no.nav.bidrag.dokument.dto.OpprettJournalpostRequest
 
@@ -8,6 +10,7 @@ fun OpprettJournalpostRequest.hasSak(): Boolean = skalFerdigstilles && tilknyttS
 fun OpprettJournalpostRequest.hasGjelder(): Boolean = !gjelder?.ident.isNullOrEmpty() || !gjelderIdent.isNullOrEmpty()
 fun OpprettJournalpostRequest.hentJournalførendeEnhet(): String? = journalførendeEnhet ?: journalfoerendeEnhet
 fun OpprettJournalpostRequest.hentGjelderIdent() = gjelderIdent ?: gjelder?.ident
+fun AvsenderMottakerDto.erSamhandler(): Boolean = type == AvsenderMottakerDtoIdType.SAMHANDLER
 
 fun JoarkOpprettJournalpostRequest.hasAvsenderMottaker(): Boolean = !avsenderMottaker?.navn.isNullOrEmpty() || !avsenderMottaker?.id.isNullOrEmpty()
 fun JoarkOpprettJournalpostRequest.hasSak(): Boolean = !sak?.fagsakId.isNullOrEmpty()

@@ -11,6 +11,7 @@ import no.nav.bidrag.dokument.arkiv.dto.JournalStatus;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -71,6 +72,7 @@ public class DistribuerJournalpostServiceTest {
 
   @Test
   @DisplayName("skal feile validering av distribuer journalpost hvis mottakerid er samhandlerid")
+  @Disabled
   void skalIkkeValidereHvisMottakerIdErSamhandlerId() {
     var jp = createValidJournalpost();
     jp.setAvsenderMottaker(new AvsenderMottaker("", "8123213213", null));

@@ -1,0 +1,17 @@
+SRV_BD_ARKIV_AUTH: changme
+server.port: 8082
+KAFKA_GROUP_ID: bidrag-arkiv-consumer
+KAFKA_BROKERS: localhost:9092
+KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+NAV_TRUSTSTORE_PATH: test
+NAV_TRUSTSTORE_PASSWORD: test
+spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKERS}
+    properties:
+      security.protocol: PLAINTEXT
+    consumer:
+      enableAutoCommit: false
+      auto-offset-reset: latest
+    listener:
+      ackMode: RECORD
