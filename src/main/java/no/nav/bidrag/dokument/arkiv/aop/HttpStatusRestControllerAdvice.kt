@@ -1,136 +1,140 @@
-package no.nav.bidrag.dokument.arkiv.aop;
+package no.nav.bidrag.dokument.arkiv.aop
 
-import no.nav.bidrag.dokument.arkiv.model.HttpStatusException;
-import no.nav.bidrag.dokument.arkiv.model.JournalIkkeFunnetException;
-import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException;
-import no.nav.bidrag.dokument.arkiv.model.KnyttTilSakManglerTemaException;
-import no.nav.bidrag.dokument.arkiv.model.KunneIkkeJournalforeOpprettetJournalpost;
-import no.nav.bidrag.dokument.arkiv.model.OppdaterJournalpostFeiletFunksjoneltException;
-import no.nav.bidrag.dokument.arkiv.model.PersonException;
-import no.nav.bidrag.dokument.arkiv.model.UgyldigAvvikException;
-import no.nav.bidrag.dokument.arkiv.model.ViolationException;
-import no.nav.security.token.support.spring.validation.interceptor.JwtTokenUnauthorizedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.client.HttpClientErrorException;
+import no.nav.bidrag.dokument.arkiv.model.HttpStatusException
+import no.nav.bidrag.dokument.arkiv.model.JournalIkkeFunnetException
+import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException
+import no.nav.bidrag.dokument.arkiv.model.KnyttTilSakManglerTemaException
+import no.nav.bidrag.dokument.arkiv.model.KunneIkkeJournalforeOpprettetJournalpost
+import no.nav.bidrag.dokument.arkiv.model.OppdaterJournalpostFeiletFunksjoneltException
+import no.nav.bidrag.dokument.arkiv.model.PersonException
+import no.nav.bidrag.dokument.arkiv.model.UgyldigAvvikException
+import no.nav.bidrag.dokument.arkiv.model.ViolationException
+import no.nav.security.token.support.spring.validation.interceptor.JwtTokenUnauthorizedException
+import org.slf4j.LoggerFactory
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.ResponseBody
+import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.client.HttpClientErrorException
+import org.springframework.web.client.HttpStatusCodeException
 
 @RestControllerAdvice
-public class HttpStatusRestControllerAdvice {
-    private static final Logger LOGGER = LoggerFactory.getLogger(HttpStatusRestControllerAdvice.class);
+class HttpStatusRestControllerAdvice {
+    @ResponseBody
+    @ExceptionHandler(PersonException::class)
+    fun handleTechnicalException(exception: Exception): ResponseEntity<*> {
+        LOGGER.warn(exception.message)
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .header(HttpHeaders.WARNING, exception.message)
+            .build<Any>()
+    }
 
-  @ResponseBody
-  @ExceptionHandler({PersonException.class})
-  public ResponseEntity<?> handleTechnicalException(Exception exception) {
-    LOGGER.warn(exception.getMessage());
+    @ResponseBody
+    @ExceptionHandler
+    fun handleViolationException(exception: ViolationException): ResponseEntity<*> {
+        LOGGER.warn(exception.message)
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .header(HttpHeaders.WARNING, exception.message)
+            .build<Any>()
+    }
 
-    return ResponseEntity
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .header(HttpHeaders.WARNING, exception.getMessage())
-        .build();
-  }
+    @ResponseBody
+    @ExceptionHandler(
+        KunneIkkeJournalforeOpprettetJournalpost::class
+    )
+    fun handleBadRequest(exception: Exception): ResponseEntity<*> {
+        LOGGER.warn(exception.message)
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .header(HttpHeaders.WARNING, exception.message)
+            .build<Any>()
+    }
 
+    @ResponseBody
+    @ExceptionHandler
+    fun handleOtherExceptions(exception: Exception): ResponseEntity<*> {
+        LOGGER.error(exception.message, exception)
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .header(HttpHeaders.WARNING, exception.message)
+            .build<Any>()
+    }
 
-  @ResponseBody
-  @ExceptionHandler
-  public ResponseEntity<?> handleViolationException(ViolationException exception) {
-    LOGGER.warn(exception.getMessage());
+    @ResponseBody
+    @ExceptionHandler(JwtTokenUnauthorizedException::class)
+    fun handleUnauthorizedException(exception: Exception): ResponseEntity<*> {
+        LOGGER.warn(exception.message)
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .header(HttpHeaders.WARNING, exception.message)
+            .build<Any>()
+    }
 
-    return ResponseEntity
-        .status(HttpStatus.BAD_REQUEST)
-        .header(HttpHeaders.WARNING, exception.getMessage())
-        .build();
-  }
+    @ResponseBody
+    @ExceptionHandler
+    fun handleIllegalArgumentException(
+        illegalArgumentException: IllegalArgumentException
+    ): ResponseEntity<*> {
+        LOGGER.warn(illegalArgumentException.message)
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .header(HttpHeaders.WARNING, illegalArgumentException.message)
+            .build<Any>()
+    }
 
-  @ResponseBody
-  @ExceptionHandler({KunneIkkeJournalforeOpprettetJournalpost.class})
-  public ResponseEntity<?> handleBadRequest(Exception exception) {
-    LOGGER.warn(exception.getMessage());
+    @ResponseBody
+    @ExceptionHandler
+    fun handleHttpStatusException(httpStatusException: HttpStatusException): ResponseEntity<*> {
+        LOGGER.warn(httpStatusException.message)
+        return ResponseEntity.status(httpStatusException.status)
+            .header(HttpHeaders.WARNING, httpStatusException.message)
+            .build<Any>()
+    }
 
-    return ResponseEntity
-        .status(HttpStatus.BAD_REQUEST)
-        .header(HttpHeaders.WARNING, exception.getMessage())
-        .build();
-  }
+    @ResponseBody
+    @ExceptionHandler(KnyttTilSakManglerTemaException::class, OppdaterJournalpostFeiletFunksjoneltException::class, UgyldigAvvikException::class)
+    fun ugyldigInput(exception: Exception): ResponseEntity<*> {
+        LOGGER.warn(exception.message)
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .header(HttpHeaders.WARNING, exception.message)
+            .build<Any>()
+    }
 
-  @ResponseBody
-  @ExceptionHandler
-  public ResponseEntity<?> handleOtherExceptions(Exception exception) {
-    LOGGER.error(exception.getMessage(), exception);
+    @ResponseBody
+    @ExceptionHandler(JournalIkkeFunnetException::class, JournalpostIkkeFunnetException::class)
+    fun journalpostIkkeFunnet(exception: Exception): ResponseEntity<*> {
+        LOGGER.warn(exception.message)
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .header(HttpHeaders.WARNING, exception.message)
+            .build<Any>()
+    }
 
-    return ResponseEntity
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .header(HttpHeaders.WARNING, exception.getMessage())
-        .build();
-  }
+    @ResponseBody
+    @ExceptionHandler(HttpStatusCodeException::class)
+    fun handleHttpClientErrorException(exception: HttpStatusCodeException): ResponseEntity<*> {
+        val errorMessage = getErrorMessage(exception)
+        LOGGER.warn(errorMessage, exception)
+        return ResponseEntity
+            .status(exception.statusCode)
+            .header(HttpHeaders.WARNING, errorMessage)
+            .build<Any>()
+    }
 
-  @ResponseBody
-  @ExceptionHandler(JwtTokenUnauthorizedException.class)
-  public ResponseEntity<?> handleUnauthorizedException(Exception exception) {
-    LOGGER.warn(exception.getMessage());
+    private fun getErrorMessage(exception: HttpStatusCodeException): String {
+        val errorMessage = StringBuilder()
+        if (exception.responseHeaders != null) {
+            errorMessage.append("Det skjedde en feil ved kall mot ekstern tjeneste: ")
+            exception.responseHeaders?.get("Warning")
+                ?.let { if (it.size > 0) errorMessage.append(it[0]) }
+            errorMessage.append(" - ")
+        }
 
-    return ResponseEntity
-        .status(HttpStatus.UNAUTHORIZED)
-        .header(HttpHeaders.WARNING, exception.getMessage())
-        .build();
-  }
+        if (!exception.statusText.isNullOrEmpty()) {
+            errorMessage.append(exception.statusText)
+        }
 
-  @ResponseBody
-  @ExceptionHandler
-  public ResponseEntity<?> handleIllegalArgumentException(IllegalArgumentException illegalArgumentException) {
-    LOGGER.warn(illegalArgumentException.getMessage());
+        return errorMessage.toString()
+    }
 
-    return ResponseEntity
-        .status(HttpStatus.BAD_REQUEST)
-        .header(HttpHeaders.WARNING, illegalArgumentException.getMessage())
-        .build();
-  }
-
-  @ResponseBody
-  @ExceptionHandler
-  public ResponseEntity<?> handleHttpStatusException(HttpStatusException httpStatusException) {
-    LOGGER.warn(httpStatusException.getMessage());
-
-    return ResponseEntity
-        .status(httpStatusException.getStatus())
-        .header(HttpHeaders.WARNING, httpStatusException.getMessage())
-        .build();
-  }
-
-  @ResponseBody
-  @ExceptionHandler({KnyttTilSakManglerTemaException.class, OppdaterJournalpostFeiletFunksjoneltException.class, UgyldigAvvikException.class})
-  public ResponseEntity<?> ugyldigInput(Exception exception) {
-    LOGGER.warn(exception.getMessage());
-
-    return ResponseEntity
-        .status(HttpStatus.BAD_REQUEST)
-        .header(HttpHeaders.WARNING, exception.getMessage())
-        .build();
-  }
-
-  @ResponseBody
-  @ExceptionHandler({JournalIkkeFunnetException.class, JournalpostIkkeFunnetException.class})
-  public ResponseEntity<?> journalpostIkkeFunnet(Exception exception) {
-    LOGGER.warn(exception.getMessage());
-
-    return ResponseEntity
-        .status(HttpStatus.NOT_FOUND)
-        .header(HttpHeaders.WARNING, exception.getMessage())
-        .build();
-  }
-
-
-  @ResponseBody
-  @ExceptionHandler
-  public ResponseEntity<?> handleHttClientErrorException(HttpClientErrorException httpClientErrorException) {
-    return ResponseEntity
-        .status(httpClientErrorException.getStatusCode())
-        .header(HttpHeaders.WARNING, "Http client says: " + httpClientErrorException.getMessage())
-        .build();
-  }
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(HttpStatusRestControllerAdvice::class.java)
+    }
 }
