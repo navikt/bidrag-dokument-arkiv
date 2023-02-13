@@ -58,7 +58,7 @@ class OpprettJournalpostService(
 
     fun opprettJournalpost(request: OpprettJournalpostRequest): OpprettJournalpostResponse {
         val opprettJournalpostRequest = mapTilJoarkOpprettJournalpostRequest(request)
-        if (request.skalFerdigstilles && request.erNotat && !request.saksbehandlerIdent.isNullOrEmpty()){
+        if (request.skalFerdigstilles && request.erNotat && !request.saksbehandlerIdent.isNullOrEmpty()) {
             val respons = opprettJournalpost(opprettJournalpostRequest, request.tilknyttSaker, skalFerdigstilles = false)
             val journalpostId = respons.journalpostId!!.toLong()
             ferdigstillJournalpost(journalpostId, request.hentJournalførendeEnhet()!!, request.saksbehandlerIdent)
@@ -69,18 +69,35 @@ class OpprettJournalpostService(
     }
 
     private fun ferdigstillJournalpost(journalpostId: Long, journalfoerendeEnhet: String, saksbehandlerIdent: String?) {
-        val saksbehandlerNavn = saksbehandlerIdent?.let {  saksbehandlerInfoManager.hentSaksbehandler(it) }?.orElse(null)?.navn
-        dokarkivConsumer.ferdigstill(FerdigstillJournalpostRequest(journalpostId = journalpostId, journalfoerendeEnhet = journalfoerendeEnhet, opprettetAvNavn = saksbehandlerNavn, journalfortAvNavn = saksbehandlerNavn))
+        val saksbehandlerNavn = saksbehandlerIdent?.let { saksbehandlerInfoManager.hentSaksbehandler(it) }?.orElse(null)?.navn
+        dokarkivConsumer.ferdigstill(
+            FerdigstillJournalpostRequest(
+                journalpostId = journalpostId,
+                journalfoerendeEnhet = journalfoerendeEnhet,
+                opprettetAvNavn = saksbehandlerNavn,
+                journalfortAvNavn = saksbehandlerNavn
+            )
+        )
     }
 
-    fun opprettJournalpost(_request: JoarkOpprettJournalpostRequest, knyttTilSaker: List<String> = emptyList(), originalJournalpostId: Long?, skalFerdigstilles: Boolean = false): OpprettJournalpostResponse {
-        val tilknyttetSak = if(knyttTilSaker.isNotEmpty()) knyttTilSaker[0] else _request.sak?.fagsakId
-        var request = _request.copy(sak = if (tilknyttetSak.isNullOrEmpty()) null else JoarkOpprettJournalpostRequest.OpprettJournalpostSak(tilknyttetSak))
+    fun opprettJournalpost(
+        _request: JoarkOpprettJournalpostRequest,
+        knyttTilSaker: List<String> = emptyList(),
+        originalJournalpostId: Long?,
+        skalFerdigstilles: Boolean = false
+    ): OpprettJournalpostResponse {
+        val tilknyttetSak = if (knyttTilSaker.isNotEmpty()) knyttTilSaker[0] else _request.sak?.fagsakId
+        var request =
+            _request.copy(sak = if (tilknyttetSak.isNullOrEmpty()) null else JoarkOpprettJournalpostRequest.OpprettJournalpostSak(tilknyttetSak))
         request = populerMedDokumenterByteData(request, originalJournalpostId)
         return opprettJournalpost(request, knyttTilSaker, skalFerdigstilles)
     }
 
-    private fun opprettJournalpost(request: JoarkOpprettJournalpostRequest, knyttTilSaker: List<String> = emptyList(), skalFerdigstilles: Boolean = false): OpprettJournalpostResponse {
+    private fun opprettJournalpost(
+        request: JoarkOpprettJournalpostRequest,
+        knyttTilSaker: List<String> = emptyList(),
+        skalFerdigstilles: Boolean = false
+    ): OpprettJournalpostResponse {
 
         validerKanOppretteJournalpost(request, skalFerdigstilles)
 
@@ -90,7 +107,7 @@ class OpprettJournalpostService(
 
         validerOpprettJournalpostResponse(skalFerdigstilles, response)
 
-        if (response.journalpostferdigstilt){
+        if (response.journalpostferdigstilt) {
             lagreSaksbehandlerIdentOgKnyttFerdigstiltJournalpostTilSaker(response.journalpostId!!, knyttTilSaker)
         }
 
@@ -102,7 +119,11 @@ class OpprettJournalpostService(
         )
     }
 
-    private fun lagreSaksbehandlerIdentOgKnyttFerdigstiltJournalpostTilSaker(journalpostId: Long, knyttTilSaker: List<String>, saksbehandlerIdent: String? = null){
+    private fun lagreSaksbehandlerIdentOgKnyttFerdigstiltJournalpostTilSaker(
+        journalpostId: Long,
+        knyttTilSaker: List<String>,
+        saksbehandlerIdent: String? = null
+    ) {
         try {
             val opprettetJournalpost = hentJournalpost(journalpostId)
             endreJournalpostService.lagreSaksbehandlerIdentForJournalfortJournalpost(opprettetJournalpost, saksbehandlerIdent)
@@ -114,7 +135,8 @@ class OpprettJournalpostService(
             )
         }
     }
-    private fun validerOpprettJournalpostResponse(skalFerdigstilles: Boolean, response: JoarkOpprettJournalpostResponse){
+
+    private fun validerOpprettJournalpostResponse(skalFerdigstilles: Boolean, response: JoarkOpprettJournalpostResponse) {
         if (skalFerdigstilles && !response.journalpostferdigstilt) {
             val message = String.format(
                 "Kunne ikke journalføre journalpost %s med feilmelding %s",
@@ -127,7 +149,7 @@ class OpprettJournalpostService(
 
     }
 
-    private fun hentJournalpost(journalpostId: Long?): Journalpost {
+    private fun hentJournalpost(journalpostId: Long): Journalpost {
         return try {
             safConsumer.hentJournalpost(journalpostId)
         } catch (e: Exception) {
@@ -156,7 +178,7 @@ class OpprettJournalpostService(
         return request
     }
 
-    private fun mapTilJoarkOpprettJournalpostRequest(request: OpprettJournalpostRequest): JoarkOpprettJournalpostRequest{
+    private fun mapTilJoarkOpprettJournalpostRequest(request: OpprettJournalpostRequest): JoarkOpprettJournalpostRequest {
         val hoveddokument = request.dokumenter[0]
         val tilknyttSaker = request.tilknyttSaker
         val hovedTittel = hoveddokument.tittel
@@ -188,6 +210,7 @@ class OpprettJournalpostService(
                 JournalpostType.INNGÅENDE -> // TODO: Joark få en ny mottakskanal for skanning fra Bidrag
                     if (request.kanal == MottakUtsendingKanal.SKANNING_BIDRAG) JoarkMottakUtsendingKanal.SKAN_BID
                     else JoarkMottakUtsendingKanal.NAV_NO
+
                 else -> null
             }?.name,
             datoMottatt = if (erInngaende) request.datoMottatt?.toString() ?: LocalDateTime.now().toString() else null,
@@ -197,7 +220,7 @@ class OpprettJournalpostService(
             ),
             avsenderMottaker = if (request.journalposttype != JournalpostType.NOTAT) mapMottaker(request) else null,
             sak = if (erInngaendeOgSkalIkkeJournalfores || tilknyttSaker.isEmpty()) null
-                  else JoarkOpprettJournalpostRequest.OpprettJournalpostSak(tilknyttSaker[0]),
+            else JoarkOpprettJournalpostRequest.OpprettJournalpostSak(tilknyttSaker[0]),
             dokumenter = request.dokumenter.mapIndexed { i, it ->
                 JoarkOpprettJournalpostRequest.Dokument(
                     brevkode = it.brevkode,
@@ -210,19 +233,22 @@ class OpprettJournalpostService(
 
     }
 
-    private fun mapMottaker(request: OpprettJournalpostRequest): JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker = if (request.avsenderMottaker?.erSamhandler() == true)
-    JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
-       navn = request.avsenderMottaker?.navn,
-    ) else JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
-        navn = request.avsenderMottaker?.navn,
-        id = request.avsenderMottaker?.ident,
-        idType = request.avsenderMottaker?.ident?.let { when(request.avsenderMottaker?.type){
-            AvsenderMottakerDtoIdType.FNR -> AvsenderMottakerIdType.FNR
-            AvsenderMottakerDtoIdType.ORGNR -> AvsenderMottakerIdType.ORGNR
-            AvsenderMottakerDtoIdType.UTENLANDSK_ORGNR -> AvsenderMottakerIdType.UTL_ORG
-            else -> AvsenderMottakerIdType.FNR }
-        }
-    )
+    private fun mapMottaker(request: OpprettJournalpostRequest): JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker =
+        if (request.avsenderMottaker?.erSamhandler() == true)
+            JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
+                navn = request.avsenderMottaker?.navn,
+            ) else JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
+            navn = request.avsenderMottaker?.navn,
+            id = request.avsenderMottaker?.ident,
+            idType = request.avsenderMottaker?.ident?.let {
+                when (request.avsenderMottaker?.type) {
+                    AvsenderMottakerDtoIdType.FNR -> AvsenderMottakerIdType.FNR
+                    AvsenderMottakerDtoIdType.ORGNR -> AvsenderMottakerIdType.ORGNR
+                    AvsenderMottakerDtoIdType.UTENLANDSK_ORGNR -> AvsenderMottakerIdType.UTL_ORG
+                    else -> AvsenderMottakerIdType.FNR
+                }
+            }
+        )
 
     private fun hentDokument(journalpostId: Long, dokumentId: String): ByteArray {
         return dokumentService.hentDokument(journalpostId, dokumentId).body!!

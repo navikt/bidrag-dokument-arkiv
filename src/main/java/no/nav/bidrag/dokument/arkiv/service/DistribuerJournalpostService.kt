@@ -53,12 +53,16 @@ class DistribuerJournalpostService(
         oppdaterReturDetaljerHvisNodvendig(journalpost)
 
         validerUtgaaendeJournalpostKanDupliseres(journalpost)
-        val request = dupliserJournalpost(journalpost){
+        val request = dupliserJournalpost(journalpost) {
             fjern distribusjonMetadata true
             med eksternReferanseId "BID_duplikat_${journalpost.journalpostId}"
             med dokumenter journalpost.dokumenter
         }
-        val (journalpostId) = opprettJournalpostService.opprettJournalpost(request, originalJournalpostId = journalpost.hentJournalpostIdLong(), skalFerdigstilles = true)
+        val (journalpostId) = opprettJournalpostService.opprettJournalpost(
+            request,
+            originalJournalpostId = journalpost.hentJournalpostIdLong(),
+            skalFerdigstilles = true
+        )
         distribuerJournalpost(journalpostId!!.toLong(), null, DistribuerJournalpostRequestInternal(distribuerTilAdresse))
         endreJournalpostService.lagreJournalpost(OppdaterFlaggNyDistribusjonBestiltRequest(journalpost.hentJournalpostIdLong()!!, journalpost))
     }
@@ -90,7 +94,7 @@ class DistribuerJournalpostService(
         }
         validerKanDistribueres(journalpost)
 
-        if (distribuerJournalpostRequest.erLokalUtskrift()){
+        if (distribuerJournalpostRequest.erLokalUtskrift()) {
             LOGGER.info("Journalpost $journalpostId er distribuert via lokal utskrift. Oppdaterer journalpost status")
             oppdaterDistribusjonsInfoLokalUtskrift(journalpostId)
             return DistribuerJournalpostResponse("JOARK-$journalpostId", null)
@@ -139,7 +143,7 @@ class DistribuerJournalpostService(
         endreJournalpostService.oppdaterDistribusjonsInfo(journalpostId, true, JournalpostUtsendingKanal.L)
     }
 
-    fun kanDistribuereJournalpost(journalpostId: Long?) {
+    fun kanDistribuereJournalpost(journalpostId: Long) {
         LOGGER.info("Sjekker om distribuere journalpost {} kan distribueres", journalpostId)
         val journalpost = journalpostService.hentJournalpost(journalpostId)
             .orElseThrow { JournalpostIkkeFunnetException(String.format("Fant ingen journalpost med id %s", journalpostId)) }

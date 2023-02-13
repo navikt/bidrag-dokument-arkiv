@@ -75,7 +75,7 @@ class AvvikService(
         this.dokarkivConsumer = dokarkivConsumers.get(Discriminator.REGULAR_USER)
     }
 
-    fun hentAvvik(jpid: Long?): List<AvvikType> {
+    fun hentAvvik(jpid: Long): List<AvvikType> {
         return journalpostService.hentJournalpost(jpid).get().tilAvvik()
     }
 
@@ -129,7 +129,7 @@ class AvvikService(
             throw UgyldigAvvikException("Avvik bestill splitting må inneholde beskrivelse")
         }
         val saksbehandler = hentSaksbehandler(avvikshendelseIntern.saksbehandlersEnhet!!)
-        if (journalpost.isStatusJournalfort()){
+        if (journalpost.isStatusJournalfort()) {
             oppgaveService.opprettOppgaveTilFagpost(BestillSplittingoppgaveRequest(journalpost, saksbehandler, avvikshendelseIntern.beskrivelse))
             dokarkivConsumer.feilregistrerSakstilknytning(journalpost.hentJournalpostIdLong())
         } else {
@@ -141,7 +141,7 @@ class AvvikService(
 
     private fun bestillReskanning(journalpost: Journalpost, avvikshendelseIntern: AvvikshendelseIntern) {
         val saksbehandler = hentSaksbehandler(avvikshendelseIntern.saksbehandlersEnhet!!)
-        if (journalpost.isStatusJournalfort()){
+        if (journalpost.isStatusJournalfort()) {
             oppgaveService.opprettOppgaveTilFagpost(BestillReskanningOppgaveRequest(journalpost, saksbehandler, avvikshendelseIntern.beskrivelse))
             dokarkivConsumer.feilregistrerSakstilknytning(journalpost.hentJournalpostIdLong())
         } else {
@@ -153,7 +153,14 @@ class AvvikService(
 
     private fun bestillOriginal(journalpost: Journalpost, avvikshendelseIntern: AvvikshendelseIntern) {
         val saksbehandler = hentSaksbehandler(avvikshendelseIntern.saksbehandlersEnhet!!)
-        oppgaveService.opprettOppgaveTilFagpost(BestillOriginalOppgaveRequest(journalpost, avvikshendelseIntern.enhetsnummer, saksbehandler, avvikshendelseIntern.beskrivelse))
+        oppgaveService.opprettOppgaveTilFagpost(
+            BestillOriginalOppgaveRequest(
+                journalpost,
+                avvikshendelseIntern.enhetsnummer,
+                saksbehandler,
+                avvikshendelseIntern.beskrivelse
+            )
+        )
         dokarkivConsumer.endre(OppdaterOriginalBestiltFlagg(journalpost))
     }
 
@@ -162,9 +169,10 @@ class AvvikService(
             dokarkivConsumer.endre(OverforEnhetRequest(journalpost.hentJournalpostIdLong()!!, enhet))
         }
     }
+
     private fun hentSaksbehandler(enhet: String): SaksbehandlerMedEnhet {
-       return saksbehandlerInfoManager.hentSaksbehandler()
-            .map{ it.tilEnhet(enhet)}
+        return saksbehandlerInfoManager.hentSaksbehandler()
+            .map { it.tilEnhet(enhet) }
             .orElseGet { SaksbehandlerMedEnhet(Saksbehandler(), enhet) }
     }
 
@@ -187,7 +195,7 @@ class AvvikService(
         val hoveddokumentTittel = avvikshendelseIntern.dokumenter!![0].tittel
         val nyJournalpostTittel = hoveddokumentTittel ?: journalpost.hentTittel()!!
 
-        val request = dupliserJournalpost(journalpost){
+        val request = dupliserJournalpost(journalpost) {
             med journalførendeenhet avvikshendelseIntern.saksbehandlersEnhet
             med tittel "$nyJournalpostTittel (Kopiert fra dokument: ${journalpost.hentTittel()})"
             avvikshendelseIntern.dokumenter!!.forEach(Consumer { (dokumentreferanse, _, _, tittel, dokument, brevkode): DokumentDto ->
@@ -196,12 +204,17 @@ class AvvikService(
                     dokumentInfoId = dokumentreferanse,
                     brevkode = brevkode,
                     tittel = tittel,
-                    dokumentvarianter = if (dokumentByte != null) listOf(opprettDokumentVariant(dokumentByte=dokumentByte)) else emptyList()
+                    dokumentvarianter = if (dokumentByte != null) listOf(opprettDokumentVariant(dokumentByte = dokumentByte)) else emptyList()
                 )
             })
         }
 
-        val (journalpostId) = opprettJournalpostService.opprettJournalpost(request, avvikshendelseIntern.knyttTilSaker, journalpost.hentJournalpostIdLong(), skalFerdigstilles = true)
+        val (journalpostId) = opprettJournalpostService.opprettJournalpost(
+            request,
+            avvikshendelseIntern.knyttTilSaker,
+            journalpost.hentJournalpostIdLong(),
+            skalFerdigstilles = true
+        )
         LOGGER.info("Kopiert journalpost {} til Bidrag, ny journalpostId {}", journalpost.journalpostId, journalpostId)
         oppgaveService.ferdigstillVurderDokumentOppgaver(journalpost.hentJournalpostIdLong()!!, avvikshendelseIntern.saksbehandlersEnhet!!)
     }
@@ -233,7 +246,7 @@ class AvvikService(
             throw UgyldigAvvikException("Kan ikke sende journalpost mellom FAR og BID tema.")
         }
 
-        opprettJournalpostService.opprettJournalpost(dupliserJournalpost(journalpost){
+        opprettJournalpostService.opprettJournalpost(dupliserJournalpost(journalpost) {
             med tema avvikshendelseIntern.nyttFagomrade
             fjern journalførendeenhet true
             med dokumenter journalpost.dokumenter
@@ -242,7 +255,7 @@ class AvvikService(
     }
 
     private fun knyttTilSakPaaNyttFagomrade(avvikshendelseIntern: AvvikshendelseIntern, journalpost: Journalpost) {
-        val saksnummer = journalpost.sak!!.fagsakId
+        val saksnummer = journalpost.sak!!.fagsakId!!
         hentFeilregistrerteDupliserteJournalposterMedSakOgTema(saksnummer, avvikshendelseIntern.nyttFagomrade, journalpost)
             .findFirst()
             .ifPresentOrElse(
@@ -254,11 +267,11 @@ class AvvikService(
     }
 
     private fun hentFeilregistrerteDupliserteJournalposterMedSakOgTema(
-        saksnummer: String?,
+        saksnummer: String,
         tema: String,
         journalpost: Journalpost
     ): Stream<Journalpost> {
-        return journalpostService.finnJournalposterForSaksnummer(saksnummer, tema).stream()
+        return journalpostService.finnJournalposterForSaksnummer(saksnummer, listOf(tema)).stream()
             .filter { obj: Journalpost -> obj.isStatusFeilregistrert() }
             .filter { jp: Journalpost -> harSammeDokumenter(jp, journalpost) }
     }

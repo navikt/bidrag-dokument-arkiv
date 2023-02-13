@@ -15,7 +15,7 @@ import java.util.Optional
 import java.util.stream.Collectors
 
 class JournalpostService(private val safConsumer: SafConsumer, private val personConsumer: PersonConsumer) {
-    fun hentJournalpost(journalpostId: Long?): Optional<Journalpost> {
+    fun hentJournalpost(journalpostId: Long): Optional<Journalpost> {
         return hentJournalpost(journalpostId, null)?.let { Optional.ofNullable(it) } ?: Optional.empty()
     }
 
@@ -29,16 +29,16 @@ class JournalpostService(private val safConsumer: SafConsumer, private val perso
         return hentJournalpostMedFnr(journalpostId, saksnummer)?.let { Optional.ofNullable(populerMedTilknyttedeSaker(it)) } ?: Optional.empty()
     }
 
-    fun finnJournalposter(saksnummer: String?, fagomrade: String?): List<JournalpostDto> {
+    fun finnJournalposter(saksnummer: String, fagomrade: List<String> = emptyList()): List<JournalpostDto> {
         return finnJournalposterForSaksnummer(saksnummer, fagomrade)
             .map { journalpost: Journalpost -> konverterAktoerIdTilFnr(journalpost) }
             .filter { !(it.tilleggsopplysninger.isEndretTema() || it.tilleggsopplysninger.isNyDistribusjonBestilt()) }
             .map { it.tilJournalpostDto() }
     }
 
-    private fun hentJournalpost(journalpostId: Long?, saksnummer: String?): Journalpost? {
+    private fun hentJournalpost(journalpostId: Long, saksnummer: String?): Journalpost? {
         val journalpost = safConsumer.hentJournalpost(journalpostId)
-        return if (journalpost == null || journalpost.erIkkeTilknyttetSakNarOppgitt(saksnummer)) null else journalpost
+        return if (journalpost.erIkkeTilknyttetSakNarOppgitt(saksnummer)) null else journalpost
     }
 
     fun hentTilknyttedeJournalposter(journalpost: Journalpost): List<TilknyttetJournalpost> {
@@ -47,7 +47,7 @@ class JournalpostService(private val safConsumer: SafConsumer, private val perso
         }
         val dokumentInfoId = journalpost.dokumenter[0].dokumentInfoId
         LOGGER.info("Henter tilknyttede journalposter for journalpost ${journalpost.journalpostId} med dokumentinfoId $dokumentInfoId")
-        return dokumentInfoId?.let {  finnTilknyttedeJournalposter(it) } ?: emptyList()
+        return dokumentInfoId?.let { finnTilknyttedeJournalposter(it) } ?: emptyList()
     }
 
     fun finnTilknyttedeJournalposter(dokumentreferanse: String): List<TilknyttetJournalpost> {
@@ -75,7 +75,7 @@ class JournalpostService(private val safConsumer: SafConsumer, private val perso
         return hentJournalpost(journalpostId, saksummer)?.let { konverterAktoerIdTilFnr(it) }
     }
 
-    fun finnJournalposterForSaksnummer(saksnummer: String?, fagomrade: String?): List<Journalpost> {
+    fun finnJournalposterForSaksnummer(saksnummer: String, fagomrade: List<String> = emptyList()): List<Journalpost> {
         return safConsumer.finnJournalposter(saksnummer, fagomrade)
     }
 
