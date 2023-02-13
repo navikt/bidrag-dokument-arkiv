@@ -32,7 +32,9 @@ data class DokDistDistribuerJournalpostRequest(
         )
     }
 
-    constructor(journalpostId: Long, brevkode: String?, tittel: String?, distribuerTilAdresse: DistribuerTilAdresse?, _batchId: String?) : this(journalpostId = journalpostId) {
+    constructor(journalpostId: Long, brevkode: String?, tittel: String?, distribuerTilAdresse: DistribuerTilAdresse?, _batchId: String?) : this(
+        journalpostId = journalpostId
+    ) {
         batchId = _batchId
         adresse = mapAdresse(distribuerTilAdresse)
         distribusjonstype = BrevkodeToDistribusjonstypeMapper().toDistribusjonsType(brevkode, tittel)
@@ -69,7 +71,7 @@ data class DistribuerJournalpostRequestInternal(
     var request: DistribuerJournalpostRequest? = null
 ) {
 
-    constructor(distribuerTilAdresse: DistribuerTilAdresse?): this(DistribuerJournalpostRequest(adresse = distribuerTilAdresse))
+    constructor(distribuerTilAdresse: DistribuerTilAdresse?) : this(DistribuerJournalpostRequest(adresse = distribuerTilAdresse))
 
     fun erLokalUtskrift(): Boolean = request?.lokalUtskrift ?: false
     fun hasAdresse(): Boolean = request?.adresse != null
@@ -99,8 +101,11 @@ fun validerKanDistribueres(journalpost: Journalpost?) {
     Validate.isTrue(journalpost != null && journalpost.hentTilknyttetSaker().size < 2, "Kan bare distribuere journalpost med 1 sak")
     Validate.isTrue(journalpost?.journalstatus == JournalStatus.FERDIGSTILT, "Journalpost må ha status FERDIGSTILT")
     Validate.isTrue(journalpost?.tilleggsopplysninger?.isDistribusjonBestilt() == false, "Journalpost er allerede distribuert")
-    Validate.isTrue(journalpost?.tema == "BID", "Journalpost må ha tema BID")
-    Validate.isTrue(journalpost?.hasMottakerId() == true || journalpost?.hentAvsenderNavn()?.isNotEmpty() == true, "Journalpost må ha satt mottakerId eller mottakerNavn")
+//    Validate.isTrue(journalpost?.tema == "BID", "Journalpost må ha tema BID")
+    Validate.isTrue(
+        journalpost?.hasMottakerId() == true || journalpost?.hentAvsenderNavn()?.isNotEmpty() == true,
+        "Journalpost må ha satt mottakerId eller mottakerNavn"
+    )
 }
 
 fun validerKanDistribueresUtenAdresse(journalpost: Journalpost?) {
@@ -245,7 +250,7 @@ class BrevkodeToDistribusjonstypeMapper {
     }
 
     fun toDistribusjonsType(brevkode: String?, tittel: String?): DistribusjonsType {
-        if (listOf("vedtak","decision").any { tittel?.lowercase()?.contains(it) == true }) {
+        if (listOf("vedtak", "decision").any { tittel?.lowercase()?.contains(it) == true }) {
             return DistribusjonsType.VEDTAK
         }
         return brevkodemap.getOrDefault(brevkode, DistribusjonsType.VIKTIG)
