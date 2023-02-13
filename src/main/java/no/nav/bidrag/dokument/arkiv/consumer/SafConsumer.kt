@@ -25,7 +25,7 @@ import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.web.client.RestTemplate
 import java.util.Arrays
 
-class SafConsumer(private val restTemplate: RestTemplate) {
+open class SafConsumer(private val restTemplate: RestTemplate) {
     fun hentDokument(journalpostId: Long, dokumentReferanse: Long): ResponseEntity<ByteArray> {
         return restTemplate.exchange(
             String.format("/rest/hentdokument/%s/%s/ARKIV", journalpostId, dokumentReferanse),
