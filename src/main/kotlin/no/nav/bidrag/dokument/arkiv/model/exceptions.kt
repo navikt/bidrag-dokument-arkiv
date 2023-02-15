@@ -50,5 +50,5 @@ class JournalfortJournalpostManglerJournalfortAvIdent(message: String) : Runtime
 
 class HentJournalpostFeilet(message: String, throwable: Throwable) : RuntimeException(message, throwable)
 
-fun hentJournalMedUgyldigFagomrade(ugyldigFagomrade: String): Nothing =
+fun kanIkkeHenteJournalMedUgyldigFagomrade(ugyldigFagomrade: String): Nothing =
     throw HttpClientErrorException(HttpStatus.BAD_REQUEST, "Kan ikke hente journal med tema $ugyldigFagomrade. Gyldige verdier er BID og FAR")

@@ -8,12 +8,10 @@ import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
-import no.nav.bidrag.dokument.arkiv.model.hentJournalMedUgyldigFagomrade
+import no.nav.bidrag.dokument.arkiv.model.kanIkkeHenteJournalMedUgyldigFagomrade
 import no.nav.bidrag.dokument.dto.JournalpostDto
 import org.slf4j.LoggerFactory
-import java.util.Objects
 import java.util.Optional
-import java.util.stream.Collectors
 
 class JournalpostService(private val safConsumer: SafConsumer, private val personConsumer: PersonConsumer) {
     fun hentJournalpost(journalpostId: Long): Optional<Journalpost> {
@@ -33,7 +31,7 @@ class JournalpostService(private val safConsumer: SafConsumer, private val perso
     fun List<String>.inneholderBidragFagomrader() = this.isEmpty() || this.hentIkkeBidragFagomrader().isEmpty()
     fun List<String>.hentIkkeBidragFagomrader() = this.filter { it != "BID" && it != "FAR" }
     fun finnJournalposter(saksnummer: String, fagomrade: List<String> = emptyList()): List<JournalpostDto> {
-        if (!fagomrade.inneholderBidragFagomrader()) hentJournalMedUgyldigFagomrade(fagomrade.hentIkkeBidragFagomrader().joinToString(","))
+        if (!fagomrade.inneholderBidragFagomrader()) kanIkkeHenteJournalMedUgyldigFagomrade(fagomrade.hentIkkeBidragFagomrader().joinToString(","))
         return finnJournalposterForSaksnummer(saksnummer, fagomrade)
             .map { journalpost: Journalpost -> konverterAktoerIdTilFnr(journalpost) }
             .filter { !(it.tilleggsopplysninger.isEndretTema() || it.tilleggsopplysninger.isNyDistribusjonBestilt()) }
