@@ -1,177 +1,173 @@
-package no.nav.bidrag.dokument.arkiv.service;
+package no.nav.bidrag.dokument.arkiv.service
 
-import static no.nav.bidrag.dokument.arkiv.dto.DistribusjonKt.validerAdresse;
-import static no.nav.bidrag.dokument.arkiv.dto.DistribusjonKt.validerKanDistribueres;
-import static no.nav.bidrag.dokument.arkiv.stubs.TestDataKt.createDistribuerTilAdresse;
-import static org.assertj.core.api.Assertions.assertThat;
+import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker
+import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottakerIdType
+import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
+import no.nav.bidrag.dokument.arkiv.dto.Journalpost
+import no.nav.bidrag.dokument.arkiv.dto.validerAdresse
+import no.nav.bidrag.dokument.arkiv.dto.validerKanDistribueres
+import no.nav.bidrag.dokument.arkiv.stubs.createDistribuerTilAdresse
+import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 
-import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker;
-import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottakerIdType;
-import no.nav.bidrag.dokument.arkiv.dto.JournalStatus;
-import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
-import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
-public class DistribuerJournalpostServiceTest {
-
-  @Test
-  @DisplayName("skal validere distribuer journalpost")
-  void skalValidere() {
-    Assertions.assertDoesNotThrow(() -> validerKanDistribueres(createValidJournalpost()));
-  }
-
-  @Test
-  @DisplayName(
-      "skal validere av hvis journalpost allerede er distribuert men er tillatt for redistribuering")
-  void skalValidereHvisJournalpostAlleredeErDistribuertMenTillatForRedistribusjon() {
-    var jp = createValidJournalpost();
-    jp.setJournalpostId("123");
-    jp.getTilleggsopplysninger().setDistribusjonBestillt();
-    Assertions.assertDoesNotThrow(() -> validerKanDistribueres(createValidJournalpost()));
-  }
-
-  @Test
-  @DisplayName(
-      "skal feile validering av distribuer journalpost hvis journalpost allerede er distribuert")
-  void skalIkkeValidereHvisJournalpostAlleredeErDistribuert() {
-    var jp = createValidJournalpost();
-    jp.getTilleggsopplysninger().setDistribusjonBestillt();
-    var exceptionResult =
-        Assertions.assertThrows(
-            IllegalArgumentException.class,
-            () -> validerKanDistribueres(jp),
-            "skal feile hvis journalpost allerede er distribuert");
-    assertThat(exceptionResult.getMessage()).contains("Journalpost er allerede distribuert");
-  }
-
-  @Test
-  @DisplayName("skal feile validering av distribuer journalpost hvis status ikke er FERDIGSTILT")
-  void skalIkkeValidereHvisStatusIkkeErFerdigstilt() {
-    var jp = createValidJournalpost();
-    jp.setJournalstatus(JournalStatus.JOURNALFOERT);
-    var exceptionResult =
-        Assertions.assertThrows(
-            IllegalArgumentException.class,
-            () -> validerKanDistribueres(jp),
-            "skal feile hvis status ikke er FERDIGSTILT");
-    assertThat(exceptionResult.getMessage()).contains("FERDIGSTILT");
-  }
-
-  //  @Test
-  //  @DisplayName("skal feile validering av distribuer journalpost hvis tena ikke er BID")
-  //  void skalIkkeValidereHvisTemaIkkeErBID() {
-  //    var jp = createValidJournalpost();
-  //    jp.setTema("FAR");
-  //    var exceptionResult = Assertions.assertThrows(IllegalArgumentException.class,
-  // ()->validerKanDistribueres(jp), "Skal feile hvis tema ikke er BID");
-  //    assertThat(exceptionResult.getMessage()).contains("BID");
-  //  }
-
-  @Test
-  @DisplayName("skal feile validering av distribuer journalpost ikke har mottakerid satt")
-  void skalIkkeValidereHvisJournalpostIkkeHarMottakerIdSatt() {
-    var jp = createValidJournalpost();
-    jp.setAvsenderMottaker(new AvsenderMottaker());
-    var exceptionResult =
-        Assertions.assertThrows(
-            IllegalArgumentException.class,
-            () -> validerKanDistribueres(jp),
-            "Skal feile hvis mottakerid ikke er satt");
-    assertThat(exceptionResult.getMessage()).contains("mottakerId");
-  }
-
-  @Test
-  @DisplayName("skal feile validering av distribuer journalpost hvis mottakerid er samhandlerid")
-  @Disabled
-  void skalIkkeValidereHvisMottakerIdErSamhandlerId() {
-    var jp = createValidJournalpost();
-    jp.setAvsenderMottaker(new AvsenderMottaker("", "8123213213", null));
-    var exceptionResult =
-        Assertions.assertThrows(
-            IllegalArgumentException.class,
-            () -> validerKanDistribueres(jp),
-            "Skal feile hvis mottakerid er samhandlerId");
-    assertThat(exceptionResult.getMessage()).contains("samhandlerId");
-  }
-
-  @Nested
-  @DisplayName("ValiderAdresseTest")
-  class ValiderAdresseTest {
+class DistribuerJournalpostServiceTest {
     @Test
-    @DisplayName("skal feile validering av distribuer journalpost hvis adresse ikke er satt")
-    void skalIkkeValidereHvisJournalpostHvisAdresseIkkeErSatt() {
-      Assertions.assertThrows(
-          IllegalArgumentException.class, () -> validerAdresse(null), "Skal validere adresse");
+    @DisplayName("skal validere distribuer journalpost")
+    fun skalValidere() {
+        Assertions.assertDoesNotThrow { validerKanDistribueres(createValidJournalpost()) }
     }
 
     @Test
-    @DisplayName("skal validere adresse")
-    void skalValidereAdresse() {
-      var adresse = createDistribuerTilAdresse();
-      Assertions.assertDoesNotThrow(() -> validerAdresse(adresse), "Skal validere adresse");
+    @DisplayName("skal validere av hvis journalpost allerede er distribuert men er tillatt for redistribuering")
+    fun skalValidereHvisJournalpostAlleredeErDistribuertMenTillatForRedistribusjon() {
+        val jp = createValidJournalpost()
+        jp.journalpostId = "123"
+        jp.tilleggsopplysninger.setDistribusjonBestillt()
+        Assertions.assertDoesNotThrow { validerKanDistribueres(createValidJournalpost()) }
     }
 
     @Test
-    @DisplayName("skal ikke validere norsk adresse uten postnummer")
-    void skalIkkeValidereNorskAdresseSomManglerPostnummer() {
-      var adresse = createDistribuerTilAdresse();
-      adresse.setPostnummer(null);
-      Assertions.assertThrows(
-          IllegalArgumentException.class,
-          () -> validerAdresse(adresse),
-          "Skal ikke validere norsk adresse uten postnummer");
+    @DisplayName("skal feile validering av distribuer journalpost hvis journalpost allerede er distribuert")
+    fun skalIkkeValidereHvisJournalpostAlleredeErDistribuert() {
+        val jp = createValidJournalpost()
+        jp.tilleggsopplysninger.setDistribusjonBestillt()
+        val exceptionResult = Assertions.assertThrows(
+            IllegalArgumentException::class.java,
+            { validerKanDistribueres(jp) },
+            "skal feile hvis journalpost allerede er distribuert"
+        )
+        org.assertj.core.api.Assertions.assertThat(exceptionResult.message).contains("Journalpost er allerede distribuert")
     }
 
     @Test
-    @DisplayName("skal ikke validere norsk adresse uten poststed")
-    void skalIkkeValidereNorskAdresseSomManglerPoststed() {
-      var adresse = createDistribuerTilAdresse();
-      adresse.setPoststed(null);
-      Assertions.assertThrows(
-          IllegalArgumentException.class,
-          () -> validerAdresse(adresse),
-          "Skal ikke validere norsk adresse uten poststed");
+    @DisplayName("skal feile validering av distribuer journalpost hvis status ikke er FERDIGSTILT")
+    fun skalIkkeValidereHvisStatusIkkeErFerdigstilt() {
+        val jp = createValidJournalpost()
+        jp.journalstatus = JournalStatus.JOURNALFOERT
+        val exceptionResult = Assertions.assertThrows(
+            IllegalArgumentException::class.java,
+            { validerKanDistribueres(jp) },
+            "skal feile hvis status ikke er FERDIGSTILT"
+        )
+        org.assertj.core.api.Assertions.assertThat(exceptionResult.message).contains("FERDIGSTILT")
     }
 
     @Test
-    @DisplayName("skal ikke validere utenlandsk adresse uten adresselinje1")
-    void skalIkkeValidereUtenlandskAdresseSomManglerAdresselinje1() {
-      var adresse = createDistribuerTilAdresse();
-      adresse.setAdresselinje1(null);
-      adresse.setLand("SE");
-      Assertions.assertThrows(
-          IllegalArgumentException.class,
-          () -> validerAdresse(adresse),
-          "Skal ikke validere utenlandsk adresse uten adresselinje1");
+    fun `skal ikke feile validering av distribuer journalpost hvis tema er FAR`() {
+        val jp = createValidJournalpost()
+        jp.tema = "FAR"
+        Assertions.assertDoesNotThrow { validerKanDistribueres(createValidJournalpost()) }
     }
 
     @Test
-    @DisplayName("skal ikke validere hvis landkode ikke er formatert som alpha-2 kode")
-    void skalIkkeValidereLandSomErFormatertFeil() {
-      var adresse = createDistribuerTilAdresse();
-      adresse.setAdresselinje1(null);
-      adresse.setLand("SER");
-      Assertions.assertThrows(
-          IllegalArgumentException.class,
-          () -> validerAdresse(adresse),
-          "Skal ikke validere hvis landkode ikke er formatert som alpha-2 kode");
+    @DisplayName("skal feile validering av distribuer journalpost ikke har mottakerid satt")
+    fun skalIkkeValidereHvisJournalpostIkkeHarMottakerIdSatt() {
+        val jp = createValidJournalpost()
+        jp.avsenderMottaker = AvsenderMottaker()
+        val exceptionResult = Assertions.assertThrows(
+            IllegalArgumentException::class.java,
+            { validerKanDistribueres(jp) },
+            "Skal feile hvis mottakerid ikke er satt"
+        )
+        org.assertj.core.api.Assertions.assertThat(exceptionResult.message).contains("mottakerId")
     }
-  }
 
-  private DistribuerJournalpostRequest createValidDistribuerJournalpostRequest() {
-    return new DistribuerJournalpostRequest(null, false, createDistribuerTilAdresse());
-  }
+    @Test
+    @DisplayName("skal feile validering av distribuer journalpost hvis mottakerid er samhandlerid")
+    @Disabled
+    fun skalIkkeValidereHvisMottakerIdErSamhandlerId() {
+        val jp = createValidJournalpost()
+        jp.avsenderMottaker = AvsenderMottaker("", "8123213213", null)
+        val exceptionResult = Assertions.assertThrows(
+            IllegalArgumentException::class.java,
+            { validerKanDistribueres(jp) },
+            "Skal feile hvis mottakerid er samhandlerId"
+        )
+        org.assertj.core.api.Assertions.assertThat(exceptionResult.message).contains("samhandlerId")
+    }
 
-  private Journalpost createValidJournalpost() {
-    var journalpost = new Journalpost();
-    journalpost.setJournalstatus(JournalStatus.FERDIGSTILT);
-    journalpost.setTema("BID");
-    journalpost.setAvsenderMottaker(
-        new AvsenderMottaker("test", "123213213", AvsenderMottakerIdType.FNR));
-    return journalpost;
-  }
+    @Nested
+    @DisplayName("ValiderAdresseTest")
+    internal inner class ValiderAdresseTest {
+        @Test
+        @DisplayName("skal feile validering av distribuer journalpost hvis adresse ikke er satt")
+        fun skalIkkeValidereHvisJournalpostHvisAdresseIkkeErSatt() {
+            Assertions.assertThrows(
+                IllegalArgumentException::class.java, { validerAdresse(null) }, "Skal validere adresse"
+            )
+        }
+
+        @Test
+        @DisplayName("skal validere adresse")
+        fun skalValidereAdresse() {
+            val adresse = createDistribuerTilAdresse()
+            Assertions.assertDoesNotThrow({ validerAdresse(adresse) }, "Skal validere adresse")
+        }
+
+        @Test
+        @DisplayName("skal ikke validere norsk adresse uten postnummer")
+        fun skalIkkeValidereNorskAdresseSomManglerPostnummer() {
+            val adresse = createDistribuerTilAdresse()
+            adresse.postnummer = null
+            Assertions.assertThrows(
+                IllegalArgumentException::class.java,
+                { validerAdresse(adresse) },
+                "Skal ikke validere norsk adresse uten postnummer"
+            )
+        }
+
+        @Test
+        @DisplayName("skal ikke validere norsk adresse uten poststed")
+        fun skalIkkeValidereNorskAdresseSomManglerPoststed() {
+            val adresse = createDistribuerTilAdresse()
+            adresse.poststed = null
+            Assertions.assertThrows(
+                IllegalArgumentException::class.java,
+                { validerAdresse(adresse) },
+                "Skal ikke validere norsk adresse uten poststed"
+            )
+        }
+
+        @Test
+        @DisplayName("skal ikke validere utenlandsk adresse uten adresselinje1")
+        fun skalIkkeValidereUtenlandskAdresseSomManglerAdresselinje1() {
+            val adresse = createDistribuerTilAdresse()
+            adresse.adresselinje1 = null
+            adresse.land = "SE"
+            Assertions.assertThrows(
+                IllegalArgumentException::class.java,
+                { validerAdresse(adresse) },
+                "Skal ikke validere utenlandsk adresse uten adresselinje1"
+            )
+        }
+
+        @Test
+        @DisplayName("skal ikke validere hvis landkode ikke er formatert som alpha-2 kode")
+        fun skalIkkeValidereLandSomErFormatertFeil() {
+            val adresse = createDistribuerTilAdresse()
+            adresse.adresselinje1 = null
+            adresse.land = "SER"
+            Assertions.assertThrows(
+                IllegalArgumentException::class.java,
+                { validerAdresse(adresse) },
+                "Skal ikke validere hvis landkode ikke er formatert som alpha-2 kode"
+            )
+        }
+    }
+
+    private fun createValidDistribuerJournalpostRequest(): DistribuerJournalpostRequest {
+        return DistribuerJournalpostRequest(null, false, createDistribuerTilAdresse())
+    }
+
+    private fun createValidJournalpost(): Journalpost {
+        val journalpost = Journalpost()
+        journalpost.journalstatus = JournalStatus.FERDIGSTILT
+        journalpost.tema = "BID"
+        journalpost.avsenderMottaker = AvsenderMottaker("test", "123213213", AvsenderMottakerIdType.FNR)
+        return journalpost
+    }
 }
