@@ -76,12 +76,11 @@ jobs:
       INGRESS_ARKIV: https://bidrag-dokument-arkiv.dev.intern.nav.no
       INGRESS_CUCUMBER: https://bidrag-cucumber-onprem.dev.intern.nav.no
       INGRESS_DOKARKIV: https://dokarkiv-q2.dev.intern.nav.no
-
     steps:
       - run: |
           echo "INGRESS_OPPGAVE=https://oppgave-q1.dev.intern.nav.no" >> $GITHUB_ENV
           echo "INGRESS_ARKIV=https://bidrag-dokument-arkiv-feature.dev.intern.nav.no" >> $GITHUB_ENV
-          echo "INGRESS_CUCUMBER=https://bidrag-cucumber-onprem-feature.dev.intern.nav.no >> $GITHUB_ENV
+          echo "INGRESS_CUCUMBER=https://bidrag-cucumber-onprem-feature.dev.intern.nav.no" >> $GITHUB_ENV
           echo "INGRESS_DOKARKIV=https://dokarkiv-q1.dev.intern.nav.no" >> $GITHUB_ENV
         if: github.ref != 'refs/heads/main'
       - name: "@arkiv-swagger"
@@ -103,7 +102,7 @@ jobs:
               "tags":["@bidrag-dokument-arkiv"],
               "noContextPathForApps":["dokarkiv-api", "oppgave-api"],
               "ingressesForApps":[
-                  "${{ env.INGRESS_ARKIV }}@bidrag-dokument-arkiv", 
+                  "${{ env.INGRESS_ARKIV }}@bidrag-dokument-arkiv",
                   "${{ env.INGRESS_OPPGAVE }}@oppgave-api",
                   "${{ env.INGRESS_DOKARKIV }}@dokarkiv-api"]
             }' | tee .cucumber-result

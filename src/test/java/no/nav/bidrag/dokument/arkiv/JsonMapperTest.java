@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern;
@@ -30,8 +31,7 @@ import org.springframework.test.context.ActiveProfiles;
 @EnableMockOAuth2Server
 class JsonMapperTest {
 
-  @Autowired
-  private ObjectMapper objectMapper;
+  @Autowired private ObjectMapper objectMapper;
 
   @Test
   @DisplayName("skal mappe OppdaterJournalpost til json")
@@ -39,7 +39,7 @@ class JsonMapperTest {
     var journalpost = new Journalpost();
     journalpost.setJournalstatus(JournalStatus.MOTTATT);
     journalpost.setJournalposttype(JournalpostType.I);
-    var endreDokument = new EndreDokument(null, "55555","55555", "Tittelen på dokument");
+    var endreDokument = new EndreDokument(null, "55555", "55555", "Tittelen på dokument");
 
     var endreJournalpostCommand = new EndreJournalpostCommand();
     endreJournalpostCommand.setAvsenderNavn("AvsenderNavn");
@@ -53,40 +53,61 @@ class JsonMapperTest {
     var endreJournalpostIntern = new EndreJournalpostCommandIntern(endreJournalpostCommand, "4805");
     var oppdaterJp = new LagreJournalpostRequest(12345, endreJournalpostIntern, journalpost);
 
-    @SuppressWarnings("unchecked") var jsonMap = (Map<String, Object>) objectMapper.convertValue(oppdaterJp, Map.class);
+    @SuppressWarnings("unchecked")
+    var jsonMap = (Map<String, Object>) objectMapper.convertValue(oppdaterJp, Map.class);
     var jsonObjects = new JsonObjects(jsonMap);
 
     assertAll(
-        () -> assertThat(jsonObjects.objekt("avsenderMottaker").get("navn")).as("avsenderMottaker").isEqualTo("AvsenderNavn"),
+        () ->
+            assertThat(jsonObjects.objekt("avsenderMottaker").get("navn"))
+                .as("avsenderMottaker")
+                .isEqualTo("AvsenderNavn"),
         () -> assertThat(jsonObjects.objekt("bruker").get("id")).as("id").isEqualTo("1234"),
         () -> assertThat(jsonObjects.objekt("bruker").get("idType")).as("idType").isEqualTo("FNR"),
-        () -> assertThat(jsonObjects.objekt("sak").get("fagsakId")).as("fagsakId").isEqualTo("sakIdent"),
-        () -> assertThat(jsonObjects.objekt("sak").get("fagsaksystem")).as("fagsaksystem").isEqualTo("BISYS"),
-        () -> assertThat(jsonObjects.objekt("sak").get("sakstype")).as("fagsaksystem").isEqualTo("FAGSAK"),
-        () -> assertThat(jsonObjects.listeMedObjekter("dokumenter").get(0).get("dokumentInfoId")).as("dokumentInfoId").isEqualTo("55555"),
-        () -> assertThat(jsonObjects.listeMedObjekter("dokumenter").get(0).get("tittel")).as("tittel").isEqualTo("Tittelen på dokument"),
+        () ->
+            assertThat(jsonObjects.objekt("sak").get("fagsakId"))
+                .as("fagsakId")
+                .isEqualTo("sakIdent"),
+        () ->
+            assertThat(jsonObjects.objekt("sak").get("fagsaksystem"))
+                .as("fagsaksystem")
+                .isEqualTo("BISYS"),
+        () ->
+            assertThat(jsonObjects.objekt("sak").get("sakstype"))
+                .as("fagsaksystem")
+                .isEqualTo("FAGSAK"),
+        () ->
+            assertThat(jsonObjects.listeMedObjekter("dokumenter").get(0).get("dokumentInfoId"))
+                .as("dokumentInfoId")
+                .isEqualTo("55555"),
+        () ->
+            assertThat(jsonObjects.listeMedObjekter("dokumenter").get(0).get("tittel"))
+                .as("tittel")
+                .isEqualTo("Tittelen på dokument"),
         () -> assertThat(jsonMap.get("tema")).as("tema").isEqualTo("BID"),
-        () -> assertThat(jsonMap.get("tittel")).as("tittel").isEqualTo("Tittelen på journalposten")
-    );
+        () ->
+            assertThat(jsonMap.get("tittel")).as("tittel").isEqualTo("Tittelen på journalposten"));
   }
 
   @Test
   @DisplayName("skal mappe json streng til java.util.Map")
   void skalMappeJsonRequest() throws JsonProcessingException {
-    var opprettJournalpostRequestAsJson = String.join("\n", "{",
-        "\"avsenderMottaker\": { \"navn\": \"Birger\" },",
-        "\"behandlingstema\": \"BI01\",",
-        "\"bruker\": { \"id\": \"06127412345\", \"idType\": \"FNR\" },",
-        "\"dokumenter\": [{ \"brevkode\": \"BREVKODEN\", \"dokumentKategori\": \"dokumentKategori\", \"tittel\": \"Tittelen på dokumentet\" }],",
-        "\"eksternReferanseId\": \"dokreferanse\",",
-        "\"journalfoerendeEnhet\": \"666\",",
-        "\"journalpostType\": \"N\",",
-        "\"kanal\": \"nav.no\",",
-        "\"sak\": { \"arkivsaksnummer\": \"1900001\", \"arkivsaksystem\": \"GSAK\" },",
-        "\"tema\": \"BID\",",
-        "\"tittel\": \"Tittelen på journalposten\"",
-        "}"
-    );
+    var opprettJournalpostRequestAsJson =
+        String.join(
+            "\n",
+            "{",
+            "\"avsenderMottaker\": { \"navn\": \"Birger\" },",
+            "\"behandlingstema\": \"BI01\",",
+            "\"bruker\": { \"id\": \"06127412345\", \"idType\": \"FNR\" },",
+            "\"dokumenter\": [{ \"brevkode\": \"BREVKODEN\", \"dokumentKategori\": \"dokumentKategori\", \"tittel\": \"Tittelen på dokumentet\" }],",
+            "\"eksternReferanseId\": \"dokreferanse\",",
+            "\"journalfoerendeEnhet\": \"666\",",
+            "\"journalpostType\": \"N\",",
+            "\"kanal\": \"nav.no\",",
+            "\"sak\": { \"arkivsaksnummer\": \"1900001\", \"arkivsaksystem\": \"GSAK\" },",
+            "\"tema\": \"BID\",",
+            "\"tittel\": \"Tittelen på journalposten\"",
+            "}");
 
     var jsonMap = objectMapper.readValue(opprettJournalpostRequestAsJson, Map.class);
 
@@ -95,42 +116,54 @@ class JsonMapperTest {
         () -> assertThat(jsonMap.get("behandlingstema")).as("behandlingstema").isEqualTo("BI01"),
         () -> assertThat(jsonMap.get("bruker")).as("bruker").isNotNull(),
         () -> assertThat(jsonMap.get("dokumenter")).as("dokumenter").isNotNull(),
-        () -> assertThat(jsonMap.get("eksternReferanseId")).as("eksternReferanseId").isEqualTo("dokreferanse"),
-        () -> assertThat(jsonMap.get("journalfoerendeEnhet")).as("journalfoerendeEnhet").isEqualTo("666"),
+        () ->
+            assertThat(jsonMap.get("eksternReferanseId"))
+                .as("eksternReferanseId")
+                .isEqualTo("dokreferanse"),
+        () ->
+            assertThat(jsonMap.get("journalfoerendeEnhet"))
+                .as("journalfoerendeEnhet")
+                .isEqualTo("666"),
         () -> assertThat(jsonMap.get("journalpostType")).as("journalpostType").isEqualTo("N"),
         () -> assertThat(jsonMap.get("kanal")).as("kanal").isEqualTo("nav.no"),
         () -> assertThat(jsonMap.get("sak")).as("sak").isNotNull(),
         () -> assertThat(jsonMap.get("tema")).as("tema").isEqualTo("BID"),
-        () -> assertThat(jsonMap.get("tittel")).as("tittel").isEqualTo("Tittelen på journalposten")
-    );
+        () ->
+            assertThat(jsonMap.get("tittel")).as("tittel").isEqualTo("Tittelen på journalposten"));
   }
 
   @Test
   @DisplayName("skal mappe saf dokumentOversiktFagsak query til java.util.Map")
   void skalMappeSafDokumentOversiktQueryTilMap() {
-    var safQuery = new DokumentoversiktFagsakQuery("666", "BID");
+    var safQuery = new DokumentoversiktFagsakQuery("666", List.of("BID"));
 
     assertAll(
-        () -> assertThat(safQuery.getQuery()).as("querystring")
-            .contains("fagsakId: $fagsakId")
-            .contains("tema:$tema"),
-        () -> assertThat(safQuery.getVariables()).as("Variables")
-            .containsEntry("fagsakId", "666")
-            .containsEntry("tema", "BID")
-    );
+        () ->
+            assertThat(safQuery.getQuery())
+                .as("querystring")
+                .contains("fagsakId: $fagsakId")
+                .contains("tema:$tema"),
+        () ->
+            assertThat(safQuery.getVariables())
+                .as("Variables")
+                .containsEntry("fagsakId", "666")
+                .containsEntry("tema", List.of("BID")));
   }
 
   @Test
   @DisplayName("skal mappe saf journalpost query til java.util.Map")
-  void skalMappeSafJournalpostQueryTilMap()  {
+  void skalMappeSafJournalpostQueryTilMap() {
     var safQuery = new JournalpostQuery(1235L);
 
     assertAll(
-        () -> assertThat(safQuery.getQuery()).as("querystring")
-            .contains("journalpostId: $journalpostId"),
-        () -> assertThat(safQuery.getVariables()).as("Variables")
-            .containsEntry("journalpostId", "1235")
-    );
+        () ->
+            assertThat(safQuery.getQuery())
+                .as("querystring")
+                .contains("journalpostId: $journalpostId"),
+        () ->
+            assertThat(safQuery.getVariables())
+                .as("Variables")
+                .containsEntry("journalpostId", "1235"));
   }
 
   private static class JsonObjects {

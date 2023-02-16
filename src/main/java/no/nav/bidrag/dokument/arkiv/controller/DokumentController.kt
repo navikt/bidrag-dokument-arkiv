@@ -40,12 +40,18 @@ class DokumentController(private val dokumentService: DokumentService) {
                     "Ugyldig prefix på journalpostId"
                 ), HttpStatus.BAD_REQUEST
             )
-        } else dokumentService.hentDokument(kildesystemIdenfikator.hentJournalpostIdLong(), dokumentreferanse)
+        } else dokumentService.hentDokument(kildesystemIdenfikator.hentJournalpostIdLong()!!, dokumentreferanse)
     }
 
-    @RequestMapping(value = ["/dokument/{journalpostId}/{dokumentreferanse}", "/dokument/{journalpostId}", "/dokumentreferanse/{dokumentreferanse}"], method = [RequestMethod.OPTIONS])
+    @RequestMapping(
+        value = ["/dokument/{journalpostId}/{dokumentreferanse}", "/dokument/{journalpostId}", "/dokumentreferanse/{dokumentreferanse}"],
+        method = [RequestMethod.OPTIONS]
+    )
     @Operation(security = [SecurityRequirement(name = "bearer-key")], summary = "Henter dokument for journalpostid og dokumentreferanse. ")
-    fun hentDokumentMetadata(@PathVariable(required = false) journalpostId: String?, @PathVariable(required = false) dokumentreferanse: String?): ResponseEntity<List<DokumentMetadata>> {
+    fun hentDokumentMetadata(
+        @PathVariable(required = false) journalpostId: String?,
+        @PathVariable(required = false) dokumentreferanse: String?
+    ): ResponseEntity<List<DokumentMetadata>> {
         LOGGER.info("Henter dokument for journalpost $journalpostId og dokumentId $dokumentreferanse")
         if (journalpostId.isNullOrEmpty() && dokumentreferanse.isNullOrEmpty()) {
             return ResponseEntity
@@ -58,9 +64,9 @@ class DokumentController(private val dokumentService: DokumentService) {
         }
         val kildesystemIdenfikator = KildesystemIdenfikator(journalpostId)
         return if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix()) ResponseEntity
-                .badRequest()
-                .header(HttpHeaders.WARNING, "Ugyldig prefix på journalpostId $journalpostId")
-                .build()
+            .badRequest()
+            .header(HttpHeaders.WARNING, "Ugyldig prefix på journalpostId $journalpostId")
+            .build()
         else ResponseEntity.ok(dokumentService.hentDokumentMetadata(kildesystemIdenfikator.hentJournalpostIdLong(), dokumentreferanse))
     }
 
