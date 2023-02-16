@@ -101,7 +101,6 @@ fun validerKanDistribueres(journalpost: Journalpost?) {
     Validate.isTrue(journalpost != null && journalpost.hentTilknyttetSaker().size < 2, "Kan bare distribuere journalpost med 1 sak")
     Validate.isTrue(journalpost?.journalstatus == JournalStatus.FERDIGSTILT, "Journalpost må ha status FERDIGSTILT")
     Validate.isTrue(journalpost?.tilleggsopplysninger?.isDistribusjonBestilt() == false, "Journalpost er allerede distribuert")
-//    Validate.isTrue(journalpost?.tema == "BID", "Journalpost må ha tema BID")
     Validate.isTrue(
         journalpost?.hasMottakerId() == true || journalpost?.hentAvsenderNavn()?.isNotEmpty() == true,
         "Journalpost må ha satt mottakerId eller mottakerNavn"
