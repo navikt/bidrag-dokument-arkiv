@@ -977,7 +977,6 @@ class AvvikControllerTest : AbstractControllerTest() {
 
     @Test
     @Throws(IOException::class)
-    @Disabled
     fun `Skal utfore avvik KOPIER_FRA_ANNEN_FAGOMRADE`() {
         // given
         val xEnhet = "1234"
@@ -999,7 +998,8 @@ class AvvikControllerTest : AbstractControllerTest() {
                     dokumentInfoId = DOKUMENT_1_ID,
                     tittel = "Tittel på original dokument"
                 )
-            )
+            ),
+            journalstatus = JournalStatus.JOURNALFOERT
         )
         safResponseAnnenFagomrade.tema = "BAR"
         safResponseAnnenFagomrade.sak = Sak("51233aA", "IT01")
@@ -1078,7 +1078,6 @@ class AvvikControllerTest : AbstractControllerTest() {
 
     @Test
     @Throws(IOException::class)
-    @Disabled
     fun `Skal utfore avvik KOPIER_FRA_ANNEN_FAGOMRADE and not fail when knytt til sak fails`() {
         // given
         val xEnhet = "1234"
@@ -1096,7 +1095,8 @@ class AvvikControllerTest : AbstractControllerTest() {
                     dokumentInfoId = DOKUMENT_1_ID,
                     tittel = "Tittel på original dokument"
                 )
-            )
+            ),
+            journalstatus = JournalStatus.JOURNALFOERT
         )
         safResponseAnnenFagomrade.tema = "BAR"
         safResponseAnnenFagomrade.sak = Sak("51233aA", "IT01")

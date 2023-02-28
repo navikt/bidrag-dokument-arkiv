@@ -280,10 +280,8 @@ data class Journalpost(
     }
 
     fun tilAvvik(): List<AvvikType> {
-        if (!isTemaBidrag()) {
-            return if (isInngaaendeDokument() && isStatusMottatt()) listOf(AvvikType.ENDRE_FAGOMRADE) else if (isInngaaendeDokument()) listOf(
-                AvvikType.KOPIER_FRA_ANNEN_FAGOMRADE
-            ) else emptyList()
+        if (!isStatusMottatt() && !isTemaBidrag()) {
+            return if (isInngaaendeDokument()) listOf(AvvikType.KOPIER_FRA_ANNEN_FAGOMRADE) else emptyList()
         }
         val avvikTypeList = mutableListOf<AvvikType>()
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
