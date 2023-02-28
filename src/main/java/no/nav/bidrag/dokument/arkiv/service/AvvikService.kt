@@ -10,6 +10,8 @@ import no.nav.bidrag.dokument.arkiv.dto.BestillOriginalOppgaveRequest
 import no.nav.bidrag.dokument.arkiv.dto.BestillReskanningOppgaveRequest
 import no.nav.bidrag.dokument.arkiv.dto.BestillSplittingoppgaveRequest
 import no.nav.bidrag.dokument.arkiv.dto.Dokument
+import no.nav.bidrag.dokument.arkiv.dto.EndreFagomradeRequest
+import no.nav.bidrag.dokument.arkiv.dto.Fagomrade
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.JoarkOpprettJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
@@ -301,6 +303,7 @@ class AvvikService(
             endreFagomradeJournalfortJournalpost(journalpost, avvikshendelseIntern)
         } else {
             endreFagomradeMottattJournalpost(journalpost, avvikshendelseIntern)
+            oppgaveService.ferdigstillVurderDokumentOppgaver(journalpost.hentJournalpostIdLong()!!, avvikshendelseIntern.saksbehandlersEnhet!!)
         }
     }
 
