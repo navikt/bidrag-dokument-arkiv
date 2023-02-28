@@ -28,7 +28,7 @@
     <apache-avro-version>1.11.1</apache-avro-version>
     <bidrag-commons.version>0.7.31</bidrag-commons.version>
     <bidrag-commons-test.version>0.2.2</bidrag-commons-test.version>
-    <bidrag-dokument-dto.version>1.6.16</bidrag-dokument-dto.version>
+    <bidrag-dokument-dto.version>1.6.20</bidrag-dokument-dto.version>
     <bidrag-tilgangskontroll.version>1.9.21</bidrag-tilgangskontroll.version>
     <commons-codec.version>1.15</commons-codec.version>
     <graphq-dgs-client.version>5.5.1</graphq-dgs-client.version>
@@ -151,8 +151,8 @@
 
     <!-- misc -->
     <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpclient</artifactId>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
     </dependency>
 
     <dependency>
