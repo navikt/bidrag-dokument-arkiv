@@ -10,6 +10,8 @@ import no.nav.bidrag.dokument.arkiv.dto.BestillOriginalOppgaveRequest
 import no.nav.bidrag.dokument.arkiv.dto.BestillReskanningOppgaveRequest
 import no.nav.bidrag.dokument.arkiv.dto.BestillSplittingoppgaveRequest
 import no.nav.bidrag.dokument.arkiv.dto.Dokument
+import no.nav.bidrag.dokument.arkiv.dto.EndreFagomradeRequest
+import no.nav.bidrag.dokument.arkiv.dto.Fagomrade
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.JoarkOpprettJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
@@ -167,6 +169,9 @@ class AvvikService(
     private fun overforJournalpostTilEnhet(journalpost: Journalpost, enhet: String) {
         if (journalpost.journalforendeEnhet != enhet) {
             dokarkivConsumer.endre(OverforEnhetRequest(journalpost.hentJournalpostIdLong()!!, enhet))
+        }
+        if (!journalpost.isBidragTema() && journalpost.isStatusMottatt()) {
+            dokarkivConsumer.endre(EndreFagomradeRequest(journalpost.hentJournalpostIdLong()!!, Fagomrade.BID.name))
         }
     }
 
