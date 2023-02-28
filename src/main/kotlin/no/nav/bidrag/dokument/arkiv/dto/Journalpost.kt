@@ -280,12 +280,14 @@ data class Journalpost(
     }
 
     fun tilAvvik(): List<AvvikType> {
-        if (!isStatusMottatt() && !isTemaBidrag()) {
-            return if (isInngaaendeDokument()) listOf(AvvikType.KOPIER_FRA_ANNEN_FAGOMRADE) else emptyList()
+        if (!isTemaBidrag()) {
+            return if (isStatusMottatt() && isInngaaendeDokument()) listOf(AvvikType.ENDRE_FAGOMRADE)
+            else if (isInngaaendeDokument()) listOf(AvvikType.KOPIER_FRA_ANNEN_FAGOMRADE)
+            else emptyList()
         }
         val avvikTypeList = mutableListOf<AvvikType>()
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
-        if (isStatusMottatt()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
+        if (isStatusMottatt() && isTemaBidrag()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
         if (isSkanning() && !tilleggsopplysninger.isOriginalBestilt() && !isFeilregistrert()) avvikTypeList.add(AvvikType.BESTILL_ORIGINAL)
         if (isSkanning() && !isFeilregistrert()) avvikTypeList.add(AvvikType.BESTILL_RESKANNING)
         if (isSkanning() && !isFeilregistrert()) avvikTypeList.add(AvvikType.BESTILL_SPLITTING)

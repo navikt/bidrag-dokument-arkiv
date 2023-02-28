@@ -170,9 +170,6 @@ class AvvikService(
         if (journalpost.journalforendeEnhet != enhet) {
             dokarkivConsumer.endre(OverforEnhetRequest(journalpost.hentJournalpostIdLong()!!, enhet))
         }
-        if (!journalpost.isBidragTema() && journalpost.isStatusMottatt()) {
-            dokarkivConsumer.endre(EndreFagomradeRequest(journalpost.hentJournalpostIdLong()!!, Fagomrade.BID.name))
-        }
     }
 
     private fun hentSaksbehandler(enhet: String): SaksbehandlerMedEnhet {

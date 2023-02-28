@@ -1,6 +1,8 @@
 package no.nav.bidrag.dokument.arkiv.controller
 
 
+import io.kotest.assertions.assertSoftly
+import io.kotest.matchers.shouldBe
 import no.nav.bidrag.commons.web.EnhetFilter
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest
@@ -160,6 +162,31 @@ class AvvikControllerTest : AbstractControllerTest() {
                 )
             }
         )
+    }
+
+    @Test
+    fun `skal utføre avvik ENDRE_FAGOMRÅDE til BID hvis fagområde er ulik bidrag`() {
+        val xEnhet = "1234"
+        val geografiskEnhet = "1234"
+        val nyttFagomrade = "BID"
+        val avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, java.util.Map.of("fagomrade", nyttFagomrade))
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
+        stubs.mockOrganisasjonGeografiskTilknytning(geografiskEnhet)
+        stubs.mockSafResponseHentJournalpost(opprettSafResponse().copy(tema = "BAR"))
+        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
+
+        val overforEnhetResponse = sendAvvikRequest(xEnhet, JOURNALPOST_ID, avvikHendelse)
+
+        assertSoftly {
+            overforEnhetResponse.statusCode shouldBe HttpStatus.OK
+            stubs.verifyStub.dokarkivOppdaterKalt(JOURNALPOST_ID, String.format("\"tema\":\"%s\"", nyttFagomrade))
+            Mockito.verify(kafkaTemplateMock).send(
+                ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                    "JOARK-$JOURNALPOST_ID"
+                ), ArgumentMatchers.any()
+            )
+        }
     }
 
     @Test
