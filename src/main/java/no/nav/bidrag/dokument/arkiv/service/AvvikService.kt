@@ -306,6 +306,7 @@ class AvvikService(
             endreFagomradeJournalfortJournalpost(journalpost, avvikshendelseIntern)
         } else {
             endreFagomradeMottattJournalpost(journalpost, avvikshendelseIntern)
+            oppgaveService.ferdigstillVurderDokumentOppgaver(journalpost.hentJournalpostIdLong()!!, avvikshendelseIntern.saksbehandlersEnhet!!)
         }
     }
 
