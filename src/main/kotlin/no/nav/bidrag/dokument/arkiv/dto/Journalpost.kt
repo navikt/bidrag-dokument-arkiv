@@ -62,6 +62,38 @@ object JournalstatusDto {
     const val UTGAR = "U"
 }
 
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class DistribusjonsInfo(
+    val journalstatus: String,
+    val kanal: JournalpostKanal,
+    val utsendingsinfo: UtsendingsInfo? = null
+)
+
+data class UtsendingsInfo(
+    val digitalpostSendt: DigitalpostSendt? = null,
+    val epostVarselSendt: EpostVarselSendt? = null,
+    val fysiskpostSendt: FysiskpostSendt? = null,
+    val smsVarselSendt: SmsVarselSendt? = null,
+)
+
+data class EpostVarselSendt(
+    val adresse: String,
+    val tittel: String,
+    val varslingstekst: String
+)
+
+data class DigitalpostSendt(
+    val adresse: String
+)
+
+data class FysiskpostSendt(
+    val adressetekstKonvolutt: String
+)
+
+data class SmsVarselSendt(
+    val varslingstekst: String,
+    val adresse: String
+)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Journalpost(

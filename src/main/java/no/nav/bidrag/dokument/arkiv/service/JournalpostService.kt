@@ -4,6 +4,7 @@ import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer
 import no.nav.bidrag.dokument.arkiv.dto.Bruker
 import no.nav.bidrag.dokument.arkiv.dto.BrukerType
+import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsInfo
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.dto.Sak
@@ -79,6 +80,10 @@ class JournalpostService(private val safConsumer: SafConsumer, private val perso
 
     fun finnJournalposterForSaksnummer(saksnummer: String, fagomrade: List<String> = emptyList()): List<Journalpost> {
         return safConsumer.finnJournalposter(saksnummer, fagomrade)
+    }
+
+    fun hentDistribusjonsInfo(journalpostId: Long): DistribusjonsInfo {
+        return safConsumer.hentDistribusjonInfo(journalpostId)
     }
 
     private fun konverterAktoerIdTilFnr(journalpost: Journalpost): Journalpost {

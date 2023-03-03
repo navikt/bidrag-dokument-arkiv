@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import no.nav.bidrag.dokument.arkiv.consumer.DokdistFordelingConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer
 import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal
+import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsInfo
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostUtsendingKanal
@@ -43,6 +44,10 @@ class DistribuerJournalpostService(
     init {
         journalpostService = journalpostServices.get(Discriminator.REGULAR_USER)
         personConsumer = personConsumers.get(Discriminator.REGULAR_USER)
+    }
+
+    fun hentDistribusjonsInfo(journalpostId: Long): DistribusjonsInfo {
+        return journalpostService.hentDistribusjonsInfo(journalpostId)
     }
 
     fun bestillNyDistribusjon(journalpost: Journalpost, distribuerTilAdresse: DistribuerTilAdresse?) {
