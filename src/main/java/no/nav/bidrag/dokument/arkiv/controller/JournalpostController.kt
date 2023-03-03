@@ -22,6 +22,7 @@ import no.nav.bidrag.dokument.dto.JournalpostResponse
 import no.nav.security.token.support.core.api.Protected
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
@@ -132,12 +133,12 @@ class JournalpostController(
                 .header(HttpHeaders.WARNING, msgBadRequest)
                 .build()
         }
-        val endreJournalpostHttpResponse = endreJournalpostService.endre(
+        endreJournalpostService.endre(
             java.lang.Long.valueOf(
                 kildesystemIdenfikator.hentJournalpostId()!!.toLong()
             ), EndreJournalpostCommandIntern(endreJournalpostCommand, enhet!!)
         )
-        return ResponseEntity(endreJournalpostHttpResponse.responseEntity.statusCode)
+        return ResponseEntity(HttpStatus.OK)
     }
 
     companion object {

@@ -32,7 +32,7 @@ class EndreJournalpostService(
     private val dokarkivKnyttTilSakConsumer: DokarkivKnyttTilSakConsumer,
     private val hendelserProducer: HendelserProducer, private val saksbehandlerInfoManager: SaksbehandlerInfoManager
 ) {
-    fun endre(journalpostId: Long, endreJournalpostCommand: EndreJournalpostCommandIntern): HttpResponse<Void> {
+    fun endre(journalpostId: Long, endreJournalpostCommand: EndreJournalpostCommandIntern) {
         var journalpost = hentJournalpost(journalpostId)
         endreJournalpostCommand.sjekkGyldigEndring(journalpost)
         lagreJournalpost(journalpostId, endreJournalpostCommand, journalpost)
@@ -42,7 +42,6 @@ class EndreJournalpostService(
             tilknyttSakerTilJournalfoertJournalpost(endreJournalpostCommand, journalpost)
         }
         publiserJournalpostEndretHendelse(journalpost, journalpostId, endreJournalpostCommand)
-        return HttpResponse.from(HttpStatus.OK)
     }
 
     private fun publiserJournalpostEndretHendelse(
