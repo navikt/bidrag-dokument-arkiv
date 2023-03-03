@@ -4,29 +4,30 @@ ingresses:
   - https://bidrag-dokument-arkiv.nais.preprod.local/
   - https://bidrag-dokument-arkiv.dev.adeo.no/
   - https://bidrag-dokument-arkiv.dev.intern.nav.no/
+  - https://bidrag-dokument-arkiv.intern.dev.nav.no/
 kafka:
   pool: nav-dev
 env:
-    ACCEPTED_SERVICE_USER_AUDIENCE: srvbdarkivering,srvbisys
-    STS_ISSUER_URL: https://security-token-service.dev.adeo.no
-    ACCESS_TOKEN_URL: https://security-token-service.dev.adeo.no
-    DOKARKIV_URL: https://dokarkiv-q2.dev.adeo.no/
-    DOKARKIV_KNYTT_TIL_SAK_URL: https://dokarkiv-q2.dev.adeo.no
-    DOKDISTFORDELING_URL: https://dokdistfordeling-q2.dev.adeo.no
-    SAF_URL: https://saf-q2.dev.adeo.no
-    OPPGAVE_URL: https://oppgave-q2.nais.preprod.local/api/v1/oppgaver
-    OPPGAVE_SCOPE: dev-fss.oppgavehandtering.oppgave
-    SAF_SCOPE: dev-fss.teamdokumenthandtering.saf
-    DOKARKIV_SCOPE: dev-fss.teamdokumenthandtering.dokarkiv
-    TOPIC_JOURNALPOST: bidrag.journalpost
-    TOPIC_OPPGAVE_OPPRETTET: aapen-oppgave-opprettet-v1-dev-syntetisk
-    KAFKA_BOOTSTRAP_SERVERS: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
-    TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering
-    BIDRAG_PERSON_URL: https://bidrag-person.dev.adeo.no
-    PERSON_SCOPE: dev-fss.bidrag.bidrag-person
-    BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon.dev.adeo.no
-    ORGANISASJON_SCOPE: dev-fss.bidrag.bidrag-organisasjon
-    JAVA_OPTS: -Xmx1500m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
+  ACCEPTED_SERVICE_USER_AUDIENCE: srvbdarkivering,srvbisys
+  STS_ISSUER_URL: https://security-token-service.dev.adeo.no
+  ACCESS_TOKEN_URL: https://security-token-service.dev.adeo.no
+  DOKARKIV_URL: https://dokarkiv-q2.dev.adeo.no/
+  DOKARKIV_KNYTT_TIL_SAK_URL: https://dokarkiv-q2.dev.adeo.no
+  DOKDISTFORDELING_URL: https://dokdistfordeling-q2.dev.adeo.no
+  SAF_URL: https://saf-q2.dev.adeo.no
+  OPPGAVE_URL: https://oppgave-q2.nais.preprod.local/api/v1/oppgaver
+  OPPGAVE_SCOPE: dev-fss.oppgavehandtering.oppgave
+  SAF_SCOPE: dev-fss.teamdokumenthandtering.saf
+  DOKARKIV_SCOPE: dev-fss.teamdokumenthandtering.dokarkiv
+  TOPIC_JOURNALPOST: bidrag.journalpost
+  TOPIC_OPPGAVE_OPPRETTET: aapen-oppgave-opprettet-v1-dev-syntetisk
+  KAFKA_BOOTSTRAP_SERVERS: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
+  TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering
+  BIDRAG_PERSON_URL: https://bidrag-person.dev.adeo.no
+  PERSON_SCOPE: dev-fss.bidrag.bidrag-person
+  BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon.dev.adeo.no
+  ORGANISASJON_SCOPE: dev-fss.bidrag.bidrag-organisasjon
+  JAVA_OPTS: -Xmx1500m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
 vault:
   kvPath: dev
 azureAccessInbound:
