@@ -120,7 +120,7 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivOppdaterKalt(
                 journalpostId,
                 "\"tittel\":\"Ny tittel\"",
-                "\"datoDokument\":\"2022-05-20\"",
+                "\"datoDokument\":\"2022-05-20T00:00\"",
             )
         }
     }
