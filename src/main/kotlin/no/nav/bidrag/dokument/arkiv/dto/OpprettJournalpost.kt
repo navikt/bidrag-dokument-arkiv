@@ -14,6 +14,7 @@ typealias DokumentByte = Map<DokumentId, ByteArray>
 data class JoarkOpprettJournalpostRequest(
     val sak: OpprettJournalpostSak? = null,
     val tittel: String? = null,
+    val datoDokument: String? = null,
     val journalfoerendeEnhet: String? = null,
     val journalpostType: JoarkJournalpostType? = null,
     val datoRetur: String? = null,
@@ -103,7 +104,6 @@ class OpprettJournalpostRequestBuilder {
     }
 
 
-
     @OpprettJournalpostRequestBuilderDsl
     infix fun med.journalførendeenhet(jfrEnhet: String?) {
         journalførendeenhet = jfrEnhet
@@ -138,7 +138,9 @@ class OpprettJournalpostRequestBuilder {
     internal fun build(journalpost: Journalpost): JoarkOpprettJournalpostRequest {
         val avsenderType = if (journalpost.avsenderMottaker?.type == AvsenderMottakerIdType.NULL) null else journalpost.avsenderMottaker?.type
         return JoarkOpprettJournalpostRequest(
-            sak = if (fjernSak || journalpost.sak?.fagsakId.isNullOrEmpty()) null else JoarkOpprettJournalpostRequest.OpprettJournalpostSak(journalpost.sak?.fagsakId),
+            sak = if (fjernSak || journalpost.sak?.fagsakId.isNullOrEmpty()) null else JoarkOpprettJournalpostRequest.OpprettJournalpostSak(
+                journalpost.sak?.fagsakId
+            ),
             tema = tema ?: "BID",
             journalfoerendeEnhet = if (fjernJournalførendeEnhet) null else journalførendeenhet ?: journalpost.journalforendeEnhet,
             journalpostType = when (journalpost.journalposttype) {
@@ -148,13 +150,13 @@ class OpprettJournalpostRequestBuilder {
                 else -> JoarkJournalpostType.UTGAAENDE
             },
             kanal = if (fjernDistribusjonMetadata) null
-                    else if (journalpost.isNotat()) null
-                    else when(journalpost.kanal?.name){
-                         JournalpostKanal.SENTRAL_UTSKRIFT.name -> "S"
-                         JournalpostKanal.LOKAL_UTSKRIFT.name -> "L"
-                         JournalpostKanal.UKJENT.name -> null
-                         else -> journalpost.kanal?.name
-                    },
+            else if (journalpost.isNotat()) null
+            else when (journalpost.kanal?.name) {
+                JournalpostKanal.SENTRAL_UTSKRIFT.name -> "S"
+                JournalpostKanal.LOKAL_UTSKRIFT.name -> "L"
+                JournalpostKanal.UKJENT.name -> null
+                else -> journalpost.kanal?.name
+            },
             behandlingstema = journalpost.behandlingstema,
             eksternReferanseId = eksternReferanseId,
             tittel = tittel ?: journalpost.hentTittel(),
@@ -172,9 +174,10 @@ class OpprettJournalpostRequestBuilder {
                 tillegssopplysninger
             } else journalpost.tilleggsopplysninger,
             dokumenter = dokumenter.mapIndexed { i, it ->
-                it.copy(tittel = if (i == 0) tittel?:it.tittel else it.tittel)
+                it.copy(tittel = if (i == 0) tittel ?: it.tittel else it.tittel)
             },
-            datoMottatt = if(journalpost.isInngaaendeDokument()) journalpost.hentDatoRegistrert()?.toString() ?: journalpost.hentDatoDokument()?.toString() else null
+            datoMottatt = if (journalpost.isInngaaendeDokument()) journalpost.hentDatoRegistrert()?.toString() ?: journalpost.hentDatoDokument()
+                ?.toString() else null
         )
     }
 }
@@ -238,15 +241,15 @@ fun validerKanOppretteJournalpost(opprettJournalpost: JoarkOpprettJournalpostReq
         Validate.isTrue(!it.tittel.isNullOrEmpty(), "Alle dokumenter må ha tittel")
     }
 
-    if (opprettJournalpost.journalpostType != JoarkJournalpostType.NOTAT){
+    if (opprettJournalpost.journalpostType != JoarkJournalpostType.NOTAT) {
         Validate.isTrue(opprettJournalpost.hasAvsenderMottaker(), "Journalpost må ha satt avsender/mottaker")
     }
 
-    if (opprettJournalpost.journalpostType == JoarkJournalpostType.NOTAT){
+    if (opprettJournalpost.journalpostType == JoarkJournalpostType.NOTAT) {
         Validate.isTrue(opprettJournalpost.kanal == null, "Kanal skal ikke settes for notater")
     }
 
-    if (opprettJournalpost.journalpostType == JoarkJournalpostType.INNGAAENDE){
+    if (opprettJournalpost.journalpostType == JoarkJournalpostType.INNGAAENDE) {
         Validate.isTrue(opprettJournalpost.kanal != null, "Kanal må settes for inngående journalpost")
     }
 
@@ -271,12 +274,15 @@ fun validerKanOppretteJournalpost(request: OpprettJournalpostRequest) {
     request.dokumenter.forEachIndexed { index, it ->
         Validate.isTrue(it.tittel.isNotEmpty(), "Dokument ${index + 1} mangler tittel. Alle dokumenter må ha satt tittel")
     }
-    if (request.journalposttype != no.nav.bidrag.dokument.dto.JournalpostType.NOTAT){
+    if (request.journalposttype != no.nav.bidrag.dokument.dto.JournalpostType.NOTAT) {
         Validate.isTrue(request.hasAvsenderMottaker(), "Journalpost må ha satt avsender/mottaker navn eller ident")
     }
 
     if (request.skalFerdigstilles) {
-        Validate.isTrue(request.tema == null || request.tema == "BID" || request.tema == "FAR", "Journalpost som skal ferdigstilles må ha tema BID/FAR")
+        Validate.isTrue(
+            request.tema == null || request.tema == "BID" || request.tema == "FAR",
+            "Journalpost som skal ferdigstilles må ha tema BID/FAR"
+        )
         Validate.isTrue(!request.hentJournalførendeEnhet().isNullOrEmpty(), "Journalpost som skal ferdigstilles må ha satt journalførendeEnhet")
         Validate.isTrue(request.hasSak(), "Journalpost som skal ferdigstilles må ha minst en sak")
     }

@@ -732,6 +732,12 @@ data class EndreJournalpostCommandIntern(
         } else if (journalpost.isUtgaaendeDokument()) {
             sjekkGyldigEndringAvReturDato(journalpost, violations)
         }
+
+        if (journalpost.isNotat()) {
+            if (endreJournalpostCommand.dokumentDato?.isAfter(LocalDate.now()) == true) {
+                violations.add("Dokumentdato kan ikke endres til fram i tid")
+            }
+        }
         if (violations.isNotEmpty()) {
             throw ViolationException(violations)
         }

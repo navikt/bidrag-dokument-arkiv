@@ -23,7 +23,6 @@ import no.nav.bidrag.dokument.arkiv.model.KunneIkkeJournalforeOpprettetJournalpo
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager
 import no.nav.bidrag.dokument.arkiv.service.utvidelser.erNotat
-import no.nav.bidrag.dokument.dto.AvsenderMottakerDto
 import no.nav.bidrag.dokument.dto.AvsenderMottakerDtoIdType
 import no.nav.bidrag.dokument.dto.JournalpostType
 import no.nav.bidrag.dokument.dto.MottakUtsendingKanal
@@ -184,6 +183,7 @@ class OpprettJournalpostService(
         val hovedTittel = hoveddokument.tittel
         val erInngaendeOgSkalIkkeJournalfores = request.journalposttype == JournalpostType.INNGÅENDE && !request.skalFerdigstilles
         val erInngaende = request.journalposttype == JournalpostType.INNGÅENDE
+        val erNotat = request.journalposttype == JournalpostType.NOTAT
         val samhandlerId = request.avsenderMottaker?.takeIf { it.type == AvsenderMottakerDtoIdType.SAMHANDLER }?.ident
         val tilleggsOpplysninger = TilleggsOpplysninger()
 
@@ -213,6 +213,7 @@ class OpprettJournalpostService(
 
                 else -> null
             }?.name,
+            datoDokument = if (erNotat) request.datoDokument?.toString() else null,
             datoMottatt = if (erInngaende) request.datoMottatt?.toString() ?: LocalDateTime.now().toString() else null,
             bruker = JoarkOpprettJournalpostRequest.OpprettJournalpostBruker(
                 id = request.hentGjelderIdent(),

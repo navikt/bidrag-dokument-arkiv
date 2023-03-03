@@ -1,9 +1,12 @@
 package no.nav.bidrag.dokument.arkiv.controller
 
+import io.kotest.assertions.assertSoftly
+import io.kotest.matchers.shouldBe
 import no.nav.bidrag.commons.web.EnhetFilter
 import no.nav.bidrag.dokument.arkiv.dto.Bruker
 import no.nav.bidrag.dokument.arkiv.dto.DatoType
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostType
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO
@@ -34,7 +37,7 @@ import java.io.IOException
 import java.time.LocalDate
 import java.util.List
 
-class EndreJournalpostControllerTest: AbstractControllerTest() {
+class EndreJournalpostControllerTest : AbstractControllerTest() {
 
     private fun createEndreJournalpostCommand(): EndreJournalpostCommand {
         val endreJournalpostCommand = EndreJournalpostCommand()
@@ -45,6 +48,81 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
             EndreDokument("BLABLA", "1", "1", "In a galazy far far away")
         )
         return endreJournalpostCommand
+    }
+
+    @Test
+    fun `skal ikke kunne endre dokumentdato på notat til fram i tid`() {
+        val sak = "200000"
+        val journalpostId = 201028011L
+
+        val endreJournalpostCommand: EndreJournalpostCommand = createEndreJournalpostCommand()
+        endreJournalpostCommand.skalJournalfores = false
+        endreJournalpostCommand.tittel = "Ny tittel"
+        endreJournalpostCommand.dokumentDato = LocalDate.now().plusDays(2)
+
+        stubs.mockSafResponseHentJournalpost(
+            opprettSafResponse(
+                journalpostId = journalpostId.toString(),
+                journalpostType = JournalpostType.N,
+                sak = Sak("123")
+            )
+        )
+        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockDokarkivOppdaterRequest(journalpostId)
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
+
+        // when
+        val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
+            initUrl() + "/journal/JOARK-" + journalpostId,
+            HttpMethod.PATCH,
+            HttpEntity(endreJournalpostCommand, headerMedEnhet),
+            JournalpostDto::class.java
+        )
+
+        // then
+        assertSoftly {
+            oppdaterJournalpostResponseEntity.statusCode shouldBe HttpStatus.BAD_REQUEST
+        }
+    }
+
+    @Test
+    fun `skal endre notat`() {
+        val sak = "200000"
+        val journalpostId = 201028011L
+
+        val endreJournalpostCommand: EndreJournalpostCommand = createEndreJournalpostCommand()
+        endreJournalpostCommand.skalJournalfores = false
+        endreJournalpostCommand.tittel = "Ny tittel"
+        endreJournalpostCommand.dokumentDato = LocalDate.parse("2022-05-20")
+
+        stubs.mockSafResponseHentJournalpost(
+            opprettSafResponse(
+                journalpostId = journalpostId.toString(),
+                journalpostType = JournalpostType.N,
+                sak = Sak("123")
+            )
+        )
+        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockDokarkivOppdaterRequest(journalpostId)
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
+
+        // when
+        val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
+            initUrl() + "/journal/JOARK-" + journalpostId,
+            HttpMethod.PATCH,
+            HttpEntity(endreJournalpostCommand, headerMedEnhet),
+            JournalpostDto::class.java
+        )
+
+        // then
+        assertSoftly {
+            oppdaterJournalpostResponseEntity.statusCode shouldBe HttpStatus.OK
+            stubs.verifyStub.dokarkivOppdaterKalt(
+                journalpostId,
+                "\"tittel\":\"Ny tittel\"",
+                "\"datoDokument\":\"2022-05-20T00:00\"",
+            )
+        }
     }
 
     @Test
@@ -63,13 +141,16 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
             opprettSafResponse(
                 journalpostId = journalpostId.toString(),
                 sak = null
-            ),null, "AFTER")
-        stubs.mockSafResponseHentJournalpost(opprettSafResponse(
-            journalpostId = journalpostId.toString(),
-            tittel = endreJournalpostCommand.tittel!!,
-            journalstatus = JournalStatus.JOURNALFOERT,
-            sak = Sak(sak)
-        ),"AFTER", null)
+            ), null, "AFTER"
+        )
+        stubs.mockSafResponseHentJournalpost(
+            opprettSafResponse(
+                journalpostId = journalpostId.toString(),
+                tittel = endreJournalpostCommand.tittel!!,
+                journalstatus = JournalStatus.JOURNALFOERT,
+                sak = Sak(sak)
+            ), "AFTER", null
+        )
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
@@ -129,14 +210,17 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
             opprettSafResponse(
                 journalpostId = journalpostId.toString(),
                 sak = null
-            ),null, "AFTER")
-        stubs.mockSafResponseHentJournalpost(opprettSafResponse(
-            journalpostId = journalpostId.toString(),
-            journalstatus = JournalStatus.JOURNALFOERT,
-            sak = Sak(saksnummer1),
-            bruker = Bruker(endreJournalpostCommand.gjelder, "FNR"),
-            journalforendeEnhet = "4806"
-        ),"AFTER", null)
+            ), null, "AFTER"
+        )
+        stubs.mockSafResponseHentJournalpost(
+            opprettSafResponse(
+                journalpostId = journalpostId.toString(),
+                journalstatus = JournalStatus.JOURNALFOERT,
+                sak = Sak(saksnummer1),
+                bruker = Bruker(endreJournalpostCommand.gjelder, "FNR"),
+                journalforendeEnhet = "4806"
+            ), "AFTER", null
+        )
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
@@ -153,15 +237,15 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
 
         // then
         Assertions.assertAll(
-             {
+            {
                 assertThat(oppdaterJournalpostResponseEntity)
                     .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.OK)
             },
-             { stubs.verifyStub.dokarkivFerdigstillKalt(journalpostId) },
-             { stubs.verifyStub.dokarkivTilknyttSakerIkkeKalt(journalpostId, saksnummer1) },
-             {
+            { stubs.verifyStub.dokarkivFerdigstillKalt(journalpostId) },
+            { stubs.verifyStub.dokarkivTilknyttSakerIkkeKalt(journalpostId, saksnummer1) },
+            {
                 stubs.verifyStub.dokarkivTilknyttSakerKalt(
                     journalpostId,
                     saksnummer2,
@@ -169,7 +253,7 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
                     "\"bruker\":{\"id\":\"${endreJournalpostCommand.gjelder}\",\"idType\":\"FNR\"}"
                 )
             },
-             { stubs.verifyStub.oppgaveOppdaterKalt(0) },
+            { stubs.verifyStub.oppgaveOppdaterKalt(0) },
         )
     }
 
@@ -206,26 +290,29 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
 
         // then
         Assertions.assertAll(
-             {
+            {
                 assertThat(oppdaterJournalpostResponseEntity)
                     .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.OK)
             },
-             { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson,
-                 "\"tittel\":\"So Tired\"",
-                 "\"avsenderMottaker\":{\"navn\":\"Dauden, Svarte\"}",
-                 "\"datoMottatt\":\"2020-02-03\"",
-                 "\"dokumenter\":[{\"dokumentInfoId\":\"1\",\"tittel\":\"In a galazy far far away\",\"brevkode\":\"BLABLA\"}]"
-                 ) },
-             {
+            {
+                stubs.verifyStub.dokarkivOppdaterKalt(
+                    journalpostIdFraJson,
+                    "\"tittel\":\"So Tired\"",
+                    "\"avsenderMottaker\":{\"navn\":\"Dauden, Svarte\"}",
+                    "\"datoMottatt\":\"2020-02-03\"",
+                    "\"dokumenter\":[{\"dokumentInfoId\":\"1\",\"tittel\":\"In a galazy far far away\",\"brevkode\":\"BLABLA\"}]"
+                )
+            },
+            {
                 stubs.verifyStub.dokarkivTilknyttSakerKalt(
                     journalpostIdFraJson,
                     newSaksnummer,
                     "\"journalfoerendeEnhet\":\"4806\""
                 )
             },
-             { stubs.verifyStub.dokarkivTilknyttSakerIkkeKalt(journalpostIdFraJson, existingSaksnummer) }
+            { stubs.verifyStub.dokarkivTilknyttSakerIkkeKalt(journalpostIdFraJson, existingSaksnummer) }
         )
     }
 
@@ -251,16 +338,16 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
 
         // then
         Assertions.assertAll(
-             {
+            {
                 assertThat(oppdaterJournalpostResponseEntity)
                     .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.OK)
             },
-             { stubs.verifyStub.dokarkivOppdaterKalt(journalpostId, "") },
-             { stubs.verifyStub.dokarkivFerdigstillIkkeKalt(journalpostId) },
-             { stubs.verifyStub.oppgaveOpprettIkkeKalt() },
-             { stubs.verifyStub.oppgaveSokIkkeKalt() }
+            { stubs.verifyStub.dokarkivOppdaterKalt(journalpostId, "") },
+            { stubs.verifyStub.dokarkivFerdigstillIkkeKalt(journalpostId) },
+            { stubs.verifyStub.oppgaveOpprettIkkeKalt() },
+            { stubs.verifyStub.oppgaveSokIkkeKalt() }
         )
     }
 
@@ -326,21 +413,23 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
         tilleggsOpplysninger.setDistribusjonBestillt()
         tilleggsOpplysninger.addReturDetaljLog(
             ReturDetaljerLogDO(
-            "En god begrunnelse for hvorfor dokument kom i retur",
-            LocalDate.parse("2020-01-02"),
+                "En god begrunnelse for hvorfor dokument kom i retur",
+                LocalDate.parse("2020-01-02"),
                 true
-        )
+            )
         )
         tilleggsOpplysninger.addReturDetaljLog(
             ReturDetaljerLogDO(
-            "En annen god begrunnelse for hvorfor dokument kom i retur",
-            LocalDate.parse("2020-10-02"),
+                "En annen god begrunnelse for hvorfor dokument kom i retur",
+                LocalDate.parse("2020-10-02"),
                 true
+            )
         )
+        val safResponse = opprettUtgaendeSafResponse(
+            journalpostId = journalpostId.toString(), tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(
+                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
+            )
         )
-        val safResponse = opprettUtgaendeSafResponse(journalpostId = journalpostId.toString(), tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(
-            DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
-        ))
         safResponse.antallRetur = 1
         stubs.mockSafResponseHentJournalpost(safResponse)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
@@ -403,9 +492,11 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
                 true
             )
         )
-        val safResponse = opprettUtgaendeSafResponse(journalpostId = journalpostId.toString(), tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(
-            DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
-        ))
+        val safResponse = opprettUtgaendeSafResponse(
+            journalpostId = journalpostId.toString(), tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(
+                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
+            )
+        )
         safResponse.antallRetur = 1
         stubs.mockSafResponseHentJournalpost(safResponse)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
@@ -416,7 +507,8 @@ class EndreJournalpostControllerTest: AbstractControllerTest() {
 
         val endreJournalpostCommand = no.nav.bidrag.dokument.arkiv.stubs.createEndreJournalpostCommand()
         endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.endreReturDetaljer = listOf(EndreReturDetaljer(LocalDate.parse("2020-10-02"), LocalDate.parse("2021-12-15"), "Oppdatert returdetalj"))
+        endreJournalpostCommand.endreReturDetaljer =
+            listOf(EndreReturDetaljer(LocalDate.parse("2020-10-02"), LocalDate.parse("2021-12-15"), "Oppdatert returdetalj"))
         // when
         val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
             initUrl() + "/journal/JOARK-" + journalpostId,
