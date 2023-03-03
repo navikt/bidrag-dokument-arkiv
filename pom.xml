@@ -50,20 +50,12 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <kotlin-logging-jvm.version>3.0.4</kotlin-logging-jvm.version>
   </properties>
-  <distributionManagement>
+  <repositories>
     <repository>
       <id>maven-release</id>
       <name>GitHub felles Apache Maven Packages for navikt</name>
       <url>https://maven.pkg.github.com/navikt/maven-release/</url>
     </repository>
-  </distributionManagement>
-  <repositories>
-    <repository>
-      <id>repo.adeo.no</id>
-      <name>Maven repo i iApp-sonen</name>
-      <url>https://repo.adeo.no/repository/github-package-registry-navikt/</url>
-    </repository>
-
     <repository>
       <id>confluent</id>
       <name>Confluent kafka</name>
