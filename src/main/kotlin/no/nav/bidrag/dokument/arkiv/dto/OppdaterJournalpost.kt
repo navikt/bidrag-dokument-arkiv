@@ -7,6 +7,8 @@ import no.nav.bidrag.dokument.arkiv.utils.DateUtils
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 import org.apache.logging.log4j.util.Strings
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 data class OppdaterFlaggNyDistribusjonBestiltRequest(private var journalpostId: Long, private var journalpost: Journalpost) :
     OppdaterJournalpostRequest(journalpostId) {
@@ -114,7 +116,7 @@ data class LagreJournalpostRequest(
         tittel = endreJournalpostCommand.endreJournalpostCommand.tittel
 
         if (journalpost.isNotat()) {
-            datoDokument = DateUtils.formatDate(endreJournalpostCommand.endreJournalpostCommand.dokumentDato)
+            datoDokument = endreJournalpostCommand.endreJournalpostCommand.dokumentDato?.let { LocalDateTime.of(it, LocalTime.MIDNIGHT) }?.toString()
         }
 
         if (endreJournalpostCommand.endreJournalpostCommand.endreDokumenter.isNotEmpty()) {

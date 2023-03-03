@@ -27,12 +27,13 @@ import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import wiremock.com.fasterxml.jackson.annotation.JsonProperty
+import java.time.LocalDateTime
 
 internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
 
 
     @Test
-    fun `skal opprette inngående journalpost`(){
+    fun `skal opprette inngående journalpost`() {
         val request = createOpprettJournalpostRequest()
 
         val nyJpId = 123123123L
@@ -51,28 +52,29 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
         assertSoftly {
             responseBody.journalpostId shouldBe nyJpId.toString()
             responseBody.dokumenter shouldHaveSize 2
-            stubs.verifyStub.dokarkivOpprettKalt(false,
+            stubs.verifyStub.dokarkivOpprettKalt(
+                false,
                 "{\"tittel\":\"$TITTEL_HOVEDDOKUMENT\"," +
-                "\"journalpostType\":\"INNGAAENDE\"," +
-                "\"behandlingstema\":\"$BEHANDLINGSTEMA\"," +
-                "\"eksternReferanseId\":\"$REFID\"," +
-                "\"tilleggsopplysninger\":[]," +
-                "\"tema\":\"BID\"," +
-                "\"kanal\":\"NAV_NO\"," +
-                "\"datoMottatt\":\"$DATO_MOTTATT\"," +
-                "\"bruker\":{\"id\":\"$GJELDER_ID\",\"idType\":\"FNR\"}," +
-                "\"dokumenter\":[" +
-                    "{\"tittel\":\"$TITTEL_HOVEDDOKUMENT\"," +
-                    "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SW5uaG9sZCBww6UgZG9rdW1lbnRldA==\"}]}," +
-                    "{\"tittel\":\"$TITTEL_VEDLEGG1\"," +
-                    "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SW5uaG9sZCBww6UgZG9rdW1lbnRldCB2ZWRsZWdn\"}]}]," +
-                "\"avsenderMottaker\":{\"id\":\"$GJELDER_ID\",\"idType\":\"FNR\"}}"
+                        "\"journalpostType\":\"INNGAAENDE\"," +
+                        "\"behandlingstema\":\"$BEHANDLINGSTEMA\"," +
+                        "\"eksternReferanseId\":\"$REFID\"," +
+                        "\"tilleggsopplysninger\":[]," +
+                        "\"tema\":\"BID\"," +
+                        "\"kanal\":\"NAV_NO\"," +
+                        "\"datoMottatt\":\"$DATO_MOTTATT\"," +
+                        "\"bruker\":{\"id\":\"$GJELDER_ID\",\"idType\":\"FNR\"}," +
+                        "\"dokumenter\":[" +
+                        "{\"tittel\":\"$TITTEL_HOVEDDOKUMENT\"," +
+                        "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SW5uaG9sZCBww6UgZG9rdW1lbnRldA==\"}]}," +
+                        "{\"tittel\":\"$TITTEL_VEDLEGG1\"," +
+                        "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SW5uaG9sZCBww6UgZG9rdW1lbnRldCB2ZWRsZWdn\"}]}]," +
+                        "\"avsenderMottaker\":{\"id\":\"$GJELDER_ID\",\"idType\":\"FNR\"}}"
             )
         }
     }
 
     @Test
-    fun `skal opprette og journalføre utgående journalpost`(){
+    fun `skal opprette og journalføre utgående journalpost`() {
         val saksnummer1 = "132213"
         val saksnummer2 = "1233333"
         val request = createOpprettJournalpostRequest()
@@ -109,12 +111,13 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
         assertSoftly {
             responseBody.journalpostId shouldBe nyJpId.toString()
             responseBody.dokumenter shouldHaveSize 2
-            stubs.verifyStub.dokarkivOpprettKalt(true,
-                        "\"sak\":{\"fagsakId\":\"$saksnummer1\",\"fagsaksystem\":\"BISYS\",\"sakstype\":\"FAGSAK\"}",
-                        "\"tittel\":\"$TITTEL_HOVEDDOKUMENT\"",
-                        "\"journalfoerendeEnhet\":\"4806\"",
-                        "\"journalpostType\":\"UTGAAENDE\"",
-                        "\"avsenderMottaker\":{\"id\":\"12345678910\",\"idType\":\"FNR\"}}"
+            stubs.verifyStub.dokarkivOpprettKalt(
+                true,
+                "\"sak\":{\"fagsakId\":\"$saksnummer1\",\"fagsaksystem\":\"BISYS\",\"sakstype\":\"FAGSAK\"}",
+                "\"tittel\":\"$TITTEL_HOVEDDOKUMENT\"",
+                "\"journalfoerendeEnhet\":\"4806\"",
+                "\"journalpostType\":\"UTGAAENDE\"",
+                "\"avsenderMottaker\":{\"id\":\"12345678910\",\"idType\":\"FNR\"}}"
             )
             stubs.verifyStub.dokarkivTilknyttSakerKalt(1, nyJpId)
             stubs.verifyStub.dokarkivTilknyttSakerKalt(nyJpId, saksnummer2)
@@ -123,13 +126,17 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
     }
 
     @Test
-    fun `skal opprette og journalføre utgående journalpost med samhandlerId`(){
+    fun `skal opprette og journalføre utgående journalpost med samhandlerId`() {
         val saksnummer1 = "132213"
         val samhandlerId = "80000213123"
         val request = createOpprettJournalpostRequest()
             .copy(
                 skalFerdigstilles = true,
-                avsenderMottaker = AvsenderMottakerDto(ident = samhandlerId, navn = "Samhandler navnesen", type = AvsenderMottakerDtoIdType.SAMHANDLER),
+                avsenderMottaker = AvsenderMottakerDto(
+                    ident = samhandlerId,
+                    navn = "Samhandler navnesen",
+                    type = AvsenderMottakerDtoIdType.SAMHANDLER
+                ),
                 journalposttype = JournalpostType.UTGÅENDE,
                 tilknyttSaker = listOf(saksnummer1),
                 journalførendeEnhet = "4806"
@@ -161,7 +168,8 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
         assertSoftly {
             responseBody.journalpostId shouldBe nyJpId.toString()
             responseBody.dokumenter shouldHaveSize 2
-            stubs.verifyStub.dokarkivOpprettKalt(true,
+            stubs.verifyStub.dokarkivOpprettKalt(
+                true,
                 "\"sak\":{\"fagsakId\":\"$saksnummer1\",\"fagsaksystem\":\"BISYS\",\"sakstype\":\"FAGSAK\"}",
                 "\"tittel\":\"$TITTEL_HOVEDDOKUMENT\"",
                 "\"journalfoerendeEnhet\":\"4806\"",
@@ -174,7 +182,7 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
     }
 
     @Test
-    fun `skal opprette og journalføre notat`(){
+    fun `skal opprette og journalføre notat`() {
         val saksnummer1 = "132213"
         val saksnummer2 = "1233333"
         val request = createOpprettJournalpostRequest()
@@ -182,6 +190,7 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
                 skalFerdigstilles = true,
                 journalposttype = JournalpostType.NOTAT,
                 tilknyttSaker = listOf(saksnummer1, saksnummer2),
+                datoDokument = LocalDateTime.parse("2022-01-05T10:52:03"),
                 journalførendeEnhet = "4806"
             )
 
@@ -210,11 +219,13 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
         assertSoftly {
             responseBody.journalpostId shouldBe nyJpId.toString()
             responseBody.dokumenter shouldHaveSize 2
-            stubs.verifyStub.dokarkivOpprettKalt(true,
+            stubs.verifyStub.dokarkivOpprettKalt(
+                true,
                 "{\"sak\":{\"fagsakId\":\"132213\",\"fagsaksystem\":\"BISYS\",\"sakstype\":\"FAGSAK\"}",
-                        "\"tittel\":\"Tittel på hoveddokument\"",
-                        "\"journalpostType\":\"NOTAT\"",
-                        "\"bruker\":{\"id\":\"12345678910\",\"idType\":\"FNR\"}"
+                "\"tittel\":\"Tittel på hoveddokument\"",
+                "\"datoDokument\":\"2022-01-05T10:52:03\"",
+                "\"journalpostType\":\"NOTAT\"",
+                "\"bruker\":{\"id\":\"12345678910\",\"idType\":\"FNR\"}"
             )
             stubs.verifyStub.dokarkivOpprettKaltNotContains(true, "avsenderMottaker")
             stubs.verifyStub.dokarkivTilknyttSakerKalt(1, nyJpId)
@@ -224,7 +235,7 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
     }
 
     @Test
-    fun `skal opprette og journalføre notat med saksbehandlerident`(){
+    fun `skal opprette og journalføre notat med saksbehandlerident`() {
         val saksnummer1 = "132213"
         val saksnummer2 = "1233333"
         val request = createOpprettJournalpostRequest()
@@ -263,16 +274,18 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
         assertSoftly {
             responseBody.journalpostId shouldBe nyJpId.toString()
             responseBody.dokumenter shouldHaveSize 2
-            stubs.verifyStub.dokarkivOpprettKalt(false,
+            stubs.verifyStub.dokarkivOpprettKalt(
+                false,
                 "{\"sak\":{\"fagsakId\":\"132213\",\"fagsaksystem\":\"BISYS\",\"sakstype\":\"FAGSAK\"}",
                 "\"tittel\":\"Tittel på hoveddokument\"",
                 "\"journalpostType\":\"NOTAT\"",
                 "\"bruker\":{\"id\":\"12345678910\",\"idType\":\"FNR\"}"
             )
-            stubs.verifyStub.dokarkivFerdigstillKalt(1, nyJpId, "{\"journalfoerendeEnhet\":\"4806\"," +
-                    "\"journalfortAvNavn\":\"Hansen, Hans\"," +
-                    "\"opprettetAvNavn\":\"Hansen, Hans\"," +
-                    "\"datoJournal\":null}"
+            stubs.verifyStub.dokarkivFerdigstillKalt(
+                1, nyJpId, "{\"journalfoerendeEnhet\":\"4806\"," +
+                        "\"journalfortAvNavn\":\"Hansen, Hans\"," +
+                        "\"opprettetAvNavn\":\"Hansen, Hans\"," +
+                        "\"datoJournal\":null}"
             )
             stubs.verifyStub.dokarkivOpprettKaltNotContains(false, "avsenderMottaker")
             stubs.verifyStub.dokarkivTilknyttSakerKalt(1, nyJpId)
