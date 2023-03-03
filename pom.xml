@@ -52,7 +52,7 @@
   </properties>
   <repositories>
     <repository>
-      <id>maven-release</id>
+      <id>github</id>
       <name>GitHub felles Apache Maven Packages for navikt</name>
       <url>https://maven.pkg.github.com/navikt/maven-release/</url>
     </repository>
