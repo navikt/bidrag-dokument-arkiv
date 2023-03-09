@@ -286,7 +286,6 @@ data class Journalpost(
             else emptyList()
         }
         val avvikTypeList = mutableListOf<AvvikType>()
-        if (isStatusEkspedert() && isLokalUtksrift()) avvikTypeList.add(AvvikType.REGISTRER_RETUR)
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
         if (isStatusMottatt() && isTemaBidrag()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
         if (isSkanning() && !tilleggsopplysninger.isOriginalBestilt() && !isFeilregistrert()) avvikTypeList.add(AvvikType.BESTILL_ORIGINAL)
@@ -295,7 +294,11 @@ data class Journalpost(
         if (!isStatusMottatt() && hasSak() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.FEILFORE_SAK)
         if (isInngaaendeDokument() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.ENDRE_FAGOMRADE)
         if (isInngaaendeDokument() && isStatusJournalfort()) avvikTypeList.add(AvvikType.SEND_TIL_FAGOMRADE)
-        if (isUtgaaendeDokument() && isDistribusjonKommetIRetur() && !tilleggsopplysninger.isNyDistribusjonBestilt()) avvikTypeList.add(AvvikType.BESTILL_NY_DISTRIBUSJON)
+
+        if (isUtgaaendeDokument() && isStatusEkspedert() && isLokalUtksrift()) avvikTypeList.add(AvvikType.REGISTRER_RETUR)
+        if (isUtgaaendeDokument() && !isLokalUtksrift() && isDistribusjonKommetIRetur() && !tilleggsopplysninger.isNyDistribusjonBestilt()) avvikTypeList.add(
+            AvvikType.BESTILL_NY_DISTRIBUSJON
+        )
         if (isUtgaaendeDokument() && isStatusFerdigsstilt() && !isDistribusjonBestilt() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) avvikTypeList.add(
             AvvikType.MANGLER_ADRESSE
         )
