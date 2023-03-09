@@ -286,6 +286,7 @@ data class Journalpost(
             else emptyList()
         }
         val avvikTypeList = mutableListOf<AvvikType>()
+        if (isStatusEkspedert() && isLokalUtksrift()) avvikTypeList.add(AvvikType.REGISTRER_RETUR)
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
         if (isStatusMottatt() && isTemaBidrag()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
         if (isSkanning() && !tilleggsopplysninger.isOriginalBestilt() && !isFeilregistrert()) avvikTypeList.add(AvvikType.BESTILL_ORIGINAL)
@@ -311,6 +312,7 @@ data class Journalpost(
     fun isStatusJournalfort(): Boolean = journalstatus == JournalStatus.JOURNALFOERT
     fun isInngaaendeJournalfort(): Boolean = isInngaaendeDokument() && isStatusJournalfort()
     fun isStatusEkspedert(): Boolean = journalstatus == JournalStatus.EKSPEDERT
+    fun isLokalUtksrift(): Boolean = kanal == JournalpostKanal.LOKAL_UTSKRIFT
     fun kanTilknytteSaker(): Boolean =
         journalstatus == JournalStatus.JOURNALFOERT || journalstatus == JournalStatus.FERDIGSTILT || journalstatus == JournalStatus.EKSPEDERT
 
