@@ -9,6 +9,7 @@ import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.Dokument
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostType
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveEnhet
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
@@ -35,7 +36,6 @@ import no.nav.bidrag.dokument.dto.DokumentDto
 import org.assertj.core.api.Assertions
 import org.json.JSONException
 import org.junit.jupiter.api.Assertions.assertAll
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
@@ -88,6 +88,34 @@ class AvvikControllerTest : AbstractControllerTest() {
                 )
             }
         )
+    }
+
+    @Test
+    fun `skal utfore avvik REGISTRER_RETUR`() {
+        // given
+        val xEnhet = "1234"
+        val avvikHendelse = createAvvikHendelse(AvvikType.REGISTRER_RETUR, java.util.Map.of("returDato", "2023-03-01"))
+        avvikHendelse.beskrivelse = "DEtte er test"
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
+        stubs.mockSafResponseHentJournalpost(
+            opprettSafResponse().copy(
+                kanal = JournalpostKanal.LOKAL_UTSKRIFT,
+                journalstatus = JournalStatus.EKSPEDERT,
+                journalposttype = JournalpostType.U
+            )
+        )
+        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
+
+        val registrerReturRespons = sendAvvikRequest(xEnhet, JOURNALPOST_ID, avvikHendelse)
+
+        assertSoftly {
+            registrerReturRespons.statusCode shouldBe HttpStatus.OK
+            stubs.verifyStub.dokarkivOppdaterKalt(
+                JOURNALPOST_ID,
+                "tilleggsopplysninger\":[{\"nokkel\":\"retur0_2023-03-01\",\"verdi\":\"DEtte er test\"}]"
+            )
+        }
     }
 
     @Test
