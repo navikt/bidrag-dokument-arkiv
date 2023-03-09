@@ -294,7 +294,11 @@ data class Journalpost(
         if (!isStatusMottatt() && hasSak() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.FEILFORE_SAK)
         if (isInngaaendeDokument() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.ENDRE_FAGOMRADE)
         if (isInngaaendeDokument() && isStatusJournalfort()) avvikTypeList.add(AvvikType.SEND_TIL_FAGOMRADE)
-        if (isUtgaaendeDokument() && isDistribusjonKommetIRetur() && !tilleggsopplysninger.isNyDistribusjonBestilt()) avvikTypeList.add(AvvikType.BESTILL_NY_DISTRIBUSJON)
+
+        if (isUtgaaendeDokument() && isStatusEkspedert() && isLokalUtksrift()) avvikTypeList.add(AvvikType.REGISTRER_RETUR)
+        if (isUtgaaendeDokument() && !isLokalUtksrift() && isDistribusjonKommetIRetur() && !tilleggsopplysninger.isNyDistribusjonBestilt()) avvikTypeList.add(
+            AvvikType.BESTILL_NY_DISTRIBUSJON
+        )
         if (isUtgaaendeDokument() && isStatusFerdigsstilt() && !isDistribusjonBestilt() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) avvikTypeList.add(
             AvvikType.MANGLER_ADRESSE
         )
@@ -311,6 +315,7 @@ data class Journalpost(
     fun isStatusJournalfort(): Boolean = journalstatus == JournalStatus.JOURNALFOERT
     fun isInngaaendeJournalfort(): Boolean = isInngaaendeDokument() && isStatusJournalfort()
     fun isStatusEkspedert(): Boolean = journalstatus == JournalStatus.EKSPEDERT
+    fun isLokalUtksrift(): Boolean = kanal == JournalpostKanal.LOKAL_UTSKRIFT
     fun kanTilknytteSaker(): Boolean =
         journalstatus == JournalStatus.JOURNALFOERT || journalstatus == JournalStatus.FERDIGSTILT || journalstatus == JournalStatus.EKSPEDERT
 
