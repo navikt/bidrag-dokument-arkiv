@@ -34,7 +34,7 @@
     <graphq-dgs-client.version>5.5.1</graphq-dgs-client.version>
     <joark-hendelse.version>67a9be4476b63b7247cfacfaf821ab656bd2a952</joark-hendelse.version>
     <kafka-avro-serializer.version>6.2.1</kafka-avro-serializer.version>
-    <logback-encoder.version>7.2</logback-encoder.version>
+    <logback-encoder.version>7.3</logback-encoder.version>
     <nimbus-jose-jwt.version>9.15.2</nimbus-jose-jwt.version>
     <springdoc-openapi-ui.version>1.6.14</springdoc-openapi-ui.version>
     <springframework-cloud.version>3.1.5</springframework-cloud.version>
