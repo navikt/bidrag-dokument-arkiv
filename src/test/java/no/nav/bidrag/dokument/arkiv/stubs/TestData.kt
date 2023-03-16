@@ -76,7 +76,8 @@ fun createDistribuerTilAdresse(): DistribuerTilAdresse {
 
 
 fun opprettUtgaendeDistribuertSafResponse(
-    journalpostId: String = JOURNALPOST_ID.toString()): Journalpost{
+    journalpostId: String = JOURNALPOST_ID.toString()
+): Journalpost {
     val tilleggsopplysninger = TilleggsOpplysninger()
     tilleggsopplysninger.setDistribusjonBestillt()
     return opprettSafResponse(
@@ -89,7 +90,8 @@ fun opprettUtgaendeDistribuertSafResponse(
 }
 
 fun opprettUtgaendeSafResponseWithReturDetaljer(
-    journalpostId: String = JOURNALPOST_ID.toString()): Journalpost{
+    journalpostId: String = JOURNALPOST_ID.toString()
+): Journalpost {
     return opprettSafResponse(
         journalpostId = journalpostId,
         tilleggsopplysninger = createTillegsopplysningerWithReturDetaljer(),
@@ -102,15 +104,25 @@ fun opprettUtgaendeSafResponseWithReturDetaljer(
 fun opprettUtgaendeSafResponse(
     journalpostId: String = JOURNALPOST_ID.toString(),
     relevanteDatoer: List<DatoType> = listOf(DATO_DOKUMENT),
-    tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger()): Journalpost{
+    dokumenter: List<Dokument> = listOf(
+        Dokument(
+            dokumentInfoId = DOKUMENT_1_ID,
+            tittel = DOKUMENT_1_TITTEL,
+            brevkode = "BI01A01"
+        )
+    ),
+    tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger()
+): Journalpost {
     return opprettSafResponse(
         journalpostId = journalpostId,
+        dokumenter = dokumenter,
         relevanteDatoer = relevanteDatoer,
         tilleggsopplysninger = tilleggsopplysninger,
         journalpostType = JournalpostType.U,
         journalstatus = JournalStatus.FERDIGSTILT
     )
 }
+
 fun opprettSafResponse(
     journalpostId: String = JOURNALPOST_ID.toString(),
     avsenderMottaker: AvsenderMottaker = AvsenderMottaker(AVSENDER_NAVN, AVSENDER_ID, AvsenderMottakerIdType.FNR),
@@ -149,7 +161,7 @@ fun opprettSafResponse(
     )
 }
 
-fun opprettDokumentOversiktfagsakResponse(): List<Journalpost>{
+fun opprettDokumentOversiktfagsakResponse(): List<Journalpost> {
     val tilleggsopplysningerEndretFagomrade = TilleggsOpplysninger()
     tilleggsopplysningerEndretFagomrade.setEndretTemaFlagg();
 
@@ -169,20 +181,24 @@ fun opprettDokumentOversiktfagsakResponse(): List<Journalpost>{
         ),
         opprettSafResponse(
             journalpostId = JOURNALPOST_ID_2.toString(),
-            dokumenter = listOf(Dokument(
-                tittel = DOKUMENT_2_TITTEL,
-                dokumentInfoId = DOKUMENT_2_ID
-            )),
+            dokumenter = listOf(
+                Dokument(
+                    tittel = DOKUMENT_2_TITTEL,
+                    dokumentInfoId = DOKUMENT_2_ID
+                )
+            ),
             journalstatus = JournalStatus.JOURNALFOERT,
             tema = "BID"
 
         ),
         opprettSafResponse(
             journalpostId = JOURNALPOST_ID_3.toString(),
-            dokumenter = listOf(Dokument(
-                tittel = DOKUMENT_3_TITTEL,
-                dokumentInfoId = DOKUMENT_3_ID
-            )),
+            dokumenter = listOf(
+                Dokument(
+                    tittel = DOKUMENT_3_TITTEL,
+                    dokumentInfoId = DOKUMENT_3_ID
+                )
+            ),
             tema = "FAR",
             journalstatus = JournalStatus.MOTTATT
         ),
@@ -205,16 +221,18 @@ fun opprettDokumentOversiktfagsakResponse(): List<Journalpost>{
 
         ),
 
-    )
-}
-fun createOppgaveDataWithSaksnummer(saksnummer: String): OppgaveData{
-    return OppgaveData(saksreferanse = saksnummer, id=2, versjon = 1, beskrivelse = "")
-}
-fun createOppgaveDataWithJournalpostId(journalpostId: String): OppgaveData{
-    return OppgaveData(journalpostId = journalpostId, id=2, versjon = 1, beskrivelse = "")
+        )
 }
 
-fun createTillegsopplysningerWithReturDetaljer(): TilleggsOpplysninger{
+fun createOppgaveDataWithSaksnummer(saksnummer: String): OppgaveData {
+    return OppgaveData(saksreferanse = saksnummer, id = 2, versjon = 1, beskrivelse = "")
+}
+
+fun createOppgaveDataWithJournalpostId(journalpostId: String): OppgaveData {
+    return OppgaveData(journalpostId = journalpostId, id = 2, versjon = 1, beskrivelse = "")
+}
+
+fun createTillegsopplysningerWithReturDetaljer(): TilleggsOpplysninger {
     val tilleggsopplysninger = TilleggsOpplysninger()
     tilleggsopplysninger.addReturDetaljLog(
         ReturDetaljerLogDO("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", RETUR_DETALJER_DATO_1)
@@ -255,15 +273,16 @@ fun createJoarkOpprettJournalpostRequest(): JoarkOpprettJournalpostRequest {
                     JoarkOpprettJournalpostRequest.DokumentVariant(
                         fysiskDokument = "Innhold på dokumentet".toByteArray()
                     )
-                )),
-                JoarkOpprettJournalpostRequest.Dokument(
-                    tittel = TITTEL_VEDLEGG1,
-                    dokumentvarianter = listOf(
-                        JoarkOpprettJournalpostRequest.DokumentVariant(
-                            fysiskDokument = "Innhold på dokumentet vedlegg".toByteArray()
-                        )
+                )
+            ),
+            JoarkOpprettJournalpostRequest.Dokument(
+                tittel = TITTEL_VEDLEGG1,
+                dokumentvarianter = listOf(
+                    JoarkOpprettJournalpostRequest.DokumentVariant(
+                        fysiskDokument = "Innhold på dokumentet vedlegg".toByteArray()
                     )
                 )
+            )
         ),
         journalpostType = JoarkJournalpostType.INNGAAENDE,
         bruker = JoarkOpprettJournalpostRequest.OpprettJournalpostBruker(GJELDER_ID, idType = null),

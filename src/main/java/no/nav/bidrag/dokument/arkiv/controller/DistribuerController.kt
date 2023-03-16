@@ -6,10 +6,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import no.nav.bidrag.commons.util.KildesystemIdenfikator
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER
 import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal
-import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsInfo
 import no.nav.bidrag.dokument.arkiv.service.DistribuerJournalpostService
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse
+import no.nav.bidrag.dokument.dto.DistribusjonInfoDto
 import no.nav.bidrag.dokument.dto.JournalpostId
 import no.nav.security.token.support.core.api.Protected
 import org.apache.logging.log4j.util.Strings
@@ -67,7 +67,7 @@ class DistribuerController(private val distribuerJournalpostService: DistribuerJ
         )
     }
 
-    @GetMapping("$ROOT_JOURNAL/distribute/{journalpostId}/enabled")
+    @GetMapping("$ROOT_JOURNAL/distribuer/{journalpostId}/enabled")
     @Operation(description = "Sjekk om distribusjon av journalpost kan bestilles")
     @ApiResponses(
         value = [ApiResponse(
@@ -100,7 +100,7 @@ class DistribuerController(private val distribuerJournalpostService: DistribuerJ
     @GetMapping("$ROOT_JOURNAL/distribuer/info/{journalpostId}")
     @Operation(description = "Hent informasjon om distribusjon av journalpost")
     @ResponseBody
-    fun hentDistribusjonsInfo(@PathVariable journalpostId: String): ResponseEntity<DistribusjonsInfo> {
+    fun hentDistribusjonsInfo(@PathVariable journalpostId: String): ResponseEntity<DistribusjonInfoDto> {
         LOGGER.info("Henter distribusjonsinfo for journalpost {}", journalpostId)
         val kildesystemIdenfikator = JournalpostId(journalpostId)
         if (!kildesystemIdenfikator.erSystemJoark) {

@@ -657,7 +657,7 @@ class AvvikControllerTest : AbstractControllerTest() {
                 stubs.verifyStub.dokdistFordelingKalt(
                     objectMapper.writeValueAsString(
                         DokDistDistribuerJournalpostRequest(
-                            newJournalpostId, "BI01S28", null, DistribuerTilAdresse(
+                            newJournalpostId, "BI01A01", null, DistribuerTilAdresse(
                                 postadresse.adresselinje1,
                                 postadresse.adresselinje2,
                                 postadresse.adresselinje3,

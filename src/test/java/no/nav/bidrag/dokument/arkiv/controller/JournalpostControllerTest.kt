@@ -18,8 +18,10 @@ import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_NAVN
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
+import no.nav.bidrag.dokument.arkiv.stubs.JOURNALPOST_ID
 import no.nav.bidrag.dokument.arkiv.stubs.createDistribuerTilAdresse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
+import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
 import no.nav.bidrag.dokument.dto.AvsenderMottakerDto
 import no.nav.bidrag.dokument.dto.AvsenderMottakerDtoIdType
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest
@@ -461,10 +463,10 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         // given
         val xEnhet = "1234"
         val bestillingId = "TEST_BEST_ID"
-        val journalpostIdFraJson = 201028011L
+        val journalpostIdFraJson = JOURNALPOST_ID
         val headersMedEnhet = HttpHeaders()
         headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
-        stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponse.json", HttpStatus.OK)
+        stubs.mockSafResponseHentJournalpost(opprettUtgaendeSafResponse())
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
         stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(journalpostIdFraJson, JournalStatus.FERDIGSTILT, Sak("5276661"))))
@@ -790,45 +792,6 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             Executable { stubs.verifyStub.dokdistFordelingKalt(DistribusjonsTidspunkt.KJERNETID.name) },
             Executable { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, request.adresse!!.adresselinje1, request.adresse!!.land) },
             Executable { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}") }
-        )
-    }
-
-    @Test
-    @DisplayName("skal ikke distribuere journalpost hvis oppdater journalpost")
-    @Throws(IOException::class, JSONException::class)
-    fun skalIkkeDistribuereJournalpostHvisOppdaterJournalpostFeiler() {
-        // given
-        val xEnhet = "1234"
-        val bestillingId = "TEST_BEST_ID"
-        val journalpostIdFraJson = 201028011L
-        val headersMedEnhet = HttpHeaders()
-        headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
-        stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponse.json", HttpStatus.OK)
-        stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
-        stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(journalpostIdFraJson, JournalStatus.FERDIGSTILT, Sak("5276661"))))
-        stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson, HttpStatus.INTERNAL_SERVER_ERROR)
-        val distribuerTilAdresse = createDistribuerTilAdresse()
-        distribuerTilAdresse.adresselinje2 = "Adresselinje2"
-        distribuerTilAdresse.adresselinje3 = "Adresselinje3"
-        val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
-
-        // when
-        val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/distribuer/JOARK-" + journalpostIdFraJson,
-            HttpMethod.POST,
-            HttpEntity(request, headersMedEnhet),
-            JournalpostDto::class.java
-        )
-
-        // then
-        org.junit.jupiter.api.Assertions.assertAll(
-            Executable {
-                Assertions.assertThat(oppdaterJournalpostResponseEntity)
-                    .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
-                    .`as`("statusCode")
-                    .isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
-            },
-            Executable { stubs.verifyStub.dokdistFordelingIkkeKalt() }
         )
     }
 

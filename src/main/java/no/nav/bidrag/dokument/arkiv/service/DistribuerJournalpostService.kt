@@ -5,7 +5,6 @@ import io.micrometer.core.instrument.MeterRegistry
 import no.nav.bidrag.dokument.arkiv.consumer.DokdistFordelingConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer
 import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal
-import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsInfo
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostUtsendingKanal
@@ -25,6 +24,9 @@ import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
 import no.nav.bidrag.dokument.arkiv.model.UgyldigDistribusjonException
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
+import no.nav.bidrag.dokument.dto.DistribusjonInfoDto
+import no.nav.bidrag.dokument.dto.UtsendingsInfoDto
+import no.nav.bidrag.dokument.dto.UtsendingsInfoVarselTypeDto
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.Objects
@@ -46,8 +48,28 @@ class DistribuerJournalpostService(
         personConsumer = personConsumers.get(Discriminator.REGULAR_USER)
     }
 
-    fun hentDistribusjonsInfo(journalpostId: Long): DistribusjonsInfo {
-        return journalpostService.hentDistribusjonsInfo(journalpostId)
+    fun hentDistribusjonsInfo(journalpostId: Long): DistribusjonInfoDto {
+        return journalpostService.hentDistribusjonsInfo(journalpostId).let {
+            val utsendingsinfo = it.utsendingsinfo
+            DistribusjonInfoDto(
+                journalstatus = it.journalstatus,
+                kanal = it.kanal.name,
+                utsendingsinfo = UtsendingsInfoDto(
+                    varseltype = if (utsendingsinfo?.smsVarselSendt != null) UtsendingsInfoVarselTypeDto.SMS
+                    else if (utsendingsinfo?.digitalpostSendt != null) UtsendingsInfoVarselTypeDto.DIGIPOST
+                    else if (utsendingsinfo?.epostVarselSendt != null) UtsendingsInfoVarselTypeDto.EPOST
+                    else if (utsendingsinfo?.fysiskpostSendt != null) UtsendingsInfoVarselTypeDto.FYSISK_POST
+                    else null,
+                    adresse = utsendingsinfo?.smsVarselSendt?.adresse
+                        ?: utsendingsinfo?.epostVarselSendt?.adresse
+                        ?: utsendingsinfo?.digitalpostSendt?.adresse
+                        ?: utsendingsinfo?.fysiskpostSendt?.adressetekstKonvolutt,
+                    varslingstekst = utsendingsinfo?.smsVarselSendt?.varslingstekst
+                        ?: utsendingsinfo?.epostVarselSendt?.varslingstekst,
+                    tittel = utsendingsinfo?.epostVarselSendt?.tittel
+                )
+            )
+        }
     }
 
     fun bestillNyDistribusjon(journalpost: Journalpost, distribuerTilAdresse: DistribuerTilAdresse?) {
@@ -86,8 +108,7 @@ class DistribuerJournalpostService(
         batchId: String?,
         distribuerJournalpostRequest: DistribuerJournalpostRequestInternal
     ): DistribuerJournalpostResponse {
-        val journalpost = journalpostService.hentJournalpost(journalpostId)
-            .orElseThrow { JournalpostIkkeFunnetException(String.format("Fant ingen journalpost med id %s", journalpostId)) }
+        val journalpost = hentJournalpost(journalpostId)
         journalpostService.populerMedTilknyttedeSaker(journalpost)
         if (journalpost.tilleggsopplysninger.isDistribusjonBestilt() || journalpost.journalstatus == JournalStatus.EKSPEDERT) {
             LOGGER.warn(
@@ -108,7 +129,6 @@ class DistribuerJournalpostService(
         val adresse = hentAdresse(distribuerJournalpostRequest, journalpost)
         if (adresse != null) {
             validerAdresse(adresse)
-            lagreAdresse(journalpostId, adresse, journalpost)
         } else {
             validerKanDistribueresUtenAdresse(journalpost)
         }
@@ -116,9 +136,18 @@ class DistribuerJournalpostService(
         //TODO: Lagre bestillingsid når bd-arkiv er koblet mot database
         val distribuerResponse = dokdistFordelingConsumer.distribuerJournalpost(journalpost, batchId, adresse)
         LOGGER.info("Bestillt distribusjon av journalpost {} med bestillingsId {}", journalpostId, distribuerResponse.bestillingsId)
-        endreJournalpostService.oppdaterJournalpostDistribusjonBestiltStatus(journalpostId, journalpost)
+
+        // Distribusjonsløpet oppdaterer journalpost. Hent journalpost på nytt for å unngå overskrive noe som distribusjon har lagret
+        val journalpostEtter = hentJournalpost(journalpostId)
+        adresse?.run { lagreAdresse(journalpostId, adresse, journalpostEtter) }
+        endreJournalpostService.oppdaterJournalpostDistribusjonBestiltStatus(journalpostId, journalpostEtter)
         measureDistribution(batchId)
         return distribuerResponse
+    }
+
+    private fun hentJournalpost(journalpostId: Long): Journalpost {
+        return journalpostService.hentJournalpost(journalpostId)
+            .orElseThrow { JournalpostIkkeFunnetException(String.format("Fant ingen journalpost med id %s", journalpostId)) }
     }
 
     private fun hentAdresse(
