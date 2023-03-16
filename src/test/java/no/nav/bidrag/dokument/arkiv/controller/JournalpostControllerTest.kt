@@ -4,17 +4,22 @@ import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import no.nav.bidrag.commons.web.EnhetFilter
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker
+import no.nav.bidrag.dokument.arkiv.dto.DigitalpostSendt
+import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsInfo
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsTidspunkt
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsType
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest
+import no.nav.bidrag.dokument.arkiv.dto.EpostVarselSendt
 import no.nav.bidrag.dokument.arkiv.dto.HentPostadresseResponse
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostType
 import no.nav.bidrag.dokument.arkiv.dto.JournalstatusDto
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
+import no.nav.bidrag.dokument.arkiv.dto.UtsendingsInfo
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_NAVN
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
@@ -27,6 +32,7 @@ import no.nav.bidrag.dokument.dto.AvsenderMottakerDtoIdType
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
+import no.nav.bidrag.dokument.dto.DistribusjonInfoDto
 import no.nav.bidrag.dokument.dto.JournalpostDto
 import no.nav.bidrag.dokument.dto.JournalpostResponse
 import no.nav.bidrag.dokument.dto.ReturDetaljerLog
@@ -603,6 +609,72 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         }
     }
 
+
+    @Test
+    fun `skal hente distribusjonsinfo`() {
+        // given
+        val journalpostId = 201028011L
+        stubs.mockSafHentDistribusjonsInfo(
+            DistribusjonsInfo(
+                journalstatus = "EKSPEDERT",
+                journalposttype = "U",
+                kanal = JournalpostKanal.NAV_NO,
+                utsendingsinfo = UtsendingsInfo(
+                    digitalpostSendt = DigitalpostSendt("test@nav.no")
+                )
+            ), journalpostId
+        )
+        // when
+        val response = httpHeaderTestRestTemplate.exchange(
+            initUrl() + "/journal/distribuer/info/JOARK-" + journalpostId,
+            HttpMethod.GET,
+            null,
+            DistribusjonInfoDto::class.java
+        )
+
+        response.statusCode shouldBe HttpStatus.OK
+
+        assertSoftly {
+            val responseBody = response.body!!
+            responseBody.journalstatus shouldBe "EKSPEDERT"
+            responseBody.kanal shouldBe "NAV_NO"
+            responseBody.utsendingsinfo?.adresse shouldBe "test@nav.no"
+        }
+    }
+
+    @Test
+    fun `skal hente distribusjonsinfo med epostvarsel`() {
+        // given
+        val journalpostId = 201028011L
+        stubs.mockSafHentDistribusjonsInfo(
+            DistribusjonsInfo(
+                journalstatus = "EKSPEDERT",
+                journalposttype = "U",
+                kanal = JournalpostKanal.NAV_NO,
+                utsendingsinfo = UtsendingsInfo(
+                    epostVarselSendt = EpostVarselSendt("test@nav.no", "tittel", "varslingtekst")
+                )
+            ), journalpostId
+        )
+        // when
+        val response = httpHeaderTestRestTemplate.exchange(
+            initUrl() + "/journal/distribuer/info/JOARK-" + journalpostId,
+            HttpMethod.GET,
+            null,
+            DistribusjonInfoDto::class.java
+        )
+
+        response.statusCode shouldBe HttpStatus.OK
+
+        assertSoftly {
+            val responseBody = response.body!!
+            responseBody.journalstatus shouldBe "EKSPEDERT"
+            responseBody.kanal shouldBe "NAV_NO"
+            responseBody.utsendingsinfo?.adresse shouldBe "test@nav.no"
+            responseBody.utsendingsinfo?.tittel shouldBe "tittel"
+            responseBody.utsendingsinfo?.varslingstekst shouldBe "varslingtekst"
+        }
+    }
 
     @Test
     fun `skal markere journalpost distribuert lokalt`() {

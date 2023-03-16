@@ -10,6 +10,7 @@ import com.github.tomakehurst.wiremock.matching.StringValuePattern
 import com.github.tomakehurst.wiremock.stubbing.Scenario
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivKnyttTilSakConsumer
+import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsInfo
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostResponse
 import no.nav.bidrag.dokument.arkiv.dto.DokumentInfo
 import no.nav.bidrag.dokument.arkiv.dto.GeografiskTilknytningResponse
@@ -60,6 +61,7 @@ class Stubs {
             Assert.fail(e.message)
         }
     }
+
     @JvmOverloads
     fun mockOrganisasjonGeografiskTilknytning(enhetId: String? = BRUKER_ENHET) {
         try {
@@ -134,7 +136,12 @@ class Stubs {
     }
 
     @Throws(JsonProcessingException::class)
-    fun mockDokarkivOpprettRequest(nyJournalpostId: Long?, status: HttpStatus = HttpStatus.OK, ferdigstill: Boolean = true, dokumentList: List<DokumentInfo> = emptyList()) {
+    fun mockDokarkivOpprettRequest(
+        nyJournalpostId: Long?,
+        status: HttpStatus = HttpStatus.OK,
+        ferdigstill: Boolean = true,
+        dokumentList: List<DokumentInfo> = emptyList()
+    ) {
         WireMock.stubFor(
             WireMock.post(WireMock.urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "?forsoekFerdigstill=$ferdigstill")).willReturn(
                 aClosedJsonResponse()
@@ -228,6 +235,24 @@ class Stubs {
         mockSafResponseHentJournalpost("journalpostSafResponse.json", status)
     }
 
+    fun mockSafHentDistribusjonsInfo(distribusjonsInfo: DistribusjonsInfo, journalpostId: Long?) {
+        try {
+            WireMock.stubFor(
+                WireMock.post(WireMock.urlEqualTo("/saf/graphql"))
+                    .withRequestBody(ContainsPattern("query journalpost"))
+                    .withRequestBody(ContainsPattern(String.format("\"variables\":{\"journalpostId\":\"${journalpostId.toString()}\"}")))
+                    .willReturn(
+                        aClosedJsonResponse()
+                            .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                            .withStatus(HttpStatus.OK.value())
+                            .withBody("{\"data\":{\"journalpost\": ${objectMapper.writeValueAsString(distribusjonsInfo)} }}")
+                    )
+            )
+        } catch (e: JsonProcessingException) {
+            Assert.fail(e.message)
+        }
+    }
+
     fun mockSafResponseHentJournalpost(journalpost: Journalpost?, journalpostId: Long?) {
         try {
             WireMock.stubFor(
@@ -239,7 +264,8 @@ class Stubs {
                             .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                             .withStatus(HttpStatus.OK.value())
                             .withBody("{\"data\":{\"journalpost\": ${objectMapper.writeValueAsString(journalpost)} }}")
-            ))
+                    )
+            )
         } catch (e: JsonProcessingException) {
             Assert.fail(e.message)
         }
@@ -297,7 +323,8 @@ class Stubs {
                             .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                             .withStatus(HttpStatus.OK.value())
                             .withBody("{\"data\":{\"tilknyttedeJournalposter\": ${objectMapper.writeValueAsString(tilknyttetJournalposts)}}}")
-            ))
+                    )
+            )
         } catch (e: Exception) {
             Assert.fail(e.message)
         }
@@ -452,6 +479,7 @@ class Stubs {
         fun dokarkivTilknyttSakerKalt(journalpostId: Long, vararg contains: String?) {
             dokarkivTilknyttSakerKalt(1, journalpostId, *contains)
         }
+
         fun oppgaveOpprettKalt(vararg contains: String?) {
             val requestPattern = WireMock.postRequestedFor(WireMock.urlMatching("/oppgave/.*"))
             Arrays.stream(contains).forEach { contain: String? -> requestPattern.withRequestBody(ContainsPattern(contain)) }
@@ -519,7 +547,7 @@ class Stubs {
         fun dokarkivOpprettKaltNotContains(ferdigstill: Boolean = true, vararg contains: String?) {
             val requestPattern =
                 WireMock.postRequestedFor(WireMock.urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "?forsoekFerdigstill=$ferdigstill"))
-            Arrays.stream(contains).forEach { requestPattern.withRequestBody(NotContainsPattern(it))}
+            Arrays.stream(contains).forEach { requestPattern.withRequestBody(NotContainsPattern(it)) }
             WireMock.verify(requestPattern)
         }
 
@@ -668,7 +696,7 @@ class Stubs {
     }
 }
 
-class NotContainsPattern(@JsonProperty("contains") expectedValue: String?): StringValuePattern(expectedValue) {
+class NotContainsPattern(@JsonProperty("contains") expectedValue: String?) : StringValuePattern(expectedValue) {
     val contains: String
         get() = expectedValue as String
 

@@ -64,8 +64,9 @@ object JournalstatusDto {
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class DistribusjonsInfo(
+    val journalposttype: String? = null,
     val journalstatus: String,
-    val kanal: JournalpostKanal,
+    val kanal: JournalpostKanal? = null,
     val utsendingsinfo: UtsendingsInfo? = null
 )
 

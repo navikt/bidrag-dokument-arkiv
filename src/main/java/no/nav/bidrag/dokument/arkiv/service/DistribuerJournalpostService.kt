@@ -53,7 +53,7 @@ class DistribuerJournalpostService(
             val utsendingsinfo = it.utsendingsinfo
             DistribusjonInfoDto(
                 journalstatus = it.journalstatus,
-                kanal = it.kanal.name,
+                kanal = it.kanal?.name ?: JournalpostUtsendingKanal.UKJENT.name,
                 utsendingsinfo = UtsendingsInfoDto(
                     varseltype = if (utsendingsinfo?.smsVarselSendt != null) UtsendingsInfoVarselTypeDto.SMS
                     else if (utsendingsinfo?.digitalpostSendt != null) UtsendingsInfoVarselTypeDto.DIGIPOST
