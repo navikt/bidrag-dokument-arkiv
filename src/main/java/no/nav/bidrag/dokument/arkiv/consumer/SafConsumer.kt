@@ -7,12 +7,14 @@ import com.netflix.graphql.dgs.client.HttpResponse
 import com.netflix.graphql.dgs.client.RequestExecutor
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer.NotFoundException
+import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsInfo
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.model.JournalIkkeFunnetException
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException
 import no.nav.bidrag.dokument.arkiv.model.ReasonToHttpStatus
 import no.nav.bidrag.dokument.arkiv.model.SafException
+import no.nav.bidrag.dokument.arkiv.query.DistribusjonInfoQuery
 import no.nav.bidrag.dokument.arkiv.query.DokumentoversiktFagsakQuery
 import no.nav.bidrag.dokument.arkiv.query.GraphQuery
 import no.nav.bidrag.dokument.arkiv.query.JournalpostQuery
@@ -37,6 +39,11 @@ open class SafConsumer(private val restTemplate: RestTemplate) {
 
     fun hentJournalpost(journalpostId: Long): Journalpost {
         return consumeEnkelJournalpostQuery(JournalpostQuery(journalpostId))
+    }
+
+    fun hentDistribusjonInfo(journalpostId: Long): DistribusjonsInfo {
+        val response = consumeQuery(DistribusjonInfoQuery(journalpostId.toString())) { message: String? -> journalpostIkkeFunnetException(message) }
+        return response.extractValueAsObject("journalpost", DistribusjonsInfo::class.java)
     }
 
     fun finnJournalposter(saksnummer: String, fagomrade: List<String> = listOf("BID")): List<Journalpost> {

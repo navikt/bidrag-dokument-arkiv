@@ -22,13 +22,13 @@
 
     <!-- language -->
     <java.version>17</java.version>
-    <kotlin.version>1.7.21</kotlin.version>
+    <kotlin.version>1.8.10</kotlin.version>
 
     <!-- dependent versions other than from spring-boot -->
     <apache-avro-version>1.11.1</apache-avro-version>
     <bidrag-commons.version>0.7.31</bidrag-commons.version>
     <bidrag-commons-test.version>0.2.2</bidrag-commons-test.version>
-    <bidrag-dokument-dto.version>1.6.25</bidrag-dokument-dto.version>
+    <bidrag-dokument-dto.version>1.6.26</bidrag-dokument-dto.version>
     <bidrag-tilgangskontroll.version>1.9.21</bidrag-tilgangskontroll.version>
     <commons-codec.version>1.15</commons-codec.version>
     <graphq-dgs-client.version>5.5.1</graphq-dgs-client.version>
@@ -279,6 +279,17 @@
       <groupId>com.ninja-squad</groupId>
       <artifactId>springmockk</artifactId>
       <version>3.1.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-stdlib-jdk8</artifactId>
+      <version>${kotlin.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-test</artifactId>
+      <version>${kotlin.version}</version>
       <scope>test</scope>
     </dependency>
 

@@ -62,6 +62,44 @@ object JournalstatusDto {
     const val UTGAR = "U"
 }
 
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class DistribusjonsInfo(
+    val journalposttype: String? = null,
+    val journalstatus: String,
+    val kanal: JournalpostKanal? = null,
+    val utsendingsinfo: UtsendingsInfo? = null
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class UtsendingsInfo(
+    val digitalpostSendt: DigitalpostSendt? = null,
+    val epostVarselSendt: EpostVarselSendt? = null,
+    val fysiskpostSendt: FysiskpostSendt? = null,
+    val smsVarselSendt: SmsVarselSendt? = null,
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class EpostVarselSendt(
+    val adresse: String,
+    val tittel: String,
+    val varslingstekst: String
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class DigitalpostSendt(
+    val adresse: String
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class FysiskpostSendt(
+    val adressetekstKonvolutt: String
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class SmsVarselSendt(
+    val varslingstekst: String,
+    val adresse: String
+)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Journalpost(
@@ -358,27 +396,39 @@ data class Journalpost(
 
 }
 
-enum class JournalpostKanal {
-    NAV_NO,
-    NAV_NO_CHAT,
-    NAV_NO_UINNLOGGET,
-    SKAN_NETS,
-    LOKAL_UTSKRIFT,
-    SENTRAL_UTSKRIFT,
-    SDP,
-    SKAN_IM,
-    SKAN_PEN,
-    INNSENDT_NAV_ANSATT,
-    INGEN_DISTRIBUSJON,
-    UKJENT,
-    ALTINN,
-    EIA,
-    EESSI,
-    EKST_OPPS,
-    TRYGDERETTEN,
-    HELSENETTET,
-    DPV,
-    DPVS
+enum class JournalpostKanal(val beskrivelse: String) {
+    NAV_NO("Nav.no"),
+    NAV_NO_UINNLOGGET("Nav.no uten ID-porten-pålogging"),
+    NAV_NO_CHAT("Innlogget samtale"),
+    INNSENDT_NAV_ANSATT("Registrert av Nav-ansatt"),
+    LOKAL_UTSKRIFT("Lokal utskrift"),
+    SENTRAL_UTSKRIFT("Sentral utskrift"),
+    ALTINN("Altinn"),
+    EESSI("EESSI"),
+    EIA("EIA"),
+    EKST_OPPS("Eksternt oppslag"),
+    SDP("Digital postkasse til innbyggere"),
+    TRYGDERETTEN("Trygderetten"),
+    HELSENETTET("Helsenettet"),
+    INGEN_DISTRIBUSJON("Ingen distribusjon"),
+    UKJENT("Ukjent"),
+    DPVT("Taushetsbelagt digital post til virksomhet"),
+
+    SKAN_NETS("Skanning Nets"),
+    SKAN_PEN("Skanning Pensjon"),
+    SKAN_IM("Skanning Iron Mountain")
+}
+
+fun JournalpostKanal.tilKanalDto() = when (this) {
+    JournalpostKanal.NAV_NO -> Kanal.NAV_NO
+    JournalpostKanal.NAV_NO_CHAT -> Kanal.NAV_NO
+    JournalpostKanal.NAV_NO_UINNLOGGET -> Kanal.NAV_NO
+    JournalpostKanal.SKAN_NETS -> Kanal.SKAN_NETS
+    JournalpostKanal.LOKAL_UTSKRIFT -> Kanal.LOKAL_UTSKRIFT
+    JournalpostKanal.SENTRAL_UTSKRIFT -> Kanal.SENTRAL_UTSKRIFT
+    JournalpostKanal.SDP -> Kanal.SDP
+    JournalpostKanal.INGEN_DISTRIBUSJON -> Kanal.INGEN_DISTRIBUSJON
+    else -> null
 }
 
 enum class JournalpostUtsendingKanal {

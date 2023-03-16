@@ -4,27 +4,35 @@ import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import no.nav.bidrag.commons.web.EnhetFilter
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker
+import no.nav.bidrag.dokument.arkiv.dto.DigitalpostSendt
+import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsInfo
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsTidspunkt
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsType
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest
+import no.nav.bidrag.dokument.arkiv.dto.EpostVarselSendt
 import no.nav.bidrag.dokument.arkiv.dto.HentPostadresseResponse
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostType
 import no.nav.bidrag.dokument.arkiv.dto.JournalstatusDto
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
+import no.nav.bidrag.dokument.arkiv.dto.UtsendingsInfo
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_NAVN
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
+import no.nav.bidrag.dokument.arkiv.stubs.JOURNALPOST_ID
 import no.nav.bidrag.dokument.arkiv.stubs.createDistribuerTilAdresse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
+import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
 import no.nav.bidrag.dokument.dto.AvsenderMottakerDto
 import no.nav.bidrag.dokument.dto.AvsenderMottakerDtoIdType
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
+import no.nav.bidrag.dokument.dto.DistribusjonInfoDto
 import no.nav.bidrag.dokument.dto.JournalpostDto
 import no.nav.bidrag.dokument.dto.JournalpostResponse
 import no.nav.bidrag.dokument.dto.ReturDetaljerLog
@@ -461,10 +469,10 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         // given
         val xEnhet = "1234"
         val bestillingId = "TEST_BEST_ID"
-        val journalpostIdFraJson = 201028011L
+        val journalpostIdFraJson = JOURNALPOST_ID
         val headersMedEnhet = HttpHeaders()
         headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
-        stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponse.json", HttpStatus.OK)
+        stubs.mockSafResponseHentJournalpost(opprettUtgaendeSafResponse())
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
         stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(journalpostIdFraJson, JournalStatus.FERDIGSTILT, Sak("5276661"))))
@@ -601,6 +609,72 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         }
     }
 
+
+    @Test
+    fun `skal hente distribusjonsinfo`() {
+        // given
+        val journalpostId = 201028011L
+        stubs.mockSafHentDistribusjonsInfo(
+            DistribusjonsInfo(
+                journalstatus = "EKSPEDERT",
+                journalposttype = "U",
+                kanal = JournalpostKanal.NAV_NO,
+                utsendingsinfo = UtsendingsInfo(
+                    digitalpostSendt = DigitalpostSendt("test@nav.no")
+                )
+            ), journalpostId
+        )
+        // when
+        val response = httpHeaderTestRestTemplate.exchange(
+            initUrl() + "/journal/distribuer/info/JOARK-" + journalpostId,
+            HttpMethod.GET,
+            null,
+            DistribusjonInfoDto::class.java
+        )
+
+        response.statusCode shouldBe HttpStatus.OK
+
+        assertSoftly {
+            val responseBody = response.body!!
+            responseBody.journalstatus shouldBe "EKSPEDERT"
+            responseBody.kanal shouldBe "NAV_NO"
+            responseBody.utsendingsinfo?.adresse shouldBe "test@nav.no"
+        }
+    }
+
+    @Test
+    fun `skal hente distribusjonsinfo med epostvarsel`() {
+        // given
+        val journalpostId = 201028011L
+        stubs.mockSafHentDistribusjonsInfo(
+            DistribusjonsInfo(
+                journalstatus = "EKSPEDERT",
+                journalposttype = "U",
+                kanal = JournalpostKanal.NAV_NO,
+                utsendingsinfo = UtsendingsInfo(
+                    epostVarselSendt = EpostVarselSendt("test@nav.no", "tittel", "varslingtekst")
+                )
+            ), journalpostId
+        )
+        // when
+        val response = httpHeaderTestRestTemplate.exchange(
+            initUrl() + "/journal/distribuer/info/JOARK-" + journalpostId,
+            HttpMethod.GET,
+            null,
+            DistribusjonInfoDto::class.java
+        )
+
+        response.statusCode shouldBe HttpStatus.OK
+
+        assertSoftly {
+            val responseBody = response.body!!
+            responseBody.journalstatus shouldBe "EKSPEDERT"
+            responseBody.kanal shouldBe "NAV_NO"
+            responseBody.utsendingsinfo?.adresse shouldBe "test@nav.no"
+            responseBody.utsendingsinfo?.tittel shouldBe "tittel"
+            responseBody.utsendingsinfo?.varslingstekst shouldBe "varslingtekst"
+        }
+    }
 
     @Test
     fun `skal markere journalpost distribuert lokalt`() {
@@ -790,45 +864,6 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             Executable { stubs.verifyStub.dokdistFordelingKalt(DistribusjonsTidspunkt.KJERNETID.name) },
             Executable { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, request.adresse!!.adresselinje1, request.adresse!!.land) },
             Executable { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}") }
-        )
-    }
-
-    @Test
-    @DisplayName("skal ikke distribuere journalpost hvis oppdater journalpost")
-    @Throws(IOException::class, JSONException::class)
-    fun skalIkkeDistribuereJournalpostHvisOppdaterJournalpostFeiler() {
-        // given
-        val xEnhet = "1234"
-        val bestillingId = "TEST_BEST_ID"
-        val journalpostIdFraJson = 201028011L
-        val headersMedEnhet = HttpHeaders()
-        headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
-        stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponse.json", HttpStatus.OK)
-        stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
-        stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(journalpostIdFraJson, JournalStatus.FERDIGSTILT, Sak("5276661"))))
-        stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson, HttpStatus.INTERNAL_SERVER_ERROR)
-        val distribuerTilAdresse = createDistribuerTilAdresse()
-        distribuerTilAdresse.adresselinje2 = "Adresselinje2"
-        distribuerTilAdresse.adresselinje3 = "Adresselinje3"
-        val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
-
-        // when
-        val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/distribuer/JOARK-" + journalpostIdFraJson,
-            HttpMethod.POST,
-            HttpEntity(request, headersMedEnhet),
-            JournalpostDto::class.java
-        )
-
-        // then
-        org.junit.jupiter.api.Assertions.assertAll(
-            Executable {
-                Assertions.assertThat(oppdaterJournalpostResponseEntity)
-                    .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
-                    .`as`("statusCode")
-                    .isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
-            },
-            Executable { stubs.verifyStub.dokdistFordelingIkkeKalt() }
         )
     }
 

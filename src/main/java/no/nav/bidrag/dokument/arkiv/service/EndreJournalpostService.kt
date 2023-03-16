@@ -127,8 +127,8 @@ class EndreJournalpostService(
         lagreSaksbehandlerIdentForJournalfortJournalpost(journalpost, null)
     }
 
-    fun oppdaterJournalpostDistribusjonBestiltStatus(journalpostId: Long?, journalpost: Journalpost?) {
-        lagreJournalpost(OppdaterJournalpostDistribusjonsInfoRequest(journalpostId!!, journalpost!!))
+    fun oppdaterJournalpostDistribusjonBestiltStatus(journalpostId: Long, journalpost: Journalpost) {
+        lagreJournalpost(OppdaterJournalpostDistribusjonsInfoRequest(journalpostId, journalpost))
     }
 
     private fun hentJournalpost(journalpostId: Long): Journalpost {

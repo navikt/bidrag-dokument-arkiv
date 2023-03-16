@@ -1,0 +1,16 @@
+{
+  "name": "saf-api",
+  "schemaPath": "saf-api-schema.graphql",
+  "extensions": {
+    "endpoints": {
+      "PDL GraphQL Endpoint": {
+        "url": "https://saf-q1.dev.intern.nav.no/graphql",
+        "headers": {
+          "user-agent": "bidrag-dokument-arkiv",
+          "Authorization": "Bearer <changeme>"
+        },
+        "introspect": false
+      }
+    }
+  }
+}
