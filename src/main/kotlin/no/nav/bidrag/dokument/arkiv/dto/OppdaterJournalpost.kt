@@ -63,6 +63,13 @@ data class LockReturDetaljerRequest(private var journalpost: Journalpost) :
     }
 }
 
+data class OppdaterJournalpostTilleggsopplysninger(private var journalpostId: Long, private var journalpost: Journalpost) :
+    OppdaterJournalpostRequest(journalpostId) {
+    init {
+        tilleggsopplysninger = journalpost.tilleggsopplysninger
+    }
+}
+
 data class OppdaterJournalpostDistribusjonsInfoRequest(private var journalpostId: Long, private var journalpost: Journalpost) :
     OppdaterJournalpostRequest(journalpostId) {
     init {

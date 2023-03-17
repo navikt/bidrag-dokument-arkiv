@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import no.nav.bidrag.dokument.arkiv.consumer.DokdistFordelingConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer
 import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal
+import no.nav.bidrag.dokument.arkiv.dto.DistribuertTilAdresseDo
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostUtsendingKanal
@@ -91,7 +92,8 @@ class DistribuerJournalpostService(
             skalFerdigstilles = true
         )
         distribuerJournalpost(journalpostId!!.toLong(), null, DistribuerJournalpostRequestInternal(distribuerTilAdresse))
-        endreJournalpostService.lagreJournalpost(OppdaterFlaggNyDistribusjonBestiltRequest(journalpost.hentJournalpostIdLong()!!, journalpost))
+        val journalpostEtter = hentJournalpost(journalpost.hentJournalpostIdLong()!!)
+        endreJournalpostService.lagreJournalpost(OppdaterFlaggNyDistribusjonBestiltRequest(journalpost.hentJournalpostIdLong()!!, journalpostEtter))
     }
 
     private fun oppdaterReturDetaljerHvisNodvendig(journalpost: Journalpost) {
@@ -137,12 +139,22 @@ class DistribuerJournalpostService(
         val distribuerResponse = dokdistFordelingConsumer.distribuerJournalpost(journalpost, batchId, adresse)
         LOGGER.info("Bestillt distribusjon av journalpost {} med bestillingsId {}", journalpostId, distribuerResponse.bestillingsId)
 
-        // Distribusjonsløpet oppdaterer journalpost. Hent journalpost på nytt for å unngå overskrive noe som distribusjon har lagret
-        val journalpostEtter = hentJournalpost(journalpostId)
-        adresse?.run { lagreAdresse(journalpostId, adresse, journalpostEtter) }
-        endreJournalpostService.oppdaterJournalpostDistribusjonBestiltStatus(journalpostId, journalpostEtter)
+        // Distribusjonsløpet oppdaterer journalpost og overskriver alt av tilleggsopplysninger. Hent journalpost på nytt for å unngå overskrive noe som distribusjon har lagret
+        oppdaterTilleggsopplysninger(journalpostId, journalpost, adresse)
         measureDistribution(batchId)
         return distribuerResponse
+    }
+
+    private fun oppdaterTilleggsopplysninger(journalpostId: Long, journalpostFør: Journalpost, adresse: DistribuerTilAdresse?) {
+        val journalpostEtter = hentJournalpost(journalpostId)
+        leggTilEksisterendeTilleggsopplysninger(journalpostEtter, journalpostFør)
+        adresse?.run { lagreAdresse(adresse, journalpostEtter) }
+        journalpostEtter.tilleggsopplysninger.setDistribusjonBestillt()
+        endreJournalpostService.oppdaterJournalpostTilleggsopplysningere(journalpostId, journalpostEtter)
+    }
+
+    private fun leggTilEksisterendeTilleggsopplysninger(journalpostEtter: Journalpost, journalpostFør: Journalpost) {
+        journalpostEtter.tilleggsopplysninger.addAll(journalpostFør.tilleggsopplysninger)
     }
 
     private fun hentJournalpost(journalpostId: Long): Journalpost {
@@ -184,10 +196,24 @@ class DistribuerJournalpostService(
         validerKanDistribueres(journalpost)
     }
 
-    private fun lagreAdresse(journalpostId: Long?, distribuerTilAdresse: DistribuerTilAdresse?, journalpost: Journalpost) {
+    private fun lagreAdresse(distribuerTilAdresse: DistribuerTilAdresse?, journalpost: Journalpost) {
         if (distribuerTilAdresse != null) {
-            endreJournalpostService.lagreJournalpost(LagreAdresseRequest(journalpostId!!, distribuerTilAdresse, journalpost))
+            val mottakerAdresseDO = mapToAdresseDO(distribuerTilAdresse)
+            if (journalpost.isUtgaaendeDokument() && mottakerAdresseDO != null) {
+                journalpost.tilleggsopplysninger.addMottakerAdresse(mottakerAdresseDO)
+            }
         }
+    }
+
+    private fun mapToAdresseDO(adresse: DistribuerTilAdresse?): DistribuertTilAdresseDo? {
+        return if (adresse != null) DistribuertTilAdresseDo(
+            adresselinje1 = adresse.adresselinje1,
+            adresselinje2 = adresse.adresselinje2,
+            adresselinje3 = adresse.adresselinje3,
+            land = adresse.land!!,
+            poststed = adresse.poststed,
+            postnummer = adresse.postnummer
+        ) else null
     }
 
     private fun measureDistribution(batchId: String?) {

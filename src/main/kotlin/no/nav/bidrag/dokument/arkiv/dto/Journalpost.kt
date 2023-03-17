@@ -35,6 +35,7 @@ import java.util.stream.Collectors.toList
 // Max key length is 20
 const val RETUR_DETALJER_KEY = "retur"
 const val DISTRIBUERT_ADRESSE_KEY = "distAdresse"
+const val DOKDIST_BESTILLING_ID = "dokdistBestillingsId"
 const val SAMHANDLER_ID_KEY = "samhandlerId"
 const val DISTRIBUSJON_BESTILT_KEY = "distribusjonBestilt"
 const val AVVIK_ENDRET_TEMA_KEY = "avvikEndretTema"
@@ -517,6 +518,7 @@ class TilleggsOpplysninger : MutableList<Map<String, String>> by mutableListOf()
     fun removeDistribusjonMetadata() {
         this.removeAll { it["nokkel"]?.contains(DISTRIBUSJON_BESTILT_KEY) ?: false }
         this.removeAll { it["nokkel"]?.contains(DISTRIBUERT_ADRESSE_KEY) ?: false }
+        this.removeAll { it["nokkel"]?.contains(DOKDIST_BESTILLING_ID) ?: false }
     }
 
     fun setDistribusjonBestillt() {

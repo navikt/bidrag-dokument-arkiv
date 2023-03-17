@@ -15,6 +15,7 @@ import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostDistribusjonsInfoRequest
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse
+import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostTilleggsopplysninger
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException
@@ -129,6 +130,10 @@ class EndreJournalpostService(
 
     fun oppdaterJournalpostDistribusjonBestiltStatus(journalpostId: Long, journalpost: Journalpost) {
         lagreJournalpost(OppdaterJournalpostDistribusjonsInfoRequest(journalpostId, journalpost))
+    }
+
+    fun oppdaterJournalpostTilleggsopplysningere(journalpostId: Long, journalpost: Journalpost) {
+        lagreJournalpost(OppdaterJournalpostTilleggsopplysninger(journalpostId, journalpost))
     }
 
     private fun hentJournalpost(journalpostId: Long): Journalpost {
