@@ -9,7 +9,6 @@ import no.nav.bidrag.dokument.arkiv.dto.DistribuertTilAdresseDo
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostUtsendingKanal
-import no.nav.bidrag.dokument.arkiv.dto.LagreAdresseRequest
 import no.nav.bidrag.dokument.arkiv.dto.LagreReturDetaljForSisteReturRequest
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterFlaggNyDistribusjonBestiltRequest
 import no.nav.bidrag.dokument.arkiv.dto.dupliserJournalpost
@@ -150,7 +149,7 @@ class DistribuerJournalpostService(
         leggTilEksisterendeTilleggsopplysninger(journalpostEtter, journalpostFør)
         adresse?.run { lagreAdresse(adresse, journalpostEtter) }
         journalpostEtter.tilleggsopplysninger.setDistribusjonBestillt()
-        endreJournalpostService.oppdaterJournalpostTilleggsopplysningere(journalpostId, journalpostEtter)
+        endreJournalpostService.oppdaterJournalpostTilleggsopplysninger(journalpostId, journalpostEtter)
     }
 
     private fun leggTilEksisterendeTilleggsopplysninger(journalpostEtter: Journalpost, journalpostFør: Journalpost) {

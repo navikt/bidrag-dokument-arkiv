@@ -1,6 +1,5 @@
 package no.nav.bidrag.dokument.arkiv.service
 
-import no.nav.bidrag.commons.web.HttpResponse
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivKnyttTilSakConsumer
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern
@@ -22,7 +21,6 @@ import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException
 import no.nav.bidrag.dokument.arkiv.model.LagreSaksbehandlerIdentForJournalfortJournalpostFeilet
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpStatus
 import java.util.Objects
 import java.util.function.Consumer
 import java.util.stream.Collectors
@@ -132,7 +130,7 @@ class EndreJournalpostService(
         lagreJournalpost(OppdaterJournalpostDistribusjonsInfoRequest(journalpostId, journalpost))
     }
 
-    fun oppdaterJournalpostTilleggsopplysningere(journalpostId: Long, journalpost: Journalpost) {
+    fun oppdaterJournalpostTilleggsopplysninger(journalpostId: Long, journalpost: Journalpost) {
         lagreJournalpost(OppdaterJournalpostTilleggsopplysninger(journalpostId, journalpost))
     }
 

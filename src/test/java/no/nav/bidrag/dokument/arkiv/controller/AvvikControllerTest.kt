@@ -640,62 +640,64 @@ class AvvikControllerTest : AbstractControllerTest() {
         val overforEnhetResponse = sendAvvikRequest(xEnhet, journalpostId, avvikHendelse)
 
         // then
-        assertAll(
-            {
-                Assertions.assertThat(overforEnhetResponse)
-                    .extracting { it.statusCode }
-                    .`as`("statusCode")
-                    .isEqualTo(HttpStatus.OK)
-            },
-            {
-                stubs.verifyStub.dokarkivOppdaterKalt(
-                    journalpostId,
-                    "\"tilleggsopplysninger\":[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"retur0_2021-08-18\",\"verdi\":\"Returpost\"},{\"nokkel\":\"avvikNyDistribusjon\",\"verdi\":\"true\"}]"
-                )
-            },
-            {
-                stubs.verifyStub.dokdistFordelingKalt(
-                    objectMapper.writeValueAsString(
-                        DokDistDistribuerJournalpostRequest(
-                            newJournalpostId, "BI01A01", null, DistribuerTilAdresse(
-                                postadresse.adresselinje1,
-                                postadresse.adresselinje2,
-                                postadresse.adresselinje3,
-                                postadresse.land, postadresse.postnummer, postadresse.poststed
-                            ), null
-                        )
+        assertSoftly {
+            Assertions.assertThat(overforEnhetResponse)
+                .extracting { it.statusCode }
+                .`as`("statusCode")
+                .isEqualTo(HttpStatus.OK)
+
+            stubs.verifyStub.dokarkivOppdaterKalt(
+                journalpostId,
+                "{\"nokkel\":\"retur0_2021-08-18\",\"verdi\":\"Returpost\"}"
+            )
+
+            stubs.verifyStub.dokarkivOppdaterKalt(
+                journalpostId,
+                "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}",
+                "{\"nokkel\":\"avvikNyDistribusjon\",\"verdi\":\"true\"}"
+            )
+
+
+            stubs.verifyStub.dokdistFordelingKalt(
+                objectMapper.writeValueAsString(
+                    DokDistDistribuerJournalpostRequest(
+                        newJournalpostId, "BI01A01", null, DistribuerTilAdresse(
+                            postadresse.adresselinje1,
+                            postadresse.adresselinje2,
+                            postadresse.adresselinje3,
+                            postadresse.land, postadresse.postnummer, postadresse.poststed
+                        ), null
                     )
                 )
-            },
-            { stubs.verifyStub.dokarkivOppdaterKalt(newJournalpostId, "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}") },
-            {
-                stubs.verifyStub.dokarkivOpprettKalt(
-                    true, "{" +
-                            "\"sak\":{\"fagsakId\":\"$sakId\",\"fagsaksystem\":\"BISYS\",\"sakstype\":\"FAGSAK\"}," +
-                            "\"tittel\":\"Tittel på dokument 1\"," +
-                            "\"journalfoerendeEnhet\":\"4833\"," +
-                            "\"journalpostType\":\"UTGAAENDE\"," +
-                            "\"eksternReferanseId\":\"BID_duplikat_201028011\"," +
-                            "\"tilleggsopplysninger\":[{\"nokkel\":\"Lretur0_2021-08-18\",\"verdi\":\"Returpost\"}]," +
-                            "\"tema\":\"BID\",\"bruker\":{\"id\":\"123213213213\",\"idType\":\"AKTOERID\"}," +
-                            "\"dokumenter\":[" +
-                            "{\"tittel\":\"Tittel på dokument 1\"," +
-                            "\"dokumentvarianter\":[" +
-                            "{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"${
-                                Base64.getEncoder().encodeToString(DOKUMENT_FIL.encodeToByteArray())
-                            }\"}]}]," +
-                            "\"avsenderMottaker\":{\"navn\":\"Avsender Avsendersen\",\"id\":\"112312385076492416\",\"idType\":\"FNR\"}}"
-                )
-            },
-            { stubs.verifyStub.safHentDokumentKalt(journalpostId, DOKUMENT_1_ID.toLong()) },
-            {
-                Mockito.verify(kafkaTemplateMock, times(0)).send(
-                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
-                        "JOARK-$journalpostId"
-                    ), ArgumentMatchers.any()
-                )
-            }
-        )
+            )
+
+            stubs.verifyStub.dokarkivOppdaterKalt(newJournalpostId, "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}")
+
+            stubs.verifyStub.dokarkivOpprettKalt(
+                true, "{" +
+                        "\"sak\":{\"fagsakId\":\"$sakId\",\"fagsaksystem\":\"BISYS\",\"sakstype\":\"FAGSAK\"}," +
+                        "\"tittel\":\"Tittel på dokument 1\"," +
+                        "\"journalfoerendeEnhet\":\"4833\"," +
+                        "\"journalpostType\":\"UTGAAENDE\"," +
+                        "\"eksternReferanseId\":\"BID_duplikat_201028011\"," +
+                        "\"tilleggsopplysninger\":[{\"nokkel\":\"Lretur0_2021-08-18\",\"verdi\":\"Returpost\"}]," +
+                        "\"tema\":\"BID\",\"bruker\":{\"id\":\"123213213213\",\"idType\":\"AKTOERID\"}," +
+                        "\"dokumenter\":[" +
+                        "{\"tittel\":\"Tittel på dokument 1\"," +
+                        "\"dokumentvarianter\":[" +
+                        "{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"${
+                            Base64.getEncoder().encodeToString(DOKUMENT_FIL.encodeToByteArray())
+                        }\"}]}]," +
+                        "\"avsenderMottaker\":{\"navn\":\"Avsender Avsendersen\",\"id\":\"112312385076492416\",\"idType\":\"FNR\"}}"
+            )
+
+            stubs.verifyStub.safHentDokumentKalt(journalpostId, DOKUMENT_1_ID.toLong())
+            Mockito.verify(kafkaTemplateMock, times(0)).send(
+                ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                    "JOARK-$journalpostId"
+                ), ArgumentMatchers.any()
+            )
+        }
     }
 
     @Test
