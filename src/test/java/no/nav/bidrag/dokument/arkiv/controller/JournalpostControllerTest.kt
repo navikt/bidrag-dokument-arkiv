@@ -11,6 +11,7 @@ import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsType
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.EpostVarselSendt
 import no.nav.bidrag.dokument.arkiv.dto.HentPostadresseResponse
+import no.nav.bidrag.dokument.arkiv.dto.JOURNALFORT_AV_IDENT_KEY
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostType
@@ -469,13 +470,24 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         // given
         val xEnhet = "1234"
         val bestillingId = "TEST_BEST_ID"
-        val journalpostIdFraJson = JOURNALPOST_ID
         val headersMedEnhet = HttpHeaders()
         headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
-        stubs.mockSafResponseHentJournalpost(opprettUtgaendeSafResponse())
+
+        val tilleggsopplysninger = TilleggsOpplysninger()
+        tilleggsopplysninger.setJournalfortAvIdent("Z99999")
+
+        val tilleggsopplysningerEtterDist = TilleggsOpplysninger()
+        tilleggsopplysningerEtterDist.add(mapOf("nokkel" to "dokdistBestillingsId", "verdi" to "asdsadasdsadasdasd"))
+
+        stubs.mockSafResponseHentJournalpost(opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsopplysninger), null, "ETTER_DIST")
+        stubs.mockSafResponseHentJournalpost(
+            opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsopplysningerEtterDist),
+            "ETTER_DIST",
+            "ETTER_DIST2"
+        )
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
-        stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
-        stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(journalpostIdFraJson, JournalStatus.FERDIGSTILT, Sak("5276661"))))
+        stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
+        stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(JOURNALPOST_ID, JournalStatus.FERDIGSTILT, Sak("5276661"))))
         val distribuerTilAdresse = createDistribuerTilAdresse()
         distribuerTilAdresse.adresselinje2 = "Adresselinje2"
         distribuerTilAdresse.adresselinje3 = "Adresselinje3"
@@ -483,7 +495,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
 
         // when
         val response = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/distribuer/JOARK-" + journalpostIdFraJson,
+            initUrl() + "/journal/distribuer/JOARK-" + JOURNALPOST_ID,
             HttpMethod.POST,
             HttpEntity(request, headersMedEnhet),
             JournalpostDto::class.java
@@ -495,7 +507,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokdistFordelingKalt(
                 objectMapper.writeValueAsString(
                     DokDistDistribuerJournalpostRequest(
-                        journalpostIdFraJson,
+                        JOURNALPOST_ID,
                         "BI01A01",
                         null,
                         request.adresse,
@@ -505,8 +517,15 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             )
             stubs.verifyStub.dokdistFordelingKalt(DistribusjonsType.VEDTAK.name)
             stubs.verifyStub.dokdistFordelingKalt(DistribusjonsTidspunkt.KJERNETID.name)
-            stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, request.adresse!!.adresselinje1, request.adresse!!.land)
-            stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}")
+            stubs.verifyStub.dokarkivOppdaterKalt(JOURNALPOST_ID, request.adresse!!.adresselinje1, request.adresse!!.land)
+            stubs.verifyStub.dokarkivOppdaterKalt(
+                JOURNALPOST_ID, "{\"tilleggsopplysninger\":[" +
+                        "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
+                        "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
+                        "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
+                        "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
+                        "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}],\"dokumenter\":[]}"
+            )
         }
     }
 

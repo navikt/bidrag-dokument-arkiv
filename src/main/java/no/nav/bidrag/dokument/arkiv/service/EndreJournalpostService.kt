@@ -1,6 +1,5 @@
 package no.nav.bidrag.dokument.arkiv.service
 
-import no.nav.bidrag.commons.web.HttpResponse
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivKnyttTilSakConsumer
 import no.nav.bidrag.dokument.arkiv.dto.EndreJournalpostCommandIntern
@@ -15,13 +14,13 @@ import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostDistribusjonsInfoRequest
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse
+import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostTilleggsopplysninger
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException
 import no.nav.bidrag.dokument.arkiv.model.LagreSaksbehandlerIdentForJournalfortJournalpostFeilet
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpStatus
 import java.util.Objects
 import java.util.function.Consumer
 import java.util.stream.Collectors
@@ -129,6 +128,10 @@ class EndreJournalpostService(
 
     fun oppdaterJournalpostDistribusjonBestiltStatus(journalpostId: Long, journalpost: Journalpost) {
         lagreJournalpost(OppdaterJournalpostDistribusjonsInfoRequest(journalpostId, journalpost))
+    }
+
+    fun oppdaterJournalpostTilleggsopplysninger(journalpostId: Long, journalpost: Journalpost) {
+        lagreJournalpost(OppdaterJournalpostTilleggsopplysninger(journalpostId, journalpost))
     }
 
     private fun hentJournalpost(journalpostId: Long): Journalpost {
