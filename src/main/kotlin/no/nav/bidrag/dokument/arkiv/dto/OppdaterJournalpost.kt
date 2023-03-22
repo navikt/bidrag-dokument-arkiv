@@ -63,6 +63,13 @@ data class LockReturDetaljerRequest(private var journalpost: Journalpost) :
     }
 }
 
+data class OppdaterDokumentdatoTilIdag(private var journalpostId: Long, private var journalpost: Journalpost) :
+    OppdaterJournalpostRequest(journalpostId) {
+    init {
+        datoDokument = LocalDateTime.now().toString()
+    }
+}
+
 data class OppdaterJournalpostTilleggsopplysninger(private var journalpostId: Long, private var journalpost: Journalpost) :
     OppdaterJournalpostRequest(journalpostId) {
     init {

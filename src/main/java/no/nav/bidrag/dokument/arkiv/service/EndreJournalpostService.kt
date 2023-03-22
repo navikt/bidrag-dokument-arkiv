@@ -11,6 +11,7 @@ import no.nav.bidrag.dokument.arkiv.dto.KnyttTilAnnenSakRequest
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilSakRequest
 import no.nav.bidrag.dokument.arkiv.dto.LagreJournalfortAvIdentRequest
 import no.nav.bidrag.dokument.arkiv.dto.LagreJournalpostRequest
+import no.nav.bidrag.dokument.arkiv.dto.OppdaterDokumentdatoTilIdag
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostDistribusjonsInfoRequest
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse
@@ -128,6 +129,10 @@ class EndreJournalpostService(
 
     fun oppdaterJournalpostDistribusjonBestiltStatus(journalpostId: Long, journalpost: Journalpost) {
         lagreJournalpost(OppdaterJournalpostDistribusjonsInfoRequest(journalpostId, journalpost))
+    }
+
+    fun oppdaterDokumentdatoTilIdag(journalpostId: Long, journalpost: Journalpost) {
+        lagreJournalpost(OppdaterDokumentdatoTilIdag(journalpostId, journalpost))
     }
 
     fun oppdaterJournalpostTilleggsopplysninger(journalpostId: Long, journalpost: Journalpost) {
