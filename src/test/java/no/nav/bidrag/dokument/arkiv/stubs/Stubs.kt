@@ -524,11 +524,22 @@ class Stubs {
             )
         }
 
+        fun dokarkivIkkeOppdaterKalt(journalpostId: Long, vararg contains: String?) {
+            val requestPattern =
+                WireMock.putRequestedFor(WireMock.urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + '/' + journalpostId))
+            Arrays.stream(contains).forEach { contain: String? -> requestPattern.withRequestBody(ContainsPattern(contain)) }
+            WireMock.verify(0, requestPattern)
+        }
+
         fun dokarkivOppdaterKalt(journalpostId: Long, vararg contains: String?) {
             val requestPattern =
                 WireMock.putRequestedFor(WireMock.urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + '/' + journalpostId))
             Arrays.stream(contains).forEach { contain: String? -> requestPattern.withRequestBody(ContainsPattern(contain)) }
             WireMock.verify(requestPattern)
+            //val allMatches = WireMock.findAll(requestPattern)
+            //val anyMatch = allMatches.stream()
+            //    .anyMatch { match -> Arrays.stream(contains).allMatch { match.bodyAsString.contains(it.toString()) } }
+            //anyMatch shouldBe true
         }
 
         fun safHentDokumentKalt(journalpostId: Long?, dokumentId: Long?) {

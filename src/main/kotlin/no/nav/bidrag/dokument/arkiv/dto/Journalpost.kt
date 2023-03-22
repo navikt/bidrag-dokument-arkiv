@@ -22,6 +22,7 @@ import no.nav.bidrag.dokument.dto.DokumentStatusDto
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
 import no.nav.bidrag.dokument.dto.JournalpostDto
 import no.nav.bidrag.dokument.dto.JournalpostResponse
+import no.nav.bidrag.dokument.dto.JournalpostStatus
 import no.nav.bidrag.dokument.dto.Kanal
 import no.nav.bidrag.dokument.dto.KodeDto
 import no.nav.bidrag.dokument.dto.MottakerAdresseTo
@@ -29,12 +30,14 @@ import no.nav.bidrag.dokument.dto.ReturDetaljer
 import no.nav.bidrag.dokument.dto.ReturDetaljerLog
 import org.apache.logging.log4j.util.Strings
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.stream.Collectors.toList
 
 
 // Max key length is 20
 const val RETUR_DETALJER_KEY = "retur"
 const val DISTRIBUERT_ADRESSE_KEY = "distAdresse"
+const val DISTRIBUERT_AV_IDENT_KEY = "distribuertAvIdent"
 const val DOKDIST_BESTILLING_ID = "dokdistBestillingsId"
 const val SAMHANDLER_ID_KEY = "samhandlerId"
 const val DISTRIBUSJON_BESTILT_KEY = "distribusjonBestilt"
@@ -68,8 +71,47 @@ data class DistribusjonsInfo(
     val journalposttype: String? = null,
     val journalstatus: String,
     val kanal: JournalpostKanal? = null,
-    val utsendingsinfo: UtsendingsInfo? = null
-)
+    val utsendingsinfo: UtsendingsInfo? = null,
+    val tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger(),
+    val relevanteDatoer: List<DatoType> = emptyList(),
+) {
+    fun hentDatoDokument(): LocalDateTime? {
+        val registrert = relevanteDatoer
+            .find { it.datotype == DATO_DOKUMENT }
+
+        return registrert?.dato?.let { LocalDateTime.parse(it) }
+    }
+
+    fun hentDistribuertAvIdent(): String? {
+        return tilleggsopplysninger.hentDistribuertAvIdent()
+    }
+
+    fun hentBestillingId(): String? {
+        return tilleggsopplysninger.hentBestillingId()
+    }
+
+    fun isStatusEkspedert(): Boolean = journalstatus == JournalStatus.EKSPEDERT.name
+    fun isUtgaaendeDokument(): Boolean = journalposttype == JournalpostType.U.name
+    fun isDistribusjonBestilt(): Boolean = tilleggsopplysninger.isDistribusjonBestilt() || isStatusEkspedert()
+    fun hentJournalStatus(): JournalpostStatus {
+        return when (journalstatus) {
+            JournalStatus.MOTTATT.name -> JournalpostStatus.MOTTATT
+            JournalStatus.JOURNALFOERT.name -> JournalpostStatus.JOURNALFØRT
+            JournalStatus.FEILREGISTRERT.name -> JournalpostStatus.FEILREGISTRERT
+            JournalStatus.EKSPEDERT.name -> JournalpostStatus.EKSPEDERT
+            JournalStatus.FERDIGSTILT.name ->
+                if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON)
+                    if (isDistribusjonBestilt()) JournalpostStatus.DISTRIBUERT
+                    else JournalpostStatus.KLAR_FOR_DISTRIBUSJON
+                else JournalpostStatus.FERDIGSTILT
+
+            JournalStatus.UNDER_ARBEID.name, JournalStatus.RESERVERT.name -> JournalpostStatus.UNDER_PRODUKSJON
+            JournalStatus.UTGAAR.name -> JournalpostStatus.UTGÅR
+            JournalStatus.AVBRUTT.name -> JournalpostStatus.AVBRUTT
+            else -> JournalpostStatus.UKJENT
+        }
+    }
+}
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class UtsendingsInfo(
@@ -494,6 +536,25 @@ class TilleggsOpplysninger : MutableList<Map<String, String>> by mutableListOf()
         } catch (e: NumberFormatException) {
             -1
         }
+    }
+
+    fun setDistribuertAvIdent(distribuertAvIdent: String) {
+        this.removeAll { it["nokkel"]?.contains(DISTRIBUERT_AV_IDENT_KEY) ?: false }
+        this.add(mapOf("nokkel" to DISTRIBUERT_AV_IDENT_KEY, "verdi" to distribuertAvIdent))
+    }
+
+    fun hentBestillingId(): String? {
+        return this.filter { it["nokkel"]?.contains(DOKDIST_BESTILLING_ID) ?: false }
+            .filter { Strings.isNotEmpty(it["verdi"]) }
+            .map { it["verdi"] }
+            .firstOrNull()
+    }
+
+    fun hentDistribuertAvIdent(): String? {
+        return this.filter { it["nokkel"]?.contains(DISTRIBUERT_AV_IDENT_KEY) ?: false }
+            .filter { Strings.isNotEmpty(it["verdi"]) }
+            .map { it["verdi"] }
+            .firstOrNull()
     }
 
     fun setJournalfortAvIdent(journalfortAvIdent: String) {

@@ -3,6 +3,14 @@ query journalpost($journalpostId: String!) {
         kanal
         journalposttype
         journalstatus
+        tilleggsopplysninger {
+            nokkel
+            verdi
+        }
+        relevanteDatoer {
+            dato
+            datotype
+        }
         utsendingsinfo {
             epostVarselSendt {
                 tittel

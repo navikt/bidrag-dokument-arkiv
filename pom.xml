@@ -28,7 +28,7 @@
     <apache-avro-version>1.11.1</apache-avro-version>
     <bidrag-commons.version>0.7.31</bidrag-commons.version>
     <bidrag-commons-test.version>0.2.2</bidrag-commons-test.version>
-    <bidrag-dokument-dto.version>1.6.26</bidrag-dokument-dto.version>
+    <bidrag-dokument-dto.version>1.6.27</bidrag-dokument-dto.version>
     <bidrag-tilgangskontroll.version>1.9.21</bidrag-tilgangskontroll.version>
     <commons-codec.version>1.15</commons-codec.version>
     <graphq-dgs-client.version>5.5.1</graphq-dgs-client.version>
@@ -64,6 +64,11 @@
   </repositories>
 
   <dependencies>
+    <dependency>
+      <groupId>org.jetbrains.kotlinx</groupId>
+      <artifactId>kotlinx-datetime-jvm</artifactId>
+      <version>0.4.0</version>
+    </dependency>
     <!-- joark hendelser med avro avhengighet -->
     <dependency>
       <groupId>no.nav.syfo.schemas</groupId>

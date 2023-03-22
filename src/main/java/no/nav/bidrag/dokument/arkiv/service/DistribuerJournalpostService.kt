@@ -22,6 +22,7 @@ import no.nav.bidrag.dokument.arkiv.model.Discriminator
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
 import no.nav.bidrag.dokument.arkiv.model.UgyldigDistribusjonException
+import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 import no.nav.bidrag.dokument.dto.DistribusjonInfoDto
@@ -29,6 +30,7 @@ import no.nav.bidrag.dokument.dto.UtsendingsInfoDto
 import no.nav.bidrag.dokument.dto.UtsendingsInfoVarselTypeDto
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.time.LocalDate
 import java.util.Objects
 
 @Service
@@ -38,6 +40,7 @@ class DistribuerJournalpostService(
     val endreJournalpostService: EndreJournalpostService,
     val opprettJournalpostService: OpprettJournalpostService,
     val dokdistFordelingConsumer: DokdistFordelingConsumer,
+    val saksbehandlerInfoManager: SaksbehandlerInfoManager,
     val meterRegistry: MeterRegistry
 ) {
     private final val journalpostService: JournalpostService
@@ -52,7 +55,7 @@ class DistribuerJournalpostService(
         return journalpostService.hentDistribusjonsInfo(journalpostId).let {
             val utsendingsinfo = it.utsendingsinfo
             DistribusjonInfoDto(
-                journalstatus = it.journalstatus,
+                journalstatus = it.hentJournalStatus(),
                 kanal = it.kanal?.name ?: JournalpostUtsendingKanal.UKJENT.name,
                 utsendingsinfo = UtsendingsInfoDto(
                     varseltype = if (utsendingsinfo?.smsVarselSendt != null) UtsendingsInfoVarselTypeDto.SMS
@@ -67,7 +70,10 @@ class DistribuerJournalpostService(
                     varslingstekst = utsendingsinfo?.smsVarselSendt?.varslingstekst
                         ?: utsendingsinfo?.epostVarselSendt?.varslingstekst,
                     tittel = utsendingsinfo?.epostVarselSendt?.tittel
-                )
+                ),
+                distribuertAvIdent = it.hentDistribuertAvIdent(),
+                distribuertDato = it.hentDatoDokument(),
+                bestillingId = it.hentBestillingId()
             )
         }
     }
@@ -140,8 +146,17 @@ class DistribuerJournalpostService(
 
         // Distribusjonsløpet oppdaterer journalpost og overskriver alt av tilleggsopplysninger. Hent journalpost på nytt for å unngå overskrive noe som distribusjon har lagret
         oppdaterTilleggsopplysninger(journalpostId, journalpost, adresse)
+        oppdaterDokumentdatoTilIdag(journalpostId, journalpost)
         measureDistribution(batchId)
         return distribuerResponse
+    }
+
+    private fun oppdaterDokumentdatoTilIdag(journalpostId: Long, journalpostFør: Journalpost) {
+        if (journalpostFør.hentDatoDokument() != LocalDate.now()) {
+            val journalpostEtter = hentJournalpost(journalpostId)
+            LOGGER.info("Dokumentdato til journalpost $journalpostId er ikke samme som dato distribusjon ble bestilt. Oppdaterer dokumentdato til i dag")
+            endreJournalpostService.oppdaterDokumentdatoTilIdag(journalpostEtter.hentJournalpostIdLong()!!, journalpostEtter)
+        }
     }
 
     private fun oppdaterTilleggsopplysninger(journalpostId: Long, journalpostFør: Journalpost, adresse: DistribuerTilAdresse?) {
@@ -149,6 +164,8 @@ class DistribuerJournalpostService(
         leggTilEksisterendeTilleggsopplysninger(journalpostEtter, journalpostFør)
         adresse?.run { lagreAdresse(adresse, journalpostEtter) }
         journalpostEtter.tilleggsopplysninger.setDistribusjonBestillt()
+        val saksbehandlerId = saksbehandlerInfoManager.hentSaksbehandlerBrukerId()
+        saksbehandlerId?.run { journalpostEtter.tilleggsopplysninger.setDistribuertAvIdent(saksbehandlerId) }
         endreJournalpostService.oppdaterJournalpostTilleggsopplysninger(journalpostId, journalpostEtter)
     }
 
