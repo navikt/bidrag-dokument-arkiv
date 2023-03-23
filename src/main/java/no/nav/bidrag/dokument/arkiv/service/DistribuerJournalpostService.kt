@@ -22,6 +22,7 @@ import no.nav.bidrag.dokument.arkiv.model.Discriminator
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
 import no.nav.bidrag.dokument.arkiv.model.UgyldigDistribusjonException
+import no.nav.bidrag.dokument.arkiv.model.ifFalse
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
@@ -132,6 +133,8 @@ class DistribuerJournalpostService(
         if (distribuerJournalpostRequest.erLokalUtskrift()) {
             LOGGER.info("Journalpost $journalpostId er distribuert via lokal utskrift. Oppdaterer journalpost status")
             oppdaterDistribusjonsInfoLokalUtskrift(journalpostId)
+            oppdaterTilleggsopplysninger(journalpostId, journalpost, erLokalUtskrift = true)
+            oppdaterDokumentdatoTilIdag(journalpostId, journalpost)
             return DistribuerJournalpostResponse("JOARK-$journalpostId", null)
         }
 
@@ -161,11 +164,16 @@ class DistribuerJournalpostService(
         }
     }
 
-    private fun oppdaterTilleggsopplysninger(journalpostId: Long, journalpostFør: Journalpost, adresse: DistribuerTilAdresse?) {
+    private fun oppdaterTilleggsopplysninger(
+        journalpostId: Long,
+        journalpostFør: Journalpost,
+        adresse: DistribuerTilAdresse? = null,
+        erLokalUtskrift: Boolean = false
+    ) {
         val journalpostEtter = hentJournalpost(journalpostId)
         leggTilEksisterendeTilleggsopplysninger(journalpostEtter, journalpostFør)
-        adresse?.run { lagreAdresse(adresse, journalpostEtter) }
-        journalpostEtter.tilleggsopplysninger.setDistribusjonBestillt()
+        erLokalUtskrift.ifFalse { adresse?.run { lagreAdresse(adresse, journalpostEtter) } }
+        erLokalUtskrift.ifFalse { journalpostEtter.tilleggsopplysninger.setDistribusjonBestillt() }
         val saksbehandlerId = saksbehandlerInfoManager.hentSaksbehandlerBrukerId()
         saksbehandlerId?.run { journalpostEtter.tilleggsopplysninger.setDistribuertAvIdent(saksbehandlerId) }
         endreJournalpostService.oppdaterJournalpostTilleggsopplysninger(journalpostId, journalpostEtter)

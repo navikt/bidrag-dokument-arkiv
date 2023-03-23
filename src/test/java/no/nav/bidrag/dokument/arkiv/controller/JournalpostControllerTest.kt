@@ -835,6 +835,9 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
 
             stubs.verifyStub.dokdistFordelingIkkeKalt()
             stubs.verifyStub.dokarkivOppdaterDistribusjonsInfoKalt(journalpostId, "{\"settStatusEkspedert\":true,\"utsendingsKanal\":\"L\"}")
+            stubs.verifyStub.dokarkivOppdaterKalt(
+                journalpostId, "{\"tilleggsopplysninger\":[{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
+            )
         }
     }
 

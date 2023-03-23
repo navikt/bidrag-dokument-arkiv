@@ -105,13 +105,13 @@ data class OpphevEndreFagomradeJournalfortJournalpostRequest(private var journal
     }
 }
 
-data class EndreTittelRequest(private var journalpostId: Long, override var tittel: String?, private var journalpost: Journalpost) :
+data class EndreTittelRequest(private var journalpostId: Long, private var _tittel: String?, private var journalpost: Journalpost) :
     OppdaterJournalpostRequest(journalpostId) {
 
     init {
         val hoveddokument = journalpost.hentHoveddokument()
-        if (hoveddokument != null) dokumenter = listOf(Dokument(hoveddokument.dokumentInfoId, tittel, hoveddokument.brevkode))
-        avsenderMottaker = AvsenderMottaker(journalpost.avsenderMottaker?.navn)
+        if (hoveddokument != null) dokumenter = listOf(Dokument(hoveddokument.dokumentInfoId, _tittel, null))
+        if (!journalpost.isUtgaaendeDokument()) tittel = _tittel
     }
 }
 
