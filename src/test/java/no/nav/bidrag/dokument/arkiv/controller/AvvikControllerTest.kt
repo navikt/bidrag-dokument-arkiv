@@ -66,28 +66,61 @@ class AvvikControllerTest : AbstractControllerTest() {
 
         val overforEnhetResponse = sendAvvikRequest(xEnhet, journalpostIdFraJson, avvikHendelse)
 
-        // then
-        assertAll(
-            {
-                Assertions.assertThat(overforEnhetResponse)
-                    .extracting { it.statusCode }
-                    .`as`("statusCode")
-                    .isEqualTo(HttpStatus.OK)
-            },
-            {
-                stubs.verifyStub.dokarkivOppdaterKalt(
-                    journalpostIdFraJson,
-                    String.format("\"journalfoerendeEnhet\":\"%s\"", overforTilEnhet)
-                )
-            },
-            {
-                Mockito.verify(kafkaTemplateMock).send(
-                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
-                        "JOARK-$journalpostIdFraJson"
-                    ), ArgumentMatchers.any()
-                )
-            }
+        assertSoftly {
+            overforEnhetResponse.statusCode shouldBe HttpStatus.OK
+            stubs.verifyStub.dokarkivOppdaterKalt(
+                journalpostIdFraJson,
+                String.format("\"journalfoerendeEnhet\":\"%s\"", overforTilEnhet)
+            )
+            Mockito.verify(kafkaTemplateMock).send(
+                ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                    "JOARK-$journalpostIdFraJson"
+                ), ArgumentMatchers.any()
+            )
+        }
+    }
+
+    @Test
+    fun `skal utfore avvik FARSKAP_UTELUKKET`() {
+        // given
+        val xEnhet = "1234"
+        val journalpostIdFraJson = 201028011L
+        val avvikHendelse = createAvvikHendelse(AvvikType.FARSKAP_UTELUKKET, emptyMap())
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
+        stubs.mockSafResponseHentJournalpost(
+            opprettSafResponse(
+                journalpostIdFraJson.toString(),
+                avsenderMottaker = AvsenderMottaker(),
+                dokumenter = listOf(
+                    Dokument(
+                        dokumentInfoId = DOKUMENT_1_ID,
+                        tittel = DOKUMENT_1_TITTEL
+                    ),
+                    Dokument(
+                        dokumentInfoId = "123213",
+                        tittel = "tittel"
+                    )
+                ),
+                tema = "FAR"
+            )
         )
+        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
+
+        val response = sendAvvikRequest(xEnhet, journalpostIdFraJson, avvikHendelse)
+
+        assertSoftly {
+            response.statusCode shouldBe HttpStatus.OK
+            stubs.verifyStub.dokarkivOppdaterKalt(
+                journalpostIdFraJson,
+                "\"tittel\":\"FARSKAP UTELUKKET: Tittel på dokument 1\",\"dokumenter\":[{\"dokumentInfoId\":\"123123\",\"tittel\":\"FARSKAP UTELUKKET: Tittel på dokument 1\"}]"
+            )
+            Mockito.verify(kafkaTemplateMock).send(
+                ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                    "JOARK-$journalpostIdFraJson"
+                ), ArgumentMatchers.any()
+            )
+        }
     }
 
     @Test

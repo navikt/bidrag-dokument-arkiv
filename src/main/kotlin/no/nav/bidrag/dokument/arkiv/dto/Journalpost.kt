@@ -20,6 +20,7 @@ import no.nav.bidrag.dokument.dto.DokumentArkivSystemDto
 import no.nav.bidrag.dokument.dto.DokumentDto
 import no.nav.bidrag.dokument.dto.DokumentStatusDto
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
+import no.nav.bidrag.dokument.dto.FARSKAP_UTELUKKET_PREFIKS
 import no.nav.bidrag.dokument.dto.JournalpostDto
 import no.nav.bidrag.dokument.dto.JournalpostResponse
 import no.nav.bidrag.dokument.dto.JournalpostStatus
@@ -168,6 +169,8 @@ data class Journalpost(
 ) {
 
     fun isBidragTema(): Boolean = tema == "BID" || tema == "FAR"
+    fun isFarskap(): Boolean = tema == "FAR"
+    fun isFarskapUtelukket(): Boolean = hentTittel()?.startsWith(FARSKAP_UTELUKKET_PREFIKS, ignoreCase = true) == true
     fun hentGjelderId(): String? = bruker?.id
 
     fun harAvsenderMottaker(): Boolean = avsenderMottaker?.navn != null || avsenderMottaker?.id != null
@@ -383,6 +386,7 @@ data class Journalpost(
         if (isUtgaaendeDokument() && isStatusFerdigsstilt() && !isDistribusjonBestilt() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) avvikTypeList.add(
             AvvikType.MANGLER_ADRESSE
         )
+        if (isFarskap() && !isFarskapUtelukket()) avvikTypeList.add(AvvikType.FARSKAP_UTELUKKET)
         return avvikTypeList
     }
 

@@ -51,31 +51,33 @@ class DistribuerJournalpostService(
         personConsumer = personConsumers.get(Discriminator.REGULAR_USER)
     }
 
-    fun hentDistribusjonsInfo(journalpostId: Long): DistribusjonInfoDto {
-        return journalpostService.hentDistribusjonsInfo(journalpostId).let {
-            val utsendingsinfo = it.utsendingsinfo
-            DistribusjonInfoDto(
-                journalstatus = it.hentJournalStatus(),
-                kanal = it.kanal?.name ?: JournalpostUtsendingKanal.UKJENT.name,
-                utsendingsinfo = UtsendingsInfoDto(
-                    varseltype = if (utsendingsinfo?.smsVarselSendt != null) UtsendingsInfoVarselTypeDto.SMS
-                    else if (utsendingsinfo?.digitalpostSendt != null) UtsendingsInfoVarselTypeDto.DIGIPOST
-                    else if (utsendingsinfo?.epostVarselSendt != null) UtsendingsInfoVarselTypeDto.EPOST
-                    else if (utsendingsinfo?.fysiskpostSendt != null) UtsendingsInfoVarselTypeDto.FYSISK_POST
-                    else null,
-                    adresse = utsendingsinfo?.smsVarselSendt?.adresse
-                        ?: utsendingsinfo?.epostVarselSendt?.adresse
-                        ?: utsendingsinfo?.digitalpostSendt?.adresse
-                        ?: utsendingsinfo?.fysiskpostSendt?.adressetekstKonvolutt,
-                    varslingstekst = utsendingsinfo?.smsVarselSendt?.varslingstekst
-                        ?: utsendingsinfo?.epostVarselSendt?.varslingstekst,
-                    tittel = utsendingsinfo?.epostVarselSendt?.tittel
-                ),
-                distribuertAvIdent = it.hentDistribuertAvIdent(),
-                distribuertDato = it.hentDatoDokument(),
-                bestillingId = it.hentBestillingId()
-            )
-        }
+    fun hentDistribusjonsInfo(journalpostId: Long): DistribusjonInfoDto? {
+        return journalpostService.hentDistribusjonsInfo(journalpostId)
+            .takeIf { it.isUtgaaendeDokument() }
+            ?.let {
+                val utsendingsinfo = it.utsendingsinfo
+                DistribusjonInfoDto(
+                    journalstatus = it.hentJournalStatus(),
+                    kanal = it.kanal?.name ?: JournalpostUtsendingKanal.UKJENT.name,
+                    utsendingsinfo = UtsendingsInfoDto(
+                        varseltype = if (utsendingsinfo?.smsVarselSendt != null) UtsendingsInfoVarselTypeDto.SMS
+                        else if (utsendingsinfo?.digitalpostSendt != null) UtsendingsInfoVarselTypeDto.DIGIPOST
+                        else if (utsendingsinfo?.epostVarselSendt != null) UtsendingsInfoVarselTypeDto.EPOST
+                        else if (utsendingsinfo?.fysiskpostSendt != null) UtsendingsInfoVarselTypeDto.FYSISK_POST
+                        else null,
+                        adresse = utsendingsinfo?.smsVarselSendt?.adresse
+                            ?: utsendingsinfo?.epostVarselSendt?.adresse
+                            ?: utsendingsinfo?.digitalpostSendt?.adresse
+                            ?: utsendingsinfo?.fysiskpostSendt?.adressetekstKonvolutt,
+                        varslingstekst = utsendingsinfo?.smsVarselSendt?.varslingstekst
+                            ?: utsendingsinfo?.epostVarselSendt?.varslingstekst,
+                        tittel = utsendingsinfo?.epostVarselSendt?.tittel
+                    ),
+                    distribuertAvIdent = it.hentDistribuertAvIdent(),
+                    distribuertDato = it.hentDatoDokument(),
+                    bestillingId = it.hentBestillingId()
+                )
+            }
     }
 
     fun bestillNyDistribusjon(journalpost: Journalpost, distribuerTilAdresse: DistribuerTilAdresse?) {

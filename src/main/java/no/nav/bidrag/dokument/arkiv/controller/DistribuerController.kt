@@ -99,6 +99,16 @@ class DistribuerController(private val distribuerJournalpostService: DistribuerJ
 
     @GetMapping("$ROOT_JOURNAL/distribuer/info/{journalpostId}")
     @Operation(description = "Hent informasjon om distribusjon av journalpost")
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Hentet informasjon om distribusjon av journalpost"
+            ),
+            ApiResponse(responseCode = "202", description = "Journalpost er ikke distribuert eller er av type NOTAT eller INNGÅENDE"),
+            ApiResponse(responseCode = "404", description = "Fant ikke journalpost")
+        ]
+    )
     @ResponseBody
     fun hentDistribusjonsInfo(@PathVariable journalpostId: String): ResponseEntity<DistribusjonInfoDto> {
         LOGGER.info("Henter distribusjonsinfo for journalpost {}", journalpostId)
@@ -112,9 +122,10 @@ class DistribuerController(private val distribuerJournalpostService: DistribuerJ
                 .build()
         }
 
-        val distinfo = distribuerJournalpostService.hentDistribusjonsInfo(kildesystemIdenfikator.idNumerisk!!)
-        SECURE_LOGGER.info("Hentet distribusjonsinfo $distinfo for journalpost $journalpostId")
-        return ResponseEntity.ok(distinfo)
+        return distribuerJournalpostService.hentDistribusjonsInfo(kildesystemIdenfikator.idNumerisk!!)?.let {
+            SECURE_LOGGER.info("Hentet distribusjonsinfo $it for journalpost $journalpostId")
+            ResponseEntity.ok(it)
+        } ?: ResponseEntity.noContent().build()
     }
 
 
