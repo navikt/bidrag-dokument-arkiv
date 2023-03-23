@@ -350,7 +350,7 @@ data class Journalpost(
             kanal = hentKanal(),
             gjelderAktor = bruker?.tilAktorDto(),
             feilfort = isFeilregistrert(),
-            innhold = tittel,
+            innhold = hentTittel(),
             journalfortDato = hentDatoJournalfort(),
             journalforendeEnhet = journalforendeEnhet,
             journalfortAv = hentJournalfortAvNavn(),
