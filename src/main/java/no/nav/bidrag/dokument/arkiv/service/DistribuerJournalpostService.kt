@@ -159,7 +159,10 @@ class DistribuerJournalpostService(
     private fun oppdaterDokumentdatoTilIdag(journalpostId: Long, journalpostFør: Journalpost) {
         if (journalpostFør.hentDatoDokument() != LocalDate.now()) {
             val journalpostEtter = hentJournalpost(journalpostId)
-            LOGGER.info("Dokumentdato til journalpost $journalpostId er ikke samme som dato distribusjon ble bestilt. Oppdaterer dokumentdato til i dag")
+            val datoDokument = journalpostFør.hentDatoDokument()?.toString()
+            LOGGER.info(
+                "Dokumentdato ($datoDokument) til journalpost $journalpostId er ikke samme som dato distribusjon ble bestilt. Oppdaterer dokumentdato til i dag"
+            )
             endreJournalpostService.oppdaterDokumentdatoTilIdag(journalpostEtter.hentJournalpostIdLong()!!, journalpostEtter)
         }
     }
