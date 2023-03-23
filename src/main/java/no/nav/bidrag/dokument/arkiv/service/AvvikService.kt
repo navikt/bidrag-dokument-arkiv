@@ -109,6 +109,7 @@ class AvvikService(
             AvvikType.REGISTRER_RETUR -> registrerRetur(journalpost, avvikshendelseIntern)
             AvvikType.BESTILL_NY_DISTRIBUSJON -> bestillNyDistribusjon(journalpost, avvikshendelseIntern)
             AvvikType.MANGLER_ADRESSE -> manglerAdresse(journalpost)
+            AvvikType.FARSKAP_UTELUKKET -> farskapUtelukket(journalpost, avvikshendelseIntern)
             else -> throw AvvikNotSupportedException("Avvik ${avvikshendelseIntern.avvikstype} ikke støttet")
         }
         publiserHendelse(journalpost, avvikshendelseIntern.saksbehandlersEnhet)
@@ -219,6 +220,10 @@ class AvvikService(
         )
         LOGGER.info("Kopiert journalpost {} til Bidrag, ny journalpostId {}", journalpost.journalpostId, journalpostId)
         oppgaveService.ferdigstillVurderDokumentOppgaver(journalpost.hentJournalpostIdLong()!!, avvikshendelseIntern.saksbehandlersEnhet!!)
+    }
+
+    fun farskapUtelukket(journalpost: Journalpost, avvikshendelseIntern: AvvikshendelseIntern) {
+        dokarkivConsumer.endre(avvikshendelseIntern.toLeggTiLFarskapUtelukketTilTittelRequest(journalpost))
     }
 
     fun manglerAdresse(journalpost: Journalpost) {

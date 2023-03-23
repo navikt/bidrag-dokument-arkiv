@@ -23,6 +23,7 @@ import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
 import no.nav.bidrag.dokument.arkiv.model.UgyldigDistribusjonException
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager
+import no.nav.bidrag.dokument.arkiv.model.ifFalse
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 import no.nav.bidrag.dokument.dto.DistribusjonInfoDto
@@ -51,31 +52,33 @@ class DistribuerJournalpostService(
         personConsumer = personConsumers.get(Discriminator.REGULAR_USER)
     }
 
-    fun hentDistribusjonsInfo(journalpostId: Long): DistribusjonInfoDto {
-        return journalpostService.hentDistribusjonsInfo(journalpostId).let {
-            val utsendingsinfo = it.utsendingsinfo
-            DistribusjonInfoDto(
-                journalstatus = it.hentJournalStatus(),
-                kanal = it.kanal?.name ?: JournalpostUtsendingKanal.UKJENT.name,
-                utsendingsinfo = UtsendingsInfoDto(
-                    varseltype = if (utsendingsinfo?.smsVarselSendt != null) UtsendingsInfoVarselTypeDto.SMS
-                    else if (utsendingsinfo?.digitalpostSendt != null) UtsendingsInfoVarselTypeDto.DIGIPOST
-                    else if (utsendingsinfo?.epostVarselSendt != null) UtsendingsInfoVarselTypeDto.EPOST
-                    else if (utsendingsinfo?.fysiskpostSendt != null) UtsendingsInfoVarselTypeDto.FYSISK_POST
-                    else null,
-                    adresse = utsendingsinfo?.smsVarselSendt?.adresse
-                        ?: utsendingsinfo?.epostVarselSendt?.adresse
-                        ?: utsendingsinfo?.digitalpostSendt?.adresse
-                        ?: utsendingsinfo?.fysiskpostSendt?.adressetekstKonvolutt,
-                    varslingstekst = utsendingsinfo?.smsVarselSendt?.varslingstekst
-                        ?: utsendingsinfo?.epostVarselSendt?.varslingstekst,
-                    tittel = utsendingsinfo?.epostVarselSendt?.tittel
-                ),
-                distribuertAvIdent = it.hentDistribuertAvIdent(),
-                distribuertDato = it.hentDatoDokument(),
-                bestillingId = it.hentBestillingId()
-            )
-        }
+    fun hentDistribusjonsInfo(journalpostId: Long): DistribusjonInfoDto? {
+        return journalpostService.hentDistribusjonsInfo(journalpostId)
+            .takeIf { it.isUtgaaendeDokument() }
+            ?.let {
+                val utsendingsinfo = it.utsendingsinfo
+                DistribusjonInfoDto(
+                    journalstatus = it.hentJournalStatus(),
+                    kanal = it.kanal?.name ?: JournalpostUtsendingKanal.UKJENT.name,
+                    utsendingsinfo = UtsendingsInfoDto(
+                        varseltype = if (utsendingsinfo?.smsVarselSendt != null) UtsendingsInfoVarselTypeDto.SMS
+                        else if (utsendingsinfo?.digitalpostSendt != null) UtsendingsInfoVarselTypeDto.DIGIPOST
+                        else if (utsendingsinfo?.epostVarselSendt != null) UtsendingsInfoVarselTypeDto.EPOST
+                        else if (utsendingsinfo?.fysiskpostSendt != null) UtsendingsInfoVarselTypeDto.FYSISK_POST
+                        else null,
+                        adresse = utsendingsinfo?.smsVarselSendt?.adresse
+                            ?: utsendingsinfo?.epostVarselSendt?.adresse
+                            ?: utsendingsinfo?.digitalpostSendt?.adresse
+                            ?: utsendingsinfo?.fysiskpostSendt?.adressetekstKonvolutt,
+                        varslingstekst = utsendingsinfo?.smsVarselSendt?.varslingstekst
+                            ?: utsendingsinfo?.epostVarselSendt?.varslingstekst,
+                        tittel = utsendingsinfo?.epostVarselSendt?.tittel
+                    ),
+                    distribuertAvIdent = it.hentDistribuertAvIdent(),
+                    distribuertDato = it.hentDatoDokument(),
+                    bestillingId = it.hentBestillingId()
+                )
+            }
     }
 
     fun bestillNyDistribusjon(journalpost: Journalpost, distribuerTilAdresse: DistribuerTilAdresse?) {
@@ -130,6 +133,8 @@ class DistribuerJournalpostService(
         if (distribuerJournalpostRequest.erLokalUtskrift()) {
             LOGGER.info("Journalpost $journalpostId er distribuert via lokal utskrift. Oppdaterer journalpost status")
             oppdaterDistribusjonsInfoLokalUtskrift(journalpostId)
+            oppdaterTilleggsopplysninger(journalpostId, journalpost, erLokalUtskrift = true)
+            oppdaterDokumentdatoTilIdag(journalpostId, journalpost)
             return DistribuerJournalpostResponse("JOARK-$journalpostId", null)
         }
 
@@ -154,23 +159,32 @@ class DistribuerJournalpostService(
     private fun oppdaterDokumentdatoTilIdag(journalpostId: Long, journalpostFør: Journalpost) {
         if (journalpostFør.hentDatoDokument() != LocalDate.now()) {
             val journalpostEtter = hentJournalpost(journalpostId)
-            LOGGER.info("Dokumentdato til journalpost $journalpostId er ikke samme som dato distribusjon ble bestilt. Oppdaterer dokumentdato til i dag")
+            val datoDokument = journalpostFør.hentDatoDokument()?.toString()
+            LOGGER.info(
+                "Dokumentdato ($datoDokument) til journalpost $journalpostId er ikke samme som dato distribusjon ble bestilt. Oppdaterer dokumentdato til i dag"
+            )
             endreJournalpostService.oppdaterDokumentdatoTilIdag(journalpostEtter.hentJournalpostIdLong()!!, journalpostEtter)
         }
     }
 
-    private fun oppdaterTilleggsopplysninger(journalpostId: Long, journalpostFør: Journalpost, adresse: DistribuerTilAdresse?) {
+    private fun oppdaterTilleggsopplysninger(
+        journalpostId: Long,
+        journalpostFør: Journalpost,
+        adresse: DistribuerTilAdresse? = null,
+        erLokalUtskrift: Boolean = false
+    ) {
         val journalpostEtter = hentJournalpost(journalpostId)
         leggTilEksisterendeTilleggsopplysninger(journalpostEtter, journalpostFør)
-        adresse?.run { lagreAdresse(adresse, journalpostEtter) }
-        journalpostEtter.tilleggsopplysninger.setDistribusjonBestillt()
+        erLokalUtskrift.ifFalse { adresse?.run { lagreAdresse(adresse, journalpostEtter) } }
+        erLokalUtskrift.ifFalse { journalpostEtter.tilleggsopplysninger.setDistribusjonBestillt() }
         val saksbehandlerId = saksbehandlerInfoManager.hentSaksbehandlerBrukerId()
         saksbehandlerId?.run { journalpostEtter.tilleggsopplysninger.setDistribuertAvIdent(saksbehandlerId) }
         endreJournalpostService.oppdaterJournalpostTilleggsopplysninger(journalpostId, journalpostEtter)
     }
 
     private fun leggTilEksisterendeTilleggsopplysninger(journalpostEtter: Journalpost, journalpostFør: Journalpost) {
-        journalpostEtter.tilleggsopplysninger.addAll(journalpostFør.tilleggsopplysninger)
+        journalpostEtter.tilleggsopplysninger
+            .addAll(journalpostFør.tilleggsopplysninger.filter { !journalpostEtter.tilleggsopplysninger.contains(it) })
     }
 
     private fun hentJournalpost(journalpostId: Long): Journalpost {

@@ -7,6 +7,7 @@ import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponseWithReturDetaljer
 import no.nav.bidrag.dokument.dto.AvvikType
+import no.nav.bidrag.dokument.dto.FARSKAP_UTELUKKET_PREFIKS
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -27,6 +28,7 @@ import java.util.Objects
 internal class JournalpostTest {
     private val objectMapper = ObjectMapper()
     private var journalpostJsonText: String? = null
+
     @BeforeEach
     @Throws(IOException::class)
     fun lesJsonResourceTilStreng() {
@@ -216,6 +218,43 @@ internal class JournalpostTest {
         val avvikListe = journalpost.tilAvvik()
         assertThat(avvikListe).hasSize(3)
         assertThat(avvikListe).contains(AvvikType.FEILFORE_SAK)
+    }
+
+    @Test
+    fun `Skal hente avvik FARSKAP UTELUKKET hvis tema FAR`() {
+        val journalpost = Journalpost(
+            dokumenter = listOf(Dokument("Test tittel"))
+        )
+        journalpost.journalstatus = JournalStatus.MOTTATT
+        journalpost.journalposttype = JournalpostType.U
+        journalpost.tema = "FAR"
+        val avvikListe = journalpost.tilAvvik()
+        assertThat(avvikListe).hasSize(3)
+        assertThat(avvikListe).contains(AvvikType.FARSKAP_UTELUKKET)
+    }
+
+    @Test
+    fun `Skal ikke hente avvik FARSKAP UTELUKKET hvis tema FAR men har tittel med prefiks FARSKAP UTELUKKET`() {
+        val journalpost = Journalpost(
+            dokumenter = listOf(Dokument("$FARSKAP_UTELUKKET_PREFIKS: Test tittel"))
+        )
+        journalpost.journalstatus = JournalStatus.MOTTATT
+        journalpost.journalposttype = JournalpostType.U
+        journalpost.tema = "FAR"
+        val avvikListe = journalpost.tilAvvik()
+        assertThat(avvikListe).hasSize(2)
+        assertThat(avvikListe).doesNotContain(AvvikType.FARSKAP_UTELUKKET)
+    }
+
+    @Test
+    fun `Skal ikke hente avvik FARSKAP UTELUKKET hvis tema BID`() {
+        val journalpost = Journalpost()
+        journalpost.journalstatus = JournalStatus.MOTTATT
+        journalpost.journalposttype = JournalpostType.U
+        journalpost.tema = "BID"
+        val avvikListe = journalpost.tilAvvik()
+        assertThat(avvikListe).hasSize(2)
+        assertThat(avvikListe).doesNotContain(AvvikType.FARSKAP_UTELUKKET)
     }
 
     @Test
@@ -469,6 +508,7 @@ internal class JournalpostTest {
         assertThat(returDetaljerLog[0].dato).isEqualTo(RETUR_DETALJER_DATO_1)
         assertThat(returDetaljerLog[1].dato).isEqualTo(RETUR_DETALJER_DATO_2)
     }
+
     private fun getReturDetaljerDOByDate(returDetaljerLogDOList: List<ReturDetaljerLogDO>, dato: String): ReturDetaljerLogDO {
         return returDetaljerLogDOList.stream().filter { (_, dato1): ReturDetaljerLogDO -> dato1 == LocalDate.parse(dato) }.findFirst().orElse(
             ReturDetaljerLogDO("junit", LocalDate.now())
