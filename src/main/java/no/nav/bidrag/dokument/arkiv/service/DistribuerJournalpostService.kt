@@ -180,7 +180,8 @@ class DistribuerJournalpostService(
     }
 
     private fun leggTilEksisterendeTilleggsopplysninger(journalpostEtter: Journalpost, journalpostFør: Journalpost) {
-        journalpostEtter.tilleggsopplysninger.addAll(journalpostFør.tilleggsopplysninger)
+        journalpostEtter.tilleggsopplysninger
+            .addAll(journalpostFør.tilleggsopplysninger.filter { !journalpostEtter.tilleggsopplysninger.contains(it) })
     }
 
     private fun hentJournalpost(journalpostId: Long): Journalpost {

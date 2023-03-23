@@ -815,6 +815,19 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
         val safresponse = opprettSafResponse(journalpostId.toString(), journalpostType = JournalpostType.U, journalstatus = JournalStatus.FERDIGSTILT)
         stubs.mockSafResponseHentJournalpost(safresponse)
+        val tilleggsOpplysninger = TilleggsOpplysninger()
+        tilleggsOpplysninger.setJournalfortAvIdent("Z99999")
+        stubs.mockSafResponseHentJournalpost(
+            safresponse.copy(
+                tilleggsopplysninger = tilleggsOpplysninger,
+                relevanteDatoer = listOf(DatoType(LocalDateTime.now().toString(), "DATO_DOKUMENT"))
+            ), null, "ETTER_DIST"
+        )
+        stubs.mockSafResponseHentJournalpost(
+            safresponse.copy(tilleggsopplysninger = tilleggsOpplysninger, journalstatus = JournalStatus.EKSPEDERT),
+            "ETTER_DIST",
+            "ETTER_DIST2"
+        )
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(journalpostId, JournalStatus.FERDIGSTILT, Sak("5276661"))))
@@ -836,7 +849,8 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokdistFordelingIkkeKalt()
             stubs.verifyStub.dokarkivOppdaterDistribusjonsInfoKalt(journalpostId, "{\"settStatusEkspedert\":true,\"utsendingsKanal\":\"L\"}")
             stubs.verifyStub.dokarkivOppdaterKalt(
-                journalpostId, "{\"tilleggsopplysninger\":[{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
+                journalpostId,
+                "{\"tilleggsopplysninger\":[{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
             )
         }
     }
