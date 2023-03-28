@@ -1,7 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.service
 
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv
-import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker
@@ -10,12 +9,9 @@ import no.nav.bidrag.dokument.arkiv.dto.BestillOriginalOppgaveRequest
 import no.nav.bidrag.dokument.arkiv.dto.BestillReskanningOppgaveRequest
 import no.nav.bidrag.dokument.arkiv.dto.BestillSplittingoppgaveRequest
 import no.nav.bidrag.dokument.arkiv.dto.Dokument
-import no.nav.bidrag.dokument.arkiv.dto.EndreFagomradeRequest
-import no.nav.bidrag.dokument.arkiv.dto.Fagomrade
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.JoarkOpprettJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
-import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostUtsendingKanal
 import no.nav.bidrag.dokument.arkiv.dto.LagreAvsenderNavnRequest
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest
@@ -30,9 +26,9 @@ import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerMedEnhet
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.bestillReskanningKommentar
 import no.nav.bidrag.dokument.arkiv.dto.bestillSplittingKommentar
-import no.nav.bidrag.dokument.arkiv.dto.med
 import no.nav.bidrag.dokument.arkiv.dto.dupliserJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.fjern
+import no.nav.bidrag.dokument.arkiv.dto.med
 import no.nav.bidrag.dokument.arkiv.dto.opprettDokumentVariant
 import no.nav.bidrag.dokument.arkiv.dto.validateTrue
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer
@@ -316,7 +312,7 @@ class AvvikService(
         if (journalpost.hasSak()) {
             oppdater(avvikshendelseIntern.toEndreFagomradeOgKnyttTilSakRequest(journalpost.bruker!!))
         } else {
-            oppdater(avvikshendelseIntern.toEndreFagomradeRequest())
+            oppdater(avvikshendelseIntern.toEndreFagomradeRequest(journalpost.journalforendeEnhet))
         }
     }
 

@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
 import no.nav.bidrag.dokument.arkiv.model.AvvikDetaljException
+import no.nav.bidrag.dokument.arkiv.model.BidragEnhet
 import no.nav.bidrag.dokument.arkiv.utils.DateUtils
 import no.nav.bidrag.dokument.dto.AvvikType
 import no.nav.bidrag.dokument.dto.Avvikshendelse
@@ -52,9 +53,15 @@ data class AvvikshendelseIntern(
     )
 
     fun toLeggTiLFarskapUtelukketTilTittelRequest(journalpost: Journalpost) =
-        EndreTittelRequest(journalpostId, "$FARSKAP_UTELUKKET_PREFIKS: ${journalpost.hentHoveddokument()?.tittel ?: journalpost.tittel}", journalpost)
+        EndreTittelRequest(journalpostId, "$FARSKAP_UTELUKKET_PREFIKS: ${journalpost.hentTittel()}", journalpost)
 
-    fun toEndreFagomradeRequest() = EndreFagomradeRequest(journalpostId, nyttFagomrade)
+    fun toEndreFagomradeRequest(journalførendeEnhet: String?): EndreFagomradeRequest {
+        val farskapBehandledeEnheter = listOf(BidragEnhet.ENHET_UTLAND, BidragEnhet.ENHET_FARSKAP)
+        val erEnhetFarEllerUtland = farskapBehandledeEnheter.contains(journalførendeEnhet)
+        val nyEnhet = if (nyttFagomrade == Fagomrade.FAR.name && !erEnhetFarEllerUtland) BidragEnhet.ENHET_FARSKAP else null
+        return EndreFagomradeRequest(journalpostId, nyttFagomrade, nyEnhet)
+    }
+
     fun toEndreFagomradeOgKnyttTilSakRequest(bruker: Bruker) =
         EndreFagomradeOgKnyttTilSakRequest(journalpostId, nyttFagomrade, OppdaterJournalpostRequest.Bruker(bruker.id, bruker.type))
 
@@ -65,13 +72,14 @@ data class AvvikshendelseIntern(
         EndreKnyttTilGenerellSakRequest(journalpostId, OppdaterJournalpostRequest.Bruker(bruker.id, bruker.type), fagomrade)
 
     fun toLeggTilBegrunnelsePaaTittelRequest(journalpost: Journalpost) =
-        EndreTittelRequest(journalpostId, "${journalpost.hentHoveddokument()?.tittel ?: journalpost.tittel} ($beskrivelse)", journalpost)
+        EndreTittelRequest(journalpostId, "${journalpost.hentTittel()} ($beskrivelse)", journalpost)
 }
 
 data class OverforEnhetRequest(private var journalpostId: Long, override var journalfoerendeEnhet: String?) :
     OppdaterJournalpostRequest(journalpostId)
 
-data class EndreFagomradeRequest(private var journalpostId: Long, override var tema: String?) : OppdaterJournalpostRequest(journalpostId)
+data class EndreFagomradeRequest(private var journalpostId: Long, override var tema: String?, override var journalfoerendeEnhet: String? = null) :
+    OppdaterJournalpostRequest(journalpostId)
 
 data class EndreFagomradeOgKnyttTilSakRequest(
     private var journalpostId: Long,
@@ -122,7 +130,6 @@ data class EndreKnyttTilGenerellSakRequest(
     override var sak: Sak? = GenerellSak()
 ) : OppdaterJournalpostRequest(journalpostId)
 
-data class InngaaendeTilUtgaaendeRequest(private var journalpostId: Long, override var tema: String?) : OppdaterJournalpostRequest(journalpostId)
 data class RegistrerReturRequest(
     private var journalpostId: Long,
     private var _datoRetur: LocalDate,
