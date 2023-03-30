@@ -45,7 +45,8 @@ open class HendelserProducer(
             .orElse(
                 Optional.ofNullable(journalpost.hentJournalfortAvIdent())
                     .map { ident: String? -> Saksbehandler(ident, journalpost.journalfortAvNavn) }
-                    .orElse(Saksbehandler(null, "bidrag-dokument-arkiv")))
+                    .orElse(Saksbehandler(null, "bidrag-dokument-arkiv"))
+            )
         val saksbehandlerMedEnhet = saksbehandler.tilEnhet(saksbehandlersEnhet)
         return JournalpostHendelseIntern(journalpost, saksbehandlerMedEnhet, null).hentJournalpostHendelse()
     }

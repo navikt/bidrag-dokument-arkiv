@@ -1,27 +1,27 @@
 package no.nav.bidrag.dokument.arkiv.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.springframework.test.context.ActiveProfiles
-import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig
-import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivTest
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
-import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
-import org.springframework.beans.factory.annotation.Autowired
-import no.nav.bidrag.commons.web.test.HttpHeaderTestRestTemplate
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.kafka.core.KafkaTemplate
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.AfterEach
 import com.github.tomakehurst.wiremock.client.WireMock
 import no.nav.bidrag.commons.web.EnhetFilter
+import no.nav.bidrag.commons.web.test.HttpHeaderTestRestTemplate
+import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig
+import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivTest
 import no.nav.bidrag.dokument.arkiv.stubs.Stubs
 import no.nav.bidrag.dokument.arkiv.stubs.X_ENHET_HEADER
+import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.web.server.LocalServerPort
+import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.kafka.core.KafkaTemplate
+import org.springframework.test.context.ActiveProfiles
 
 @ActiveProfiles(BidragDokumentArkivConfig.PROFILE_TEST, BidragDokumentArkivTest.PROFILE_INTEGRATION)
 @DisplayName("JournalpostController")

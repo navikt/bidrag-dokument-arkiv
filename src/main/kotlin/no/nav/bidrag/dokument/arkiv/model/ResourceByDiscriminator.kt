@@ -1,6 +1,5 @@
 package no.nav.bidrag.dokument.arkiv.model
 
-
 class ResourceByDiscriminator<T>(private val resources: Map<Discriminator, T>) {
 
     init {

@@ -80,7 +80,6 @@ data class EndreFagomradeOgKnyttTilSakRequest(
     override var sak: Sak? = GenerellSak()
 ) : OppdaterJournalpostRequest(journalpostId)
 
-
 data class EndreFagomradeJournalfortJournalpostRequest(private var journalpostId: Long, private var journalpost: Journalpost) :
     OppdaterJournalpostRequest(journalpostId) {
     init {

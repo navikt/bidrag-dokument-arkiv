@@ -99,14 +99,18 @@ data class LagreAdresseRequest(
     }
 
     private fun mapToAdresseDO(adresse: DistribuerTilAdresse?): DistribuertTilAdresseDo? {
-        return if (adresse != null) DistribuertTilAdresseDo(
-            adresselinje1 = adresse.adresselinje1,
-            adresselinje2 = adresse.adresselinje2,
-            adresselinje3 = adresse.adresselinje3,
-            land = adresse.land!!,
-            poststed = adresse.poststed,
-            postnummer = adresse.postnummer
-        ) else null
+        return if (adresse != null) {
+            DistribuertTilAdresseDo(
+                adresselinje1 = adresse.adresselinje1,
+                adresselinje2 = adresse.adresselinje2,
+                adresselinje3 = adresse.adresselinje3,
+                land = adresse.land!!,
+                poststed = adresse.poststed,
+                postnummer = adresse.postnummer
+            )
+        } else {
+            null
+        }
     }
 }
 
@@ -150,13 +154,16 @@ data class LagreJournalpostRequest(
             if (!endreReturDetaljer.isNullOrEmpty()) {
                 endreReturDetaljer
                     .forEach {
-                        if (it.originalDato != null) journalpost.tilleggsopplysninger.updateReturDetaljLog(
-                            it.originalDato!!,
-                            ReturDetaljerLogDO(it.beskrivelse, it.nyDato ?: it.originalDato!!)
-                        )
-                        else if (journalpost.manglerReturDetaljForSisteRetur() && it.nyDato != null && !journalpost.hasReturDetaljerWithDate(it.nyDato!!)) journalpost.tilleggsopplysninger.addReturDetaljLog(
-                            ReturDetaljerLogDO(it.beskrivelse, it.nyDato!!)
-                        )
+                        if (it.originalDato != null) {
+                            journalpost.tilleggsopplysninger.updateReturDetaljLog(
+                                it.originalDato!!,
+                                ReturDetaljerLogDO(it.beskrivelse, it.nyDato ?: it.originalDato!!)
+                            )
+                        } else if (journalpost.manglerReturDetaljForSisteRetur() && it.nyDato != null && !journalpost.hasReturDetaljerWithDate(it.nyDato!!)) {
+                            journalpost.tilleggsopplysninger.addReturDetaljLog(
+                                ReturDetaljerLogDO(it.beskrivelse, it.nyDato!!)
+                            )
+                        }
                     }
                 tilleggsopplysninger = journalpost.tilleggsopplysninger
             }
@@ -173,12 +180,16 @@ data class LagreJournalpostRequest(
         val saksnummer = if (endreJournalpostCommand.harEnTilknyttetSak()) endreJournalpostCommand.hentTilknyttetSak() else null
         sak = if (saksnummer != null) Sak(saksnummer) else null
 
-        bruker = if (endreJournalpostCommand.hentGjelder() != null) Bruker(
-            endreJournalpostCommand.hentGjelder(),
-            endreJournalpostCommand.hentGjelderType()
-        )
-        else if (journalpost.bruker != null) Bruker(journalpost.bruker?.id, journalpost.bruker?.type)
-        else null
+        bruker = if (endreJournalpostCommand.hentGjelder() != null) {
+            Bruker(
+                endreJournalpostCommand.hentGjelder(),
+                endreJournalpostCommand.hentGjelderType()
+            )
+        } else if (journalpost.bruker != null) {
+            Bruker(journalpost.bruker?.id, journalpost.bruker?.type)
+        } else {
+            null
+        }
         tema = if (endreJournalpostCommand.hentFagomrade() != null) endreJournalpostCommand.hentFagomrade() else journalpost.tema
     }
 }
@@ -231,7 +242,7 @@ data class FerdigstillJournalpostRequest(
     val journalfoerendeEnhet: String,
     val journalfortAvNavn: String? = null,
     val opprettetAvNavn: String? = null,
-    val datoJournal: LocalDate? = null,
+    val datoJournal: LocalDate? = null
 ) {
     constructor(journalpostId: Long, journalfoerendeEnhet: String) : this(journalpostId, journalfoerendeEnhet, null, null, null)
 }

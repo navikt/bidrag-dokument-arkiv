@@ -63,9 +63,8 @@ class JoarkHendelseTest {
     @Value("\${TOPIC_JOURNALPOST}")
     lateinit var topicJournalpost: String
 
-
     @AfterEach
-    fun cleanupMocks(){
+    fun cleanupMocks() {
         Mockito.reset(kafkaTemplateMock)
         WireMock.reset()
         WireMock.resetToDefault()
@@ -93,7 +92,8 @@ class JoarkHendelseTest {
         verify(kafkaTemplateMock).send(ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(expectedJoarkJournalpostId), jsonCaptor.capture())
         val journalpostHendelse = objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
 
-        assertAll("JournalpostHendelse",
+        assertAll(
+            "JournalpostHendelse",
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId).isEqualTo(expectedJoarkJournalpostId) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isNull() },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::fnr).isEqualTo(AVSENDER_ID) },
@@ -146,7 +146,8 @@ class JoarkHendelseTest {
         verify(kafkaTemplateMock).send(ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(expectedJoarkJournalpostId), jsonCaptor.capture())
         val journalpostHendelse = objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
 
-        assertAll("JournalpostHendelse",
+        assertAll(
+            "JournalpostHendelse",
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId).isEqualTo(expectedJoarkJournalpostId) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isEqualTo(jfEnhet) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::fnr).isEqualTo(AVSENDER_ID) },
@@ -190,12 +191,13 @@ class JoarkHendelseTest {
         verify(kafkaTemplateMock).send(ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(expectedJoarkJournalpostId), jsonCaptor.capture())
         val journalpostHendelse = objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
 
-        assertAll("JournalpostHendelse",
+        assertAll(
+            "JournalpostHendelse",
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId).isEqualTo(expectedJoarkJournalpostId) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isEqualTo(BRUKER_ENHET) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isNull() },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::fnr).isEqualTo(AVSENDER_ID) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus).isEqualTo("M") },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus).isEqualTo("M") }
         )
     }
 
@@ -225,13 +227,14 @@ class JoarkHendelseTest {
         verify(kafkaTemplateMock).send(ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(expectedJoarkJournalpostId), jsonCaptor.capture())
         val journalpostHendelse = objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
 
-        assertAll("JournalpostHendelse",
+        assertAll(
+            "JournalpostHendelse",
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId).isEqualTo(expectedJoarkJournalpostId) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isEqualTo(BRUKER_ENHET) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isNull() },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::fnr).isEqualTo(BRUKER_FNR) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus).isEqualTo("M") },
-            { stubs.verifyStub.bidragPersonIkkeKalt() },
+            { stubs.verifyStub.bidragPersonIkkeKalt() }
         )
     }
 
@@ -258,7 +261,8 @@ class JoarkHendelseTest {
         verify(kafkaTemplateMock).send(ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(expectedJoarkJournalpostId), jsonCaptor.capture())
         val journalpostHendelse = objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
 
-        assertAll("JournalpostHendelse",
+        assertAll(
+            "JournalpostHendelse",
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId).isEqualTo(expectedJoarkJournalpostId) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isEqualTo(BRUKER_ENHET) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isEqualTo(BRUKER_AKTOER_ID) },

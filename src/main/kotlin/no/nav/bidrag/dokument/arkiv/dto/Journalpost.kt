@@ -34,7 +34,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.stream.Collectors.toList
 
-
 // Max key length is 20
 const val RETUR_DETALJER_KEY = "retur"
 const val DISTRIBUERT_ADRESSE_KEY = "distAdresse"
@@ -74,7 +73,7 @@ data class DistribusjonsInfo(
     val kanal: JournalpostKanal? = null,
     val utsendingsinfo: UtsendingsInfo? = null,
     val tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger(),
-    val relevanteDatoer: List<DatoType> = emptyList(),
+    val relevanteDatoer: List<DatoType> = emptyList()
 ) {
     fun hentDatoDokument(): LocalDateTime? {
         val registrert = relevanteDatoer
@@ -101,10 +100,15 @@ data class DistribusjonsInfo(
             JournalStatus.FEILREGISTRERT.name -> JournalpostStatus.FEILREGISTRERT
             JournalStatus.EKSPEDERT.name -> JournalpostStatus.EKSPEDERT
             JournalStatus.FERDIGSTILT.name ->
-                if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON)
-                    if (isDistribusjonBestilt()) JournalpostStatus.DISTRIBUERT
-                    else JournalpostStatus.KLAR_FOR_DISTRIBUSJON
-                else JournalpostStatus.FERDIGSTILT
+                if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
+                    if (isDistribusjonBestilt()) {
+                        JournalpostStatus.DISTRIBUERT
+                    } else {
+                        JournalpostStatus.KLAR_FOR_DISTRIBUSJON
+                    }
+                } else {
+                    JournalpostStatus.FERDIGSTILT
+                }
 
             JournalStatus.UNDER_ARBEID.name, JournalStatus.RESERVERT.name -> JournalpostStatus.UNDER_PRODUKSJON
             JournalStatus.UTGAAR.name -> JournalpostStatus.UTGÅR
@@ -119,7 +123,7 @@ data class UtsendingsInfo(
     val digitalpostSendt: DigitalpostSendt? = null,
     val epostVarselSendt: EpostVarselSendt? = null,
     val fysiskpostSendt: FysiskpostSendt? = null,
-    val smsVarselSendt: SmsVarselSendt? = null,
+    val smsVarselSendt: SmsVarselSendt? = null
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -185,11 +189,17 @@ data class Journalpost(
             JournalStatus.FEILREGISTRERT -> JournalstatusDto.FEILREGISTRERT
             JournalStatus.EKSPEDERT -> JournalstatusDto.EKSPEDERT
             JournalStatus.FERDIGSTILT ->
-                if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON)
-                    if (isDistribusjonBestilt()) JournalstatusDto.EKSPEDERT
-                    else JournalstatusDto.KLAR_TIL_PRINT
-                else if (isNotat()) JournalstatusDto.RESERVERT
-                else JournalstatusDto.JOURNALFORT
+                if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
+                    if (isDistribusjonBestilt()) {
+                        JournalstatusDto.EKSPEDERT
+                    } else {
+                        JournalstatusDto.KLAR_TIL_PRINT
+                    }
+                } else if (isNotat()) {
+                    JournalstatusDto.RESERVERT
+                } else {
+                    JournalstatusDto.JOURNALFORT
+                }
 
             JournalStatus.UNDER_ARBEID, JournalStatus.RESERVERT -> JournalstatusDto.UNDER_PRODUKSJON
             JournalStatus.UTGAAR -> JournalstatusDto.UTGAR
@@ -282,7 +292,6 @@ data class Journalpost(
             )
         }.toMutableList()
 
-
         if (manglerReturDetaljForSisteRetur()) {
             logg.add(0, ReturDetaljerLog(dato = hentDatoRetur(), beskrivelse = "Returpost"))
         }
@@ -326,21 +335,28 @@ data class Journalpost(
     fun hentHoveddokument(): Dokument? = if (dokumenter.isNotEmpty()) dokumenter[0] else null
     fun hentTittel(): String? = hentHoveddokument()?.tittel ?: tittel
     fun tilJournalpostDto(): JournalpostDto {
-
         val erSamhandlerId = tilleggsopplysninger.hentSamhandlerId() != null
         @Suppress("UNCHECKED_CAST")
         return JournalpostDto(
             avsenderNavn = avsenderMottaker?.navn,
-            avsenderMottaker = if (avsenderMottaker != null) AvsenderMottakerDto(
-                navn = avsenderMottaker!!.navn,
-                ident = tilleggsopplysninger.hentSamhandlerId() ?: avsenderMottaker!!.id,
-                type = if (erSamhandlerId) AvsenderMottakerDtoIdType.UKJENT else when (avsenderMottaker!!.type) {
-                    AvsenderMottakerIdType.FNR -> AvsenderMottakerDtoIdType.FNR
-                    AvsenderMottakerIdType.ORGNR -> AvsenderMottakerDtoIdType.ORGNR
-                    else -> AvsenderMottakerDtoIdType.UKJENT
-                },
-                adresse = tilleggsopplysninger.hentAdresseDo()?.toMottakerAdresse()
-            ) else null,
+            avsenderMottaker = if (avsenderMottaker != null) {
+                AvsenderMottakerDto(
+                    navn = avsenderMottaker!!.navn,
+                    ident = tilleggsopplysninger.hentSamhandlerId() ?: avsenderMottaker!!.id,
+                    type = if (erSamhandlerId) {
+                        AvsenderMottakerDtoIdType.UKJENT
+                    } else {
+                        when (avsenderMottaker!!.type) {
+                            AvsenderMottakerIdType.FNR -> AvsenderMottakerDtoIdType.FNR
+                            AvsenderMottakerIdType.ORGNR -> AvsenderMottakerDtoIdType.ORGNR
+                            else -> AvsenderMottakerDtoIdType.UKJENT
+                        }
+                    },
+                    adresse = tilleggsopplysninger.hentAdresseDo()?.toMottakerAdresse()
+                )
+            } else {
+                null
+            },
             dokumenter = dokumenter.stream().map { dok -> dok?.tilDokumentDto(hentJournalpostType()) }.collect(toList()) as List<DokumentDto>,
             dokumentDato = hentDokumentDato(),
             ekspedertDato = hentEkspedertDato(),
@@ -365,9 +381,13 @@ data class Journalpost(
 
     fun tilAvvik(): List<AvvikType> {
         if (!isTemaBidrag()) {
-            return if (isStatusMottatt() && isInngaaendeDokument()) listOf(AvvikType.ENDRE_FAGOMRADE)
-            else if (isInngaaendeDokument()) listOf(AvvikType.KOPIER_FRA_ANNEN_FAGOMRADE)
-            else emptyList()
+            return if (isStatusMottatt() && isInngaaendeDokument()) {
+                listOf(AvvikType.ENDRE_FAGOMRADE)
+            } else if (isInngaaendeDokument()) {
+                listOf(AvvikType.KOPIER_FRA_ANNEN_FAGOMRADE)
+            } else {
+                emptyList()
+            }
         }
         val avvikTypeList = mutableListOf<AvvikType>()
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
@@ -380,12 +400,16 @@ data class Journalpost(
         if (isInngaaendeDokument() && isStatusJournalfort()) avvikTypeList.add(AvvikType.SEND_TIL_FAGOMRADE)
 
         if (isUtgaaendeDokument() && isStatusEkspedert() && isLokalUtksrift()) avvikTypeList.add(AvvikType.REGISTRER_RETUR)
-        if (isUtgaaendeDokument() && !isLokalUtksrift() && isDistribusjonKommetIRetur() && !tilleggsopplysninger.isNyDistribusjonBestilt()) avvikTypeList.add(
-            AvvikType.BESTILL_NY_DISTRIBUSJON
-        )
-        if (isUtgaaendeDokument() && isStatusFerdigsstilt() && !isDistribusjonBestilt() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) avvikTypeList.add(
-            AvvikType.MANGLER_ADRESSE
-        )
+        if (isUtgaaendeDokument() && !isLokalUtksrift() && isDistribusjonKommetIRetur() && !tilleggsopplysninger.isNyDistribusjonBestilt()) {
+            avvikTypeList.add(
+                AvvikType.BESTILL_NY_DISTRIBUSJON
+            )
+        }
+        if (isUtgaaendeDokument() && isStatusFerdigsstilt() && !isDistribusjonBestilt() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
+            avvikTypeList.add(
+                AvvikType.MANGLER_ADRESSE
+            )
+        }
         if (isFarskap() && !isFarskapUtelukket()) avvikTypeList.add(AvvikType.FARSKAP_UTELUKKET)
         return avvikTypeList
     }
@@ -436,11 +460,10 @@ data class Journalpost(
     fun hentAvsenderNavn() = avsenderMottaker?.navn
     fun erIkkeTilknyttetSakNarOppgitt(saksnummer: String?) = if (saksnummer == null) false else !erTilknyttetSak(saksnummer)
     fun kanJournalfores(journalpost: Journalpost): Boolean {
-        return journalpost.isStatusMottatt() && journalpost.hasSak();
+        return journalpost.isStatusMottatt() && journalpost.hasSak()
     }
 
     fun hentAntallDokumenter(): Int = dokumenter.size
-
 }
 
 enum class JournalpostKanal(val beskrivelse: String) {
@@ -489,7 +512,7 @@ enum class JournalpostUtsendingKanal {
     EIA,
     EESSI,
     TRYGDERETTEN,
-    HELSENETTET,
+    HELSENETTET
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -504,7 +527,7 @@ data class DistribuertTilAdresseDo(
 ) {
     private fun asJsonString(): String = toJsonString(this)
     fun toMap(): List<Map<String, String>> =
-        asJsonString().chunked(100).mapIndexed { index, it -> mapOf("nokkel" to "$DISTRIBUERT_ADRESSE_KEY${index}", "verdi" to it) }
+        asJsonString().chunked(100).mapIndexed { index, it -> mapOf("nokkel" to "$DISTRIBUERT_ADRESSE_KEY$index", "verdi" to it) }
 
     fun toDistribuerTilAdresse(): DistribuerTilAdresse {
         return DistribuerTilAdresse(
@@ -708,11 +731,9 @@ class TilleggsOpplysninger : MutableList<Map<String, String>> by mutableListOf()
             } else {
                 returDetaljerList.add(ReturDetaljerLogDO(beskrivelse, dato!!, locked))
             }
-
         }
         return returDetaljerList
     }
-
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -768,7 +789,7 @@ data class Bruker(
 data class Dokument(
     var tittel: String? = null,
     var dokumentInfoId: String? = null,
-    var brevkode: String? = null,
+    var brevkode: String? = null
 ) {
     fun tilDokumentDto(journalposttype: String?): DokumentDto = DokumentDto(
         arkivSystem = DokumentArkivSystemDto.JOARK,
@@ -776,7 +797,7 @@ data class Dokument(
         dokumentreferanse = this.dokumentInfoId,
         dokumentType = journalposttype,
         status = DokumentStatusDto.FERDIGSTILT,
-        tittel = this.tittel,
+        tittel = this.tittel
     )
 }
 
@@ -868,7 +889,6 @@ data class EndreJournalpostCommandIntern(
     fun sjekkGyldigEndringAvReturDato(journalpost: Journalpost, violations: MutableList<String>) {
         val endreReturDetaljer = endreJournalpostCommand.endreReturDetaljer?.filter { Strings.isNotEmpty(it.beskrivelse) }
         if (endreReturDetaljer != null && endreReturDetaljer.isNotEmpty()) {
-
             val kanEndreReturDetaljer = journalpost.isDistribusjonKommetIRetur()
             if (!kanEndreReturDetaljer) {
                 violations.add("Kan ikke endre returdetaljer på journalpost som ikke har kommet i retur")
@@ -905,7 +925,6 @@ data class EndreJournalpostCommandIntern(
             if (harEndretDatoPaaReturDetaljerFoerDokumentDato) {
                 violations.add("Kan ikke endre returdetaljer opprettet før dokumentdato")
             }
-
         }
     }
 }

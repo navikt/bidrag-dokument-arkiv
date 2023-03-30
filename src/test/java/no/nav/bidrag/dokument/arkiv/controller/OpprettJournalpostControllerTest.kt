@@ -1,13 +1,9 @@
 package no.nav.bidrag.dokument.arkiv.controller
 
-import com.github.tomakehurst.wiremock.matching.MatchResult
-import com.github.tomakehurst.wiremock.matching.StringValuePattern
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottakerIdType
 import no.nav.bidrag.dokument.arkiv.dto.DokumentInfo
-import no.nav.bidrag.dokument.arkiv.dto.JoarkOpprettJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.stubs.BEHANDLINGSTEMA
 import no.nav.bidrag.dokument.arkiv.stubs.DATO_MOTTATT
@@ -26,11 +22,9 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
-import wiremock.com.fasterxml.jackson.annotation.JsonProperty
 import java.time.LocalDateTime
 
 internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
-
 
     @Test
     fun `skal opprette inngående journalpost`() {
@@ -55,20 +49,20 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivOpprettKalt(
                 false,
                 "{\"tittel\":\"$TITTEL_HOVEDDOKUMENT\"," +
-                        "\"journalpostType\":\"INNGAAENDE\"," +
-                        "\"behandlingstema\":\"$BEHANDLINGSTEMA\"," +
-                        "\"eksternReferanseId\":\"$REFID\"," +
-                        "\"tilleggsopplysninger\":[]," +
-                        "\"tema\":\"BID\"," +
-                        "\"kanal\":\"NAV_NO\"," +
-                        "\"datoMottatt\":\"$DATO_MOTTATT\"," +
-                        "\"bruker\":{\"id\":\"$GJELDER_ID\",\"idType\":\"FNR\"}," +
-                        "\"dokumenter\":[" +
-                        "{\"tittel\":\"$TITTEL_HOVEDDOKUMENT\"," +
-                        "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SW5uaG9sZCBww6UgZG9rdW1lbnRldA==\"}]}," +
-                        "{\"tittel\":\"$TITTEL_VEDLEGG1\"," +
-                        "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SW5uaG9sZCBww6UgZG9rdW1lbnRldCB2ZWRsZWdn\"}]}]," +
-                        "\"avsenderMottaker\":{\"id\":\"$GJELDER_ID\",\"idType\":\"FNR\"}}"
+                    "\"journalpostType\":\"INNGAAENDE\"," +
+                    "\"behandlingstema\":\"$BEHANDLINGSTEMA\"," +
+                    "\"eksternReferanseId\":\"$REFID\"," +
+                    "\"tilleggsopplysninger\":[]," +
+                    "\"tema\":\"BID\"," +
+                    "\"kanal\":\"NAV_NO\"," +
+                    "\"datoMottatt\":\"$DATO_MOTTATT\"," +
+                    "\"bruker\":{\"id\":\"$GJELDER_ID\",\"idType\":\"FNR\"}," +
+                    "\"dokumenter\":[" +
+                    "{\"tittel\":\"$TITTEL_HOVEDDOKUMENT\"," +
+                    "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SW5uaG9sZCBww6UgZG9rdW1lbnRldA==\"}]}," +
+                    "{\"tittel\":\"$TITTEL_VEDLEGG1\"," +
+                    "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SW5uaG9sZCBww6UgZG9rdW1lbnRldCB2ZWRsZWdn\"}]}]," +
+                    "\"avsenderMottaker\":{\"id\":\"$GJELDER_ID\",\"idType\":\"FNR\"}}"
             )
         }
     }
@@ -94,9 +88,11 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost(journalpost)
         stubs.mockDokarkivOppdaterRequest(nyJpId)
         stubs.mockDokarkivTilknyttRequest(nyJpId)
-        stubs.mockDokarkivOpprettRequest(nyJpId,
+        stubs.mockDokarkivOpprettRequest(
+            nyJpId,
             ferdigstill = true,
-            dokumentList = request.dokumenter.map { DokumentInfo("DOK_ID_${it.tittel}") })
+            dokumentList = request.dokumenter.map { DokumentInfo("DOK_ID_${it.tittel}") }
+        )
 
         val response = httpHeaderTestRestTemplate.exchange(
             initUrl() + "/journalpost",
@@ -151,9 +147,11 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost(journalpost)
         stubs.mockDokarkivOppdaterRequest(nyJpId)
         stubs.mockDokarkivTilknyttRequest(nyJpId)
-        stubs.mockDokarkivOpprettRequest(nyJpId,
+        stubs.mockDokarkivOpprettRequest(
+            nyJpId,
             ferdigstill = true,
-            dokumentList = request.dokumenter.map { DokumentInfo("DOK_ID_${it.tittel}") })
+            dokumentList = request.dokumenter.map { DokumentInfo("DOK_ID_${it.tittel}") }
+        )
 
         val response = httpHeaderTestRestTemplate.exchange(
             initUrl() + "/journalpost",
@@ -202,9 +200,11 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost(journalpost)
         stubs.mockDokarkivOppdaterRequest(nyJpId)
         stubs.mockDokarkivTilknyttRequest(nyJpId)
-        stubs.mockDokarkivOpprettRequest(nyJpId,
+        stubs.mockDokarkivOpprettRequest(
+            nyJpId,
             ferdigstill = true,
-            dokumentList = request.dokumenter.map { DokumentInfo("DOK_ID_${it.tittel}") })
+            dokumentList = request.dokumenter.map { DokumentInfo("DOK_ID_${it.tittel}") }
+        )
 
         val response = httpHeaderTestRestTemplate.exchange(
             initUrl() + "/journalpost",
@@ -257,9 +257,11 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
         stubs.mockDokarkivOppdaterRequest(nyJpId)
         stubs.mockDokarkivFerdigstillRequest(nyJpId)
         stubs.mockDokarkivTilknyttRequest(nyJpId)
-        stubs.mockDokarkivOpprettRequest(nyJpId,
+        stubs.mockDokarkivOpprettRequest(
+            nyJpId,
             ferdigstill = false,
-            dokumentList = request.dokumenter.map { DokumentInfo("DOK_ID_${it.tittel}") })
+            dokumentList = request.dokumenter.map { DokumentInfo("DOK_ID_${it.tittel}") }
+        )
 
         val response = httpHeaderTestRestTemplate.exchange(
             initUrl() + "/journalpost",
@@ -282,10 +284,12 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
                 "\"bruker\":{\"id\":\"12345678910\",\"idType\":\"FNR\"}"
             )
             stubs.verifyStub.dokarkivFerdigstillKalt(
-                1, nyJpId, "{\"journalfoerendeEnhet\":\"4806\"," +
-                        "\"journalfortAvNavn\":\"Hansen, Hans\"," +
-                        "\"opprettetAvNavn\":\"Hansen, Hans\"," +
-                        "\"datoJournal\":null}"
+                1,
+                nyJpId,
+                "{\"journalfoerendeEnhet\":\"4806\"," +
+                    "\"journalfortAvNavn\":\"Hansen, Hans\"," +
+                    "\"opprettetAvNavn\":\"Hansen, Hans\"," +
+                    "\"datoJournal\":null}"
             )
             stubs.verifyStub.dokarkivOpprettKaltNotContains(false, "avsenderMottaker")
             stubs.verifyStub.dokarkivTilknyttSakerKalt(1, nyJpId)
@@ -293,7 +297,6 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivOppdaterKalt(nyJpId, "Z9494124")
         }
     }
-
 
     @Nested
     inner class Feilhåndtering {
@@ -305,7 +308,8 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
             stubs.mockDokarkivOpprettRequest(
                 nyJpId,
                 ferdigstill = false,
-                dokumentList = request.dokumenter.map { DokumentInfo("DOK_ID_${it.tittel}") })
+                dokumentList = request.dokumenter.map { DokumentInfo("DOK_ID_${it.tittel}") }
+            )
 
             val response = httpHeaderTestRestTemplate.exchange(
                 initUrl() + "/journalpost",

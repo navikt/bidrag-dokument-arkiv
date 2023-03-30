@@ -30,7 +30,7 @@ class AvvikNotSupportedException(message: String) : HttpStatusException(message)
     override val status: HttpStatus = HttpStatus.BAD_REQUEST
 }
 
-class UgyldigAvvikException(message: String) : RuntimeException(message);
+class UgyldigAvvikException(message: String) : RuntimeException(message)
 
 class KnyttTilSakManglerTemaException(message: String) : RuntimeException(message)
 

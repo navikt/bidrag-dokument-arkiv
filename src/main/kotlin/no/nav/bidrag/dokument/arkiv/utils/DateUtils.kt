@@ -19,7 +19,7 @@ class DateUtils {
                 LocalDate.parse(dateString)
                 return true
             } catch (e: Exception) {
-                return false;
+                return false
             }
         }
     }

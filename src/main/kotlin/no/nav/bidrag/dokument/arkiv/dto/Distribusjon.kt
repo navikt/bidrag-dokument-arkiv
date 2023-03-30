@@ -64,7 +64,7 @@ data class DokDistDistribuerTilAdresse(
     var adressetype: DokDistAdresseType,
     var land: String,
     var postnummer: String? = null,
-    var poststed: String? = null,
+    var poststed: String? = null
 )
 
 data class DistribuerJournalpostRequestInternal(
@@ -77,22 +77,26 @@ data class DistribuerJournalpostRequestInternal(
     fun hasAdresse(): Boolean = request?.adresse != null
     fun getAdresse(): DistribuerTilAdresse? {
         val adresse = request?.adresse
-        return if (adresse != null) DistribuerTilAdresse(
-            adresselinje1 = StringUtils.stripToNull(adresse.adresselinje1),
-            adresselinje2 = StringUtils.stripToNull(adresse.adresselinje2),
-            adresselinje3 = StringUtils.stripToNull(adresse.adresselinje3),
-            land = adresse.land ?: ALPHA2_NORGE,
-            poststed = StringUtils.stripToNull(adresse.poststed),
-            postnummer = StringUtils.stripToNull(adresse.postnummer)
-        ) else null
+        return if (adresse != null) {
+            DistribuerTilAdresse(
+                adresselinje1 = StringUtils.stripToNull(adresse.adresselinje1),
+                adresselinje2 = StringUtils.stripToNull(adresse.adresselinje2),
+                adresselinje3 = StringUtils.stripToNull(adresse.adresselinje3),
+                land = adresse.land ?: ALPHA2_NORGE,
+                poststed = StringUtils.stripToNull(adresse.poststed),
+                postnummer = StringUtils.stripToNull(adresse.postnummer)
+            )
+        } else {
+            null
+        }
     }
 }
 
 data class DokDistDistribuerJournalpostResponse(
-    var bestillingsId: String,
+    var bestillingsId: String
 ) {
     fun toDistribuerJournalpostResponse(journalpostId: Long): DistribuerJournalpostResponse {
-        return DistribuerJournalpostResponse("JOARK-${journalpostId}", bestillingsId)
+        return DistribuerJournalpostResponse("JOARK-$journalpostId", bestillingsId)
     }
 }
 
@@ -122,7 +126,6 @@ fun validerAdresse(adresse: DistribuerTilAdresse?) {
         validateNotNullOrEmpty(adresse?.adresselinje1, "Adresselinje1 er påkrevd på utenlandsk adresse")
     }
 }
-
 
 class BrevkodeToDistribusjonstypeMapper {
     private var brevkodemap: MutableMap<String, DistribusjonsType> = hashMapOf()

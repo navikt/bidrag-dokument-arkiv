@@ -4,7 +4,6 @@ import com.netflix.graphql.dgs.client.CustomGraphQLClient
 import com.netflix.graphql.dgs.client.GraphQLError
 import com.netflix.graphql.dgs.client.GraphQLResponse
 import com.netflix.graphql.dgs.client.HttpResponse
-import com.netflix.graphql.dgs.client.RequestExecutor
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer.NotFoundException
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsInfo
@@ -25,7 +24,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.web.client.RestTemplate
-import java.util.Arrays
 
 open class SafConsumer(private val restTemplate: RestTemplate) {
     fun hentDokument(journalpostId: Long, dokumentReferanse: Long): ResponseEntity<ByteArray> {
@@ -47,14 +45,12 @@ open class SafConsumer(private val restTemplate: RestTemplate) {
     }
 
     fun finnJournalposter(saksnummer: String, fagomrade: List<String> = listOf("BID")): List<Journalpost> {
-        val response = consumeQuery(DokumentoversiktFagsakQuery(saksnummer, fagomrade))
-        { message: String? -> journalIkkeFunnetException(message) }
+        val response = consumeQuery(DokumentoversiktFagsakQuery(saksnummer, fagomrade)) { message: String? -> journalIkkeFunnetException(message) }
         return listOf(*response.extractValueAsObject("dokumentoversiktFagsak.journalposter", Array<Journalpost>::class.java))
     }
 
     fun finnTilknyttedeJournalposter(dokumentInfoId: String): List<TilknyttetJournalpost> {
-        val response = consumeQuery(TilknyttedeJournalposterQuery(dokumentInfoId))
-        { message: String? -> journalIkkeFunnetException(message) }
+        val response = consumeQuery(TilknyttedeJournalposterQuery(dokumentInfoId)) { message: String? -> journalIkkeFunnetException(message) }
         return listOf(*response.extractValueAsObject("tilknyttedeJournalposter", Array<TilknyttetJournalpost>::class.java))
     }
 
@@ -94,7 +90,8 @@ open class SafConsumer(private val restTemplate: RestTemplate) {
                     query.javaClass.simpleName,
                     query.getVariables(),
                     message
-                ), reasonToHttpStatus.status
+                ),
+                reasonToHttpStatus.status
             )
         }
         return response

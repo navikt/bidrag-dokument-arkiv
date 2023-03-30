@@ -30,7 +30,6 @@ import org.springframework.http.HttpStatus
 import wiremock.com.fasterxml.jackson.annotation.JsonProperty
 import java.util.Arrays
 
-
 class Stubs {
     private val objectMapper: ObjectMapper = ObjectMapper().findAndRegisterModules()
     val verifyStub = VerifyStub()
@@ -240,7 +239,7 @@ class Stubs {
             WireMock.stubFor(
                 WireMock.post(WireMock.urlEqualTo("/saf/graphql"))
                     .withRequestBody(ContainsPattern("query journalpost"))
-                    .withRequestBody(ContainsPattern(String.format("\"variables\":{\"journalpostId\":\"${journalpostId.toString()}\"}")))
+                    .withRequestBody(ContainsPattern(String.format("\"variables\":{\"journalpostId\":\"${journalpostId}\"}")))
                     .willReturn(
                         aClosedJsonResponse()
                             .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
@@ -258,7 +257,7 @@ class Stubs {
             WireMock.stubFor(
                 WireMock.post(WireMock.urlEqualTo("/saf/graphql"))
                     .withRequestBody(ContainsPattern("query journalpost"))
-                    .withRequestBody(ContainsPattern(String.format("\"variables\":{\"journalpostId\":\"${journalpostId.toString()}\"}")))
+                    .withRequestBody(ContainsPattern(String.format("\"variables\":{\"journalpostId\":\"${journalpostId}\"}")))
                     .willReturn(
                         aClosedJsonResponse()
                             .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
@@ -504,7 +503,8 @@ class Stubs {
             val requestPattern = WireMock.getRequestedFor(WireMock.urlMatching("/oppgave/.*"))
             Arrays.stream(params).forEach { (first, second): Pair<String?, String?> ->
                 requestPattern.withQueryParam(
-                    first, ContainsPattern(second)
+                    first,
+                    ContainsPattern(second)
                 )
             }
             WireMock.verify(requestPattern)
@@ -536,10 +536,10 @@ class Stubs {
                 WireMock.putRequestedFor(WireMock.urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + '/' + journalpostId))
             Arrays.stream(contains).forEach { contain: String? -> requestPattern.withRequestBody(ContainsPattern(contain)) }
             WireMock.verify(requestPattern)
-            //val allMatches = WireMock.findAll(requestPattern)
-            //val anyMatch = allMatches.stream()
+            // val allMatches = WireMock.findAll(requestPattern)
+            // val anyMatch = allMatches.stream()
             //    .anyMatch { match -> Arrays.stream(contains).allMatch { match.bodyAsString.contains(it.toString()) } }
-            //anyMatch shouldBe true
+            // anyMatch shouldBe true
         }
 
         fun safHentDokumentKalt(journalpostId: Long?, dokumentId: Long?) {
@@ -657,8 +657,8 @@ class Stubs {
                 WireMock.patchRequestedFor(
                     WireMock.urlMatching(
                         "/dokarkiv" +
-                                DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" +
-                                journalpostId + "/oppdaterDistribusjonsinfo"
+                            DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" +
+                            journalpostId + "/oppdaterDistribusjonsinfo"
                     )
                 ).withRequestBody(ContainsPattern(kanal.name))
             )

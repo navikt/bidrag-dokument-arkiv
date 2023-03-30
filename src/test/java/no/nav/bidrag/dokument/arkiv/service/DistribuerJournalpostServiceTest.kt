@@ -97,7 +97,9 @@ class DistribuerJournalpostServiceTest {
         @DisplayName("skal feile validering av distribuer journalpost hvis adresse ikke er satt")
         fun skalIkkeValidereHvisJournalpostHvisAdresseIkkeErSatt() {
             Assertions.assertThrows(
-                IllegalArgumentException::class.java, { validerAdresse(null) }, "Skal validere adresse"
+                IllegalArgumentException::class.java,
+                { validerAdresse(null) },
+                "Skal validere adresse"
             )
         }
 

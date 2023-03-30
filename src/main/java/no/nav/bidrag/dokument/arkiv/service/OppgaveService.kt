@@ -5,12 +5,12 @@ import no.nav.bidrag.dokument.arkiv.consumer.OppgaveConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillOppgaveRequest
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
+import no.nav.bidrag.dokument.arkiv.dto.LeggTilKommentarPaaOppgave
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveData
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveEnhet
 import no.nav.bidrag.dokument.arkiv.dto.OpprettOppgaveFagpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.OpprettOppgaveRequest
 import no.nav.bidrag.dokument.arkiv.dto.OpprettVurderDokumentOppgaveRequest
-import no.nav.bidrag.dokument.arkiv.dto.LeggTilKommentarPaaOppgave
 import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.dto.Saksbehandler
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerMedEnhet
@@ -28,18 +28,20 @@ class OppgaveService(
 ) {
     fun leggTilKommentarPaaJournalforingsoppgave(journalpost: Journalpost, saksbehandlerMedEnhet: SaksbehandlerMedEnhet, kommentar: String) {
         val oppgaver = finnJournalforingOppgaverForJournalpost(journalpost.hentJournalpostIdLong())
-        oppgaver.filter { it.tildeltEnhetsnr != OppgaveEnhet.FAGPOST }.forEach(Consumer { oppgave: OppgaveData ->
-            oppgaveConsumers.get(Discriminator.SERVICE_USER)
-                .patchOppgave(
-                    LeggTilKommentarPaaOppgave(
-                        oppgave,
-                        saksbehandlerMedEnhet.enhetsnummer,
-                        saksbehandlerMedEnhet.hentSaksbehandlerInfo(),
-                        kommentar
+        oppgaver.filter { it.tildeltEnhetsnr != OppgaveEnhet.FAGPOST }.forEach(
+            Consumer { oppgave: OppgaveData ->
+                oppgaveConsumers.get(Discriminator.SERVICE_USER)
+                    .patchOppgave(
+                        LeggTilKommentarPaaOppgave(
+                            oppgave,
+                            saksbehandlerMedEnhet.enhetsnummer,
+                            saksbehandlerMedEnhet.hentSaksbehandlerInfo(),
+                            kommentar
+                        )
                     )
-                )
-            LOGGER.info("Journalføringsoppgave ${oppgave.id} for journalpost ${journalpost.journalpostId} ble overført til fagpost")
-        })
+                LOGGER.info("Journalføringsoppgave ${oppgave.id} for journalpost ${journalpost.journalpostId} ble overført til fagpost")
+            }
+        )
     }
 
     fun opprettOppgaveTilFagpost(opprettOppgaveFagpostRequest: OpprettOppgaveFagpostRequest) {
@@ -49,7 +51,6 @@ class OppgaveService(
         }
         opprettOppgave(opprettOppgaveFagpostRequest)
     }
-
 
     fun opprettVurderDokumentOppgave(journalpost: Journalpost, journalpostId: String, tildeltEnhetsnr: String, tema: String, kommentar: String?) {
         val aktorId = hentAktorId(journalpost.hentGjelderId())

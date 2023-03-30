@@ -22,5 +22,4 @@ data class TilknyttedeJournalposterQuery(val dokumentInfoId: String) : GraphQuer
     override fun getVariables(): HashMap<String, Any> {
         return hashMapOf("dokumentInfoId" to dokumentInfoId)
     }
-
 }

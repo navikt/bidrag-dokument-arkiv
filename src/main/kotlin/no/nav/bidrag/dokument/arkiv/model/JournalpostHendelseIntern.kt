@@ -30,36 +30,39 @@ class JournalpostHendelseIntern(var journalpost: Journalpost, var saksbehandler:
             journalposttype = journalpost.journalposttype?.name,
             behandlingstema = journalpost.behandlingstema
         )
-
     }
 
     fun hentFnrFraJournalpost(): String? {
         val bruker = journalpost.bruker
         val avsenderMottaker = journalpost.avsenderMottaker
-        return if (bruker != null && !bruker.isAktoerId()) bruker.id
-        else if (avsenderMottaker != null && avsenderMottaker.type == AvsenderMottakerIdType.FNR) avsenderMottaker.id
-        else null
+        return if (bruker != null && !bruker.isAktoerId()) {
+            bruker.id
+        } else if (avsenderMottaker != null && avsenderMottaker.type == AvsenderMottakerIdType.FNR) {
+            avsenderMottaker.id
+        } else {
+            null
+        }
     }
     fun hentAktoerIdFraJournalpost(): String? {
         val bruker = journalpost.bruker
         return if (bruker?.isAktoerId() == true) bruker.id else null
     }
     private fun opprettSporingsData(): Sporingsdata = Sporingsdata(CorrelationId.fetchCorrelationIdForThread(), saksbehandler?.saksbehandler?.ident, saksbehandler?.saksbehandler?.navn, saksbehandler?.enhetsnummer)
-    fun hentJournalpostHendelse()=journalpostHendelse
+    fun hentJournalpostHendelse() = journalpostHendelse
 }
 class JournalforingHendelseIntern(var journalforingHendelse: JournalfoeringHendelseRecord) {
     var saksbehandler = Saksbehandler(null, "bidrag-dokument-arkiv").tilEnhet("9999")
 
     fun toJournalpostHendelse(journalpost: Journalpost?): JournalpostHendelse {
-        if (journalpost != null){
+        if (journalpost != null) {
             return JournalpostHendelseIntern(journalpost, hentSaksbehandler(journalpost), journalforingHendelse).hentJournalpostHendelse()
         }
 
         return journalforingHendelseToJournalpostHendelse()
     }
 
-    fun hentSaksbehandler(journalpost: Journalpost): SaksbehandlerMedEnhet{
-        if (journalpost.isStatusJournalfort()){
+    fun hentSaksbehandler(journalpost: Journalpost): SaksbehandlerMedEnhet {
+        if (journalpost.isStatusJournalfort()) {
             return Saksbehandler(journalpost.hentJournalfortAvIdent(), journalpost.journalfortAvNavn).tilEnhet(journalpost.journalforendeEnhet)
         }
 
@@ -70,14 +73,14 @@ class JournalforingHendelseIntern(var journalforingHendelse: JournalfoeringHende
         return JournalpostHendelse(
             sporing = opprettSporingsData(),
             journalpostId = "JOARK-${journalforingHendelse.journalpostId}",
-            journalstatus = when(journalforingHendelse.journalpostStatus){
-                "MOTTATT"-> JournalstatusDto.MOTTAKSREGISTRERT
-                "JOURNALFOERT"-> JournalstatusDto.JOURNALFORT
-                "UTGAAR"-> JournalstatusDto.UTGAR
+            journalstatus = when (journalforingHendelse.journalpostStatus) {
+                "MOTTATT" -> JournalstatusDto.MOTTAKSREGISTRERT
+                "JOURNALFOERT" -> JournalstatusDto.JOURNALFORT
+                "UTGAAR" -> JournalstatusDto.UTGAR
                 else -> null
             },
             enhet = null,
-            fagomrade = journalforingHendelse.temaNytt ?: journalforingHendelse.temaGammelt,
+            fagomrade = journalforingHendelse.temaNytt ?: journalforingHendelse.temaGammelt
         )
     }
 

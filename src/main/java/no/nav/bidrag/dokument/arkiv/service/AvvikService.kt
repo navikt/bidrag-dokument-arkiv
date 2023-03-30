@@ -1,7 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.service
 
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv
-import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker
@@ -10,12 +9,9 @@ import no.nav.bidrag.dokument.arkiv.dto.BestillOriginalOppgaveRequest
 import no.nav.bidrag.dokument.arkiv.dto.BestillReskanningOppgaveRequest
 import no.nav.bidrag.dokument.arkiv.dto.BestillSplittingoppgaveRequest
 import no.nav.bidrag.dokument.arkiv.dto.Dokument
-import no.nav.bidrag.dokument.arkiv.dto.EndreFagomradeRequest
-import no.nav.bidrag.dokument.arkiv.dto.Fagomrade
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.JoarkOpprettJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
-import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostUtsendingKanal
 import no.nav.bidrag.dokument.arkiv.dto.LagreAvsenderNavnRequest
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostRequest
@@ -30,9 +26,9 @@ import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerMedEnhet
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.bestillReskanningKommentar
 import no.nav.bidrag.dokument.arkiv.dto.bestillSplittingKommentar
-import no.nav.bidrag.dokument.arkiv.dto.med
 import no.nav.bidrag.dokument.arkiv.dto.dupliserJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.fjern
+import no.nav.bidrag.dokument.arkiv.dto.med
 import no.nav.bidrag.dokument.arkiv.dto.opprettDokumentVariant
 import no.nav.bidrag.dokument.arkiv.dto.validateTrue
 import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer
@@ -65,7 +61,7 @@ class AvvikService(
     val opprettJournalpostService: OpprettJournalpostService,
     dokarkivConsumers: ResourceByDiscriminator<DokarkivConsumer?>,
     personConsumers: ResourceByDiscriminator<PersonConsumer?>,
-    journalpostService: ResourceByDiscriminator<JournalpostService?>,
+    journalpostService: ResourceByDiscriminator<JournalpostService?>
 ) {
     private final val journalpostService: JournalpostService
     private final val dokarkivConsumer: DokarkivConsumer
@@ -91,7 +87,8 @@ class AvvikService(
         if (!erGyldigAvviksBehandling(journalpost, avvikshendelseIntern.avvikstype)) {
             throw UgyldigAvvikException(
                 String.format(
-                    "Ikke gyldig avviksbehandling %s for journalpost %s", avvikshendelseIntern.avvikstype,
+                    "Ikke gyldig avviksbehandling %s for journalpost %s",
+                    avvikshendelseIntern.avvikstype,
                     avvikshendelseIntern.journalpostId
                 )
             )
@@ -115,8 +112,12 @@ class AvvikService(
         publiserHendelse(journalpost, avvikshendelseIntern.saksbehandlersEnhet)
         BidragDokumentArkiv.SECURE_LOGGER.info(
             "Avvik {} ble utført på journalpost {} av bruker {} og enhet {} med beskrivelse {} - avvik {}",
-            avvikshendelseIntern.avvikstype, avvikshendelseIntern.journalpostId, saksbehandlerInfoManager.hentSaksbehandlerBrukerId(),
-            avvikshendelseIntern.saksbehandlersEnhet, avvikshendelseIntern.beskrivelse, avvikshendelseIntern
+            avvikshendelseIntern.avvikstype,
+            avvikshendelseIntern.journalpostId,
+            saksbehandlerInfoManager.hentSaksbehandlerBrukerId(),
+            avvikshendelseIntern.saksbehandlersEnhet,
+            avvikshendelseIntern.beskrivelse,
+            avvikshendelseIntern
         )
         return Optional.of(BehandleAvvikshendelseResponse(avvikshendelseIntern.avvikstype))
     }
@@ -179,7 +180,6 @@ class AvvikService(
             .orElseGet { SaksbehandlerMedEnhet(Saksbehandler(), enhet) }
     }
 
-
     fun kopierFraAnnenFagomrade(journalpost: Journalpost, avvikshendelseIntern: AvvikshendelseIntern) {
         if (journalpost.isUtgaaendeDokument()) {
             throw UgyldigAvvikException("Kan ikke kopiere en utgående dokument fra annen fagområde")
@@ -201,15 +201,17 @@ class AvvikService(
         val request = dupliserJournalpost(journalpost) {
             med journalførendeenhet avvikshendelseIntern.saksbehandlersEnhet
             med tittel "$nyJournalpostTittel (Kopiert fra dokument: ${journalpost.hentTittel()})"
-            avvikshendelseIntern.dokumenter!!.forEach(Consumer { (dokumentreferanse, _, _, tittel, dokument, brevkode): DokumentDto ->
-                val dokumentByte = if (Strings.isNotEmpty(dokument)) Base64.getDecoder().decode(dokument) else null
-                +JoarkOpprettJournalpostRequest.Dokument(
-                    dokumentInfoId = dokumentreferanse,
-                    brevkode = brevkode,
-                    tittel = tittel,
-                    dokumentvarianter = if (dokumentByte != null) listOf(opprettDokumentVariant(dokumentByte = dokumentByte)) else emptyList()
-                )
-            })
+            avvikshendelseIntern.dokumenter!!.forEach(
+                Consumer { (dokumentreferanse, _, _, tittel, dokument, brevkode): DokumentDto ->
+                    val dokumentByte = if (Strings.isNotEmpty(dokument)) Base64.getDecoder().decode(dokument) else null
+                    +JoarkOpprettJournalpostRequest.Dokument(
+                        dokumentInfoId = dokumentreferanse,
+                        brevkode = brevkode,
+                        tittel = tittel,
+                        dokumentvarianter = if (dokumentByte != null) listOf(opprettDokumentVariant(dokumentByte = dokumentByte)) else emptyList()
+                    )
+                }
+            )
         }
 
         val (journalpostId) = opprettJournalpostService.opprettJournalpost(
@@ -253,12 +255,16 @@ class AvvikService(
             throw UgyldigAvvikException("Kan ikke sende journalpost mellom FAR og BID tema.")
         }
 
-        opprettJournalpostService.opprettJournalpost(dupliserJournalpost(journalpost) {
-            med tema avvikshendelseIntern.nyttFagomrade
-            fjern journalførendeenhet true
-            med dokumenter journalpost.dokumenter
-            fjern sakstilknytning true
-        }, originalJournalpostId = journalpost.hentJournalpostIdLong(), skalFerdigstilles = false)
+        opprettJournalpostService.opprettJournalpost(
+            dupliserJournalpost(journalpost) {
+                med tema avvikshendelseIntern.nyttFagomrade
+                fjern journalførendeenhet true
+                med dokumenter journalpost.dokumenter
+                fjern sakstilknytning true
+            },
+            originalJournalpostId = journalpost.hentJournalpostIdLong(),
+            skalFerdigstilles = false
+        )
     }
 
     private fun knyttTilSakPaaNyttFagomrade(avvikshendelseIntern: AvvikshendelseIntern, journalpost: Journalpost) {
@@ -388,11 +394,15 @@ class AvvikService(
     fun oppdaterDistribusjonsInfoIngenDistribusjon(journalpost: Journalpost) {
         val tilknyttedeJournalpost = journalpostService.hentTilknyttedeJournalposter(journalpost)
         tilknyttedeJournalpost
-            .forEach(Consumer { (journalpostId): TilknyttetJournalpost ->
-                dokarkivConsumer.oppdaterDistribusjonsInfo(
-                    journalpostId, false, JournalpostUtsendingKanal.INGEN_DISTRIBUSJON
-                )
-            })
+            .forEach(
+                Consumer { (journalpostId): TilknyttetJournalpost ->
+                    dokarkivConsumer.oppdaterDistribusjonsInfo(
+                        journalpostId,
+                        false,
+                        JournalpostUtsendingKanal.INGEN_DISTRIBUSJON
+                    )
+                }
+            )
     }
 
     companion object {

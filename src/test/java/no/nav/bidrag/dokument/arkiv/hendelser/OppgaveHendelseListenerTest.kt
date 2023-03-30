@@ -45,16 +45,15 @@ class OppgaveHendelseListenerTest {
 
     val stubs: Stubs = Stubs()
 
-
     @AfterEach
-    fun cleanupMocks(){
+    fun cleanupMocks() {
         WireMock.reset()
         WireMock.resetToDefault()
         Mockito.reset(kafkaTemplateMock)
     }
 
     @Test
-    fun `skal opprette returlogg og oppdatere saksreferanse paa oppgave`(){
+    fun `skal opprette returlogg og oppdatere saksreferanse paa oppgave`() {
         stubs.mockSts()
         stubs.mockBidragOrganisasjonSaksbehandler()
         stubs.mockOppdaterOppgave(HttpStatus.OK)
@@ -75,14 +74,17 @@ class OppgaveHendelseListenerTest {
                 true
             )
         )
-        val safResponse = opprettUtgaendeSafResponse(journalpostId = journalpostId.toString(), tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(
-            DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
-        ))
+        val safResponse = opprettUtgaendeSafResponse(
+            journalpostId = journalpostId.toString(),
+            tilleggsopplysninger = tilleggsOpplysninger,
+            relevanteDatoer = listOf(
+                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
+            )
+        )
         safResponse.antallRetur = 1
 
         stubs.mockSafResponseHentJournalpost(safResponse)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
-
 
         val oppgaveHendelse = createReturOppgaveHendelse(journalpostId.toString())
         val consumerRecord = ConsumerRecord("test", 0, 0L, "key", objectMapper.writeValueAsString(oppgaveHendelse))
@@ -91,11 +93,12 @@ class OppgaveHendelseListenerTest {
         Assertions.assertAll(
             {
                 stubs.verifyStub.dokarkivOppdaterKalt(
-                    journalpostId, "\"tilleggsopplysninger\":" +
-                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                            "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
-                            "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
-                            "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
+                    journalpostId,
+                    "\"tilleggsopplysninger\":" +
+                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                        "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
+                        "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
+                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
                 )
             },
             { stubs.verifyStub.oppgaveOppdaterKalt(1, safResponse.hentSaksnummer()) }
@@ -103,7 +106,7 @@ class OppgaveHendelseListenerTest {
     }
 
     @Test
-    fun skalIkkeOppdatereSakHvisSamme(){
+    fun skalIkkeOppdatereSakHvisSamme() {
         stubs.mockSts()
         stubs.mockBidragOrganisasjonSaksbehandler()
         stubs.mockOppdaterOppgave(HttpStatus.OK)
@@ -124,15 +127,18 @@ class OppgaveHendelseListenerTest {
                 true
             )
         )
-        val safResponse = opprettUtgaendeSafResponse(journalpostId = journalpostId.toString(), tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(
-            DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
-        ))
+        val safResponse = opprettUtgaendeSafResponse(
+            journalpostId = journalpostId.toString(),
+            tilleggsopplysninger = tilleggsOpplysninger,
+            relevanteDatoer = listOf(
+                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
+            )
+        )
         safResponse.antallRetur = 1
         safResponse.sak = Sak("5276661")
 
         stubs.mockSafResponseHentJournalpost(safResponse)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
-
 
         val oppgaveHendelse = createReturOppgaveHendelse(journalpostId.toString(), saksref = "5276661")
         val consumerRecord = ConsumerRecord("test", 0, 0L, "key", objectMapper.writeValueAsString(oppgaveHendelse))
@@ -141,34 +147,37 @@ class OppgaveHendelseListenerTest {
         Assertions.assertAll(
             {
                 stubs.verifyStub.dokarkivOppdaterKalt(
-                    journalpostId, "\"tilleggsopplysninger\":" +
-                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                            "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
-                            "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
-                            "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
+                    journalpostId,
+                    "\"tilleggsopplysninger\":" +
+                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                        "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
+                        "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
+                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
                 )
             },
             { stubs.verifyStub.oppgaveOpprettIkkeKalt() }
         )
     }
 
-
     @Test
-    fun shouldRetryWhenJournalpostHasNotReturStatus(){
+    fun shouldRetryWhenJournalpostHasNotReturStatus() {
         stubs.mockSts()
         stubs.mockBidragOrganisasjonSaksbehandler()
         val journalpostId = 201028011L
         val tilleggsOpplysninger = TilleggsOpplysninger()
         tilleggsOpplysninger.setDistribusjonBestillt()
-        val safResponse = opprettUtgaendeSafResponse(journalpostId = journalpostId.toString(), tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(
-            DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
-        ))
+        val safResponse = opprettUtgaendeSafResponse(
+            journalpostId = journalpostId.toString(),
+            tilleggsopplysninger = tilleggsOpplysninger,
+            relevanteDatoer = listOf(
+                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
+            )
+        )
         safResponse.antallRetur = 1
 
         stubs.mockSafResponseHentJournalpost(opprettUtgaendeSafResponse(), null, "NO_RETUR")
         stubs.mockSafResponseHentJournalpost(safResponse, "NO_RETUR", "NO_RETUR2")
         stubs.mockDokarkivOppdaterRequest(journalpostId)
-
 
         val oppgaveHendelse = createReturOppgaveHendelse(journalpostId.toString())
         val consumerRecord = ConsumerRecord("test", 0, 0L, "key", objectMapper.writeValueAsString(oppgaveHendelse))
@@ -178,16 +187,17 @@ class OppgaveHendelseListenerTest {
             {
                 stubs.verifyStub.harSafKallEtterHentJournalpost(2)
                 stubs.verifyStub.dokarkivOppdaterKalt(
-                    journalpostId, "\"tilleggsopplysninger\":" +
-                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                            "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
+                    journalpostId,
+                    "\"tilleggsopplysninger\":" +
+                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
                 )
             }
         )
     }
 
     @Test
-    fun shouldNotAddReturLoggWhenAlreadyExists(){
+    fun shouldNotAddReturLoggWhenAlreadyExists() {
         stubs.mockSts()
         stubs.mockBidragOrganisasjonSaksbehandler()
         val journalpostId = 201028011L
@@ -207,14 +217,17 @@ class OppgaveHendelseListenerTest {
                 false
             )
         )
-        val safResponse = opprettUtgaendeSafResponse(journalpostId = journalpostId.toString(), tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(
-            DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
-        ))
+        val safResponse = opprettUtgaendeSafResponse(
+            journalpostId = journalpostId.toString(),
+            tilleggsopplysninger = tilleggsOpplysninger,
+            relevanteDatoer = listOf(
+                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
+            )
+        )
         safResponse.antallRetur = 1
 
         stubs.mockSafResponseHentJournalpost(safResponse)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
-
 
         val oppgaveHendelse = createReturOppgaveHendelse(journalpostId.toString())
         val consumerRecord = ConsumerRecord("test", 0, 0L, "key", objectMapper.writeValueAsString(oppgaveHendelse))
@@ -228,7 +241,7 @@ class OppgaveHendelseListenerTest {
     }
 
     @Test
-    fun shouldUnlockReturLogWhenSameDateExists(){
+    fun shouldUnlockReturLogWhenSameDateExists() {
         stubs.mockSts()
         stubs.mockBidragOrganisasjonSaksbehandler()
         val journalpostId = 201028011L
@@ -248,14 +261,17 @@ class OppgaveHendelseListenerTest {
                 true
             )
         )
-        val safResponse = opprettUtgaendeSafResponse(journalpostId = journalpostId.toString(), tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(
-            DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
-        ))
+        val safResponse = opprettUtgaendeSafResponse(
+            journalpostId = journalpostId.toString(),
+            tilleggsopplysninger = tilleggsOpplysninger,
+            relevanteDatoer = listOf(
+                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
+            )
+        )
         safResponse.antallRetur = 1
 
         stubs.mockSafResponseHentJournalpost(safResponse)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
-
 
         val oppgaveHendelse = createReturOppgaveHendelse(journalpostId.toString())
         val consumerRecord = ConsumerRecord("test", 0, 0L, "key", objectMapper.writeValueAsString(oppgaveHendelse))
@@ -264,15 +280,15 @@ class OppgaveHendelseListenerTest {
         Assertions.assertAll(
             {
                 stubs.verifyStub.dokarkivOppdaterKalt(
-                    journalpostId, "\"tilleggsopplysninger\":" +
-                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                            "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
-                            "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}"
+                    journalpostId,
+                    "\"tilleggsopplysninger\":" +
+                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                        "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
+                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}"
                 )
             }
         )
     }
-
 
     fun createReturOppgaveHendelse(journalpostId: String, saksref: String? = null): OppgaveHendelse {
         return OppgaveHendelse(
