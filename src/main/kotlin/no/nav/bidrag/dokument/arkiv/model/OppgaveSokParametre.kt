@@ -18,7 +18,6 @@ data class OppgaveSokParametre(private val parametre: StringBuilder = StringBuil
         return leggTilParameter(PARAMETER_OPPGAVE_TYPE, OppgaveType.JFR)
     }
 
-
     fun leggTilJournalpostId(journalpostId: Long): OppgaveSokParametre {
         return leggTilParameter(PARAMETER_JOURNALPOSTID, journalpostId)
     }

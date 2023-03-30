@@ -2,13 +2,14 @@ package no.nav.bidrag.dokument.arkiv.aop
 
 import org.springframework.web.context.request.RequestAttributes
 
-
 class KafkaRequestScopeAttributes : RequestAttributes {
     private val requestAttributeMap: MutableMap<String, Any> = HashMap()
     override fun getAttribute(name: String, scope: Int): Any? {
         return if (scope == RequestAttributes.SCOPE_REQUEST) {
             requestAttributeMap[name]
-        } else null
+        } else {
+            null
+        }
     }
 
     override fun setAttribute(name: String, value: Any, scope: Int) {
@@ -26,7 +27,9 @@ class KafkaRequestScopeAttributes : RequestAttributes {
     override fun getAttributeNames(scope: Int): Array<String?> {
         return if (scope == RequestAttributes.SCOPE_REQUEST) {
             requestAttributeMap.keys.toTypedArray()
-        } else arrayOfNulls(0)
+        } else {
+            arrayOfNulls(0)
+        }
     }
 
     override fun registerDestructionCallback(name: String, callback: Runnable, scope: Int) {

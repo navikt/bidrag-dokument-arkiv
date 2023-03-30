@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service
 @Service
 class DokumentService(
     safConsumers: ResourceByDiscriminator<SafConsumer>,
-    journalpostServices: ResourceByDiscriminator<JournalpostService>,
+    journalpostServices: ResourceByDiscriminator<JournalpostService>
 ) {
     private val safConsumer: SafConsumer
     private val journalpostService: JournalpostService
@@ -44,8 +44,9 @@ class DokumentService(
 
     fun hentDokumentMetadata(journalpostId: Long? = null, dokumentReferanse: String?): List<DokumentMetadata> {
         if (journalpostId == null && dokumentReferanse != null) {
-            return listOf(journalpostService.finnTilknyttedeJournalposter(dokumentReferanse)
-                .map { tilÅpneDokumentMetadata(it.journalstatus, dokumentReferanse, it.journalpostId) }.first()
+            return listOf(
+                journalpostService.finnTilknyttedeJournalposter(dokumentReferanse)
+                    .map { tilÅpneDokumentMetadata(it.journalstatus, dokumentReferanse, it.journalpostId) }.first()
             )
         }
 

@@ -30,7 +30,8 @@ class EndreJournalpostService(
     private val journalpostService: JournalpostService,
     private val dokarkivConsumer: DokarkivConsumer,
     private val dokarkivKnyttTilSakConsumer: DokarkivKnyttTilSakConsumer,
-    private val hendelserProducer: HendelserProducer, private val saksbehandlerInfoManager: SaksbehandlerInfoManager
+    private val hendelserProducer: HendelserProducer,
+    private val saksbehandlerInfoManager: SaksbehandlerInfoManager
 ) {
     fun endre(journalpostId: Long, endreJournalpostCommand: EndreJournalpostCommandIntern) {
         var journalpost = hentJournalpost(journalpostId)
@@ -88,7 +89,8 @@ class EndreJournalpostService(
                 String.format(
                     "Lagring av saksbehandler ident for journalført journalpost %s feilet",
                     journalpost.journalpostId
-                ), e
+                ),
+                e
             )
         }
     }

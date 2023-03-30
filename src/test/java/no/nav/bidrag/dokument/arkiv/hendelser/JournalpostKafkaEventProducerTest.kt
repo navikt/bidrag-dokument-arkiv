@@ -14,12 +14,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDateTime
-import java.util.concurrent.TimeUnit
 
 @Disabled
-internal class JournalpostKafkdaEventProducerTest: BaseKafkaHendelseTest() {
+internal class JournalpostKafkaEventProducerTest : BaseKafkaHendelseTest() {
 
     val stubs: Stubs = Stubs()
 
@@ -30,8 +28,13 @@ internal class JournalpostKafkdaEventProducerTest: BaseKafkaHendelseTest() {
         val journalpostId = 123213L
 
         stubs.mockSts()
-        stubs.mockSafResponseHentJournalpost(opprettSafResponse(
-            journalpostId = journalpostId.toString(), journalstatus = JournalStatus.MOTTATT, journalforendeEnhet = BRUKER_ENHET))
+        stubs.mockSafResponseHentJournalpost(
+            opprettSafResponse(
+                journalpostId = journalpostId.toString(),
+                journalstatus = JournalStatus.MOTTATT,
+                journalforendeEnhet = BRUKER_ENHET
+            )
+        )
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockBidragOrganisasjonSaksbehandler()
 
@@ -63,7 +66,8 @@ internal class JournalpostKafkdaEventProducerTest: BaseKafkaHendelseTest() {
         tilleggsOpplysninger.setJournalfortAvIdent(journalfortAvIdent)
         stubs.mockSts()
         stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(journalpostId, JournalStatus.FERDIGSTILT, Sak(sak2))))
-        stubs.mockSafResponseHentJournalpost(opprettSafResponse(
+        stubs.mockSafResponseHentJournalpost(
+            opprettSafResponse(
                 journalpostId = journalpostId.toString(),
                 journalstatus = JournalStatus.JOURNALFOERT,
                 journalforendeEnhet = BRUKER_ENHET,
@@ -72,11 +76,12 @@ internal class JournalpostKafkdaEventProducerTest: BaseKafkaHendelseTest() {
                 tilleggsopplysninger = tilleggsOpplysninger,
                 journalfortAvNavn = journalfortAvNavn
 
-        ))
+            )
+        )
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockBidragOrganisasjonSaksbehandler()
 
-        val hendelse = createHendelseRecord(journalpostId);
+        val hendelse = createHendelseRecord(journalpostId)
         hendelse.journalpostStatus = "JOURNALFOERT"
         sendMessageToJoarkTopic(hendelse)
 
@@ -97,5 +102,4 @@ internal class JournalpostKafkdaEventProducerTest: BaseKafkaHendelseTest() {
         stubs.verifyStub.dokarkivOppdaterIkkeKalt(journalpostId)
         stubs.verifyStub.harEnSafKallEtterTilknyttedeJournalposter()
     }
-
 }

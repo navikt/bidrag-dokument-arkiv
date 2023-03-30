@@ -22,8 +22,8 @@ import no.nav.bidrag.dokument.arkiv.model.Discriminator
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
 import no.nav.bidrag.dokument.arkiv.model.UgyldigDistribusjonException
-import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager
 import no.nav.bidrag.dokument.arkiv.model.ifFalse
+import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 import no.nav.bidrag.dokument.dto.DistribusjonInfoDto
@@ -61,11 +61,17 @@ class DistribuerJournalpostService(
                     journalstatus = it.hentJournalStatus(),
                     kanal = it.kanal?.name ?: JournalpostUtsendingKanal.UKJENT.name,
                     utsendingsinfo = UtsendingsInfoDto(
-                        varseltype = if (utsendingsinfo?.smsVarselSendt != null) UtsendingsInfoVarselTypeDto.SMS
-                        else if (utsendingsinfo?.digitalpostSendt != null) UtsendingsInfoVarselTypeDto.DIGIPOST
-                        else if (utsendingsinfo?.epostVarselSendt != null) UtsendingsInfoVarselTypeDto.EPOST
-                        else if (utsendingsinfo?.fysiskpostSendt != null) UtsendingsInfoVarselTypeDto.FYSISK_POST
-                        else null,
+                        varseltype = if (utsendingsinfo?.smsVarselSendt != null) {
+                            UtsendingsInfoVarselTypeDto.SMS
+                        } else if (utsendingsinfo?.digitalpostSendt != null) {
+                            UtsendingsInfoVarselTypeDto.DIGIPOST
+                        } else if (utsendingsinfo?.epostVarselSendt != null) {
+                            UtsendingsInfoVarselTypeDto.EPOST
+                        } else if (utsendingsinfo?.fysiskpostSendt != null) {
+                            UtsendingsInfoVarselTypeDto.FYSISK_POST
+                        } else {
+                            null
+                        },
                         adresse = utsendingsinfo?.smsVarselSendt?.adresse
                             ?: utsendingsinfo?.epostVarselSendt?.adresse
                             ?: utsendingsinfo?.digitalpostSendt?.adresse
@@ -145,7 +151,7 @@ class DistribuerJournalpostService(
             validerKanDistribueresUtenAdresse(journalpost)
         }
 
-        //TODO: Lagre bestillingsid når bd-arkiv er koblet mot database
+        // TODO: Lagre bestillingsid når bd-arkiv er koblet mot database
         val distribuerResponse = dokdistFordelingConsumer.distribuerJournalpost(journalpost, batchId, adresse)
         LOGGER.info("Bestillt distribusjon av journalpost {} med bestillingsId {}", journalpostId, distribuerResponse.bestillingsId)
 
@@ -236,21 +242,26 @@ class DistribuerJournalpostService(
     }
 
     private fun mapToAdresseDO(adresse: DistribuerTilAdresse?): DistribuertTilAdresseDo? {
-        return if (adresse != null) DistribuertTilAdresseDo(
-            adresselinje1 = adresse.adresselinje1,
-            adresselinje2 = adresse.adresselinje2,
-            adresselinje3 = adresse.adresselinje3,
-            land = adresse.land!!,
-            poststed = adresse.poststed,
-            postnummer = adresse.postnummer
-        ) else null
+        return if (adresse != null) {
+            DistribuertTilAdresseDo(
+                adresselinje1 = adresse.adresselinje1,
+                adresselinje2 = adresse.adresselinje2,
+                adresselinje3 = adresse.adresselinje3,
+                land = adresse.land!!,
+                poststed = adresse.poststed,
+                postnummer = adresse.postnummer
+            )
+        } else {
+            null
+        }
     }
 
     private fun measureDistribution(batchId: String?) {
         try {
             meterRegistry.counter(
                 DISTRIBUSJON_COUNTER_NAME,
-                "batchId", if (Strings.isNullOrEmpty(batchId)) "NONE" else batchId
+                "batchId",
+                if (Strings.isNullOrEmpty(batchId)) "NONE" else batchId
             ).increment()
         } catch (e: Exception) {
             LOGGER.error("Det skjedde en feil ved oppdatering av metrikk", e)

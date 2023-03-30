@@ -29,7 +29,8 @@ class DokumentController(private val dokumentService: DokumentService) {
     @ApiResponses(
         value = [
             ApiResponse(responseCode = "200", description = "OK - dokument returneres i form av base64 encoded string."),
-            ApiResponse(responseCode = "404", description = "Fant ikke journalpost med oppgitt dokumentreferanse")]
+            ApiResponse(responseCode = "404", description = "Fant ikke journalpost med oppgitt dokumentreferanse")
+        ]
     )
     fun hentDokument(@PathVariable journalpostId: String, @PathVariable dokumentreferanse: String): ResponseEntity<ByteArray> {
         val kildesystemIdenfikator = KildesystemIdenfikator(journalpostId)
@@ -38,9 +39,12 @@ class DokumentController(private val dokumentService: DokumentService) {
                 WebUtil.initHttpHeadersWith(
                     HttpHeaders.WARNING,
                     "Ugyldig prefix på journalpostId"
-                ), HttpStatus.BAD_REQUEST
+                ),
+                HttpStatus.BAD_REQUEST
             )
-        } else dokumentService.hentDokument(kildesystemIdenfikator.hentJournalpostIdLong()!!, dokumentreferanse)
+        } else {
+            dokumentService.hentDokument(kildesystemIdenfikator.hentJournalpostIdLong()!!, dokumentreferanse)
+        }
     }
 
     @RequestMapping(
@@ -63,11 +67,13 @@ class DokumentController(private val dokumentService: DokumentService) {
             return ResponseEntity.ok(dokumentService.hentDokumentMetadata(dokumentReferanse = dokumentreferanse))
         }
         val kildesystemIdenfikator = KildesystemIdenfikator(journalpostId)
-        return if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix()) ResponseEntity
-            .badRequest()
-            .header(HttpHeaders.WARNING, "Ugyldig prefix på journalpostId $journalpostId")
-            .build()
-        else ResponseEntity.ok(dokumentService.hentDokumentMetadata(kildesystemIdenfikator.hentJournalpostIdLong(), dokumentreferanse))
+        return if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix()) {
+            ResponseEntity
+                .badRequest()
+                .header(HttpHeaders.WARNING, "Ugyldig prefix på journalpostId $journalpostId")
+                .build()
+        } else {
+            ResponseEntity.ok(dokumentService.hentDokumentMetadata(kildesystemIdenfikator.hentJournalpostIdLong(), dokumentreferanse))
+        }
     }
-
 }

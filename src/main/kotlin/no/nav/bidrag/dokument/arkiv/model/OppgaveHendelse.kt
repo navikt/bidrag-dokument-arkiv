@@ -32,7 +32,7 @@ data class OppgaveHendelse(
     val opprettetTidspunkt: ZonedDateTime? = null,
     val ferdigstiltTidspunkt: ZonedDateTime? = null,
     val endretTidspunkt: ZonedDateTime? = null
-){
+) {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class Ident(
@@ -42,18 +42,17 @@ data class OppgaveHendelse(
     )
 
     fun erTemaBIDEllerFAR(): Boolean = tema == "BID" || tema == "FAR"
-    fun erReturOppgave(): Boolean = oppgavetype == "RETUR";
-    fun erJournalforingOppgave(): Boolean = oppgavetype == "JFR";
+    fun erReturOppgave(): Boolean = oppgavetype == "RETUR"
+    fun erJournalforingOppgave(): Boolean = oppgavetype == "JFR"
     fun erStatusOpprettet(): Boolean = status == OppgaveStatus.OPPRETTET
 
     fun erJoarkJournalpost(): Boolean = journalpostId != null && !journalpostId.contains("BID")
 
     override fun toString(): String = "{id=$id,journalpostId=$journalpostId,tema=$tema,opprettetAv=$opprettetAv,tildeltEnhetsnr=$tildeltEnhetsnr,fristFerdigstillelse=$fristFerdigstillelse,status=$status,statuskategori=$statuskategori,saksreferanse=$saksreferanse}"
-
 }
 
 enum class Prioritet {
-    HOY //, NORM, LAV
+    HOY // , NORM, LAV
 }
 
 enum class OppgaveIdentType {

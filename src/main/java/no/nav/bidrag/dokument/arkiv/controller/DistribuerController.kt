@@ -31,10 +31,12 @@ class DistribuerController(private val distribuerJournalpostService: DistribuerJ
     @PostMapping("$ROOT_JOURNAL/distribuer/{joarkJournalpostId}")
     @Operation(description = "Bestill distribusjon av journalpost")
     @ApiResponses(
-        value = [ApiResponse(
-            responseCode = "200",
-            description = "Distribusjon av journalpost er bestilt"
-        ), ApiResponse(responseCode = "400", description = "Journalpost mangler mottakerid eller adresse er ikke oppgitt i kallet")]
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Distribusjon av journalpost er bestilt"
+            ), ApiResponse(responseCode = "400", description = "Journalpost mangler mottakerid eller adresse er ikke oppgitt i kallet")
+        ]
     )
     @ResponseBody
     fun distribuerJournalpost(
@@ -70,10 +72,12 @@ class DistribuerController(private val distribuerJournalpostService: DistribuerJ
     @GetMapping("$ROOT_JOURNAL/distribuer/{journalpostId}/enabled")
     @Operation(description = "Sjekk om distribusjon av journalpost kan bestilles")
     @ApiResponses(
-        value = [ApiResponse(
-            responseCode = "200",
-            description = "Distribusjon av journalpost kan bestilles"
-        ), ApiResponse(responseCode = "406", description = "Distribusjon av journalpost kan ikke bestilles")]
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Distribusjon av journalpost kan bestilles"
+            ), ApiResponse(responseCode = "406", description = "Distribusjon av journalpost kan ikke bestilles")
+        ]
     )
     @ResponseBody
     fun kanDistribuerJournalpost(@PathVariable journalpostId: String): ResponseEntity<Void> {
@@ -127,7 +131,6 @@ class DistribuerController(private val distribuerJournalpostService: DistribuerJ
             ResponseEntity.ok(it)
         } ?: ResponseEntity.noContent().build()
     }
-
 
     companion object {
         private val LOGGER = LoggerFactory.getLogger(DistribuerController::class.java)

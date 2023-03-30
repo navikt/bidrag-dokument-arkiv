@@ -2,7 +2,6 @@ package no.nav.bidrag.dokument.arkiv.dto
 
 import no.nav.bidrag.dokument.arkiv.model.KnyttTilSakManglerTemaException
 
-
 open class KnyttTilAnnenSakRequest(
     open var fagsakId: String? = null,
     open var fagsaksystem: String? = null,
@@ -16,20 +15,20 @@ data class KnyttTilSakRequest(
     override var journalfoerendeEnhet: String,
     override var bruker: KnyttTilBruker,
     override var tema: String
-): KnyttTilAnnenSakRequest(
+) : KnyttTilAnnenSakRequest(
     sakstype = "FAGSAK",
     fagsaksystem = "BISYS",
     fagsakId = fagsakId,
     journalfoerendeEnhet = journalfoerendeEnhet,
     bruker = bruker,
     tema = tema
-){
+) {
     constructor(saksnummer: String, journalpost: Journalpost) : this(saksnummer, journalpost, null)
     constructor(saksnummer: String, journalpost: Journalpost, tema: String?) : this(
         fagsakId = saksnummer,
         journalfoerendeEnhet = journalpost.journalforendeEnhet ?: "",
         bruker = KnyttTilBruker(journalpost.bruker?.id, journalpost.bruker?.type),
-        tema = tema?: journalpost.tema ?: throw KnyttTilSakManglerTemaException("Kunne ikke knytte journalpost til annen sak. Journalpost mangler tema. ")
+        tema = tema ?: journalpost.tema ?: throw KnyttTilSakManglerTemaException("Kunne ikke knytte journalpost til annen sak. Journalpost mangler tema. ")
     )
 }
 
@@ -37,16 +36,16 @@ data class KnyttTilGenerellSakRequest(
     override var journalfoerendeEnhet: String,
     override var bruker: KnyttTilBruker,
     override var tema: String
-): KnyttTilAnnenSakRequest(
+) : KnyttTilAnnenSakRequest(
     sakstype = "GENERELL_SAK",
     journalfoerendeEnhet = journalfoerendeEnhet,
     bruker = bruker,
     tema = tema
-){
+) {
     constructor(journalpost: Journalpost, tema: String?) : this(
-        journalfoerendeEnhet = journalpost.journalforendeEnhet  ?: "9999",
+        journalfoerendeEnhet = journalpost.journalforendeEnhet ?: "9999",
         bruker = KnyttTilBruker(journalpost.bruker?.id, journalpost.bruker?.type),
-        tema = tema?: journalpost.tema ?: throw KnyttTilSakManglerTemaException("Kunne ikke knytte journalpost til annen sak. Journalpost mangler tema. ")
+        tema = tema ?: journalpost.tema ?: throw KnyttTilSakManglerTemaException("Kunne ikke knytte journalpost til annen sak. Journalpost mangler tema. ")
     )
 }
 

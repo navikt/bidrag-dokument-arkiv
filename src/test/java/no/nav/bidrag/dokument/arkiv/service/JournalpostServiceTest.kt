@@ -1,7 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ninjasquad.springmockk.MockkBean
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -22,11 +21,9 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.core.io.Resource
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
@@ -55,7 +52,6 @@ internal class JournalpostServiceTest {
 
     @Autowired
     private val journalpostService: ResourceByDiscriminator<JournalpostService>? = null
-
 
     @Value("classpath:__files/json/dokumentoversiktFagsakQueryResponse.json")
     private val responseJsonResource: Resource? = null

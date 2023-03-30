@@ -103,7 +103,6 @@ class OpprettJournalpostRequestBuilder {
         fjernJournalførendeEnhet = value
     }
 
-
     @OpprettJournalpostRequestBuilderDsl
     infix fun med.journalførendeenhet(jfrEnhet: String?) {
         journalførendeenhet = jfrEnhet
@@ -138,9 +137,13 @@ class OpprettJournalpostRequestBuilder {
     internal fun build(journalpost: Journalpost): JoarkOpprettJournalpostRequest {
         val avsenderType = if (journalpost.avsenderMottaker?.type == AvsenderMottakerIdType.NULL) null else journalpost.avsenderMottaker?.type
         return JoarkOpprettJournalpostRequest(
-            sak = if (fjernSak || journalpost.sak?.fagsakId.isNullOrEmpty()) null else JoarkOpprettJournalpostRequest.OpprettJournalpostSak(
-                journalpost.sak?.fagsakId
-            ),
+            sak = if (fjernSak || journalpost.sak?.fagsakId.isNullOrEmpty()) {
+                null
+            } else {
+                JoarkOpprettJournalpostRequest.OpprettJournalpostSak(
+                    journalpost.sak?.fagsakId
+                )
+            },
             tema = tema ?: "BID",
             journalfoerendeEnhet = if (fjernJournalførendeEnhet) null else journalførendeenhet ?: journalpost.journalforendeEnhet,
             journalpostType = when (journalpost.journalposttype) {
@@ -149,13 +152,17 @@ class OpprettJournalpostRequestBuilder {
                 JournalpostType.N -> JoarkJournalpostType.NOTAT
                 else -> JoarkJournalpostType.UTGAAENDE
             },
-            kanal = if (fjernDistribusjonMetadata) null
-            else if (journalpost.isNotat()) null
-            else when (journalpost.kanal?.name) {
-                JournalpostKanal.SENTRAL_UTSKRIFT.name -> "S"
-                JournalpostKanal.LOKAL_UTSKRIFT.name -> "L"
-                JournalpostKanal.UKJENT.name -> null
-                else -> journalpost.kanal?.name
+            kanal = if (fjernDistribusjonMetadata) {
+                null
+            } else if (journalpost.isNotat()) {
+                null
+            } else {
+                when (journalpost.kanal?.name) {
+                    JournalpostKanal.SENTRAL_UTSKRIFT.name -> "S"
+                    JournalpostKanal.LOKAL_UTSKRIFT.name -> "L"
+                    JournalpostKanal.UKJENT.name -> null
+                    else -> journalpost.kanal?.name
+                }
             },
             behandlingstema = journalpost.behandlingstema,
             eksternReferanseId = eksternReferanseId,
@@ -172,12 +179,18 @@ class OpprettJournalpostRequestBuilder {
                 tillegssopplysninger.removeDistribusjonMetadata()
                 tillegssopplysninger.lockAllReturDetaljerLog()
                 tillegssopplysninger
-            } else journalpost.tilleggsopplysninger,
+            } else {
+                journalpost.tilleggsopplysninger
+            },
             dokumenter = dokumenter.mapIndexed { i, it ->
                 it.copy(tittel = if (i == 0) tittel ?: it.tittel else it.tittel)
             },
-            datoMottatt = if (journalpost.isInngaaendeDokument()) journalpost.hentDatoRegistrert()?.toString() ?: journalpost.hentDatoDokument()
-                ?.toString() else null
+            datoMottatt = if (journalpost.isInngaaendeDokument()) {
+                journalpost.hentDatoRegistrert()?.toString() ?: journalpost.hentDatoDokument()
+                    ?.toString()
+            } else {
+                null
+            }
         )
     }
 }
@@ -194,7 +207,7 @@ fun opprettDokumentVariant(filnavn: String? = null, dokumentByte: ByteArray): Jo
         variantformat = "ARKIV",
         filtype = "PDFA",
         fysiskDokument = dokumentByte,
-        filnavn = if (filnavn != null) "${filnavn}.pdf" else null
+        filnavn = if (filnavn != null) "$filnavn.pdf" else null
     )
 }
 
@@ -205,7 +218,6 @@ data class JoarkOpprettJournalpostResponse(
     val journalpostferdigstilt: Boolean = false,
     val dokumenter: List<DokumentInfo>? = emptyList()
 )
-
 
 data class OpprettDokument(
     var dokumentInfoId: String?,

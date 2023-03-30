@@ -20,7 +20,8 @@ data class DokDistDistribuerJournalpostRequest(
 
     private fun mapAdresse(distribuerTilAdresse: DistribuerTilAdresse?): DokDistDistribuerTilAdresse? {
         val adresse = distribuerTilAdresse ?: return null
-        val dokDistAdresseType = if (adresse.land == ALPHA2_NORGE) DokDistAdresseType.norskPostadresse else DokDistAdresseType.utenlandskPostadresse
+        val dokDistAdresseType =
+            if (adresse.land == ALPHA2_NORGE) DokDistAdresseType.NorskPostadresse.verdi else DokDistAdresseType.UtenlandskPostadresse.verdi
         return DokDistDistribuerTilAdresse(
             adresselinje1 = adresse.adresselinje1,
             adresselinje2 = adresse.adresselinje2,
@@ -52,19 +53,20 @@ enum class DistribusjonsType {
     ANNET
 }
 
-enum class DokDistAdresseType {
-    norskPostadresse,
-    utenlandskPostadresse
+enum class DokDistAdresseType(val verdi: String) {
+    // Kotlin code style krever at enumer begynner med stor bokstav. Lagt til verdi med gammelt ennum-navn for ikke å brekke noe.
+    NorskPostadresse("norskPostadresse"),
+    UtenlandskPostadresse("utenlandskPostadresse")
 }
 
 data class DokDistDistribuerTilAdresse(
     var adresselinje1: String? = null,
     var adresselinje2: String? = null,
     var adresselinje3: String? = null,
-    var adressetype: DokDistAdresseType,
+    var adressetype: String,
     var land: String,
     var postnummer: String? = null,
-    var poststed: String? = null,
+    var poststed: String? = null
 )
 
 data class DistribuerJournalpostRequestInternal(
@@ -77,22 +79,26 @@ data class DistribuerJournalpostRequestInternal(
     fun hasAdresse(): Boolean = request?.adresse != null
     fun getAdresse(): DistribuerTilAdresse? {
         val adresse = request?.adresse
-        return if (adresse != null) DistribuerTilAdresse(
-            adresselinje1 = StringUtils.stripToNull(adresse.adresselinje1),
-            adresselinje2 = StringUtils.stripToNull(adresse.adresselinje2),
-            adresselinje3 = StringUtils.stripToNull(adresse.adresselinje3),
-            land = adresse.land ?: ALPHA2_NORGE,
-            poststed = StringUtils.stripToNull(adresse.poststed),
-            postnummer = StringUtils.stripToNull(adresse.postnummer)
-        ) else null
+        return if (adresse != null) {
+            DistribuerTilAdresse(
+                adresselinje1 = StringUtils.stripToNull(adresse.adresselinje1),
+                adresselinje2 = StringUtils.stripToNull(adresse.adresselinje2),
+                adresselinje3 = StringUtils.stripToNull(adresse.adresselinje3),
+                land = adresse.land ?: ALPHA2_NORGE,
+                poststed = StringUtils.stripToNull(adresse.poststed),
+                postnummer = StringUtils.stripToNull(adresse.postnummer)
+            )
+        } else {
+            null
+        }
     }
 }
 
 data class DokDistDistribuerJournalpostResponse(
-    var bestillingsId: String,
+    var bestillingsId: String
 ) {
     fun toDistribuerJournalpostResponse(journalpostId: Long): DistribuerJournalpostResponse {
-        return DistribuerJournalpostResponse("JOARK-${journalpostId}", bestillingsId)
+        return DistribuerJournalpostResponse("JOARK-$journalpostId", bestillingsId)
     }
 }
 
@@ -122,7 +128,6 @@ fun validerAdresse(adresse: DistribuerTilAdresse?) {
         validateNotNullOrEmpty(adresse?.adresselinje1, "Adresselinje1 er påkrevd på utenlandsk adresse")
     }
 }
-
 
 class BrevkodeToDistribusjonstypeMapper {
     private var brevkodemap: MutableMap<String, DistribusjonsType> = hashMapOf()

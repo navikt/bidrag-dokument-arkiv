@@ -1,6 +1,5 @@
 package no.nav.bidrag.dokument.arkiv.controller
 
-
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import no.nav.bidrag.commons.web.EnhetFilter
@@ -73,9 +72,11 @@ class AvvikControllerTest : AbstractControllerTest() {
                 String.format("\"journalfoerendeEnhet\":\"%s\"", overforTilEnhet)
             )
             Mockito.verify(kafkaTemplateMock).send(
-                ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                ArgumentMatchers.eq(topicJournalpost),
+                ArgumentMatchers.eq(
                     "JOARK-$journalpostIdFraJson"
-                ), ArgumentMatchers.any()
+                ),
+                ArgumentMatchers.any()
             )
         }
     }
@@ -116,9 +117,11 @@ class AvvikControllerTest : AbstractControllerTest() {
                 "\"tittel\":\"FARSKAP UTELUKKET: Tittel på dokument 1\",\"dokumenter\":[{\"dokumentInfoId\":\"123123\",\"tittel\":\"FARSKAP UTELUKKET: Tittel på dokument 1\"}]"
             )
             Mockito.verify(kafkaTemplateMock).send(
-                ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                ArgumentMatchers.eq(topicJournalpost),
+                ArgumentMatchers.eq(
                     "JOARK-$journalpostIdFraJson"
-                ), ArgumentMatchers.any()
+                ),
+                ArgumentMatchers.any()
             )
         }
     }
@@ -154,7 +157,8 @@ class AvvikControllerTest : AbstractControllerTest() {
     @Test
     @DisplayName("skal ikke sende journalpostHendelse når avvik OVER_TIL_ANNEN_ENHET feiler")
     @Throws(
-        IOException::class, JSONException::class
+        IOException::class,
+        JSONException::class
     )
     fun shouldNotSendeKafkaMessageWhenAvvikFails() {
         // given
@@ -217,9 +221,11 @@ class AvvikControllerTest : AbstractControllerTest() {
             { stubs.verifyStub.dokarkivOppdaterKalt(JOURNALPOST_ID, String.format("\"tema\":\"%s\"", nyttFagomrade)) },
             {
                 Mockito.verify(kafkaTemplateMock).send(
-                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                    ArgumentMatchers.eq(topicJournalpost),
+                    ArgumentMatchers.eq(
                         "JOARK-$JOURNALPOST_ID"
-                    ), ArgumentMatchers.any()
+                    ),
+                    ArgumentMatchers.any()
                 )
             }
         )
@@ -243,9 +249,11 @@ class AvvikControllerTest : AbstractControllerTest() {
             overforEnhetResponse.statusCode shouldBe HttpStatus.OK
             stubs.verifyStub.dokarkivOppdaterKalt(JOURNALPOST_ID, String.format("\"tema\":\"%s\"", nyttFagomrade))
             Mockito.verify(kafkaTemplateMock).send(
-                ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                ArgumentMatchers.eq(topicJournalpost),
+                ArgumentMatchers.eq(
                     "JOARK-$JOURNALPOST_ID"
-                ), ArgumentMatchers.any()
+                ),
+                ArgumentMatchers.any()
             )
         }
     }
@@ -288,9 +296,11 @@ class AvvikControllerTest : AbstractControllerTest() {
             },
             {
                 Mockito.verify(kafkaTemplateMock).send(
-                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                    ArgumentMatchers.eq(topicJournalpost),
+                    ArgumentMatchers.eq(
                         "JOARK-$JOURNALPOST_ID"
-                    ), ArgumentMatchers.any()
+                    ),
+                    ArgumentMatchers.any()
                 )
             }
         )
@@ -304,7 +314,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val nyttFagomrade = "FAR"
         val avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, java.util.Map.of("fagomrade", nyttFagomrade))
 
-        val tilleggsOpplysninger = TilleggsOpplysninger();
+        val tilleggsOpplysninger = TilleggsOpplysninger()
         tilleggsOpplysninger.setEndretTemaFlagg()
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseDokumentOversiktFagsak(
@@ -365,9 +375,11 @@ class AvvikControllerTest : AbstractControllerTest() {
             },
             {
                 Mockito.verify(kafkaTemplateMock).send(
-                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                    ArgumentMatchers.eq(topicJournalpost),
+                    ArgumentMatchers.eq(
                         "JOARK-$JOURNALPOST_ID"
-                    ), ArgumentMatchers.any()
+                    ),
+                    ArgumentMatchers.any()
                 )
             }
         )
@@ -409,25 +421,28 @@ class AvvikControllerTest : AbstractControllerTest() {
             },
             {
                 stubs.verifyStub.dokarkivOpprettKalt(
-                    false, "" +
-                            "{\"tittel\":\"Tittel på dokument 1\"," +
-                            "\"journalpostType\":\"INNGAAENDE\"," +
-                            "\"tilleggsopplysninger\":[]," +
-                            "\"tema\":\"AAP\"," +
-                            "\"kanal\":\"NAV_NO\"," +
-                            "\"datoMottatt\":\"2021-04-20\"," +
-                            "\"bruker\":{\"id\":\"123213213213\",\"idType\":\"AKTOERID\"}," +
-                            "\"dokumenter\":[{\"tittel\":\"Tittel på dokument 1\",\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SlZCRVJpMHhMamNnUW1GelpUWTBJR1Z1WTI5a1pYUWdabmx6YVhOcklHUnZhM1Z0Wlc1MA==\"}]}]," +
-                            "\"avsenderMottaker\":{\"navn\":\"Avsender Avsendersen\",\"id\":\"112312385076492416\",\"idType\":\"FNR\"}}"
+                    false,
+                    "" +
+                        "{\"tittel\":\"Tittel på dokument 1\"," +
+                        "\"journalpostType\":\"INNGAAENDE\"," +
+                        "\"tilleggsopplysninger\":[]," +
+                        "\"tema\":\"AAP\"," +
+                        "\"kanal\":\"NAV_NO\"," +
+                        "\"datoMottatt\":\"2021-04-20\"," +
+                        "\"bruker\":{\"id\":\"123213213213\",\"idType\":\"AKTOERID\"}," +
+                        "\"dokumenter\":[{\"tittel\":\"Tittel på dokument 1\",\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SlZCRVJpMHhMamNnUW1GelpUWTBJR1Z1WTI5a1pYUWdabmx6YVhOcklHUnZhM1Z0Wlc1MA==\"}]}]," +
+                        "\"avsenderMottaker\":{\"navn\":\"Avsender Avsendersen\",\"id\":\"112312385076492416\",\"idType\":\"FNR\"}}"
                 )
             },
             { stubs.verifyStub.oppgaveOpprettIkkeKalt() },
             { stubs.verifyStub.dokarkivFeilregistrerKalt(originalJournalpostId) },
             {
                 Mockito.verify(kafkaTemplateMock).send(
-                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                    ArgumentMatchers.eq(topicJournalpost),
+                    ArgumentMatchers.eq(
                         "JOARK-$originalJournalpostId"
-                    ), ArgumentMatchers.any()
+                    ),
+                    ArgumentMatchers.any()
                 )
             }
         )
@@ -461,9 +476,11 @@ class AvvikControllerTest : AbstractControllerTest() {
             { stubs.verifyStub.dokarkivFeilregistrerKalt(journalpostIdFraJson) },
             {
                 Mockito.verify(kafkaTemplateMock).send(
-                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                    ArgumentMatchers.eq(topicJournalpost),
+                    ArgumentMatchers.eq(
                         "JOARK-$journalpostIdFraJson"
-                    ), ArgumentMatchers.any()
+                    ),
+                    ArgumentMatchers.any()
                 )
             }
         )
@@ -523,9 +540,11 @@ class AvvikControllerTest : AbstractControllerTest() {
             { stubs.verifyStub.dokarkivFerdigstillKalt(journalpostIdFraJson) },
             {
                 Mockito.verify(kafkaTemplateMock).send(
-                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                    ArgumentMatchers.eq(topicJournalpost),
+                    ArgumentMatchers.eq(
                         "JOARK-$journalpostIdFraJson"
-                    ), ArgumentMatchers.any()
+                    ),
+                    ArgumentMatchers.any()
                 )
             }
         )
@@ -588,9 +607,11 @@ class AvvikControllerTest : AbstractControllerTest() {
             { stubs.verifyStub.dokarkivFerdigstillKalt(journalpostIdFraJson) },
             {
                 Mockito.verify(kafkaTemplateMock).send(
-                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                    ArgumentMatchers.eq(topicJournalpost),
+                    ArgumentMatchers.eq(
                         "JOARK-$journalpostIdFraJson"
-                    ), ArgumentMatchers.any()
+                    ),
+                    ArgumentMatchers.any()
                 )
             }
         )
@@ -632,9 +653,11 @@ class AvvikControllerTest : AbstractControllerTest() {
             { stubs.verifyStub.dokarkivOppdaterDistribusjonsInfoKalt(journalpostId2, JournalpostKanal.INGEN_DISTRIBUSJON) },
             {
                 Mockito.verify(kafkaTemplateMock, times(0)).send(
-                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                    ArgumentMatchers.eq(topicJournalpost),
+                    ArgumentMatchers.eq(
                         "JOARK-$journalpostId"
-                    ), ArgumentMatchers.any()
+                    ),
+                    ArgumentMatchers.any()
                 )
             }
         )
@@ -655,11 +678,11 @@ class AvvikControllerTest : AbstractControllerTest() {
             postnummer = "3000",
             poststed = "OSLO"
         )
-        val safResponse = opprettUtgaendeDistribuertSafResponse(journalpostId = journalpostId.toString());
+        val safResponse = opprettUtgaendeDistribuertSafResponse(journalpostId = journalpostId.toString())
         safResponse.antallRetur = 1
         safResponse.kanal = JournalpostKanal.SENTRAL_UTSKRIFT
         val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_NY_DISTRIBUSJON, java.util.Map.of())
-        avvikHendelse.adresse = postadresse;
+        avvikHendelse.adresse = postadresse
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
         stubs.mockSafResponseHentJournalpost(opprettUtgaendeSafResponse(journalpostId = newJournalpostId.toString()), newJournalpostId)
@@ -690,16 +713,21 @@ class AvvikControllerTest : AbstractControllerTest() {
                 "{\"nokkel\":\"avvikNyDistribusjon\",\"verdi\":\"true\"}"
             )
 
-
             stubs.verifyStub.dokdistFordelingKalt(
                 objectMapper.writeValueAsString(
                     DokDistDistribuerJournalpostRequest(
-                        newJournalpostId, "BI01A01", null, DistribuerTilAdresse(
+                        newJournalpostId,
+                        "BI01A01",
+                        null,
+                        DistribuerTilAdresse(
                             postadresse.adresselinje1,
                             postadresse.adresselinje2,
                             postadresse.adresselinje3,
-                            postadresse.land, postadresse.postnummer, postadresse.poststed
-                        ), null
+                            postadresse.land,
+                            postadresse.postnummer,
+                            postadresse.poststed
+                        ),
+                        null
                     )
                 )
             )
@@ -707,28 +735,31 @@ class AvvikControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivOppdaterKalt(newJournalpostId, "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}")
 
             stubs.verifyStub.dokarkivOpprettKalt(
-                true, "{" +
-                        "\"sak\":{\"fagsakId\":\"$sakId\",\"fagsaksystem\":\"BISYS\",\"sakstype\":\"FAGSAK\"}," +
-                        "\"tittel\":\"Tittel på dokument 1\"," +
-                        "\"journalfoerendeEnhet\":\"4833\"," +
-                        "\"journalpostType\":\"UTGAAENDE\"," +
-                        "\"eksternReferanseId\":\"BID_duplikat_201028011\"," +
-                        "\"tilleggsopplysninger\":[{\"nokkel\":\"Lretur0_2021-08-18\",\"verdi\":\"Returpost\"}]," +
-                        "\"tema\":\"BID\",\"bruker\":{\"id\":\"123213213213\",\"idType\":\"AKTOERID\"}," +
-                        "\"dokumenter\":[" +
-                        "{\"tittel\":\"Tittel på dokument 1\"," +
-                        "\"dokumentvarianter\":[" +
-                        "{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"${
-                            Base64.getEncoder().encodeToString(DOKUMENT_FIL.encodeToByteArray())
-                        }\"}]}]," +
-                        "\"avsenderMottaker\":{\"navn\":\"Avsender Avsendersen\",\"id\":\"112312385076492416\",\"idType\":\"FNR\"}}"
+                true,
+                "{" +
+                    "\"sak\":{\"fagsakId\":\"$sakId\",\"fagsaksystem\":\"BISYS\",\"sakstype\":\"FAGSAK\"}," +
+                    "\"tittel\":\"Tittel på dokument 1\"," +
+                    "\"journalfoerendeEnhet\":\"4833\"," +
+                    "\"journalpostType\":\"UTGAAENDE\"," +
+                    "\"eksternReferanseId\":\"BID_duplikat_201028011\"," +
+                    "\"tilleggsopplysninger\":[{\"nokkel\":\"Lretur0_2021-08-18\",\"verdi\":\"Returpost\"}]," +
+                    "\"tema\":\"BID\",\"bruker\":{\"id\":\"123213213213\",\"idType\":\"AKTOERID\"}," +
+                    "\"dokumenter\":[" +
+                    "{\"tittel\":\"Tittel på dokument 1\"," +
+                    "\"dokumentvarianter\":[" +
+                    "{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"${
+                    Base64.getEncoder().encodeToString(DOKUMENT_FIL.encodeToByteArray())
+                    }\"}]}]," +
+                    "\"avsenderMottaker\":{\"navn\":\"Avsender Avsendersen\",\"id\":\"112312385076492416\",\"idType\":\"FNR\"}}"
             )
 
             stubs.verifyStub.safHentDokumentKalt(journalpostId, DOKUMENT_1_ID.toLong())
             Mockito.verify(kafkaTemplateMock, times(0)).send(
-                ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                ArgumentMatchers.eq(topicJournalpost),
+                ArgumentMatchers.eq(
                     "JOARK-$journalpostId"
-                ), ArgumentMatchers.any()
+                ),
+                ArgumentMatchers.any()
             )
         }
     }
@@ -738,7 +769,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         // given
         val xEnhet = "1234"
         val journalpostId = 201028011L
-        val safResponse = opprettSafResponse(journalpostId = journalpostId.toString());
+        val safResponse = opprettSafResponse(journalpostId = journalpostId.toString())
         safResponse.kanal = JournalpostKanal.SKAN_IM
         val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_RESKANNING, mapOf())
         avvikHendelse.beskrivelse = "Innholdet er uleselig"
@@ -773,18 +804,20 @@ class AvvikControllerTest : AbstractControllerTest() {
                 stubs.verifyStub.oppgaveOppdaterKalt(
                     1,
                     "Bestill reskanning: " +
-                            "\\nVi ber om reskanning av dokument." +
-                            "\\nBeskrivelse fra saksbehandler: " +
-                            "\\nInnholdet er uleselig" +
-                            "\\r\\n\\r\\nBeskrivelse som var der fra før\""
+                        "\\nVi ber om reskanning av dokument." +
+                        "\\nBeskrivelse fra saksbehandler: " +
+                        "\\nInnholdet er uleselig" +
+                        "\\r\\n\\r\\nBeskrivelse som var der fra før\""
                 )
             },
             { stubs.verifyStub.dokarkivOppdaterKalt(journalpostId, "\"journalfoerendeEnhet\":\"2950\"") },
             {
                 Mockito.verify(kafkaTemplateMock, times(1)).send(
-                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                    ArgumentMatchers.eq(topicJournalpost),
+                    ArgumentMatchers.eq(
                         "JOARK-$journalpostId"
-                    ), ArgumentMatchers.any()
+                    ),
+                    ArgumentMatchers.any()
                 )
             }
         )
@@ -795,7 +828,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         // given
         val xEnhet = "1234"
         val journalpostId = 201028011L
-        val safResponse = opprettSafResponse(journalpostId = journalpostId.toString());
+        val safResponse = opprettSafResponse(journalpostId = journalpostId.toString())
         safResponse.kanal = JournalpostKanal.SKAN_IM
         safResponse.journalforendeEnhet = null
         val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_SPLITTING, mapOf("enhetsnummer" to xEnhet))
@@ -833,17 +866,19 @@ class AvvikControllerTest : AbstractControllerTest() {
                 stubs.verifyStub.oppgaveOppdaterKalt(
                     1,
                     "Bestill splitting av dokument:" +
-                            " \\nSaksbehandler ønsker splitting av dokument:" +
-                            "\\nJeg ønsker å splitte etter side 5" +
-                            "\\r\\n\\r\\nBeskrivelse som var der fra før\""
+                        " \\nSaksbehandler ønsker splitting av dokument:" +
+                        "\\nJeg ønsker å splitte etter side 5" +
+                        "\\r\\n\\r\\nBeskrivelse som var der fra før\""
                 )
             },
             { stubs.verifyStub.dokarkivOppdaterKalt(journalpostId, "\"journalfoerendeEnhet\":\"2950\"") },
             {
                 Mockito.verify(kafkaTemplateMock, times(1)).send(
-                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                    ArgumentMatchers.eq(topicJournalpost),
+                    ArgumentMatchers.eq(
                         "JOARK-$journalpostId"
-                    ), ArgumentMatchers.any()
+                    ),
+                    ArgumentMatchers.any()
                 )
             }
         )
@@ -854,7 +889,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         // given
         val xEnhet = "1234"
         val journalpostId = 201028011L
-        val safResponse = opprettSafResponse(journalpostId = journalpostId.toString());
+        val safResponse = opprettSafResponse(journalpostId = journalpostId.toString())
         safResponse.kanal = JournalpostKanal.SKAN_IM
         safResponse.journalforendeEnhet = OppgaveEnhet.FAGPOST
         val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_SPLITTING, mapOf())
@@ -884,9 +919,11 @@ class AvvikControllerTest : AbstractControllerTest() {
             { stubs.verifyStub.dokarkivOppdaterIkkeKalt(journalpostId) },
             {
                 Mockito.verify(kafkaTemplateMock, times(1)).send(
-                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                    ArgumentMatchers.eq(topicJournalpost),
+                    ArgumentMatchers.eq(
                         "JOARK-$journalpostId"
-                    ), ArgumentMatchers.any()
+                    ),
+                    ArgumentMatchers.any()
                 )
             }
         )
@@ -898,7 +935,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val xEnhet = "1234"
         val sak = "1232131233"
         val journalpostId = 201028011L
-        val safResponse = opprettSafResponse(journalpostId = journalpostId.toString());
+        val safResponse = opprettSafResponse(journalpostId = journalpostId.toString())
         safResponse.kanal = JournalpostKanal.SKAN_IM
         safResponse.sak = Sak(sak)
         safResponse.journalstatus = JournalStatus.JOURNALFOERT
@@ -942,9 +979,11 @@ class AvvikControllerTest : AbstractControllerTest() {
             },
             {
                 Mockito.verify(kafkaTemplateMock, times(1)).send(
-                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                    ArgumentMatchers.eq(topicJournalpost),
+                    ArgumentMatchers.eq(
                         "JOARK-$journalpostId"
-                    ), ArgumentMatchers.any()
+                    ),
+                    ArgumentMatchers.any()
                 )
             }
         )
@@ -956,7 +995,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val xEnhet = "1234"
         val sak = "1232131233"
         val journalpostId = 201028011L
-        val safResponse = opprettSafResponse(journalpostId = journalpostId.toString());
+        val safResponse = opprettSafResponse(journalpostId = journalpostId.toString())
         safResponse.kanal = JournalpostKanal.SKAN_IM
         safResponse.sak = Sak(sak)
         safResponse.journalstatus = JournalStatus.JOURNALFOERT
@@ -996,15 +1035,17 @@ class AvvikControllerTest : AbstractControllerTest() {
             {
                 stubs.verifyStub.oppgaveOpprettKalt(
                     "Bestill splitting av dokument: " +
-                            "\\nSaksbehandler ønsker splitting av dokument:" +
-                            "\\nJeg ønsker å splitte etter side 5"
+                        "\\nSaksbehandler ønsker splitting av dokument:" +
+                        "\\nJeg ønsker å splitte etter side 5"
                 )
             },
             {
                 Mockito.verify(kafkaTemplateMock, times(1)).send(
-                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                    ArgumentMatchers.eq(topicJournalpost),
+                    ArgumentMatchers.eq(
                         "JOARK-$journalpostId"
-                    ), ArgumentMatchers.any()
+                    ),
+                    ArgumentMatchers.any()
                 )
             }
         )
@@ -1015,7 +1056,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         // given
         val xEnhet = "1234"
         val journalpostId = 201028011L
-        val safResponse = opprettSafResponse(journalpostId = journalpostId.toString());
+        val safResponse = opprettSafResponse(journalpostId = journalpostId.toString())
         safResponse.kanal = JournalpostKanal.SKAN_IM
         val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_ORIGINAL, mapOf("enhetsnummer" to xEnhet))
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
@@ -1052,14 +1093,16 @@ class AvvikControllerTest : AbstractControllerTest() {
             {
                 stubs.verifyStub.oppgaveOpprettKalt(
                     "Originalbestilling: Vi ber om å få tilsendt papiroriginalen av vedlagte dokumenter. " +
-                            "\\n    \\nDokumentet skal sendes til 1234, og merkes med aud-localhost - navn\""
+                        "\\n    \\nDokumentet skal sendes til 1234, og merkes med aud-localhost - navn\""
                 )
             },
             {
                 Mockito.verify(kafkaTemplateMock, times(1)).send(
-                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                    ArgumentMatchers.eq(topicJournalpost),
+                    ArgumentMatchers.eq(
                         "JOARK-$journalpostId"
-                    ), ArgumentMatchers.any()
+                    ),
+                    ArgumentMatchers.any()
                 )
             }
         )
@@ -1100,7 +1143,8 @@ class AvvikControllerTest : AbstractControllerTest() {
             DokumentDto(
                 dokumentreferanse = DOKUMENT_1_ID,
                 tittel = tittelDokument1
-            ), DokumentDto(
+            ),
+            DokumentDto(
                 dokumentreferanse = null,
                 tittel = tittelDokument2,
                 dokument = dokumentData2
@@ -1135,22 +1179,23 @@ class AvvikControllerTest : AbstractControllerTest() {
             { stubs.verifyStub.dokarkivOppdaterKalt(newJournalpostId, "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"aud-localhost\"}") },
             {
                 stubs.verifyStub.dokarkivOpprettKalt(
-                    true, "{" +
-                            "\"sak\":{\"fagsakId\":\"$sak1\",\"fagsaksystem\":\"BISYS\",\"sakstype\":\"FAGSAK\"}," +
-                            "\"tittel\":\"$tittelDokument1 (Kopiert fra dokument: $tittelOriginalDokument)\"," +
-                            "\"journalfoerendeEnhet\":\"$xEnhet\"," +
-                            "\"journalpostType\":\"INNGAAENDE\"," +
-                            "\"tilleggsopplysninger\":[]," +
-                            "\"tema\":\"BID\"," +
-                            "\"kanal\":\"NAV_NO\"," +
-                            "\"datoMottatt\":\"2021-08-18\"",
+                    true,
+                    "{" +
+                        "\"sak\":{\"fagsakId\":\"$sak1\",\"fagsaksystem\":\"BISYS\",\"sakstype\":\"FAGSAK\"}," +
+                        "\"tittel\":\"$tittelDokument1 (Kopiert fra dokument: $tittelOriginalDokument)\"," +
+                        "\"journalfoerendeEnhet\":\"$xEnhet\"," +
+                        "\"journalpostType\":\"INNGAAENDE\"," +
+                        "\"tilleggsopplysninger\":[]," +
+                        "\"tema\":\"BID\"," +
+                        "\"kanal\":\"NAV_NO\"," +
+                        "\"datoMottatt\":\"2021-08-18\"",
                     "\"bruker\":{\"id\":\"123213213213\",\"idType\":\"AKTOERID\"}," +
-                            "\"dokumenter\":[" +
-                            "{\"tittel\":\"$tittelDokument1 (Kopiert fra dokument: $tittelOriginalDokument)\"," +
-                            "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SlZCRVJpMHhMamNnUW1GelpUWTBJR1Z1WTI5a1pYUWdabmx6YVhOcklHUnZhM1Z0Wlc1MA==\"}]}," +
-                            "{\"tittel\":\"$tittelDokument2\"," +
-                            "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"$dokumentData2=\"}]}]," +
-                            "\"avsenderMottaker\":{\"navn\":\"Avsender Avsendersen\",\"id\":\"112312385076492416\",\"idType\":\"FNR\"}}"
+                        "\"dokumenter\":[" +
+                        "{\"tittel\":\"$tittelDokument1 (Kopiert fra dokument: $tittelOriginalDokument)\"," +
+                        "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SlZCRVJpMHhMamNnUW1GelpUWTBJR1Z1WTI5a1pYUWdabmx6YVhOcklHUnZhM1Z0Wlc1MA==\"}]}," +
+                        "{\"tittel\":\"$tittelDokument2\"," +
+                        "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"$dokumentData2=\"}]}]," +
+                        "\"avsenderMottaker\":{\"navn\":\"Avsender Avsendersen\",\"id\":\"112312385076492416\",\"idType\":\"FNR\"}}"
                 )
             },
             { stubs.verifyStub.dokarkivTilknyttSakerKalt(newJournalpostId, sak2) },
@@ -1158,9 +1203,11 @@ class AvvikControllerTest : AbstractControllerTest() {
             { stubs.verifyStub.safHentDokumentKalt(journalpostIdAnnenFagomrade, DOKUMENT_1_ID.toLong()) },
             {
                 Mockito.verify(kafkaTemplateMock).send(
-                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                    ArgumentMatchers.eq(topicJournalpost),
+                    ArgumentMatchers.eq(
                         "JOARK-$journalpostIdAnnenFagomrade"
-                    ), ArgumentMatchers.any()
+                    ),
+                    ArgumentMatchers.any()
                 )
             }
         )
@@ -1227,9 +1274,11 @@ class AvvikControllerTest : AbstractControllerTest() {
             { stubs.verifyStub.safHentDokumentKalt(journalpostIdAnnenFagomrade, DOKUMENT_1_ID.toLong()) },
             {
                 Mockito.verify(kafkaTemplateMock).send(
-                    ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(
+                    ArgumentMatchers.eq(topicJournalpost),
+                    ArgumentMatchers.eq(
                         "JOARK-$journalpostIdAnnenFagomrade"
-                    ), ArgumentMatchers.any()
+                    ),
+                    ArgumentMatchers.any()
                 )
             }
         )

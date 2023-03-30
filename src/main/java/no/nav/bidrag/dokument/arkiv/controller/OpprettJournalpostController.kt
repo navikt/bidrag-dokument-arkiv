@@ -4,12 +4,8 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
-import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER
 import no.nav.bidrag.dokument.arkiv.dto.validerKanOppretteJournalpost
-import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
-import no.nav.bidrag.dokument.arkiv.service.EndreJournalpostService
-import no.nav.bidrag.dokument.arkiv.service.JournalpostService
 import no.nav.bidrag.dokument.arkiv.service.OpprettJournalpostService
 import no.nav.bidrag.dokument.dto.OpprettJournalpostRequest
 import no.nav.bidrag.dokument.dto.OpprettJournalpostResponse
@@ -21,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @Protected
-class OpprettJournalpostController(private val opprettJournalpostService: OpprettJournalpostService): BaseController() {
+class OpprettJournalpostController(private val opprettJournalpostService: OpprettJournalpostService) : BaseController() {
 
     @PostMapping("/journalpost")
     @Operation(security = [SecurityRequirement(name = "bearer-key")], description = "Opprett journalpost i Joark")
@@ -31,5 +27,4 @@ class OpprettJournalpostController(private val opprettJournalpostService: Oppret
         validerKanOppretteJournalpost(opprettJournalpostRequest)
         return ResponseEntity.ok(opprettJournalpostService.opprettJournalpost(opprettJournalpostRequest))
     }
-
 }

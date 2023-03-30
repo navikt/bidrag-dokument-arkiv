@@ -3,7 +3,6 @@ package no.nav.bidrag.dokument.arkiv.dto
 import com.fasterxml.jackson.databind.ObjectMapper
 import no.nav.bidrag.dokument.arkiv.stubs.RETUR_DETALJER_DATO_1
 import no.nav.bidrag.dokument.arkiv.stubs.RETUR_DETALJER_DATO_2
-import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponseWithReturDetaljer
 import no.nav.bidrag.dokument.dto.AvvikType
@@ -359,7 +358,6 @@ internal class JournalpostTest {
 
         assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.dato).isEqualTo(RETUR_DETALJER_DATO_2)
         assertThat(journalpostDto.returDetaljer?.logg?.get(2)?.beskrivelse).isEqualTo("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier")
-
     }
 
     @Test

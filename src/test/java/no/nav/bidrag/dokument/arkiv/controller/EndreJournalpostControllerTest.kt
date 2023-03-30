@@ -35,7 +35,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import java.io.IOException
 import java.time.LocalDate
-import java.util.List
 
 class EndreJournalpostControllerTest : AbstractControllerTest() {
 
@@ -120,7 +119,7 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivOppdaterKalt(
                 journalpostId,
                 "\"tittel\":\"Ny tittel\"",
-                "\"datoDokument\":\"2022-05-20T00:00\"",
+                "\"datoDokument\":\"2022-05-20T00:00\""
             )
         }
     }
@@ -141,7 +140,9 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
             opprettSafResponse(
                 journalpostId = journalpostId.toString(),
                 sak = null
-            ), null, "AFTER"
+            ),
+            null,
+            "AFTER"
         )
         stubs.mockSafResponseHentJournalpost(
             opprettSafResponse(
@@ -149,7 +150,9 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
                 tittel = endreJournalpostCommand.tittel!!,
                 journalstatus = JournalStatus.JOURNALFOERT,
                 sak = Sak(sak)
-            ), "AFTER", null
+            ),
+            "AFTER",
+            null
         )
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
@@ -184,7 +187,7 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
                     "\"dokumenter\":[{\"dokumentInfoId\":\"1\",\"tittel\":\"In a galazy far far away\",\"brevkode\":\"BLABLA\"}]"
                 )
             },
-            { stubs.verifyStub.dokarkivFerdigstillKalt(journalpostId) },
+            { stubs.verifyStub.dokarkivFerdigstillKalt(journalpostId) }
         )
     }
 
@@ -210,7 +213,9 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
             opprettSafResponse(
                 journalpostId = journalpostId.toString(),
                 sak = null
-            ), null, "AFTER"
+            ),
+            null,
+            "AFTER"
         )
         stubs.mockSafResponseHentJournalpost(
             opprettSafResponse(
@@ -219,7 +224,9 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
                 sak = Sak(saksnummer1),
                 bruker = Bruker(endreJournalpostCommand.gjelder, "FNR"),
                 journalforendeEnhet = "4806"
-            ), "AFTER", null
+            ),
+            "AFTER",
+            null
         )
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
@@ -253,7 +260,7 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
                     "\"bruker\":{\"id\":\"${endreJournalpostCommand.gjelder}\",\"idType\":\"FNR\"}"
                 )
             },
-            { stubs.verifyStub.oppgaveOppdaterKalt(0) },
+            { stubs.verifyStub.oppgaveOppdaterKalt(0) }
         )
     }
 
@@ -320,7 +327,6 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
     @DisplayName("skal endre journalpost uten journalføring")
     @Throws(IOException::class, JSONException::class)
     fun skalEndreJournalpostUtenJournalforing() {
-
         val journalpostId = 201028011L
         val endreJournalpostCommand = createEndreJournalpostCommand()
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
@@ -350,7 +356,6 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
             { stubs.verifyStub.oppgaveSokIkkeKalt() }
         )
     }
-
 
     @Test
     @DisplayName("skal endre utgaaende journalpost retur detaljer")
@@ -393,10 +398,11 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
             },
             {
                 stubs.verifyStub.dokarkivOppdaterKalt(
-                    journalpostIdFraJson, "tilleggsopplysninger\":" +
-                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                            "{\"nokkel\":\"retur0_2021-08-20\",\"verdi\":\"Ny beskrivelse 1\"}," +
-                            "{\"nokkel\":\"retur0_2021-10-10\",\"verdi\":\"Ny beskrivelse 2\"}]"
+                    journalpostIdFraJson,
+                    "tilleggsopplysninger\":" +
+                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                        "{\"nokkel\":\"retur0_2021-08-20\",\"verdi\":\"Ny beskrivelse 1\"}," +
+                        "{\"nokkel\":\"retur0_2021-10-10\",\"verdi\":\"Ny beskrivelse 2\"}]"
                 )
             }
         )
@@ -426,7 +432,9 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
             )
         )
         val safResponse = opprettUtgaendeSafResponse(
-            journalpostId = journalpostId.toString(), tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(
+            journalpostId = journalpostId.toString(),
+            tilleggsopplysninger = tilleggsOpplysninger,
+            relevanteDatoer = listOf(
                 DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
             )
         )
@@ -459,11 +467,12 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
             },
             {
                 stubs.verifyStub.dokarkivOppdaterKalt(
-                    journalpostId, "\"tilleggsopplysninger\":["
-                            + "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},"
-                            + "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"},"
-                            + "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"},"
-                            + "{\"nokkel\":\"retur0_2021-12-15\",\"verdi\":\"Ny returdetalj\"}]"
+                    journalpostId,
+                    "\"tilleggsopplysninger\":[" +
+                        "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                        "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
+                        "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
+                        "{\"nokkel\":\"retur0_2021-12-15\",\"verdi\":\"Ny returdetalj\"}]"
                 )
             }
         )
@@ -493,7 +502,9 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
             )
         )
         val safResponse = opprettUtgaendeSafResponse(
-            journalpostId = journalpostId.toString(), tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(
+            journalpostId = journalpostId.toString(),
+            tilleggsopplysninger = tilleggsOpplysninger,
+            relevanteDatoer = listOf(
                 DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
             )
         )

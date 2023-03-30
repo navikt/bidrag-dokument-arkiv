@@ -97,7 +97,6 @@ class OpprettJournalpostService(
         knyttTilSaker: List<String> = emptyList(),
         skalFerdigstilles: Boolean = false
     ): OpprettJournalpostResponse {
-
         validerKanOppretteJournalpost(request, skalFerdigstilles)
 
         val response = dokarkivConsumer.opprett(request, skalFerdigstilles)
@@ -145,7 +144,6 @@ class OpprettJournalpostService(
             LOGGER.error(message)
             throw KunneIkkeJournalforeOpprettetJournalpost(message)
         }
-
     }
 
     private fun hentJournalpost(journalpostId: Long): Journalpost {
@@ -170,7 +168,9 @@ class OpprettJournalpostService(
                     if (it.dokumentvarianter.isEmpty() && Strings.isNotEmpty(it.dokumentInfoId)) {
                         val dokument = hentDokument(originalJournalpostId, it.dokumentInfoId!!)
                         it.copy(dokumentvarianter = listOf(opprettDokumentVariant(null, dokument)))
-                    } else it
+                    } else {
+                        it
+                    }
                 }
             )
         }
@@ -195,7 +195,7 @@ class OpprettJournalpostService(
             tittel = hovedTittel,
             tema = request.tema ?: "BID",
             journalpostType = when (request.journalposttype) {
-                JournalpostType.UTGÅENDE, JournalpostType.UTGAAENDE -> JoarkJournalpostType.UTGAAENDE //DEPRECATED
+                JournalpostType.UTGÅENDE, JournalpostType.UTGAAENDE -> JoarkJournalpostType.UTGAAENDE // DEPRECATED
                 JournalpostType.INNGÅENDE -> JoarkJournalpostType.INNGAAENDE
                 JournalpostType.NOTAT -> JoarkJournalpostType.NOTAT
                 else -> JoarkJournalpostType.UTGAAENDE
@@ -205,11 +205,17 @@ class OpprettJournalpostService(
             journalfoerendeEnhet = if (erInngaendeOgSkalIkkeJournalfores) null else request.hentJournalførendeEnhet(),
             kanal = when (request.journalposttype) {
                 JournalpostType.UTGÅENDE, JournalpostType.UTGAAENDE ->
-                    if (request.kanal == MottakUtsendingKanal.LOKAL_UTSKRIFT) JoarkMottakUtsendingKanal.L
-                    else null // Settes av distribusjonsløpet
+                    if (request.kanal == MottakUtsendingKanal.LOKAL_UTSKRIFT) {
+                        JoarkMottakUtsendingKanal.L
+                    } else {
+                        null // Settes av distribusjonsløpet
+                    }
                 JournalpostType.INNGÅENDE -> // TODO: Joark få en ny mottakskanal for skanning fra Bidrag
-                    if (request.kanal == MottakUtsendingKanal.SKANNING_BIDRAG) JoarkMottakUtsendingKanal.SKAN_BID
-                    else JoarkMottakUtsendingKanal.NAV_NO
+                    if (request.kanal == MottakUtsendingKanal.SKANNING_BIDRAG) {
+                        JoarkMottakUtsendingKanal.SKAN_BID
+                    } else {
+                        JoarkMottakUtsendingKanal.NAV_NO
+                    }
 
                 else -> null
             }?.name,
@@ -220,8 +226,11 @@ class OpprettJournalpostService(
                 idType = request.hentGjelderType()?.name
             ),
             avsenderMottaker = if (request.journalposttype != JournalpostType.NOTAT) mapMottaker(request) else null,
-            sak = if (erInngaendeOgSkalIkkeJournalfores || tilknyttSaker.isEmpty()) null
-            else JoarkOpprettJournalpostRequest.OpprettJournalpostSak(tilknyttSaker[0]),
+            sak = if (erInngaendeOgSkalIkkeJournalfores || tilknyttSaker.isEmpty()) {
+                null
+            } else {
+                JoarkOpprettJournalpostRequest.OpprettJournalpostSak(tilknyttSaker[0])
+            },
             dokumenter = request.dokumenter.mapIndexed { i, it ->
                 JoarkOpprettJournalpostRequest.Dokument(
                     brevkode = it.brevkode,
@@ -231,25 +240,27 @@ class OpprettJournalpostService(
             },
             tilleggsopplysninger = tilleggsOpplysninger
         )
-
     }
 
     private fun mapMottaker(request: OpprettJournalpostRequest): JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker =
-        if (request.avsenderMottaker?.erSamhandler() == true)
+        if (request.avsenderMottaker?.erSamhandler() == true) {
+            JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
+                navn = request.avsenderMottaker?.navn
+            )
+        } else {
             JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
                 navn = request.avsenderMottaker?.navn,
-            ) else JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
-            navn = request.avsenderMottaker?.navn,
-            id = request.avsenderMottaker?.ident,
-            idType = request.avsenderMottaker?.ident?.let {
-                when (request.avsenderMottaker?.type) {
-                    AvsenderMottakerDtoIdType.FNR -> AvsenderMottakerIdType.FNR
-                    AvsenderMottakerDtoIdType.ORGNR -> AvsenderMottakerIdType.ORGNR
-                    AvsenderMottakerDtoIdType.UTENLANDSK_ORGNR -> AvsenderMottakerIdType.UTL_ORG
-                    else -> AvsenderMottakerIdType.FNR
+                id = request.avsenderMottaker?.ident,
+                idType = request.avsenderMottaker?.ident?.let {
+                    when (request.avsenderMottaker?.type) {
+                        AvsenderMottakerDtoIdType.FNR -> AvsenderMottakerIdType.FNR
+                        AvsenderMottakerDtoIdType.ORGNR -> AvsenderMottakerIdType.ORGNR
+                        AvsenderMottakerDtoIdType.UTENLANDSK_ORGNR -> AvsenderMottakerIdType.UTL_ORG
+                        else -> AvsenderMottakerIdType.FNR
+                    }
                 }
-            }
-        )
+            )
+        }
 
     private fun hentDokument(journalpostId: Long, dokumentId: String): ByteArray {
         return dokumentService.hentDokument(journalpostId, dokumentId).body!!

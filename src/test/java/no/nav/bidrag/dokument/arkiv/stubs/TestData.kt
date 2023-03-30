@@ -36,22 +36,22 @@ var JOURNALPOST_ID_4 = 2443421321L
 var JOURNALPOST_ID_5 = 5443421321L
 var NY_JOURNALPOST_ID_KNYTT_TIL_SAK = 23423331321L
 
-var DOKUMENT_1_ID = "123123";
-var DOKUMENT_1_TITTEL = "Tittel på dokument 1";
-var DOKUMENT_2_ID = "523123";
-var DOKUMENT_2_TITTEL = "Tittel på dokument 2";
-var DOKUMENT_3_ID = "423123";
-var DOKUMENT_3_TITTEL = "Tittel på dokument 3";
-var DOKUMENT_4_ID = "42314423";
-var DOKUMENT_4_TITTEL = "Tittel på dokument 4";
-var AVSENDER_ID = "112312385076492416";
-var AVSENDER_NAVN = "Avsender Avsendersen";
-var BRUKER_AKTOER_ID = "123213213213";
-var BRUKER_FNR = "333232323";
-var BRUKER_TYPE_AKTOERID = "AKTOERID";
+var DOKUMENT_1_ID = "123123"
+var DOKUMENT_1_TITTEL = "Tittel på dokument 1"
+var DOKUMENT_2_ID = "523123"
+var DOKUMENT_2_TITTEL = "Tittel på dokument 2"
+var DOKUMENT_3_ID = "423123"
+var DOKUMENT_3_TITTEL = "Tittel på dokument 3"
+var DOKUMENT_4_ID = "42314423"
+var DOKUMENT_4_TITTEL = "Tittel på dokument 4"
+var AVSENDER_ID = "112312385076492416"
+var AVSENDER_NAVN = "Avsender Avsendersen"
+var BRUKER_AKTOER_ID = "123213213213"
+var BRUKER_FNR = "333232323"
+var BRUKER_TYPE_AKTOERID = "AKTOERID"
 
-var BREVKODE = "BI01S02";
-var JOURNALFORENDE_ENHET = "4833";
+var BREVKODE = "BI01S02"
+var JOURNALFORENDE_ENHET = "4833"
 var DATO_REGISTRERT = DatoType("2021-04-20T13:20:33", "DATO_REGISTRERT")
 var DATO_DOKUMENT = DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
 var DATO_JOURNALFORT = DatoType("2022-08-18T13:20:33", "DATO_JOURNALFOERT")
@@ -61,7 +61,6 @@ var RETUR_DETALJER_DATO_1 = LocalDate.parse("2021-08-20")
 var RETUR_DETALJER_DATO_2 = LocalDate.parse("2021-11-22")
 var TILLEGGSOPPLYSNINGER_RETUR: MutableList<Map<String, String>> =
     mutableListOf(mapOf("nokkel" to "retur0_2020-11-15", "verdi" to "Beskrivelse av retur"))
-
 
 fun createDistribuerTilAdresse(): DistribuerTilAdresse {
     return DistribuerTilAdresse(
@@ -73,7 +72,6 @@ fun createDistribuerTilAdresse(): DistribuerTilAdresse {
         poststed = "Ingen"
     )
 }
-
 
 fun opprettUtgaendeDistribuertSafResponse(
     journalpostId: String = JOURNALPOST_ID.toString()
@@ -130,7 +128,7 @@ fun opprettSafResponse(
     dokumenter: List<Dokument> = listOf(
         Dokument(
             dokumentInfoId = DOKUMENT_1_ID,
-            tittel = DOKUMENT_1_TITTEL,
+            tittel = DOKUMENT_1_TITTEL
         )
     ),
     tittel: String = DOKUMENT_1_TITTEL,
@@ -163,10 +161,10 @@ fun opprettSafResponse(
 
 fun opprettDokumentOversiktfagsakResponse(): List<Journalpost> {
     val tilleggsopplysningerEndretFagomrade = TilleggsOpplysninger()
-    tilleggsopplysningerEndretFagomrade.setEndretTemaFlagg();
+    tilleggsopplysningerEndretFagomrade.setEndretTemaFlagg()
 
     val tilleggsopplysningerBestiltNyDistribusjon = TilleggsOpplysninger()
-    tilleggsopplysningerBestiltNyDistribusjon.setNyDistribusjonBestiltFlagg();
+    tilleggsopplysningerBestiltNyDistribusjon.setNyDistribusjonBestiltFlagg()
     return listOf(
         opprettSafResponse(
             journalpostId = JOURNALPOST_ID.toString(),
@@ -219,9 +217,9 @@ fun opprettDokumentOversiktfagsakResponse(): List<Journalpost> {
             journalpostId = JOURNALPOST_ID_5.toString(),
             tilleggsopplysninger = tilleggsopplysningerBestiltNyDistribusjon
 
-        ),
-
         )
+
+    )
 }
 
 fun createOppgaveDataWithSaksnummer(saksnummer: String): OppgaveData {
@@ -241,7 +239,7 @@ fun createTillegsopplysningerWithReturDetaljer(): TilleggsOpplysninger {
         ReturDetaljerLogDO("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", RETUR_DETALJER_DATO_2)
     )
     tilleggsopplysninger.setDistribusjonBestillt()
-    return tilleggsopplysninger;
+    return tilleggsopplysninger
 }
 
 fun createEndreJournalpostCommand(): EndreJournalpostCommand {
@@ -254,7 +252,6 @@ fun createEndreJournalpostCommand(): EndreJournalpostCommand {
     )
     return endreJournalpostCommand
 }
-
 
 val TITTEL_HOVEDDOKUMENT = "Tittel på hoveddokument"
 val TITTEL_VEDLEGG1 = "Tittel på vedlegg"
@@ -290,7 +287,7 @@ fun createJoarkOpprettJournalpostRequest(): JoarkOpprettJournalpostRequest {
         behandlingstema = BEHANDLINGSTEMA,
         kanal = Kanal.NAV_NO.name,
         tema = "BID",
-        eksternReferanseId = REFID,
+        eksternReferanseId = REFID
     )
 }
 
@@ -313,6 +310,6 @@ fun createOpprettJournalpostRequest(): OpprettJournalpostRequest {
         avsenderMottaker = AvsenderMottakerDto(ident = GJELDER_ID),
         behandlingstema = BEHANDLINGSTEMA,
         kanal = MottakUtsendingKanal.DIGITALT,
-        referanseId = REFID,
+        referanseId = REFID
     )
 }

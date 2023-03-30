@@ -41,7 +41,7 @@ data class DokumentoversiktFagsakQuery(val saksnummer: String, val tema: List<St
               }
             }
         }
-        """.trimIndent()
+    """.trimIndent()
 
     override fun getQuery(): String {
         return query

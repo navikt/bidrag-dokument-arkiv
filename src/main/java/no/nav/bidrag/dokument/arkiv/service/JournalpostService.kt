@@ -21,8 +21,11 @@ class JournalpostService(private val safConsumer: SafConsumer, private val perso
 
     fun hentJournalpostMedTilknyttedeSaker(journalpostId: Long): Optional<Journalpost> {
         val jpOptional = hentJournalpost(journalpostId)
-        return if (jpOptional.isEmpty) jpOptional
-        else Optional.of(populerMedTilknyttedeSaker(jpOptional.get()))
+        return if (jpOptional.isEmpty) {
+            jpOptional
+        } else {
+            Optional.of(populerMedTilknyttedeSaker(jpOptional.get()))
+        }
     }
 
     fun hentJournalpostMedFnrOgTilknyttedeSaker(journalpostId: Long, saksnummer: String?): Optional<Journalpost> {
