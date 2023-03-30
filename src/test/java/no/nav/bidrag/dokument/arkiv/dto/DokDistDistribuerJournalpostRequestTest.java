@@ -55,7 +55,7 @@ class DokDistDistribuerJournalpostRequestTest {
         () -> assertThat(mappedAdresse.getLand()).isEqualTo(distribuerTilAdresse.getLand()),
         () -> assertThat(mappedAdresse.getPostnummer()).isEqualTo(distribuerTilAdresse.getPostnummer()),
         () -> assertThat(mappedAdresse.getPoststed()).isEqualTo(distribuerTilAdresse.getPoststed()),
-        () -> assertThat(mappedAdresse.getAdressetype()).isEqualTo(DokDistAdresseType.norskPostadresse),
+        () -> assertThat(mappedAdresse.getAdressetype()).isEqualTo(DokDistAdresseType.NorskPostadresse.getVerdi()),
         () -> assertThat(request.getDistribusjonstype()).isEqualTo(DistribusjonsType.VIKTIG),
         () -> assertThat(request.getDistribusjonstidspunkt()).isEqualTo(DistribusjonsTidspunkt.KJERNETID)
     );
@@ -77,7 +77,7 @@ class DokDistDistribuerJournalpostRequestTest {
     var request = new DokDistDistribuerJournalpostRequest(jpid, null, null, distribuerTilAdresse, null);
     var mappedAdresse = request.getAdresse();
     assertAll(
-        () -> assertThat(mappedAdresse.getAdressetype()).isEqualTo(DokDistAdresseType.utenlandskPostadresse)
+        () -> assertThat(mappedAdresse.getAdressetype()).isEqualTo(DokDistAdresseType.UtenlandskPostadresse.getVerdi())
     );
   }
 
