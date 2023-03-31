@@ -30,7 +30,7 @@ class DokumentService(
         return safConsumer.hentDokument(journalpostId, java.lang.Long.valueOf(dokumentReferanse))
     }
 
-    fun tilÅpneDokumentMetadata(journalStatus: JournalStatus?, dokumentReferanse: String?, journalpostId: Long?) = DokumentMetadata(
+    fun tilDokumentMetadata(journalStatus: JournalStatus?, dokumentReferanse: String?, journalpostId: Long?, tittel: String?) = DokumentMetadata(
         arkivsystem = DokumentArkivSystemDto.JOARK,
         dokumentreferanse = dokumentReferanse,
         journalpostId = "JOARK-$journalpostId",
@@ -39,20 +39,21 @@ class DokumentService(
             JournalStatus.RESERVERT, JournalStatus.UNDER_ARBEID -> DokumentStatusDto.UNDER_REDIGERING
             JournalStatus.AVBRUTT, JournalStatus.FEILREGISTRERT, JournalStatus.UTGAAR -> DokumentStatusDto.AVBRUTT
             else -> DokumentStatusDto.FERDIGSTILT
-        }
+        },
+        tittel = tittel
     )
 
     fun hentDokumentMetadata(journalpostId: Long? = null, dokumentReferanse: String?): List<DokumentMetadata> {
         if (journalpostId == null && dokumentReferanse != null) {
             return listOf(
                 journalpostService.finnTilknyttedeJournalposter(dokumentReferanse)
-                    .map { tilÅpneDokumentMetadata(it.journalstatus, dokumentReferanse, it.journalpostId) }.first()
+                    .map { tilDokumentMetadata(it.journalstatus, dokumentReferanse, it.journalpostId, it.tittel) }.first()
             )
         }
 
         val journalpost = journalpostService.hentJournalpost(journalpostId!!).orElse(null)
         return journalpost?.dokumenter?.map {
-            tilÅpneDokumentMetadata(journalpost.journalstatus, it.dokumentInfoId, journalpostId)
+            tilDokumentMetadata(journalpost.journalstatus, it.dokumentInfoId, journalpostId, it.tittel)
         }?.filter { dokumentReferanse.isNullOrEmpty() || it.dokumentreferanse == dokumentReferanse } ?: emptyList()
     }
 

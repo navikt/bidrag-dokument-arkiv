@@ -95,7 +95,7 @@ kubectl config use dev-fss
 Deretter kjør følgende kommando for å importere secrets. Viktig at filen som opprettes ikke committes til git
 
 ```bash
-kubectl exec --tty deployment/bidrag-dokument-arkiv printenv | grep -E 'AZURE_|_URL|SCOPE|SRV|NAIS_APP_NAME|TOPIC' > src/test/resources/application-lokal-nais-secrets.properties
+kubectl exec --tty deployment/bidrag-dokument-arkiv-feature printenv | grep -E 'AZURE_|_URL|SCOPE|SRV|NAIS_APP_NAME|TOPIC' > src/test/resources/application-lokal-nais-secrets.properties
 ```
 
 Kjør filen [BidragDokumentArkivLokalNais](src/test/java/no/nav/bidrag/dokument/arkiv/BidragDokumentArkivLokalNais.java)

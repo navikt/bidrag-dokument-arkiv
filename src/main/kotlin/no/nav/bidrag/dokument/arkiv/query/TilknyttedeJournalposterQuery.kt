@@ -1,22 +1,8 @@
 package no.nav.bidrag.dokument.arkiv.query
 
 data class TilknyttedeJournalposterQuery(val dokumentInfoId: String) : GraphQuery() {
-    private val query = """
-        query tilknyttedeJournalposter(${"$"}dokumentInfoId: String!) {
-             tilknyttedeJournalposter(dokumentInfoId: ${"$"}dokumentInfoId, tilknytning: GJENBRUK) {
-                    journalpostId
-                    journalstatus
-                    sak {
-                        fagsakId
-                        fagsaksystem
-                        sakstype
-                        tema
-                    }
-                }
-        }
-        """
     override fun getQuery(): String {
-        return query
+        return this.graphqlQuery("tilknyttedeJournalposter")
     }
 
     override fun getVariables(): HashMap<String, Any> {
