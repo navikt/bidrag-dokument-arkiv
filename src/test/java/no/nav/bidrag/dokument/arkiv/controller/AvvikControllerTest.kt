@@ -102,7 +102,8 @@ class AvvikControllerTest : AbstractControllerTest() {
                         tittel = "tittel"
                     )
                 ),
-                tema = "FAR"
+                tema = "FAR",
+                journalstatus = JournalStatus.JOURNALFOERT
             )
         )
         stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
