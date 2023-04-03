@@ -11,14 +11,21 @@ import no.nav.bidrag.dokument.dto.JournalpostHendelse
 import no.nav.bidrag.dokument.dto.Sporingsdata
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord
 
-class JournalpostHendelseIntern(var journalpost: Journalpost, var saksbehandler: SaksbehandlerMedEnhet?, var journalforingHendelse: JournalfoeringHendelseRecord?) {
+class JournalpostHendelseIntern(
+    var journalpost: Journalpost,
+    var saksbehandler: SaksbehandlerMedEnhet?,
+    var journalforingHendelse: JournalfoeringHendelseRecord?
+) {
     val journalpostHendelse: JournalpostHendelse
+
     init {
         journalpostHendelse = JournalpostHendelse(
             journalpostId = journalpost.hentJournalpostIdMedPrefix(),
             journalstatus = journalpost.hentJournalStatus(),
+            status = journalpost.hentJournalStatus(),
             enhet = journalpost.journalforendeEnhet,
             fagomrade = journalforingHendelse?.temaNytt ?: journalpost.tema,
+            tema = journalforingHendelse?.temaNytt ?: journalpost.tema,
             aktorId = hentAktoerIdFraJournalpost(),
             fnr = hentFnrFraJournalpost(),
             tittel = journalpost.hentTittel(),
@@ -43,13 +50,22 @@ class JournalpostHendelseIntern(var journalpost: Journalpost, var saksbehandler:
             null
         }
     }
+
     fun hentAktoerIdFraJournalpost(): String? {
         val bruker = journalpost.bruker
         return if (bruker?.isAktoerId() == true) bruker.id else null
     }
-    private fun opprettSporingsData(): Sporingsdata = Sporingsdata(CorrelationId.fetchCorrelationIdForThread(), saksbehandler?.saksbehandler?.ident, saksbehandler?.saksbehandler?.navn, saksbehandler?.enhetsnummer)
+
+    private fun opprettSporingsData(): Sporingsdata = Sporingsdata(
+        CorrelationId.fetchCorrelationIdForThread(),
+        saksbehandler?.saksbehandler?.ident,
+        saksbehandler?.saksbehandler?.navn,
+        saksbehandler?.enhetsnummer
+    )
+
     fun hentJournalpostHendelse() = journalpostHendelse
 }
+
 class JournalforingHendelseIntern(var journalforingHendelse: JournalfoeringHendelseRecord) {
     var saksbehandler = Saksbehandler(null, "bidrag-dokument-arkiv").tilEnhet("9999")
 
@@ -84,5 +100,10 @@ class JournalforingHendelseIntern(var journalforingHendelse: JournalfoeringHende
         )
     }
 
-    private fun opprettSporingsData(): Sporingsdata = Sporingsdata(CorrelationId.fetchCorrelationIdForThread(), saksbehandler.saksbehandler.ident, saksbehandler.saksbehandler.navn, saksbehandler.enhetsnummer)
+    private fun opprettSporingsData(): Sporingsdata = Sporingsdata(
+        CorrelationId.fetchCorrelationIdForThread(),
+        saksbehandler.saksbehandler.ident,
+        saksbehandler.saksbehandler.navn,
+        saksbehandler.enhetsnummer
+    )
 }

@@ -410,7 +410,7 @@ data class Journalpost(
                 AvvikType.MANGLER_ADRESSE
             )
         }
-        if (isFarskap() && !isFarskapUtelukket()) avvikTypeList.add(AvvikType.FARSKAP_UTELUKKET)
+        if (isFarskap() && !isFarskapUtelukket() && !isStatusMottatt()) avvikTypeList.add(AvvikType.FARSKAP_UTELUKKET)
         return avvikTypeList
     }
 
@@ -934,9 +934,15 @@ data class EndreJournalpostCommandIntern(
 data class TilknyttetJournalpost(
     var journalpostId: Long,
     var journalstatus: JournalStatus,
-    var sak: Sak?
+    var sak: Sak?,
+    var dokumenter: List<TilknyttetDokument> = emptyList(),
 ) {
     fun isNotFeilregistrert() = journalstatus != JournalStatus.FEILREGISTRERT
+    data class TilknyttetDokument(
+        val tittel: String? = null
+    )
+
+    val tittel get() = dokumenter.firstOrNull()?.tittel
 }
 
 fun returDetaljerDOListDoToMap(returDetaljerLog: List<ReturDetaljerLogDO>): Map<String, String> {

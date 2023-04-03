@@ -220,16 +220,16 @@ internal class JournalpostTest {
     }
 
     @Test
-    fun `Skal hente avvik FARSKAP UTELUKKET hvis tema FAR`() {
+    fun `Skal ikke hente avvik FARSKAP UTELUKKET hvis tema FAR og status mottatt`() {
         val journalpost = Journalpost(
             dokumenter = listOf(Dokument("Test tittel"))
         )
         journalpost.journalstatus = JournalStatus.MOTTATT
-        journalpost.journalposttype = JournalpostType.U
+        journalpost.journalposttype = JournalpostType.I
         journalpost.tema = "FAR"
         val avvikListe = journalpost.tilAvvik()
         assertThat(avvikListe).hasSize(3)
-        assertThat(avvikListe).contains(AvvikType.FARSKAP_UTELUKKET)
+        assertThat(avvikListe).doesNotContain(AvvikType.FARSKAP_UTELUKKET)
     }
 
     @Test
