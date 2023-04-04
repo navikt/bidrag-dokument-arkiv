@@ -8,7 +8,6 @@ import no.nav.bidrag.dokument.arkiv.dto.DatoType
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostType
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse
-import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
@@ -23,6 +22,7 @@ import no.nav.bidrag.dokument.dto.EndreDokument
 import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
 import no.nav.bidrag.dokument.dto.EndreReturDetaljer
 import no.nav.bidrag.dokument.dto.JournalpostDto
+import no.nav.bidrag.transport.person.PersonDto
 import org.assertj.core.api.Assertions.assertThat
 import org.json.JSONException
 import org.junit.jupiter.api.Assertions
@@ -66,7 +66,7 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
                 sak = Sak("123")
             )
         )
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
 
@@ -101,7 +101,7 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
                 sak = Sak("123")
             )
         )
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
 
@@ -155,7 +155,7 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
             null
         )
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockDokarkivFerdigstillRequest(journalpostId)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
@@ -229,7 +229,7 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
             null
         )
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockDokarkivFerdigstillRequest(journalpostId)
         stubs.mockDokarkivTilknyttRequest(journalpostId)
@@ -282,7 +282,7 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
 
         stubs.mockSafResponseHentJournalpost("journalpostJournalfortSafResponse.json", HttpStatus.OK)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
         stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson)
         stubs.mockDokarkivTilknyttRequest(journalpostIdFraJson)
@@ -331,7 +331,7 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
         val endreJournalpostCommand = createEndreJournalpostCommand()
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(opprettSafResponse(journalpostId = journalpostId.toString()))
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
 
         // when
@@ -375,7 +375,7 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
         safResponse.antallRetur = 1
         stubs.mockSafResponseHentJournalpost(safResponse)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
         stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson)
         stubs.mockDokarkivTilknyttRequest(journalpostIdFraJson)
@@ -441,7 +441,7 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
         safResponse.antallRetur = 1
         stubs.mockSafResponseHentJournalpost(safResponse)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockDokarkivFerdigstillRequest(journalpostId)
         stubs.mockDokarkivTilknyttRequest(journalpostId)
@@ -511,7 +511,7 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
         safResponse.antallRetur = 1
         stubs.mockSafResponseHentJournalpost(safResponse)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockDokarkivFerdigstillRequest(journalpostId)
         stubs.mockDokarkivTilknyttRequest(journalpostId)

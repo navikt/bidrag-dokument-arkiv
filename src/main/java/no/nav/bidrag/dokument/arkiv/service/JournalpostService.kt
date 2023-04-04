@@ -6,11 +6,11 @@ import no.nav.bidrag.dokument.arkiv.dto.Bruker
 import no.nav.bidrag.dokument.arkiv.dto.BrukerType
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsInfo
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
-import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.model.kanIkkeHenteJournalMedUgyldigFagomrade
 import no.nav.bidrag.dokument.dto.JournalpostDto
+import no.nav.bidrag.transport.person.PersonDto
 import org.slf4j.LoggerFactory
 import java.util.Optional
 
@@ -94,8 +94,8 @@ class JournalpostService(private val safConsumer: SafConsumer, private val perso
         if (bruker == null || !bruker.isAktoerId()) {
             return journalpost
         }
-        personConsumer.hentPerson(bruker.id).ifPresent { (brukerId): PersonResponse ->
-            journalpost.bruker = Bruker(brukerId, BrukerType.FNR.name)
+        personConsumer.hentPerson(bruker.id).ifPresent { (brukerId): PersonDto ->
+            journalpost.bruker = Bruker(brukerId.verdi, BrukerType.FNR.name)
         }
         return journalpost
     }

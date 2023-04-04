@@ -1,18 +1,8 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class PersonResponse(
-    var ident: String,
-    var navn: String? = null,
-    var aktoerId: String? = null
-) {
-    constructor(ident: String, aktoerId: String?) : this(ident, null, aktoerId)
-}
-
-data class HentPostadresseRequest(
-    var ident: String
+data class PersonRequest(
+    val ident: String,
+    val verdi: String = ident
 )
 
 data class HentPostadresseResponse(

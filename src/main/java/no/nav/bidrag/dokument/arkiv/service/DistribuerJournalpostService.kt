@@ -212,12 +212,12 @@ class DistribuerJournalpostService(
             return null
         }
         return DistribuerTilAdresse(
-            adresseResponse.adresselinje1,
-            adresseResponse.adresselinje2,
-            adresseResponse.adresselinje3,
-            adresseResponse.land,
-            adresseResponse.postnummer,
-            adresseResponse.poststed
+            adresseResponse.adresselinje1?.verdi,
+            adresseResponse.adresselinje2?.verdi,
+            adresseResponse.adresselinje3?.verdi,
+            adresseResponse.land.verdi,
+            adresseResponse.postnummer?.verdi,
+            adresseResponse.poststed?.verdi
         )
     }
 

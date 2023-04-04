@@ -11,7 +11,6 @@ import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostType
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveEnhet
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse
-import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
@@ -32,6 +31,8 @@ import no.nav.bidrag.dokument.dto.Avvikshendelse
 import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 import no.nav.bidrag.dokument.dto.DokumentDto
+import no.nav.bidrag.domain.string.FulltNavn
+import no.nav.bidrag.transport.person.PersonDto
 import org.assertj.core.api.Assertions
 import org.json.JSONException
 import org.junit.jupiter.api.Assertions.assertAll
@@ -59,7 +60,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val avvikHendelse = createAvvikHendelse(AvvikType.OVERFOR_TIL_ANNEN_ENHET, java.util.Map.of("nyttEnhetsnummer", overforTilEnhet))
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(responseJournalpostJson, HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
         stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson)
 
@@ -106,7 +107,7 @@ class AvvikControllerTest : AbstractControllerTest() {
                 journalstatus = JournalStatus.JOURNALFOERT
             )
         )
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
 
         val response = sendAvvikRequest(xEnhet, journalpostIdFraJson, avvikHendelse)
@@ -141,7 +142,7 @@ class AvvikControllerTest : AbstractControllerTest() {
                 journalposttype = JournalpostType.U
             )
         )
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
 
         val registrerReturRespons = sendAvvikRequest(xEnhet, JOURNALPOST_ID, avvikHendelse)
@@ -169,7 +170,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val avvikHendelse = createAvvikHendelse(AvvikType.OVERFOR_TIL_ANNEN_ENHET, java.util.Map.of("nyttEnhetsnummer", overforTilEnhet))
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(responseJournalpostJson, HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson, HttpStatus.BAD_REQUEST)
 
         val overforEnhetResponse = sendAvvikRequest(xEnhet, journalpostIdFraJson, avvikHendelse)
@@ -206,7 +207,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockOrganisasjonGeografiskTilknytning(geografiskEnhet)
         stubs.mockSafResponseHentJournalpost(opprettSafResponse())
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
 
         val overforEnhetResponse = sendAvvikRequest(xEnhet, JOURNALPOST_ID, avvikHendelse)
@@ -241,7 +242,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockOrganisasjonGeografiskTilknytning(geografiskEnhet)
         stubs.mockSafResponseHentJournalpost(opprettSafResponse().copy(tema = "BAR"))
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
 
         val overforEnhetResponse = sendAvvikRequest(xEnhet, JOURNALPOST_ID, avvikHendelse)
@@ -270,7 +271,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseDokumentOversiktFagsak()
         stubs.mockSafResponseHentJournalpost(opprettSafResponse(journalstatus = JournalStatus.JOURNALFOERT))
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
         stubs.mockOpprettOppgave(HttpStatus.OK)
         stubs.mockDokarkivTilknyttRequest(JOURNALPOST_ID, NY_JOURNALPOST_ID_KNYTT_TIL_SAK)
@@ -346,7 +347,7 @@ class AvvikControllerTest : AbstractControllerTest() {
             )
         )
         stubs.mockSafResponseHentJournalpost(opprettSafResponse(journalstatus = JournalStatus.JOURNALFOERT))
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID_3)
         stubs.mockOpprettOppgave(HttpStatus.OK)
@@ -405,7 +406,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost(journalpost)
         stubs.mockSafResponseTilknyttedeJournalposter(listOf())
         stubs.mockSafHentDokumentResponse()
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(originalJournalpostId)
         stubs.mockDokarkivOpprettRequest(nyJournalpostId, ferdigstill = false)
         stubs.mockDokarkivFeilregistrerRequest(originalJournalpostId)
@@ -459,7 +460,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val avvikHendelse = createAvvikHendelse(AvvikType.FEILFORE_SAK, java.util.Map.of())
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(journalpostJournalfortSafResponse, HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
         stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson)
         stubs.mockDokarkivFeilregistrerRequest(journalpostIdFraJson)
@@ -514,7 +515,7 @@ class AvvikControllerTest : AbstractControllerTest() {
                 )
             )
         )
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivFeilregistrerRequest(journalpostIdFraJson)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
         stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson)
@@ -579,7 +580,7 @@ class AvvikControllerTest : AbstractControllerTest() {
                 )
             )
         )
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, "Personnavn", AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT, navn = FulltNavn("Personnavn")), HttpStatus.OK)
         stubs.mockDokarkivFeilregistrerRequest(journalpostIdFraJson)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
         stubs.mockDokarkivFerdigstillRequest(journalpostIdFraJson)
@@ -628,7 +629,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val avvikHendelse = createAvvikHendelse(AvvikType.MANGLER_ADRESSE, java.util.Map.of())
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(opprettUtgaendeSafResponse(journalpostId = journalpostId.toString()))
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockDokarkivFerdigstillRequest(journalpostId)
         stubs.mockDokarkivFeilregistrerRequest(journalpostId)
@@ -688,7 +689,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
         stubs.mockSafResponseHentJournalpost(opprettUtgaendeSafResponse(journalpostId = newJournalpostId.toString()), newJournalpostId)
         stubs.mockSafHentDokumentResponse()
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockDokarkivOppdaterRequest(newJournalpostId)
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
@@ -776,7 +777,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         avvikHendelse.beskrivelse = "Innholdet er uleselig"
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockOpprettOppgave(HttpStatus.OK)
 
@@ -836,7 +837,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         avvikHendelse.beskrivelse = "Jeg ønsker å splitte etter side 5"
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockOpprettOppgave(HttpStatus.OK)
 
@@ -897,7 +898,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         avvikHendelse.beskrivelse = "Jeg ønsker å splitte etter side 5"
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockOpprettOppgave(HttpStatus.OK)
 
@@ -944,7 +945,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         avvikHendelse.beskrivelse = null
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockDokarkivFeilregistrerRequest(journalpostId)
         stubs.mockOpprettOppgave(HttpStatus.OK)
@@ -1004,7 +1005,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         avvikHendelse.beskrivelse = "Jeg ønsker å splitte etter side 5"
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockDokarkivFeilregistrerRequest(journalpostId)
         stubs.mockOpprettOppgave(HttpStatus.OK)
@@ -1062,7 +1063,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_ORIGINAL, mapOf("enhetsnummer" to xEnhet))
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockOpprettOppgave(HttpStatus.OK)
         val overforEnhetResponse = sendAvvikRequest(xEnhet, journalpostId, avvikHendelse)
@@ -1162,7 +1163,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         stubs.mockSafHentDokumentResponse()
         stubs.mockSokOppgave(OppgaveSokResponse(1, listOf(vurderDokumentOppgave)), HttpStatus.OK)
         stubs.mockDokarkivTilknyttRequest(newJournalpostId)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(newJournalpostId)
         stubs.mockDokarkivOpprettRequest(newJournalpostId, HttpStatus.OK)
 
@@ -1253,7 +1254,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         stubs.mockSafHentDokumentResponse()
         stubs.mockSokOppgave(OppgaveSokResponse(1, listOf(vurderDokumentOppgave)), HttpStatus.OK)
         stubs.mockDokarkivTilknyttRequest(newJournalpostId, 123213, HttpStatus.INTERNAL_SERVER_ERROR)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(newJournalpostId)
         stubs.mockDokarkivOpprettRequest(newJournalpostId, HttpStatus.OK)
 

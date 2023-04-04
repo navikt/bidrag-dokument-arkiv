@@ -935,7 +935,7 @@ data class TilknyttetJournalpost(
     var journalpostId: Long,
     var journalstatus: JournalStatus,
     var sak: Sak?,
-    var dokumenter: List<TilknyttetDokument> = emptyList(),
+    var dokumenter: List<TilknyttetDokument> = emptyList()
 ) {
     fun isNotFeilregistrert() = journalstatus != JournalStatus.FEILREGISTRERT
     data class TilknyttetDokument(
