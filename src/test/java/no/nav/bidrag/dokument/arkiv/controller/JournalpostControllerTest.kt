@@ -12,7 +12,6 @@ import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsTidspunkt
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsType
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.EpostVarselSendt
-import no.nav.bidrag.dokument.arkiv.dto.HentPostadresseResponse
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostType
@@ -39,6 +38,14 @@ import no.nav.bidrag.dokument.dto.JournalpostDto
 import no.nav.bidrag.dokument.dto.JournalpostResponse
 import no.nav.bidrag.dokument.dto.JournalpostStatus
 import no.nav.bidrag.dokument.dto.ReturDetaljerLog
+import no.nav.bidrag.domain.enums.Adressetype
+import no.nav.bidrag.domain.string.Adresselinje1
+import no.nav.bidrag.domain.string.Adresselinje2
+import no.nav.bidrag.domain.string.Landkode2
+import no.nav.bidrag.domain.string.Landkode3
+import no.nav.bidrag.domain.string.Postnummer
+import no.nav.bidrag.domain.string.Poststed
+import no.nav.bidrag.transport.person.PersonAdresseDto
 import no.nav.bidrag.transport.person.PersonDto
 import org.assertj.core.api.Assertions
 import org.json.JSONException
@@ -196,7 +203,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                 },
                 Executable { Assertions.assertThat(journalpost).isNotNull.extracting { it?.innhold }.isEqualTo(DOKUMENT_1_TITTEL) },
                 Executable { Assertions.assertThat(journalpost).isNotNull.extracting { it?.journalpostId }.isEqualTo("JOARK-$journalpostIdFraJson") },
-                Executable { Assertions.assertThat(journalpost).isNotNull.extracting { it?.gjelderAktor?.ident }.isEqualTo(PERSON_IDENT) },
+                Executable { Assertions.assertThat(journalpost).isNotNull.extracting { it?.gjelderAktor?.ident }.isEqualTo(PERSON_IDENT.verdi) },
                 Executable { Assertions.assertThat(saker).isNotNull.hasSize(0) },
                 Executable { stubs.verifyStub.harEnSafKallEtterHentJournalpost() },
                 Executable { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() },
@@ -405,7 +412,8 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                 },
                 Executable { Assertions.assertThat(journalpost).isNotNull.extracting { it?.journalpostId }.isEqualTo("JOARK-$journalpostIdFraJson") },
                 Executable {
-                    Assertions.assertThat(journalpost).isNotNull.extracting { it?.gjelderAktor }.extracting { it?.ident }.isEqualTo(PERSON_IDENT)
+                    Assertions.assertThat(journalpost).isNotNull.extracting { it?.gjelderAktor }.extracting { it?.ident }
+                        .isEqualTo(PERSON_IDENT.verdi)
                 },
                 Executable {
                     Assertions.assertThat(journalpost).isNotNull.extracting { it?.brevkode?.kode }.isEqualTo("BI01S02")
@@ -547,11 +555,11 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
                 "{\"tilleggsopplysninger\":[" +
-                    "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
-                    "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
-                    "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
-                    "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
-                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
+                        "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
+                        "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
+                        "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
+                        "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
+                        "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
             )
         }
     }
@@ -621,11 +629,11 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
                 "{\"tilleggsopplysninger\":[" +
-                    "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
-                    "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
-                    "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
-                    "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
-                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
+                        "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
+                        "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
+                        "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
+                        "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
+                        "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
             )
         }
     }
@@ -923,7 +931,17 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val mottakerId = "12312321312321"
         val journalpostIdFraJson = 201028011L
         val headersMedEnhet = HttpHeaders()
-        val postadresse = HentPostadresseResponse("Ramsegata 1", "Bakredør", null, "3939", "OSLO", "NO")
+        val postadresse = PersonAdresseDto(
+            adressetype = Adressetype.BOSTEDSADRESSE,
+            adresselinje1 = Adresselinje1("Ramsegata 1"),
+            adresselinje2 = Adresselinje2("Bakredør"),
+            adresselinje3 = null,
+            postnummer = Postnummer("3939"),
+            poststed = Poststed("OSLO"),
+            land = Landkode2("NO"),
+            land3 = Landkode3("NOR")
+        )
+
         headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
         stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponse.json", HttpStatus.OK)
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
@@ -955,12 +973,12 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                             "BI01A01",
                             null,
                             DistribuerTilAdresse(
-                                postadresse.adresselinje1,
-                                postadresse.adresselinje2,
-                                postadresse.adresselinje3,
-                                postadresse.land,
-                                postadresse.postnummer,
-                                postadresse.poststed
+                                postadresse.adresselinje1?.verdi,
+                                postadresse.adresselinje2?.verdi,
+                                postadresse.adresselinje3?.verdi,
+                                postadresse.land.verdi,
+                                postadresse.postnummer?.verdi,
+                                postadresse.poststed?.verdi
                             ),
                             batchId
                         )

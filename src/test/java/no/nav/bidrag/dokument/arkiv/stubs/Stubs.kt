@@ -14,7 +14,6 @@ import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsInfo
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostResponse
 import no.nav.bidrag.dokument.arkiv.dto.DokumentInfo
 import no.nav.bidrag.dokument.arkiv.dto.GeografiskTilknytningResponse
-import no.nav.bidrag.dokument.arkiv.dto.HentPostadresseResponse
 import no.nav.bidrag.dokument.arkiv.dto.JoarkOpprettJournalpostResponse
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
@@ -23,6 +22,14 @@ import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerInfoResponse
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
+import no.nav.bidrag.domain.enums.Adressetype
+import no.nav.bidrag.domain.string.Adresselinje1
+import no.nav.bidrag.domain.string.Adresselinje2
+import no.nav.bidrag.domain.string.Landkode2
+import no.nav.bidrag.domain.string.Landkode3
+import no.nav.bidrag.domain.string.Postnummer
+import no.nav.bidrag.domain.string.Poststed
+import no.nav.bidrag.transport.person.PersonAdresseDto
 import no.nav.bidrag.transport.person.PersonDto
 import org.junit.Assert
 import org.springframework.http.HttpHeaders
@@ -397,7 +404,7 @@ class Stubs {
         )
     }
 
-    fun mockPersonAdresseResponse(hentPostadresseResponse: HentPostadresseResponse?) {
+    fun mockPersonAdresseResponse(hentPostadresseResponse: PersonAdresseDto?) {
         try {
             WireMock.stubFor(
                 WireMock.post(WireMock.urlMatching("/person/bidrag-person/adresse/post")).willReturn(
@@ -405,13 +412,15 @@ class Stubs {
                         .withStatus(HttpStatus.OK.value())
                         .withBody(
                             ObjectMapper().writeValueAsString(
-                                hentPostadresseResponse ?: HentPostadresseResponse(
-                                    "Ramsegata 1",
-                                    "Bakredør",
-                                    null,
-                                    "3939",
-                                    "OSLO",
-                                    "NO"
+                                hentPostadresseResponse ?: PersonAdresseDto(
+                                    adressetype = Adressetype.BOSTEDSADRESSE,
+                                    adresselinje1 = Adresselinje1("Ramsegata 1"),
+                                    adresselinje2 = Adresselinje2("Bakredør"),
+                                    adresselinje3 = null,
+                                    postnummer = Postnummer("3939"),
+                                    poststed = Poststed("OSLO"),
+                                    land = Landkode2("NO"),
+                                    land3 = Landkode3("NOR")
                                 )
                             )
                         )
@@ -425,7 +434,7 @@ class Stubs {
     fun mockPersonResponse(personResponse: PersonDto?, status: HttpStatus) {
         try {
             WireMock.stubFor(
-                WireMock.post(WireMock.urlMatching("/person")).willReturn(
+                WireMock.post(WireMock.urlMatching("/person/.*")).willReturn(
                     aClosedJsonResponse()
                         .withStatus(status.value())
                         .withBody(ObjectMapper().writeValueAsString(personResponse))
@@ -564,7 +573,7 @@ class Stubs {
 
         fun bidragPersonKalt() {
             WireMock.verify(
-                WireMock.getRequestedFor(WireMock.urlMatching("/person/.*"))
+                WireMock.postRequestedFor(WireMock.urlMatching("/person/.*"))
             )
         }
 
@@ -657,8 +666,8 @@ class Stubs {
                 WireMock.patchRequestedFor(
                     WireMock.urlMatching(
                         "/dokarkiv" +
-                            DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" +
-                            journalpostId + "/oppdaterDistribusjonsinfo"
+                                DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" +
+                                journalpostId + "/oppdaterDistribusjonsinfo"
                     )
                 ).withRequestBody(ContainsPattern(kanal.name))
             )
