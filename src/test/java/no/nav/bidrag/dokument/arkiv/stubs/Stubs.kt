@@ -425,7 +425,7 @@ class Stubs {
     fun mockPersonResponse(personResponse: PersonDto?, status: HttpStatus) {
         try {
             WireMock.stubFor(
-                WireMock.get(WireMock.urlMatching("/person/.*")).willReturn(
+                WireMock.post(WireMock.urlMatching("/person")).willReturn(
                     aClosedJsonResponse()
                         .withStatus(status.value())
                         .withBody(ObjectMapper().writeValueAsString(personResponse))
