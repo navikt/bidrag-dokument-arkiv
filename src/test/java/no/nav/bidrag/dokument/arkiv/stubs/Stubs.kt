@@ -21,9 +21,9 @@ import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilAnnenSakResponse
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse
-import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerInfoResponse
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
+import no.nav.bidrag.transport.person.PersonDto
 import org.junit.Assert
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -422,7 +422,7 @@ class Stubs {
         }
     }
 
-    fun mockPersonResponse(personResponse: PersonResponse?, status: HttpStatus) {
+    fun mockPersonResponse(personResponse: PersonDto?, status: HttpStatus) {
         try {
             WireMock.stubFor(
                 WireMock.get(WireMock.urlMatching("/person/.*")).willReturn(

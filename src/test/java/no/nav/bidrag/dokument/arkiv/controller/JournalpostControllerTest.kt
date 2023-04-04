@@ -17,7 +17,6 @@ import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostType
 import no.nav.bidrag.dokument.arkiv.dto.JournalstatusDto
-import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
@@ -40,6 +39,7 @@ import no.nav.bidrag.dokument.dto.JournalpostDto
 import no.nav.bidrag.dokument.dto.JournalpostResponse
 import no.nav.bidrag.dokument.dto.JournalpostStatus
 import no.nav.bidrag.dokument.dto.ReturDetaljerLog
+import no.nav.bidrag.transport.person.PersonDto
 import org.assertj.core.api.Assertions
 import org.json.JSONException
 import org.junit.jupiter.api.DisplayName
@@ -93,7 +93,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
     @Throws(IOException::class)
     fun skalHaBodySomErNullSamtHeaderWarningNarJournalpostIkkeFinnes() {
         stubs.mockSafResponseHentJournalpost(journalpostSafNotFoundResponse, HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         val journalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
             initUrl() + "/journal/JOARK-1?saksnummer=007",
             HttpMethod.GET,
@@ -121,7 +121,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
     fun skalFaNotFoundNarEksisterendeJournalpostErKnyttetTilAnnenSak() {
         val journalpostIdFraJson = 201028011
         stubs.mockSafResponseHentJournalpost(responseJournalpostJson, HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         val responseEntity = httpHeaderTestRestTemplate.exchange(
             initUrl() + "/journal/JOARK-" + journalpostIdFraJson + "?saksnummer=007",
             HttpMethod.GET,
@@ -146,7 +146,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val journalpostIdFraJson = 201028011
         stubs.mockSafResponseHentJournalpost(responseJournalpostJson, HttpStatus.OK)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.BAD_REQUEST)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.BAD_REQUEST)
         val responseEntity = httpHeaderTestRestTemplate.exchange(
             initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
             HttpMethod.GET,
@@ -177,7 +177,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             )
         )
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         val responseEntity = httpHeaderTestRestTemplate.exchange(
             initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
             HttpMethod.GET,
@@ -212,7 +212,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val journalpostIdFraJson = 201028011
         stubs.mockSafResponseHentJournalpost(responseJournalpostJsonWithAdresse, HttpStatus.OK)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         val responseEntity = httpHeaderTestRestTemplate.exchange(
             initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
             HttpMethod.GET,
@@ -247,7 +247,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val journalpostIdFraJson = 201028011
         stubs.mockSafResponseHentJournalpost(responseJournalpostJsonWithReturDetaljer, HttpStatus.OK)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         val responseEntity = httpHeaderTestRestTemplate.exchange(
             initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
             HttpMethod.GET,
@@ -312,7 +312,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val journalpostIdFraJson = 201028011
         stubs.mockSafResponseHentJournalpost("journalpostSafLockedReturDetaljerResponse.json", HttpStatus.OK)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         val responseEntity = httpHeaderTestRestTemplate.exchange(
             initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
             HttpMethod.GET,
@@ -388,7 +388,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val journalpostIdFraJson = 201028011
         stubs.mockSafResponseHentJournalpost(journalpostJournalfortSafResponse, HttpStatus.OK)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         val responseEntity = httpHeaderTestRestTemplate.exchange(
             initUrl() + "/journal/JOARK-" + journalpostIdFraJson + "?saksnummer=5276661",
             HttpMethod.GET,
@@ -436,7 +436,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             )
         )
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         val responseEntity = httpHeaderTestRestTemplate.exchange(
             initUrl() + "/journal/JOARK-" + journalpostId + "?saksnummer=5276661",
             HttpMethod.GET,
@@ -456,7 +456,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
     @Throws(IOException::class)
     fun skalHenteJournalposterForEnBidragssak() {
         stubs.mockSafResponseDokumentOversiktFagsak()
-        stubs.mockPersonResponse(PersonResponse(PERSON_IDENT, AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         val jouralposterResponseEntity = httpHeaderTestRestTemplate.exchange(
             initUrl() + "/sak/5276661/journal?fagomrade=BID",
             HttpMethod.GET,

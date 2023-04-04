@@ -9,7 +9,6 @@ import no.nav.bidrag.dokument.arkiv.dto.BrukerType
 import no.nav.bidrag.dokument.arkiv.dto.Dokument
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
-import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
@@ -26,6 +25,9 @@ import no.nav.bidrag.dokument.arkiv.stubs.Stubs
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.dokument.dto.HendelseType
 import no.nav.bidrag.dokument.dto.JournalpostHendelse
+import no.nav.bidrag.domain.ident.AktørId
+import no.nav.bidrag.domain.ident.PersonIdent
+import no.nav.bidrag.transport.person.PersonDto
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -252,7 +254,7 @@ class JoarkHendelseTest {
         )
         stubs.mockSafResponseTilknyttedeJournalposter(listOf())
         stubs.mockBidragOrganisasjonSaksbehandler()
-        stubs.mockPersonResponse(PersonResponse("123", "12321"), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PersonIdent("123"), aktørId = AktørId("12321")), HttpStatus.OK)
 
         val record = createHendelseRecord(journalpostId)
 
@@ -300,7 +302,7 @@ class JoarkHendelseTest {
     fun `skal ikke behandle hendelse nar journalpost tilhorer NKS`() {
         val journalpostId = 123213L
         stubs.mockSts()
-        stubs.mockPersonResponse(PersonResponse("123", "12321"), HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PersonIdent("123"), aktørId = AktørId("12321")), HttpStatus.OK)
         stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(123123L, JournalStatus.FERDIGSTILT, Sak("5276661"))))
         stubs.mockSafResponseHentJournalpost(
             opprettSafResponse(

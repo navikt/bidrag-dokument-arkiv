@@ -11,13 +11,15 @@ import no.nav.bidrag.dokument.arkiv.dto.OppgaveEnhet
 import no.nav.bidrag.dokument.arkiv.dto.OpprettOppgaveFagpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.OpprettOppgaveRequest
 import no.nav.bidrag.dokument.arkiv.dto.OpprettVurderDokumentOppgaveRequest
-import no.nav.bidrag.dokument.arkiv.dto.PersonResponse
 import no.nav.bidrag.dokument.arkiv.dto.Saksbehandler
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerMedEnhet
 import no.nav.bidrag.dokument.arkiv.model.Discriminator
 import no.nav.bidrag.dokument.arkiv.model.OppgaveSokParametre
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager
+import no.nav.bidrag.domain.ident.AktørId
+import no.nav.bidrag.domain.ident.PersonIdent
+import no.nav.bidrag.transport.person.PersonDto
 import org.slf4j.LoggerFactory
 import java.util.function.Consumer
 
@@ -89,8 +91,9 @@ class OppgaveService(
     }
 
     private fun hentAktorId(gjelder: String?): String? {
+        if (gjelder == null) return null
         return personConsumers.get(Discriminator.SERVICE_USER).hentPerson(gjelder)
-            .orElseGet { PersonResponse(gjelder ?: "", null, gjelder) }.aktoerId
+            .orElseGet { PersonDto(ident = PersonIdent(gjelder), aktørId = AktørId(gjelder)) }.aktørId?.verdi
     }
 
     private fun finnVurderDokumentOppgaverForJournalpost(journalpostId: Long): List<OppgaveData> {
