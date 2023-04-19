@@ -13,22 +13,23 @@ import no.nav.bidrag.dokument.arkiv.consumer.DokarkivKnyttTilSakConsumer
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsInfo
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostResponse
 import no.nav.bidrag.dokument.arkiv.dto.DokumentInfo
-import no.nav.bidrag.dokument.arkiv.dto.GeografiskTilknytningResponse
 import no.nav.bidrag.dokument.arkiv.dto.JoarkOpprettJournalpostResponse
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
 import no.nav.bidrag.dokument.arkiv.dto.KnyttTilAnnenSakResponse
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterJournalpostResponse
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse
-import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerInfoResponse
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.domain.enums.Adressetype
+import no.nav.bidrag.domain.ident.SaksbehandlerId
 import no.nav.bidrag.domain.string.Adresselinje1
 import no.nav.bidrag.domain.string.Adresselinje2
 import no.nav.bidrag.domain.string.Landkode2
 import no.nav.bidrag.domain.string.Landkode3
+import no.nav.bidrag.domain.string.Navn
 import no.nav.bidrag.domain.string.Postnummer
 import no.nav.bidrag.domain.string.Poststed
+import no.nav.bidrag.organisasjon.dto.SaksbehandlerDto
 import no.nav.bidrag.transport.person.PersonAdresseDto
 import no.nav.bidrag.transport.person.PersonDto
 import org.junit.Assert
@@ -68,29 +69,13 @@ class Stubs {
         }
     }
 
-    @JvmOverloads
-    fun mockOrganisasjonGeografiskTilknytning(enhetId: String? = BRUKER_ENHET) {
-        try {
-            WireMock.stubFor(
-                WireMock.get(WireMock.urlPathMatching("/organisasjon/bidrag-organisasjon/arbeidsfordeling/enhetsliste/geografisktilknytning/.*"))
-                    .willReturn(
-                        aClosedJsonResponse()
-                            .withStatus(HttpStatus.OK.value())
-                            .withBody(objectMapper.writeValueAsString(GeografiskTilknytningResponse(enhetId!!, "navn")))
-                    )
-            )
-        } catch (e: JsonProcessingException) {
-            Assert.fail(e.message)
-        }
-    }
-
     fun mockBidragOrganisasjonSaksbehandler(ident: String = "ident", navn: String = "navn") {
         try {
             WireMock.stubFor(
                 WireMock.get(WireMock.urlPathMatching("/organisasjon/bidrag-organisasjon/saksbehandler/info/.*")).willReturn(
                     aClosedJsonResponse()
                         .withStatus(HttpStatus.OK.value())
-                        .withBody(objectMapper.writeValueAsString(SaksbehandlerInfoResponse(ident, navn)))
+                        .withBody(objectMapper.writeValueAsString(SaksbehandlerDto(SaksbehandlerId(ident), Navn(navn))))
                 )
             )
         } catch (e: JsonProcessingException) {
@@ -666,8 +651,8 @@ class Stubs {
                 WireMock.patchRequestedFor(
                     WireMock.urlMatching(
                         "/dokarkiv" +
-                                DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" +
-                                journalpostId + "/oppdaterDistribusjonsinfo"
+                            DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" +
+                            journalpostId + "/oppdaterDistribusjonsinfo"
                     )
                 ).withRequestBody(ContainsPattern(kanal.name))
             )

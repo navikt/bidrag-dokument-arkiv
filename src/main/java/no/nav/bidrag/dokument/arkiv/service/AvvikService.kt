@@ -175,9 +175,8 @@ class AvvikService(
     }
 
     private fun hentSaksbehandler(enhet: String): SaksbehandlerMedEnhet {
-        return saksbehandlerInfoManager.hentSaksbehandler()
-            .map { it.tilEnhet(enhet) }
-            .orElseGet { SaksbehandlerMedEnhet(Saksbehandler(), enhet) }
+        return saksbehandlerInfoManager.hentSaksbehandler()?.tilEnhet(enhet)
+            ?: SaksbehandlerMedEnhet(Saksbehandler(), enhet)
     }
 
     fun kopierFraAnnenFagomrade(journalpost: Journalpost, avvikshendelseIntern: AvvikshendelseIntern) {

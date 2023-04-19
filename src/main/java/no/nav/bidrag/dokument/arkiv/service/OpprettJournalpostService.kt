@@ -68,7 +68,7 @@ class OpprettJournalpostService(
     }
 
     private fun ferdigstillJournalpost(journalpostId: Long, journalfoerendeEnhet: String, saksbehandlerIdent: String?) {
-        val saksbehandlerNavn = saksbehandlerIdent?.let { saksbehandlerInfoManager.hentSaksbehandler(it) }?.orElse(null)?.navn
+        val saksbehandlerNavn = saksbehandlerIdent?.let { saksbehandlerInfoManager.hentSaksbehandler(it) }?.navn
         dokarkivConsumer.ferdigstill(
             FerdigstillJournalpostRequest(
                 journalpostId = journalpostId,

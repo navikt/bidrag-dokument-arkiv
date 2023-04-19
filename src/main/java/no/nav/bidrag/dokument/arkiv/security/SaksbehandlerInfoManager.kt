@@ -5,7 +5,6 @@ import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer
 import no.nav.bidrag.dokument.arkiv.dto.Saksbehandler
 import no.nav.bidrag.dokument.arkiv.utils.TokenUtils.henteSubject
 import org.springframework.stereotype.Service
-import java.util.Optional
 
 @Service
 class SaksbehandlerInfoManager(
@@ -20,13 +19,13 @@ class SaksbehandlerInfoManager(
         }
     }
 
-    fun hentSaksbehandler(_saksbehandlerIdent: String? = null): Optional<Saksbehandler> {
+    fun hentSaksbehandler(_saksbehandlerIdent: String? = null): Saksbehandler? {
         return try {
-            val saksbehandlerIdent = _saksbehandlerIdent ?: hentSaksbehandlerBrukerId() ?: return Optional.empty()
-            val saksbehandlerNavn = bidragOrganisasjonConsumer.hentSaksbehandlerInfo(saksbehandlerIdent).navn
-            Optional.of(Saksbehandler(saksbehandlerIdent, saksbehandlerNavn))
+            val saksbehandlerIdent = _saksbehandlerIdent ?: hentSaksbehandlerBrukerId() ?: return null
+            val saksbehandlerNavn = bidragOrganisasjonConsumer.hentSaksbehandlerInfo(saksbehandlerIdent).navn?.verdi
+            Saksbehandler(saksbehandlerIdent, saksbehandlerNavn)
         } catch (e: Exception) {
-            Optional.empty()
+            null
         }
     }
 }

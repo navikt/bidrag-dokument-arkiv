@@ -201,11 +201,9 @@ class AvvikControllerTest : AbstractControllerTest() {
     fun skalSendeAvvikEndreFagomrade() {
         // given
         val xEnhet = "1234"
-        val geografiskEnhet = "1234"
         val nyttFagomrade = "FAR"
         val avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, java.util.Map.of("fagomrade", nyttFagomrade))
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        stubs.mockOrganisasjonGeografiskTilknytning(geografiskEnhet)
         stubs.mockSafResponseHentJournalpost(opprettSafResponse())
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
@@ -236,11 +234,9 @@ class AvvikControllerTest : AbstractControllerTest() {
     @Test
     fun `skal utføre avvik ENDRE_FAGOMRÅDE til BID hvis fagområde er ulik bidrag`() {
         val xEnhet = "1234"
-        val geografiskEnhet = "1234"
         val nyttFagomrade = "BID"
         val avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, java.util.Map.of("fagomrade", nyttFagomrade))
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        stubs.mockOrganisasjonGeografiskTilknytning(geografiskEnhet)
         stubs.mockSafResponseHentJournalpost(opprettSafResponse().copy(tema = "BAR"))
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)

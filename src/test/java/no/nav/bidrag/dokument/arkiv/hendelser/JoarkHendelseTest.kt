@@ -184,7 +184,6 @@ class JoarkHendelseTest {
         stubs.mockSafResponseTilknyttedeJournalposter(listOf())
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockBidragOrganisasjonSaksbehandler()
-        stubs.mockOrganisasjonGeografiskTilknytning(personEnhet)
 
         val record = createHendelseRecord(journalpostId)
 
@@ -220,7 +219,6 @@ class JoarkHendelseTest {
         stubs.mockSafResponseTilknyttedeJournalposter(listOf())
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockBidragOrganisasjonSaksbehandler()
-        stubs.mockOrganisasjonGeografiskTilknytning(personEnhet)
 
         val record = createHendelseRecord(journalpostId)
 

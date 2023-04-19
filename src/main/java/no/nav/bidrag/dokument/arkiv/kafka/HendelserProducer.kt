@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Retryable
-import java.util.Optional
 
 open class HendelserProducer(
     open val journalpostService: JournalpostService,
@@ -42,11 +41,9 @@ open class HendelserProducer(
 
     private fun createJournalpostHendelse(journalpost: Journalpost, saksbehandlersEnhet: String?): JournalpostHendelse {
         val saksbehandler = saksbehandlerInfoManager.hentSaksbehandler()
-            .orElse(
-                Optional.ofNullable(journalpost.hentJournalfortAvIdent())
-                    .map { ident: String? -> Saksbehandler(ident, journalpost.journalfortAvNavn) }
-                    .orElse(Saksbehandler(null, "bidrag-dokument-arkiv"))
-            )
+            ?: journalpost.hentJournalfortAvIdent()?.let { Saksbehandler(it, journalpost.journalfortAvNavn) }
+            ?: Saksbehandler(null, "bidrag-dokument-arkiv")
+
         val saksbehandlerMedEnhet = saksbehandler.tilEnhet(saksbehandlersEnhet)
         return JournalpostHendelseIntern(journalpost, saksbehandlerMedEnhet, null).hentJournalpostHendelse()
     }

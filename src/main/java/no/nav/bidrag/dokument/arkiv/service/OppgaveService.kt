@@ -80,9 +80,8 @@ class OppgaveService(
     }
 
     private fun hentSaksbehandlerMedEnhet(journalforendeEnhet: String?): SaksbehandlerMedEnhet {
-        return saksbehandlerInfoManager.hentSaksbehandler()
-            .map { saksbehandler: Saksbehandler -> saksbehandler.tilEnhet(journalforendeEnhet) }
-            .orElseGet { SaksbehandlerMedEnhet(Saksbehandler(), journalforendeEnhet!!) }
+        return saksbehandlerInfoManager.hentSaksbehandler()?.tilEnhet(journalforendeEnhet)
+            ?: SaksbehandlerMedEnhet(Saksbehandler(), journalforendeEnhet!!)
     }
 
     private fun opprettOppgave(request: OpprettOppgaveRequest) {
