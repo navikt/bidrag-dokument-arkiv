@@ -219,7 +219,7 @@ data class Journalpost(
     fun hentBrevkode(): String? = hentHoveddokument()?.brevkode
 
     fun isDistribusjonBestilt(): Boolean =
-        tilleggsopplysninger.isDistribusjonBestilt() || isStatusEkspedert()
+        tilleggsopplysninger.isDistribusjonBestilt() || isStatusEkspedert() || hasEkspedertDate()
 
     fun isFeilregistrert() = journalstatus == JournalStatus.FEILREGISTRERT
 
@@ -450,6 +450,7 @@ data class Journalpost(
     fun isStatusJournalfort(): Boolean = journalstatus == JournalStatus.JOURNALFOERT
     fun isInngaaendeJournalfort(): Boolean = isInngaaendeDokument() && isStatusJournalfort()
     fun isStatusEkspedert(): Boolean = journalstatus == JournalStatus.EKSPEDERT
+    fun hasEkspedertDate(): Boolean = hentEkspedertDato() != null
     fun isLokalUtksrift(): Boolean = kanal == JournalpostKanal.LOKAL_UTSKRIFT
     fun kanTilknytteSaker(): Boolean =
         journalstatus == JournalStatus.JOURNALFOERT || journalstatus == JournalStatus.FERDIGSTILT || journalstatus == JournalStatus.EKSPEDERT
