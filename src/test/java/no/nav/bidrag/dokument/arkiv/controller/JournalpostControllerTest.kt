@@ -55,13 +55,10 @@ import org.junit.jupiter.api.function.Executable
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import java.io.IOException
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.Optional
 import java.util.function.Consumer
 
 internal class JournalpostControllerTest : AbstractControllerTest() {
@@ -74,24 +71,16 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
     @Test
     @DisplayName("skal ha 400 BAD REQUEST når prefix mangler")
     fun skalHaBadRequestNarPrefixPaJournalpostIdMangler() {
-        val journalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/1?saknummer=007",
-            HttpMethod.GET,
-            null,
-            JournalpostDto::class.java
-        )
+        val journalpostResponseEntity =
+            httpHeaderTestRestTemplate.getForEntity<JournalpostDto>(initUrl() + "/journal/1?saknummer=007")
         Assertions.assertThat(journalpostResponseEntity.statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
     }
 
     @Test
     @DisplayName("skal ha 400 BAD REQUEST når prefix er feil")
     fun skalHaBadRequestlNarPrefixPaJournalpostIdErFeil() {
-        val journalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/BID-1?saksnummer=007",
-            HttpMethod.GET,
-            null,
-            JournalpostDto::class.java
-        )
+        val journalpostResponseEntity =
+            httpHeaderTestRestTemplate.getForEntity<JournalpostDto>(initUrl() + "/journal/BID-1?saksnummer=007")
         Assertions.assertThat(journalpostResponseEntity.statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
     }
 
@@ -101,14 +90,11 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
     fun skalHaBodySomErNullSamtHeaderWarningNarJournalpostIkkeFinnes() {
         stubs.mockSafResponseHentJournalpost(journalpostSafNotFoundResponse, HttpStatus.OK)
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
-        val journalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/JOARK-1?saksnummer=007",
-            HttpMethod.GET,
-            null,
-            String::class.java
+        val journalpostResponseEntity = httpHeaderTestRestTemplate.getForEntity<String>(
+            initUrl() + "/journal/JOARK-1?saksnummer=007"
         )
-        Assertions.assertThat(Optional.of(journalpostResponseEntity)).hasValueSatisfying(
-            Consumer { response: ResponseEntity<String?> ->
+        Assertions.assertThat(journalpostResponseEntity).satisfies(
+            Consumer { response ->
                 org.junit.jupiter.api.Assertions.assertAll(
                     Executable { Assertions.assertThat(response.body).`as`("body").isNull() },
                     Executable {
@@ -129,14 +115,10 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val journalpostIdFraJson = 201028011
         stubs.mockSafResponseHentJournalpost(responseJournalpostJson, HttpStatus.OK)
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
-        val responseEntity = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/JOARK-" + journalpostIdFraJson + "?saksnummer=007",
-            HttpMethod.GET,
-            null,
-            JournalpostResponse::class.java
-        )
-        Assertions.assertThat(Optional.of(responseEntity)).hasValueSatisfying(
-            Consumer { response: ResponseEntity<JournalpostResponse?> ->
+        val responseEntity =
+            httpHeaderTestRestTemplate.getForEntity<JournalpostResponse>(initUrl() + "/journal/JOARK-" + journalpostIdFraJson + "?saksnummer=007")
+        Assertions.assertThat(responseEntity).satisfies(
+            Consumer { response ->
                 org.junit.jupiter.api.Assertions.assertAll(
                     Executable { Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.NOT_FOUND) },
                     Executable { Assertions.assertThat(response.body).isNull() },
@@ -154,14 +136,10 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost(responseJournalpostJson, HttpStatus.OK)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.BAD_REQUEST)
-        val responseEntity = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
-            HttpMethod.GET,
-            null,
-            JournalpostResponse::class.java
-        )
-        Assertions.assertThat(Optional.of(responseEntity)).hasValueSatisfying(
-            Consumer { response: ResponseEntity<JournalpostResponse?> ->
+        val responseEntity =
+            httpHeaderTestRestTemplate.getForEntity<JournalpostResponse>(initUrl() + "/journal/JOARK-" + journalpostIdFraJson)
+        Assertions.assertThat(responseEntity).satisfies(
+            Consumer { response ->
                 org.junit.jupiter.api.Assertions.assertAll(
                     Executable { Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR) },
                     Executable { Assertions.assertThat(response.body).isNull() },
@@ -185,15 +163,11 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         )
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
-        val responseEntity = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
-            HttpMethod.GET,
-            null,
-            JournalpostResponse::class.java
-        )
+        val responseEntity =
+            httpHeaderTestRestTemplate.getForEntity<JournalpostResponse>(initUrl() + "/journal/JOARK-" + journalpostIdFraJson)
         val journalpost = if (responseEntity.body != null) responseEntity.body!!.journalpost else null
         val saker = if (responseEntity.body != null) responseEntity.body!!.sakstilknytninger else null
-        Assertions.assertThat(Optional.of(responseEntity)).hasValueSatisfying { response: ResponseEntity<JournalpostResponse?> ->
+        Assertions.assertThat(responseEntity).satisfies({ response ->
             org.junit.jupiter.api.Assertions.assertAll(
                 Executable { Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.OK) },
                 Executable { Assertions.assertThat(journalpost).isNotNull.extracting { it?.avsenderNavn }.isEqualTo(AVSENDER_NAVN) },
@@ -209,7 +183,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                 Executable { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() },
                 Executable { stubs.verifyStub.bidragPersonKalt() }
             )
-        }
+        })
     }
 
     @Test
@@ -220,15 +194,11 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost(responseJournalpostJsonWithAdresse, HttpStatus.OK)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
-        val responseEntity = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
-            HttpMethod.GET,
-            null,
-            JournalpostResponse::class.java
-        )
+        val responseEntity =
+            httpHeaderTestRestTemplate.getForEntity<JournalpostResponse>(initUrl() + "/journal/JOARK-" + journalpostIdFraJson)
         val journalpost = if (responseEntity.body != null) responseEntity.body!!.journalpost else null
         val distribuertTilAdresse = journalpost!!.distribuertTilAdresse
-        Assertions.assertThat(Optional.of(responseEntity)).hasValueSatisfying { response: ResponseEntity<JournalpostResponse?> ->
+        Assertions.assertThat(responseEntity).satisfies({ response ->
             org.junit.jupiter.api.Assertions.assertAll(
                 Executable { Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.OK) },
                 Executable { Assertions.assertThat(journalpost).isNotNull.extracting { it.journalpostId }.isEqualTo("JOARK-$journalpostIdFraJson") },
@@ -244,7 +214,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                 Executable { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() },
                 Executable { stubs.verifyStub.bidragPersonKalt() }
             )
-        }
+        })
     }
 
     @Test
@@ -255,16 +225,11 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost(responseJournalpostJsonWithReturDetaljer, HttpStatus.OK)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
-        val responseEntity = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
-            HttpMethod.GET,
-            null,
-            JournalpostResponse::class.java
-        )
+        val responseEntity = httpHeaderTestRestTemplate.getForEntity<JournalpostResponse>(initUrl() + "/journal/JOARK-" + journalpostIdFraJson)
         val journalpost = if (responseEntity.body != null) responseEntity.body!!.journalpost else null
         val returDetaljer = journalpost!!.returDetaljer
         val returDetaljerLog = journalpost.returDetaljer!!.logg
-        Assertions.assertThat(Optional.of(responseEntity)).hasValueSatisfying { response: ResponseEntity<JournalpostResponse?> ->
+        Assertions.assertThat(responseEntity).satisfies({ response ->
             org.junit.jupiter.api.Assertions.assertAll(
                 Executable { Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.OK) },
                 Executable { Assertions.assertThat(journalpost).isNotNull.extracting { it.journalpostId }.isEqualTo("JOARK-$journalpostIdFraJson") },
@@ -309,7 +274,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                 Executable { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() },
                 Executable { stubs.verifyStub.bidragPersonKalt() }
             )
-        }
+        })
     }
 
     @Test
@@ -320,16 +285,11 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost("journalpostSafLockedReturDetaljerResponse.json", HttpStatus.OK)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
-        val responseEntity = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
-            HttpMethod.GET,
-            null,
-            JournalpostResponse::class.java
-        )
+        val responseEntity = httpHeaderTestRestTemplate.getForEntity<JournalpostResponse>(initUrl() + "/journal/JOARK-" + journalpostIdFraJson)
         val journalpost = if (responseEntity.body != null) responseEntity.body!!.journalpost else null
         val returDetaljer = journalpost!!.returDetaljer
         val returDetaljerLog = journalpost.returDetaljer!!.logg
-        Assertions.assertThat(Optional.of(responseEntity)).hasValueSatisfying { response: ResponseEntity<JournalpostResponse?> ->
+        Assertions.assertThat(responseEntity).satisfies({ response ->
             org.junit.jupiter.api.Assertions.assertAll(
                 Executable { Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.OK) },
                 Executable { Assertions.assertThat(journalpost).isNotNull.extracting { it.journalpostId }.isEqualTo("JOARK-$journalpostIdFraJson") },
@@ -385,7 +345,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                 Executable { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() },
                 Executable { stubs.verifyStub.bidragPersonKalt() }
             )
-        }
+        })
     }
 
     @Test
@@ -396,15 +356,11 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost(journalpostJournalfortSafResponse, HttpStatus.OK)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
-        val responseEntity = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/JOARK-" + journalpostIdFraJson + "?saksnummer=5276661",
-            HttpMethod.GET,
-            null,
-            JournalpostResponse::class.java
-        )
+        val responseEntity =
+            httpHeaderTestRestTemplate.getForEntity<JournalpostResponse>(initUrl() + "/journal/JOARK-" + journalpostIdFraJson + "?saksnummer=5276661")
         val journalpost = if (responseEntity.body != null) responseEntity.body!!.journalpost else null
         val saker = if (responseEntity.body != null) responseEntity.body!!.sakstilknytninger else null
-        Assertions.assertThat(Optional.of(responseEntity)).hasValueSatisfying { response: ResponseEntity<JournalpostResponse?> ->
+        Assertions.assertThat(responseEntity).satisfies({ response ->
             org.junit.jupiter.api.Assertions.assertAll(
                 Executable { Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.OK) },
                 Executable {
@@ -423,7 +379,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                 Executable { stubs.verifyStub.harEnSafKallEtterTilknyttedeJournalposter() },
                 Executable { stubs.verifyStub.bidragPersonKalt() }
             )
-        }
+        })
     }
 
     @Test
@@ -445,12 +401,8 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         )
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
-        val responseEntity = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/JOARK-" + journalpostId + "?saksnummer=5276661",
-            HttpMethod.GET,
-            null,
-            JournalpostResponse::class.java
-        )
+        val responseEntity =
+            httpHeaderTestRestTemplate.getForEntity<JournalpostResponse>(initUrl() + "/journal/JOARK-" + journalpostId + "?saksnummer=5276661")
         assertSoftly {
             responseEntity.statusCode shouldBe HttpStatus.OK
 
@@ -465,12 +417,8 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
     fun skalHenteJournalposterForEnBidragssak() {
         stubs.mockSafResponseDokumentOversiktFagsak()
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
-        val jouralposterResponseEntity = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/sak/5276661/journal?fagomrade=BID",
-            HttpMethod.GET,
-            null,
-            listeMedJournalposterTypeReference()
-        )
+        val jouralposterResponseEntity =
+            httpHeaderTestRestTemplate.getForEntity<List<JournalpostDto>>(initUrl() + "/sak/5276661/journal?fagomrade=BID")
         org.junit.jupiter.api.Assertions.assertAll(
             Executable { Assertions.assertThat(jouralposterResponseEntity).extracting { it.statusCode }.isEqualTo(HttpStatus.OK) },
             Executable { Assertions.assertThat(jouralposterResponseEntity.body).hasSize(3) },
@@ -524,12 +472,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
-        val response = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/distribuer/JOARK-" + JOURNALPOST_ID,
-            HttpMethod.POST,
-            HttpEntity(request, headersMedEnhet),
-            JournalpostDto::class.java
-        )
+        val response = httpHeaderTestRestTemplate.postForEntity<JournalpostDto>(initUrl() + "/journal/distribuer/JOARK-" + JOURNALPOST_ID)
 
         // then
         assertSoftly {
@@ -555,11 +498,11 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
                 "{\"tilleggsopplysninger\":[" +
-                        "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
-                        "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
-                        "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
-                        "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
-                        "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
+                    "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
+                    "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
+                    "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
+                    "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
+                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
             )
         }
     }
@@ -598,12 +541,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
-        val response = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/distribuer/JOARK-" + JOURNALPOST_ID,
-            HttpMethod.POST,
-            HttpEntity(request, headersMedEnhet),
-            JournalpostDto::class.java
-        )
+        val response = httpHeaderTestRestTemplate.postForEntity<JournalpostDto>(initUrl() + "/journal/distribuer/JOARK-" + JOURNALPOST_ID)
 
         // then
         assertSoftly {
@@ -629,11 +567,11 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
                 "{\"tilleggsopplysninger\":[" +
-                        "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
-                        "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
-                        "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
-                        "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
-                        "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
+                    "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
+                    "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
+                    "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
+                    "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
+                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
             )
         }
     }
@@ -663,12 +601,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
-        val response = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/distribuer/JOARK-" + journalpostId,
-            HttpMethod.POST,
-            HttpEntity(request, headersMedEnhet),
-            JournalpostDto::class.java
-        )
+        val response = httpHeaderTestRestTemplate.postForEntity<JournalpostDto>(initUrl() + "/journal/distribuer/JOARK-" + journalpostId)
 
         assertSoftly {
             response.statusCode shouldBe HttpStatus.OK
@@ -713,12 +646,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
-        val response = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/distribuer/JOARK-" + journalpostId,
-            HttpMethod.POST,
-            HttpEntity(request, headersMedEnhet),
-            JournalpostDto::class.java
-        )
+        val response = httpHeaderTestRestTemplate.postForEntity<JournalpostDto>(initUrl() + "/journal/distribuer/JOARK-" + journalpostId)
 
         assertSoftly {
             response.statusCode shouldBe HttpStatus.OK
@@ -759,12 +687,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             journalpostId
         )
         // when
-        val response = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/distribuer/info/JOARK-" + journalpostId,
-            HttpMethod.GET,
-            null,
-            DistribusjonInfoDto::class.java
-        )
+        val response = httpHeaderTestRestTemplate.getForEntity<DistribusjonInfoDto>(initUrl() + "/journal/distribuer/info/JOARK-" + journalpostId)
 
         response.statusCode shouldBe HttpStatus.OK
 
@@ -802,12 +725,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             journalpostId
         )
         // when
-        val response = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/distribuer/info/JOARK-" + journalpostId,
-            HttpMethod.GET,
-            null,
-            DistribusjonInfoDto::class.java
-        )
+        val response = httpHeaderTestRestTemplate.getForEntity<DistribusjonInfoDto>(initUrl() + "/journal/distribuer/info/JOARK-" + journalpostId)
 
         response.statusCode shouldBe HttpStatus.OK
 
@@ -856,12 +774,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val request = DistribuerJournalpostRequest(lokalUtskrift = true)
 
         // when
-        val response = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/distribuer/JOARK-" + journalpostId,
-            HttpMethod.POST,
-            HttpEntity(request, headersMedEnhet),
-            JournalpostDto::class.java
-        )
+        val response = httpHeaderTestRestTemplate.postForEntity<JournalpostDto>(initUrl() + "/journal/distribuer/JOARK-" + journalpostId)
 
         response.statusCode shouldBe HttpStatus.OK
 
@@ -894,24 +807,20 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
-        val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/distribuer/JOARK-" + journalpostIdFraJson,
-            HttpMethod.POST,
-            HttpEntity(request, headersMedEnhet),
-            DistribuerJournalpostResponse::class.java
-        )
+        val oppdaterJournalpostResponseEntity =
+            httpHeaderTestRestTemplate.postForEntity<DistribuerJournalpostResponse>(initUrl() + "/journal/distribuer/JOARK-" + journalpostIdFraJson)
 
         // then
         org.junit.jupiter.api.Assertions.assertAll(
             Executable {
                 Assertions.assertThat(oppdaterJournalpostResponseEntity)
-                    .extracting { obj: ResponseEntity<DistribuerJournalpostResponse?> -> obj.statusCode }
+                    .extracting { it.statusCode }
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.OK)
             },
             Executable {
                 Assertions.assertThat(oppdaterJournalpostResponseEntity)
-                    .extracting<DistribuerJournalpostResponse> { obj: ResponseEntity<DistribuerJournalpostResponse?> -> obj.body }
+                    .extracting<DistribuerJournalpostResponse> { it.body }
                     .extracting { it.journalpostId }
                     .`as`("journalpostId")
                     .isEqualTo("JOARK-201028011")
@@ -950,18 +859,14 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         stubs.mockPersonAdresseResponse(postadresse)
 
         // when
-        val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/distribuer/JOARK-" + journalpostIdFraJson + "?batchId=" + batchId,
-            HttpMethod.POST,
-            HttpEntity<Any?>(null, headersMedEnhet),
-            JournalpostDto::class.java
-        )
+        val oppdaterJournalpostResponseEntity =
+            httpHeaderTestRestTemplate.postForEntity<JournalpostDto>(initUrl() + "/journal/distribuer/JOARK-" + journalpostIdFraJson + "?batchId=" + batchId)
 
         // then
         org.junit.jupiter.api.Assertions.assertAll(
             Executable {
                 Assertions.assertThat(oppdaterJournalpostResponseEntity)
-                    .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
+                    .extracting { it.statusCode }
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.OK)
             },
@@ -1014,18 +919,14 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
-        val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/distribuer/JOARK-" + journalpostIdFraJson,
-            HttpMethod.POST,
-            HttpEntity(request, headersMedEnhet),
-            JournalpostDto::class.java
-        )
+        val oppdaterJournalpostResponseEntity =
+            httpHeaderTestRestTemplate.postForEntity<JournalpostDto>(initUrl() + "/journal/distribuer/JOARK-" + journalpostIdFraJson)
 
         // then
         org.junit.jupiter.api.Assertions.assertAll(
             Executable {
                 Assertions.assertThat(oppdaterJournalpostResponseEntity)
-                    .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
+                    .extracting { it.statusCode }
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.OK)
             },
@@ -1065,18 +966,14 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val request = DistribuerJournalpostRequest(adresse = createDistribuerTilAdresse())
 
         // when
-        val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/distribuer/JOARK-" + journalpostIdFraJson,
-            HttpMethod.POST,
-            HttpEntity(request, headersMedEnhet),
-            JournalpostDto::class.java
-        )
+        val oppdaterJournalpostResponseEntity =
+            httpHeaderTestRestTemplate.postForEntity<JournalpostDto>(initUrl() + "/journal/distribuer/JOARK-" + journalpostIdFraJson)
 
         // then
         org.junit.jupiter.api.Assertions.assertAll(
             Executable {
                 Assertions.assertThat(oppdaterJournalpostResponseEntity)
-                    .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
+                    .extracting { it.statusCode }
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.BAD_REQUEST)
             },
@@ -1098,18 +995,14 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         // when
-        val response = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/journal/distribuer/JOARK-" + journalpostIdFraJson + "/enabled",
-            HttpMethod.GET,
-            HttpEntity<Any>(headersMedEnhet),
-            JournalpostDto::class.java
-        )
+        val response =
+            httpHeaderTestRestTemplate.getForEntity<JournalpostDto>(initUrl() + "/journal/distribuer/JOARK-" + journalpostIdFraJson + "/enabled")
 
         // then
         org.junit.jupiter.api.Assertions.assertAll(
             Executable {
                 Assertions.assertThat(response)
-                    .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
+                    .extracting { it.statusCode }
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.OK)
             }
@@ -1129,18 +1022,16 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponseNoMottaker.json", HttpStatus.OK)
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         // when
-        val response = httpHeaderTestRestTemplate.exchange(
+        val response = httpHeaderTestRestTemplate.getForEntity<JournalpostDto>(
             initUrl() + "/journal/distribuer/JOARK-" + journalpostIdFraJson + "/enabled",
-            HttpMethod.GET,
-            HttpEntity<Any>(headersMedEnhet),
-            JournalpostDto::class.java
+            HttpEntity<Any>(headersMedEnhet)
         )
 
         // then
         org.junit.jupiter.api.Assertions.assertAll(
             Executable {
                 Assertions.assertThat(response)
-                    .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
+                    .extracting { it.statusCode }
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.NOT_ACCEPTABLE)
             }

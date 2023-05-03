@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
-import mu.KotlinLogging
+import mu.two.KotlinLogging
 import no.nav.bidrag.commons.util.KildesystemIdenfikator
 import no.nav.bidrag.commons.web.WebUtil
 import no.nav.bidrag.dokument.arkiv.service.DokumentService

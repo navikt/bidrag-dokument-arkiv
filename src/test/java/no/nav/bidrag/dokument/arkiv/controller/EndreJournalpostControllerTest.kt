@@ -32,7 +32,6 @@ import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import java.io.IOException
 import java.time.LocalDate
 
@@ -172,7 +171,7 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
         Assertions.assertAll(
             {
                 assertThat(oppdaterJournalpostResponseEntity)
-                    .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
+                    .extracting { it.statusCode }
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.OK)
             },
@@ -246,7 +245,7 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
         Assertions.assertAll(
             {
                 assertThat(oppdaterJournalpostResponseEntity)
-                    .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
+                    .extracting { it.statusCode }
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.OK)
             },
@@ -299,7 +298,7 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
         Assertions.assertAll(
             {
                 assertThat(oppdaterJournalpostResponseEntity)
-                    .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
+                    .extracting { it.statusCode }
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.OK)
             },
@@ -346,7 +345,7 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
         Assertions.assertAll(
             {
                 assertThat(oppdaterJournalpostResponseEntity)
-                    .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
+                    .extracting { it.statusCode }
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.OK)
             },
@@ -392,7 +391,7 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
         Assertions.assertAll(
             {
                 assertThat(oppdaterJournalpostResponseEntity)
-                    .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
+                    .extracting { it.statusCode }
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.OK)
             },
@@ -461,7 +460,7 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
         Assertions.assertAll(
             {
                 assertThat(oppdaterJournalpostResponseEntity)
-                    .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
+                    .extracting { it.statusCode }
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.OK)
             },
@@ -532,13 +531,13 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
         Assertions.assertAll(
             {
                 assertThat(oppdaterJournalpostResponseEntity)
-                    .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.statusCode }
+                    .extracting { it.statusCode }
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.BAD_REQUEST)
             },
             {
                 assertThat(oppdaterJournalpostResponseEntity)
-                    .extracting { obj: ResponseEntity<JournalpostDto?> -> obj.headers[HttpHeaders.WARNING] }
+                    .extracting { it.headers[HttpHeaders.WARNING] }
                     .`as`("Feilmelding")
                     .isEqualTo(listOf("Ugyldige data: Kan ikke endre låste returdetaljer, Kan ikke endre returdetaljer opprettet før dokumentdato"))
             }

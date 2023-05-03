@@ -15,10 +15,10 @@ import no.nav.bidrag.dokument.dto.DokumentFormatDto
 import no.nav.bidrag.dokument.dto.DokumentMetadata
 import no.nav.bidrag.dokument.dto.DokumentStatusDto
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.times
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
+import org.springframework.web.util.UriComponentsBuilder
 
 class DokumentControllerTest : AbstractControllerTest() {
 
@@ -28,11 +28,9 @@ class DokumentControllerTest : AbstractControllerTest() {
 
         stubs.mockSafHentDokumentResponse()
 
-        val response = httpHeaderTestRestTemplate.exchange(
-            initUrl() + "/dokument/JOARK-$journalpostId/$DOKUMENT_1_ID",
-            HttpMethod.GET,
-            null,
-            ByteArray::class.java
+        val response = httpHeaderTestRestTemplate.getForEntity<ByteArray>(
+            UriComponentsBuilder.fromUriString(initUrl()).pathSegment("dokument", "JOARK-$journalpostId/$DOKUMENT_1_ID").build().toUri(),
+            null
         )
 
         response.statusCode shouldBe HttpStatus.OK

@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.7.10</version>
+    <version>3.0.6</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
@@ -23,33 +23,33 @@
 
     <!-- language -->
     <java.version>17</java.version>
-    <kotlin.version>1.8.20</kotlin.version>
+    <kotlin.version>1.8.21</kotlin.version>
 
     <!-- dependent versions other than from spring-boot -->
     <apache-avro-version>1.11.1</apache-avro-version>
-    <bidrag-commons.version>0.7.31</bidrag-commons.version>
-    <bidrag-commons-test.version>0.2.2</bidrag-commons-test.version>
-    <bidrag-transport.version>20230413080727_14a3c1b</bidrag-transport.version>
+    <bidrag-commons.version>20230427084654_4121ef0</bidrag-commons.version>
+    <bidrag-commons-test.version>1.20230503150725_3c2c77b</bidrag-commons-test.version>
+    <bidrag-transport.version>20230426154133_0fd52b3</bidrag-transport.version>
     <bidrag-dokument-dto.version>1.6.31</bidrag-dokument-dto.version>
     <commons-codec.version>1.15</commons-codec.version>
-    <graphq-dgs-client.version>5.5.2</graphq-dgs-client.version>
+    <graphq-dgs-client.version>6.0.5</graphq-dgs-client.version>
     <joark-hendelse.version>67a9be4476b63b7247cfacfaf821ab656bd2a952</joark-hendelse.version>
-    <kafka-avro-serializer.version>6.2.1</kafka-avro-serializer.version>
-    <logback-encoder.version>7.2</logback-encoder.version>
+    <kafka-avro-serializer.version>7.3.3</kafka-avro-serializer.version>
+    <logback-encoder.version>7.3</logback-encoder.version>
     <nimbus-jose-jwt.version>9.15.2</nimbus-jose-jwt.version>
-    <springdoc-openapi-ui.version>1.7.0</springdoc-openapi-ui.version>
-    <springframework-cloud.version>3.1.5</springframework-cloud.version>
-    <squareup.version>4.10.0</squareup.version>
-    <token-support.version>2.1.9</token-support.version>
+    <springdoc-openapi-ui.version>2.1.0</springdoc-openapi-ui.version>
+    <springframework-cloud.version>4.0.2</springframework-cloud.version>
+    <squareup.version>4.11.0</squareup.version>
+    <token-support.version>3.0.11</token-support.version>
 
     <!-- build -->
-    <build-helper-maven.version>3.2.0</build-helper-maven.version>
+    <build-helper-maven.version>3.3.0</build-helper-maven.version>
     <maven.compiler.version>3.8.0</maven.compiler.version>
     <maven.surefire.version>2.22.2</maven.surefire.version>
     <maven.compiler.release>${java.version}</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <kotlin-logging-jvm.version>3.0.4</kotlin-logging-jvm.version>
+    <kotlin-logging-jvm.version>4.0.0-beta-2</kotlin-logging-jvm.version>
   </properties>
   <repositories>
     <repository>
@@ -94,7 +94,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-compress</artifactId>
-      <version>1.22</version>
+      <version>1.23.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.avro</groupId>
@@ -190,13 +190,7 @@
     <!-- swagger -->
     <dependency>
       <groupId>org.springdoc</groupId>
-      <artifactId>springdoc-openapi-ui</artifactId>
-      <version>${springdoc-openapi-ui.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.springdoc</groupId>
-      <artifactId>springdoc-openapi-kotlin</artifactId>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
       <version>${springdoc-openapi-ui.version}</version>
     </dependency>
 
@@ -287,7 +281,7 @@
     <dependency>
       <groupId>io.kotest</groupId>
       <artifactId>kotest-assertions-core-jvm</artifactId>
-      <version>5.5.5</version>
+      <version>5.6.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -346,6 +340,7 @@
           </execution>
         </executions>
         <configuration>
+          <jvmTarget>17</jvmTarget>
           <compilerPlugins>
             <plugin>spring</plugin>
           </compilerPlugins>
@@ -391,7 +386,8 @@
                         <phase>verify</phase>
                         <configuration>
                             <target name="ktlint">
-                                <java taskname="ktlint" dir="${basedir}" fork="true" failonerror="true" classpathref="maven.plugin.classpath" classname="com.pinterest.ktlint.Main">
+                                <java taskname="ktlint" dir="${basedir}" fork="true" failonerror="true"
+                                      classpathref="maven.plugin.classpath" classname="com.pinterest.ktlint.Main">
                                     <arg value="src/**/*.kt"/>
                                 </java>
                             </target>
@@ -405,7 +401,8 @@
                         <phase>validate</phase>
                         <configuration>
                             <target name="ktlint">
-                                <java taskname="ktlint" dir="${basedir}" fork="true" failonerror="true" classpathref="maven.plugin.classpath" classname="com.pinterest.ktlint.Main">
+                                <java taskname="ktlint" dir="${basedir}" fork="true" failonerror="true"
+                                      classpathref="maven.plugin.classpath" classname="com.pinterest.ktlint.Main">
                                     <jvmarg value="--add-opens"/>
                                     <jvmarg value="java.base/java.lang=ALL-UNNAMED"/>
                                     <arg value="-F"/>
