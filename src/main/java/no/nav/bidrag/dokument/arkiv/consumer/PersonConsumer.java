@@ -33,13 +33,18 @@ public class PersonConsumer {
   }
 
   @Cacheable(value = PERSON_CACHE, unless = "#result==null")
-  @Retryable(value = Exception.class, maxAttempts = 5, backoff = @Backoff(delay = 500, maxDelay = 3000, multiplier = 2.0))
+  @Retryable(
+      value = Exception.class,
+      maxAttempts = 5,
+      backoff = @Backoff(delay = 500, maxDelay = 3000, multiplier = 2.0))
   public Optional<PersonDto> hentPerson(String id) {
     try {
-      var personResponse = restTemplate.exchange("/informasjon",
-          HttpMethod.POST,
-          new HttpEntity<>(new PersonRequest(new PersonIdent(id))),
-          PersonDto.class);
+      var personResponse =
+          restTemplate.exchange(
+              "/informasjon",
+              HttpMethod.POST,
+              new HttpEntity<>(new PersonRequest(new PersonIdent(id))),
+              PersonDto.class);
       if (HttpStatus.NO_CONTENT == personResponse.getStatusCode()) {
         return Optional.empty();
       }
@@ -54,7 +59,13 @@ public class PersonConsumer {
 
   @Cacheable(value = PERSON_ADRESSE_CACHE, unless = "#result == null")
   public PersonAdresseDto hentAdresse(String id) {
-    return restTemplate.exchange("/adresse/post", HttpMethod.POST, new HttpEntity<>(new PersonIdent(id)), PersonAdresseDto.class).getBody();
+    return restTemplate
+        .exchange(
+            "/adresse/post",
+            HttpMethod.POST,
+            new HttpEntity<>(new PersonRequest(new PersonIdent(id))),
+            PersonAdresseDto.class)
+        .getBody();
   }
 
   public void leggTilInterceptor(ClientHttpRequestInterceptor requestInterceptor) {
