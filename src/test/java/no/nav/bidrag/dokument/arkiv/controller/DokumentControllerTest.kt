@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
-import org.springframework.web.util.UriComponentsBuilder
 
 class DokumentControllerTest : AbstractControllerTest() {
 
@@ -28,10 +27,8 @@ class DokumentControllerTest : AbstractControllerTest() {
 
         stubs.mockSafHentDokumentResponse()
 
-        val response = httpHeaderTestRestTemplate.getForEntity<ByteArray>(
-            UriComponentsBuilder.fromUriString(initUrl()).pathSegment("dokument", "JOARK-$journalpostId/$DOKUMENT_1_ID").build().toUri(),
-            null
-        )
+        val response =
+            httpHeaderTestRestTemplate.getForEntity<ByteArray>(initUrl() + "/dokument/JOARK-$journalpostId/$DOKUMENT_1_ID")
 
         response.statusCode shouldBe HttpStatus.OK
         response.body shouldBe DOKUMENT_FIL.toByteArray()

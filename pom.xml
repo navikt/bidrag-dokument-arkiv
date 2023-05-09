@@ -30,7 +30,7 @@
     <bidrag-commons.version>20230427084654_4121ef0</bidrag-commons.version>
     <bidrag-commons-test.version>1.20230503150725_3c2c77b</bidrag-commons-test.version>
     <bidrag-transport.version>20230426154133_0fd52b3</bidrag-transport.version>
-    <bidrag-dokument-dto.version>1.6.31</bidrag-dokument-dto.version>
+    <bidrag-dokument-dto.version>1.6.32</bidrag-dokument-dto.version>
     <commons-codec.version>1.15</commons-codec.version>
     <graphq-dgs-client.version>6.0.5</graphq-dgs-client.version>
     <joark-hendelse.version>67a9be4476b63b7247cfacfaf821ab656bd2a952</joark-hendelse.version>
@@ -49,7 +49,7 @@
     <maven.compiler.release>${java.version}</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <kotlin-logging-jvm.version>4.0.0-beta-2</kotlin-logging-jvm.version>
+    <kotlin-logging-jvm.version>3.0.5</kotlin-logging-jvm.version>
   </properties>
   <repositories>
     <repository>
