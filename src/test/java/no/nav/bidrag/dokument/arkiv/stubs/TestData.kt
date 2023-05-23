@@ -54,6 +54,7 @@ var BREVKODE = "BI01S02"
 var JOURNALFORENDE_ENHET = "4833"
 var DATO_REGISTRERT = DatoType("2021-04-20T13:20:33", "DATO_REGISTRERT")
 var DATO_DOKUMENT = DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
+var DATO_EKSPEDERT = DatoType("2021-08-18T13:20:33", "DATO_EKSPEDERT")
 var DATO_JOURNALFORT = DatoType("2022-08-18T13:20:33", "DATO_JOURNALFOERT")
 var DATO_RETUR = DatoType("2021-08-18T13:20:33", "DATO_AVS_RETUR")
 
@@ -123,7 +124,11 @@ fun opprettUtgaendeSafResponse(
 
 fun opprettSafResponse(
     journalpostId: String = JOURNALPOST_ID.toString(),
-    avsenderMottaker: AvsenderMottaker = AvsenderMottaker(AVSENDER_NAVN, AVSENDER_ID, AvsenderMottakerIdType.FNR),
+    avsenderMottaker: AvsenderMottaker = AvsenderMottaker(
+        AVSENDER_NAVN,
+        AVSENDER_ID,
+        AvsenderMottakerIdType.FNR
+    ),
     bruker: Bruker? = Bruker(BRUKER_AKTOER_ID, BRUKER_TYPE_AKTOERID),
     dokumenter: List<Dokument> = listOf(
         Dokument(
@@ -233,10 +238,16 @@ fun createOppgaveDataWithJournalpostId(journalpostId: String): OppgaveData {
 fun createTillegsopplysningerWithReturDetaljer(): TilleggsOpplysninger {
     val tilleggsopplysninger = TilleggsOpplysninger()
     tilleggsopplysninger.addReturDetaljLog(
-        ReturDetaljerLogDO("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", RETUR_DETALJER_DATO_1)
+        ReturDetaljerLogDO(
+            "1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier",
+            RETUR_DETALJER_DATO_1
+        )
     )
     tilleggsopplysninger.addReturDetaljLog(
-        ReturDetaljerLogDO("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", RETUR_DETALJER_DATO_2)
+        ReturDetaljerLogDO(
+            "2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier",
+            RETUR_DETALJER_DATO_2
+        )
     )
     tilleggsopplysninger.setDistribusjonBestillt()
     return tilleggsopplysninger
@@ -283,7 +294,9 @@ fun createJoarkOpprettJournalpostRequest(): JoarkOpprettJournalpostRequest {
         ),
         journalpostType = JoarkJournalpostType.INNGAAENDE,
         bruker = JoarkOpprettJournalpostRequest.OpprettJournalpostBruker(GJELDER_ID, idType = null),
-        avsenderMottaker = JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(GJELDER_ID),
+        avsenderMottaker = JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
+            GJELDER_ID
+        ),
         behandlingstema = BEHANDLINGSTEMA,
         kanal = Kanal.NAV_NO.name,
         tema = "BID",

@@ -23,6 +23,7 @@ import no.nav.bidrag.dokument.arkiv.dto.UtsendingsInfo
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_NAVN
 import no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT
+import no.nav.bidrag.dokument.arkiv.stubs.DATO_EKSPEDERT
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
 import no.nav.bidrag.dokument.arkiv.stubs.JOURNALPOST_ID
 import no.nav.bidrag.dokument.arkiv.stubs.createDistribuerTilAdresse
@@ -919,7 +920,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                     digitalpostSendt = DigitalpostSendt("test@nav.no")
                 ),
                 tilleggsopplysninger = tilleggsOpplysninger,
-                relevanteDatoer = listOf(DATO_DOKUMENT)
+                relevanteDatoer = listOf(DATO_DOKUMENT, DATO_EKSPEDERT)
             ),
             journalpostId
         )
@@ -962,7 +963,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                     epostVarselSendt = EpostVarselSendt("test@nav.no", "tittel", "varslingtekst")
                 ),
                 tilleggsopplysninger = tilleggsOpplysninger,
-                relevanteDatoer = listOf(DATO_DOKUMENT)
+                relevanteDatoer = listOf(DATO_DOKUMENT, DATO_EKSPEDERT)
             ),
             journalpostId
         )
