@@ -80,7 +80,8 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             null,
             JournalpostDto::class.java
         )
-        Assertions.assertThat(journalpostResponseEntity.statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
+        Assertions.assertThat(journalpostResponseEntity.statusCode)
+            .isEqualTo(HttpStatus.BAD_REQUEST)
     }
 
     @Test
@@ -92,7 +93,8 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             null,
             JournalpostDto::class.java
         )
-        Assertions.assertThat(journalpostResponseEntity.statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
+        Assertions.assertThat(journalpostResponseEntity.statusCode)
+            .isEqualTo(HttpStatus.BAD_REQUEST)
     }
 
     @Test
@@ -112,10 +114,14 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                 org.junit.jupiter.api.Assertions.assertAll(
                     Executable { Assertions.assertThat(response.body).`as`("body").isNull() },
                     Executable {
-                        Assertions.assertThat(response.headers[HttpHeaders.WARNING]).`as`("header warning").first()
+                        Assertions.assertThat(response.headers[HttpHeaders.WARNING])
+                            .`as`("header warning").first()
                             .isEqualTo("Fant ikke journalpost i fagarkivet. journalpostId=910536260")
                     },
-                    Executable { Assertions.assertThat(response.statusCode).`as`("status").isEqualTo(HttpStatus.NOT_FOUND) },
+                    Executable {
+                        Assertions.assertThat(response.statusCode).`as`("status")
+                            .isEqualTo(HttpStatus.NOT_FOUND)
+                    },
                     Executable { stubs.verifyStub.harEnSafKallEtterHentJournalpost() }
                 )
             }
@@ -138,7 +144,9 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         Assertions.assertThat(Optional.of(responseEntity)).hasValueSatisfying(
             Consumer { response: ResponseEntity<JournalpostResponse?> ->
                 org.junit.jupiter.api.Assertions.assertAll(
-                    Executable { Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.NOT_FOUND) },
+                    Executable {
+                        Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.NOT_FOUND)
+                    },
                     Executable { Assertions.assertThat(response.body).isNull() },
                     Executable { stubs.verifyStub.harEnSafKallEtterHentJournalpost() }
                 )
@@ -153,7 +161,10 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val journalpostIdFraJson = 201028011
         stubs.mockSafResponseHentJournalpost(responseJournalpostJson, HttpStatus.OK)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.BAD_REQUEST)
+        stubs.mockPersonResponse(
+            PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT),
+            HttpStatus.BAD_REQUEST
+        )
         val responseEntity = httpHeaderTestRestTemplate.exchange(
             initUrl() + "/journal/JOARK-" + journalpostIdFraJson,
             HttpMethod.GET,
@@ -163,7 +174,10 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         Assertions.assertThat(Optional.of(responseEntity)).hasValueSatisfying(
             Consumer { response: ResponseEntity<JournalpostResponse?> ->
                 org.junit.jupiter.api.Assertions.assertAll(
-                    Executable { Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR) },
+                    Executable {
+                        Assertions.assertThat(response.statusCode)
+                            .isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
+                    },
                     Executable { Assertions.assertThat(response.body).isNull() },
                     Executable { stubs.verifyStub.harEnSafKallEtterHentJournalpost() },
                     Executable { stubs.verifyStub.bidragPersonKalt() }
@@ -191,25 +205,48 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             null,
             JournalpostResponse::class.java
         )
-        val journalpost = if (responseEntity.body != null) responseEntity.body!!.journalpost else null
-        val saker = if (responseEntity.body != null) responseEntity.body!!.sakstilknytninger else null
-        Assertions.assertThat(Optional.of(responseEntity)).hasValueSatisfying { response: ResponseEntity<JournalpostResponse?> ->
-            org.junit.jupiter.api.Assertions.assertAll(
-                Executable { Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.OK) },
-                Executable { Assertions.assertThat(journalpost).isNotNull.extracting { it?.avsenderNavn }.isEqualTo(AVSENDER_NAVN) },
-                Executable {
-                    Assertions.assertThat(journalpost).isNotNull.extracting { it?.avsenderMottaker }
-                        .isEqualTo(AvsenderMottakerDto(AVSENDER_NAVN, AVSENDER_ID, AvsenderMottakerDtoIdType.FNR))
-                },
-                Executable { Assertions.assertThat(journalpost).isNotNull.extracting { it?.innhold }.isEqualTo(DOKUMENT_1_TITTEL) },
-                Executable { Assertions.assertThat(journalpost).isNotNull.extracting { it?.journalpostId }.isEqualTo("JOARK-$journalpostIdFraJson") },
-                Executable { Assertions.assertThat(journalpost).isNotNull.extracting { it?.gjelderAktor?.ident }.isEqualTo(PERSON_IDENT.verdi) },
-                Executable { Assertions.assertThat(saker).isNotNull.hasSize(0) },
-                Executable { stubs.verifyStub.harEnSafKallEtterHentJournalpost() },
-                Executable { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() },
-                Executable { stubs.verifyStub.bidragPersonKalt() }
-            )
-        }
+        val journalpost =
+            if (responseEntity.body != null) responseEntity.body!!.journalpost else null
+        val saker =
+            if (responseEntity.body != null) responseEntity.body!!.sakstilknytninger else null
+        Assertions.assertThat(Optional.of(responseEntity))
+            .hasValueSatisfying { response: ResponseEntity<JournalpostResponse?> ->
+                org.junit.jupiter.api.Assertions.assertAll(
+                    Executable {
+                        Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+                    },
+                    Executable {
+                        Assertions.assertThat(journalpost).isNotNull.extracting { it?.avsenderNavn }
+                            .isEqualTo(AVSENDER_NAVN)
+                    },
+                    Executable {
+                        Assertions.assertThat(journalpost).isNotNull.extracting { it?.avsenderMottaker }
+                            .isEqualTo(
+                                AvsenderMottakerDto(
+                                    AVSENDER_NAVN,
+                                    AVSENDER_ID,
+                                    AvsenderMottakerDtoIdType.FNR
+                                )
+                            )
+                    },
+                    Executable {
+                        Assertions.assertThat(journalpost).isNotNull.extracting { it?.innhold }
+                            .isEqualTo(DOKUMENT_1_TITTEL)
+                    },
+                    Executable {
+                        Assertions.assertThat(journalpost).isNotNull.extracting { it?.journalpostId }
+                            .isEqualTo("JOARK-$journalpostIdFraJson")
+                    },
+                    Executable {
+                        Assertions.assertThat(journalpost).isNotNull.extracting { it?.gjelderAktor?.ident }
+                            .isEqualTo(PERSON_IDENT.verdi)
+                    },
+                    Executable { Assertions.assertThat(saker).isNotNull.hasSize(0) },
+                    Executable { stubs.verifyStub.harEnSafKallEtterHentJournalpost() },
+                    Executable { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() },
+                    Executable { stubs.verifyStub.bidragPersonKalt() }
+                )
+            }
     }
 
     @Test
@@ -226,25 +263,50 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             null,
             JournalpostResponse::class.java
         )
-        val journalpost = if (responseEntity.body != null) responseEntity.body!!.journalpost else null
+        val journalpost =
+            if (responseEntity.body != null) responseEntity.body!!.journalpost else null
         val distribuertTilAdresse = journalpost!!.distribuertTilAdresse
-        Assertions.assertThat(Optional.of(responseEntity)).hasValueSatisfying { response: ResponseEntity<JournalpostResponse?> ->
-            org.junit.jupiter.api.Assertions.assertAll(
-                Executable { Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.OK) },
-                Executable { Assertions.assertThat(journalpost).isNotNull.extracting { it.journalpostId }.isEqualTo("JOARK-$journalpostIdFraJson") },
-                Executable { Assertions.assertThat(journalpost).isNotNull.extracting { it.journalstatus }.isEqualTo(JournalstatusDto.EKSPEDERT) },
-                Executable { Assertions.assertThat(distribuertTilAdresse).isNotNull() },
-                Executable { Assertions.assertThat(distribuertTilAdresse!!.adresselinje1).isEqualTo("Testveien 20A") },
-                Executable { Assertions.assertThat(distribuertTilAdresse!!.adresselinje2).isEqualTo("TestLinje2") },
-                Executable { Assertions.assertThat(distribuertTilAdresse!!.adresselinje3).isEqualTo("TestLinje4") },
-                Executable { Assertions.assertThat(distribuertTilAdresse!!.postnummer).isEqualTo("7950") },
-                Executable { Assertions.assertThat(distribuertTilAdresse!!.poststed).isEqualTo("ABELVÆR") },
-                Executable { Assertions.assertThat(distribuertTilAdresse!!.land).isEqualTo("NO") },
-                Executable { stubs.verifyStub.harEnSafKallEtterHentJournalpost() },
-                Executable { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() },
-                Executable { stubs.verifyStub.bidragPersonKalt() }
-            )
-        }
+        Assertions.assertThat(Optional.of(responseEntity))
+            .hasValueSatisfying { response: ResponseEntity<JournalpostResponse?> ->
+                org.junit.jupiter.api.Assertions.assertAll(
+                    Executable {
+                        Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+                    },
+                    Executable {
+                        Assertions.assertThat(journalpost).isNotNull.extracting { it.journalpostId }
+                            .isEqualTo("JOARK-$journalpostIdFraJson")
+                    },
+                    Executable {
+                        Assertions.assertThat(journalpost).isNotNull.extracting { it.journalstatus }
+                            .isEqualTo(JournalstatusDto.EKSPEDERT)
+                    },
+                    Executable { Assertions.assertThat(distribuertTilAdresse).isNotNull() },
+                    Executable {
+                        Assertions.assertThat(distribuertTilAdresse!!.adresselinje1)
+                            .isEqualTo("Testveien 20A")
+                    },
+                    Executable {
+                        Assertions.assertThat(distribuertTilAdresse!!.adresselinje2)
+                            .isEqualTo("TestLinje2")
+                    },
+                    Executable {
+                        Assertions.assertThat(distribuertTilAdresse!!.adresselinje3)
+                            .isEqualTo("TestLinje4")
+                    },
+                    Executable {
+                        Assertions.assertThat(distribuertTilAdresse!!.postnummer).isEqualTo("7950")
+                    },
+                    Executable {
+                        Assertions.assertThat(distribuertTilAdresse!!.poststed).isEqualTo("ABELVÆR")
+                    },
+                    Executable {
+                        Assertions.assertThat(distribuertTilAdresse!!.land).isEqualTo("NO")
+                    },
+                    Executable { stubs.verifyStub.harEnSafKallEtterHentJournalpost() },
+                    Executable { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() },
+                    Executable { stubs.verifyStub.bidragPersonKalt() }
+                )
+            }
     }
 
     @Test
@@ -252,7 +314,10 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
     @Throws(IOException::class)
     fun skalHenteJournalpostMedReturDetaljer() {
         val journalpostIdFraJson = 201028011
-        stubs.mockSafResponseHentJournalpost(responseJournalpostJsonWithReturDetaljer, HttpStatus.OK)
+        stubs.mockSafResponseHentJournalpost(
+            responseJournalpostJsonWithReturDetaljer,
+            HttpStatus.OK
+        )
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         val responseEntity = httpHeaderTestRestTemplate.exchange(
@@ -261,55 +326,65 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             null,
             JournalpostResponse::class.java
         )
-        val journalpost = if (responseEntity.body != null) responseEntity.body!!.journalpost else null
+        val journalpost =
+            if (responseEntity.body != null) responseEntity.body!!.journalpost else null
         val returDetaljer = journalpost!!.returDetaljer
         val returDetaljerLog = journalpost.returDetaljer!!.logg
-        Assertions.assertThat(Optional.of(responseEntity)).hasValueSatisfying { response: ResponseEntity<JournalpostResponse?> ->
-            org.junit.jupiter.api.Assertions.assertAll(
-                Executable { Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.OK) },
-                Executable { Assertions.assertThat(journalpost).isNotNull.extracting { it.journalpostId }.isEqualTo("JOARK-$journalpostIdFraJson") },
-                Executable { Assertions.assertThat(returDetaljer).isNotNull() },
-                Executable { Assertions.assertThat(returDetaljerLog!!.size).isEqualTo(3) },
-                Executable {
-                    Assertions.assertThat(
-                        returDetaljerLog!!.contains(
-                            ReturDetaljerLog(
-                                LocalDate.parse("2020-11-15"),
-                                "Beskrivelse av retur",
-                                false
+        Assertions.assertThat(Optional.of(responseEntity))
+            .hasValueSatisfying { response: ResponseEntity<JournalpostResponse?> ->
+                org.junit.jupiter.api.Assertions.assertAll(
+                    Executable {
+                        Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+                    },
+                    Executable {
+                        Assertions.assertThat(journalpost).isNotNull.extracting { it.journalpostId }
+                            .isEqualTo("JOARK-$journalpostIdFraJson")
+                    },
+                    Executable { Assertions.assertThat(returDetaljer).isNotNull() },
+                    Executable { Assertions.assertThat(returDetaljerLog!!.size).isEqualTo(3) },
+                    Executable {
+                        Assertions.assertThat(
+                            returDetaljerLog!!.contains(
+                                ReturDetaljerLog(
+                                    LocalDate.parse("2020-11-15"),
+                                    "Beskrivelse av retur",
+                                    false
+                                )
                             )
-                        )
-                    ).isTrue()
-                },
-                Executable {
-                    Assertions.assertThat(
-                        returDetaljerLog!!.contains(
-                            ReturDetaljerLog(
-                                LocalDate.parse("2020-12-14"),
-                                "Beskrivelse av retur mer tekst for å teste lengre verdier",
-                                false
+                        ).isTrue()
+                    },
+                    Executable {
+                        Assertions.assertThat(
+                            returDetaljerLog!!.contains(
+                                ReturDetaljerLog(
+                                    LocalDate.parse("2020-12-14"),
+                                    "Beskrivelse av retur mer tekst for å teste lengre verdier",
+                                    false
+                                )
                             )
-                        )
-                    ).isTrue()
-                },
-                Executable {
-                    Assertions.assertThat(
-                        returDetaljerLog!!.contains(
-                            ReturDetaljerLog(
-                                LocalDate.parse("2022-12-15"),
-                                "Beskrivelse av retur 2 mer tekst for å teste lengre verdier",
-                                false
+                        ).isTrue()
+                    },
+                    Executable {
+                        Assertions.assertThat(
+                            returDetaljerLog!!.contains(
+                                ReturDetaljerLog(
+                                    LocalDate.parse("2022-12-15"),
+                                    "Beskrivelse av retur 2 mer tekst for å teste lengre verdier",
+                                    false
+                                )
                             )
-                        )
-                    ).isTrue()
-                },
-                Executable { Assertions.assertThat(returDetaljer!!.antall).isEqualTo(3) },
-                Executable { Assertions.assertThat(returDetaljer!!.dato).isEqualTo(LocalDate.parse("2020-12-15")) },
-                Executable { stubs.verifyStub.harEnSafKallEtterHentJournalpost() },
-                Executable { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() },
-                Executable { stubs.verifyStub.bidragPersonKalt() }
-            )
-        }
+                        ).isTrue()
+                    },
+                    Executable { Assertions.assertThat(returDetaljer!!.antall).isEqualTo(3) },
+                    Executable {
+                        Assertions.assertThat(returDetaljer!!.dato)
+                            .isEqualTo(LocalDate.parse("2020-12-15"))
+                    },
+                    Executable { stubs.verifyStub.harEnSafKallEtterHentJournalpost() },
+                    Executable { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() },
+                    Executable { stubs.verifyStub.bidragPersonKalt() }
+                )
+            }
     }
 
     @Test
@@ -317,7 +392,10 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
     @Throws(IOException::class)
     fun skalHenteJournalpostMedLaasteReturDetaljer() {
         val journalpostIdFraJson = 201028011
-        stubs.mockSafResponseHentJournalpost("journalpostSafLockedReturDetaljerResponse.json", HttpStatus.OK)
+        stubs.mockSafResponseHentJournalpost(
+            "journalpostSafLockedReturDetaljerResponse.json",
+            HttpStatus.OK
+        )
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         val responseEntity = httpHeaderTestRestTemplate.exchange(
@@ -326,66 +404,76 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             null,
             JournalpostResponse::class.java
         )
-        val journalpost = if (responseEntity.body != null) responseEntity.body!!.journalpost else null
+        val journalpost =
+            if (responseEntity.body != null) responseEntity.body!!.journalpost else null
         val returDetaljer = journalpost!!.returDetaljer
         val returDetaljerLog = journalpost.returDetaljer!!.logg
-        Assertions.assertThat(Optional.of(responseEntity)).hasValueSatisfying { response: ResponseEntity<JournalpostResponse?> ->
-            org.junit.jupiter.api.Assertions.assertAll(
-                Executable { Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.OK) },
-                Executable { Assertions.assertThat(journalpost).isNotNull.extracting { it.journalpostId }.isEqualTo("JOARK-$journalpostIdFraJson") },
-                Executable { Assertions.assertThat(returDetaljer).isNotNull() },
-                Executable { Assertions.assertThat(returDetaljerLog!!.size).isEqualTo(4) },
-                Executable {
-                    Assertions.assertThat(
-                        returDetaljerLog!!.contains(
-                            ReturDetaljerLog(
-                                LocalDate.parse("2020-11-15"),
-                                "Beskrivelse av retur",
-                                true
+        Assertions.assertThat(Optional.of(responseEntity))
+            .hasValueSatisfying { response: ResponseEntity<JournalpostResponse?> ->
+                org.junit.jupiter.api.Assertions.assertAll(
+                    Executable {
+                        Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+                    },
+                    Executable {
+                        Assertions.assertThat(journalpost).isNotNull.extracting { it.journalpostId }
+                            .isEqualTo("JOARK-$journalpostIdFraJson")
+                    },
+                    Executable { Assertions.assertThat(returDetaljer).isNotNull() },
+                    Executable { Assertions.assertThat(returDetaljerLog!!.size).isEqualTo(4) },
+                    Executable {
+                        Assertions.assertThat(
+                            returDetaljerLog!!.contains(
+                                ReturDetaljerLog(
+                                    LocalDate.parse("2020-11-15"),
+                                    "Beskrivelse av retur",
+                                    true
+                                )
                             )
-                        )
-                    ).isTrue()
-                },
-                Executable {
-                    Assertions.assertThat(
-                        returDetaljerLog!!.contains(
-                            ReturDetaljerLog(
-                                LocalDate.parse("2020-12-14"),
-                                "Beskrivelse av retur mer tekst for å teste lengre verdier",
-                                true
+                        ).isTrue()
+                    },
+                    Executable {
+                        Assertions.assertThat(
+                            returDetaljerLog!!.contains(
+                                ReturDetaljerLog(
+                                    LocalDate.parse("2020-12-14"),
+                                    "Beskrivelse av retur mer tekst for å teste lengre verdier",
+                                    true
+                                )
                             )
-                        )
-                    ).isTrue()
-                },
-                Executable {
-                    Assertions.assertThat(
-                        returDetaljerLog!!.contains(
-                            ReturDetaljerLog(
-                                LocalDate.parse("2022-12-15"),
-                                "Beskrivelse av retur 2 mer tekst for å teste lengre verdier",
-                                true
+                        ).isTrue()
+                    },
+                    Executable {
+                        Assertions.assertThat(
+                            returDetaljerLog!!.contains(
+                                ReturDetaljerLog(
+                                    LocalDate.parse("2022-12-15"),
+                                    "Beskrivelse av retur 2 mer tekst for å teste lengre verdier",
+                                    true
+                                )
                             )
-                        )
-                    ).isTrue()
-                },
-                Executable {
-                    Assertions.assertThat(
-                        returDetaljerLog!!.contains(
-                            ReturDetaljerLog(
-                                LocalDate.parse("2022-12-20"),
-                                "Beskrivelse av retur uten lås",
-                                false
+                        ).isTrue()
+                    },
+                    Executable {
+                        Assertions.assertThat(
+                            returDetaljerLog!!.contains(
+                                ReturDetaljerLog(
+                                    LocalDate.parse("2022-12-20"),
+                                    "Beskrivelse av retur uten lås",
+                                    false
+                                )
                             )
-                        )
-                    ).isTrue()
-                },
-                Executable { Assertions.assertThat(returDetaljer!!.antall).isEqualTo(4) },
-                Executable { Assertions.assertThat(returDetaljer!!.dato).isEqualTo(LocalDate.parse("2020-12-15")) },
-                Executable { stubs.verifyStub.harEnSafKallEtterHentJournalpost() },
-                Executable { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() },
-                Executable { stubs.verifyStub.bidragPersonKalt() }
-            )
-        }
+                        ).isTrue()
+                    },
+                    Executable { Assertions.assertThat(returDetaljer!!.antall).isEqualTo(4) },
+                    Executable {
+                        Assertions.assertThat(returDetaljer!!.dato)
+                            .isEqualTo(LocalDate.parse("2020-12-15"))
+                    },
+                    Executable { stubs.verifyStub.harEnSafKallEtterHentJournalpost() },
+                    Executable { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() },
+                    Executable { stubs.verifyStub.bidragPersonKalt() }
+                )
+            }
     }
 
     @Test
@@ -402,28 +490,42 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             null,
             JournalpostResponse::class.java
         )
-        val journalpost = if (responseEntity.body != null) responseEntity.body!!.journalpost else null
-        val saker = if (responseEntity.body != null) responseEntity.body!!.sakstilknytninger else null
-        Assertions.assertThat(Optional.of(responseEntity)).hasValueSatisfying { response: ResponseEntity<JournalpostResponse?> ->
-            org.junit.jupiter.api.Assertions.assertAll(
-                Executable { Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.OK) },
-                Executable {
-                    Assertions.assertThat(journalpost).isNotNull.extracting { it?.innhold }.isEqualTo("Filosofens bidrag")
-                },
-                Executable { Assertions.assertThat(journalpost).isNotNull.extracting { it?.journalpostId }.isEqualTo("JOARK-$journalpostIdFraJson") },
-                Executable {
-                    Assertions.assertThat(journalpost).isNotNull.extracting { it?.gjelderAktor }.extracting { it?.ident }
-                        .isEqualTo(PERSON_IDENT.verdi)
-                },
-                Executable {
-                    Assertions.assertThat(journalpost).isNotNull.extracting { it?.brevkode?.kode }.isEqualTo("BI01S02")
-                },
-                Executable { Assertions.assertThat(saker).isNotNull.hasSize(3).contains("2106585").contains("5276661") },
-                Executable { stubs.verifyStub.harEnSafKallEtterHentJournalpost() },
-                Executable { stubs.verifyStub.harEnSafKallEtterTilknyttedeJournalposter() },
-                Executable { stubs.verifyStub.bidragPersonKalt() }
-            )
-        }
+        val journalpost =
+            if (responseEntity.body != null) responseEntity.body!!.journalpost else null
+        val saker =
+            if (responseEntity.body != null) responseEntity.body!!.sakstilknytninger else null
+        Assertions.assertThat(Optional.of(responseEntity))
+            .hasValueSatisfying { response: ResponseEntity<JournalpostResponse?> ->
+                org.junit.jupiter.api.Assertions.assertAll(
+                    Executable {
+                        Assertions.assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+                    },
+                    Executable {
+                        Assertions.assertThat(journalpost).isNotNull.extracting { it?.innhold }
+                            .isEqualTo("Filosofens bidrag")
+                    },
+                    Executable {
+                        Assertions.assertThat(journalpost).isNotNull.extracting { it?.journalpostId }
+                            .isEqualTo("JOARK-$journalpostIdFraJson")
+                    },
+                    Executable {
+                        Assertions.assertThat(journalpost).isNotNull.extracting { it?.gjelderAktor }
+                            .extracting { it?.ident }
+                            .isEqualTo(PERSON_IDENT.verdi)
+                    },
+                    Executable {
+                        Assertions.assertThat(journalpost).isNotNull.extracting { it?.brevkode?.kode }
+                            .isEqualTo("BI01S02")
+                    },
+                    Executable {
+                        Assertions.assertThat(saker).isNotNull.hasSize(3).contains("2106585")
+                            .contains("5276661")
+                    },
+                    Executable { stubs.verifyStub.harEnSafKallEtterHentJournalpost() },
+                    Executable { stubs.verifyStub.harEnSafKallEtterTilknyttedeJournalposter() },
+                    Executable { stubs.verifyStub.bidragPersonKalt() }
+                )
+            }
     }
 
     @Test
@@ -472,7 +574,10 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             listeMedJournalposterTypeReference()
         )
         org.junit.jupiter.api.Assertions.assertAll(
-            Executable { Assertions.assertThat(jouralposterResponseEntity).extracting { it.statusCode }.isEqualTo(HttpStatus.OK) },
+            Executable {
+                Assertions.assertThat(jouralposterResponseEntity).extracting { it.statusCode }
+                    .isEqualTo(HttpStatus.OK)
+            },
             Executable { Assertions.assertThat(jouralposterResponseEntity.body).hasSize(3) },
             Executable { stubs.verifyStub.bidragPersonKalt() },
             Executable { stubs.verifyStub.harSafEnKallEtterDokumentOversiktFagsak() }
@@ -495,7 +600,12 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         tilleggsopplysninger.setJournalfortAvIdent("Z99999")
 
         val tilleggsopplysningerEtterDist = TilleggsOpplysninger()
-        tilleggsopplysningerEtterDist.add(mapOf("nokkel" to "dokdistBestillingsId", "verdi" to "asdsadasdsadasdasd"))
+        tilleggsopplysningerEtterDist.add(
+            mapOf(
+                "nokkel" to "dokdistBestillingsId",
+                "verdi" to "asdsadasdsadasdasd"
+            )
+        )
 
         stubs.mockSafResponseHentJournalpost(
             opprettUtgaendeSafResponse(
@@ -517,7 +627,15 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         )
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
-        stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(JOURNALPOST_ID, JournalStatus.FERDIGSTILT, Sak("5276661"))))
+        stubs.mockSafResponseTilknyttedeJournalposter(
+            listOf(
+                TilknyttetJournalpost(
+                    JOURNALPOST_ID,
+                    JournalStatus.FERDIGSTILT,
+                    Sak("5276661")
+                )
+            )
+        )
         val distribuerTilAdresse = createDistribuerTilAdresse()
         distribuerTilAdresse.adresselinje2 = "Adresselinje2"
         distribuerTilAdresse.adresselinje3 = "Adresselinje3"
@@ -547,7 +665,11 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             )
             stubs.verifyStub.dokdistFordelingKalt(DistribusjonsType.VEDTAK.name)
             stubs.verifyStub.dokdistFordelingKalt(DistribusjonsTidspunkt.KJERNETID.name)
-            stubs.verifyStub.dokarkivOppdaterKalt(JOURNALPOST_ID, request.adresse!!.adresselinje1, request.adresse!!.land)
+            stubs.verifyStub.dokarkivOppdaterKalt(
+                JOURNALPOST_ID,
+                request.adresse!!.adresselinje1,
+                request.adresse!!.land
+            )
             stubs.verifyStub.dokarkivIkkeOppdaterKalt(
                 JOURNALPOST_ID,
                 "datoDokument"
@@ -576,9 +698,18 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         tilleggsopplysninger.setJournalfortAvIdent("Z99999")
 
         val tilleggsopplysningerEtterDist = TilleggsOpplysninger()
-        tilleggsopplysningerEtterDist.add(mapOf("nokkel" to "dokdistBestillingsId", "verdi" to "asdsadasdsadasdasd"))
+        tilleggsopplysningerEtterDist.add(
+            mapOf(
+                "nokkel" to "dokdistBestillingsId",
+                "verdi" to "asdsadasdsadasdasd"
+            )
+        )
 
-        stubs.mockSafResponseHentJournalpost(opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsopplysninger), null, "ETTER_DIST")
+        stubs.mockSafResponseHentJournalpost(
+            opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsopplysninger),
+            null,
+            "ETTER_DIST"
+        )
         stubs.mockSafResponseHentJournalpost(
             opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsopplysningerEtterDist),
             "ETTER_DIST",
@@ -591,7 +722,15 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         )
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
-        stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(JOURNALPOST_ID, JournalStatus.FERDIGSTILT, Sak("5276661"))))
+        stubs.mockSafResponseTilknyttedeJournalposter(
+            listOf(
+                TilknyttetJournalpost(
+                    JOURNALPOST_ID,
+                    JournalStatus.FERDIGSTILT,
+                    Sak("5276661")
+                )
+            )
+        )
         val distribuerTilAdresse = createDistribuerTilAdresse()
         distribuerTilAdresse.adresselinje2 = "Adresselinje2"
         distribuerTilAdresse.adresselinje3 = "Adresselinje3"
@@ -621,7 +760,11 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             )
             stubs.verifyStub.dokdistFordelingKalt(DistribusjonsType.VEDTAK.name)
             stubs.verifyStub.dokdistFordelingKalt(DistribusjonsTidspunkt.KJERNETID.name)
-            stubs.verifyStub.dokarkivOppdaterKalt(JOURNALPOST_ID, request.adresse!!.adresselinje1, request.adresse!!.land)
+            stubs.verifyStub.dokarkivOppdaterKalt(
+                JOURNALPOST_ID,
+                request.adresse!!.adresselinje1,
+                request.adresse!!.land
+            )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
                 "datoDokument"
@@ -656,7 +799,15 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost(safresponse)
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
-        stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(journalpostId, JournalStatus.FERDIGSTILT, Sak("5276661"))))
+        stubs.mockSafResponseTilknyttedeJournalposter(
+            listOf(
+                TilknyttetJournalpost(
+                    journalpostId,
+                    JournalStatus.FERDIGSTILT,
+                    Sak("5276661")
+                )
+            )
+        )
         val distribuerTilAdresse = createDistribuerTilAdresse()
         distribuerTilAdresse.adresselinje2 = "Adresselinje2"
         distribuerTilAdresse.adresselinje3 = "Adresselinje3"
@@ -683,7 +834,10 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                     )
                 )
             )
-            stubs.verifyStub.dokarkivOppdaterKalt(journalpostId, "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}")
+            stubs.verifyStub.dokarkivOppdaterKalt(
+                journalpostId,
+                "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}"
+            )
         }
     }
 
@@ -706,7 +860,15 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost(safresponse)
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
-        stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(journalpostId, JournalStatus.FERDIGSTILT, Sak("5276661"))))
+        stubs.mockSafResponseTilknyttedeJournalposter(
+            listOf(
+                TilknyttetJournalpost(
+                    journalpostId,
+                    JournalStatus.FERDIGSTILT,
+                    Sak("5276661")
+                )
+            )
+        )
         val distribuerTilAdresse = createDistribuerTilAdresse()
         distribuerTilAdresse.adresselinje2 = "Adresselinje2"
         distribuerTilAdresse.adresselinje3 = "Adresselinje3"
@@ -733,7 +895,10 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                     )
                 )
             )
-            stubs.verifyStub.dokarkivOppdaterKalt(journalpostId, "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}")
+            stubs.verifyStub.dokarkivOppdaterKalt(
+                journalpostId,
+                "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}"
+            )
         }
     }
 
@@ -832,7 +997,11 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val journalpostId = 201028011L
         val headersMedEnhet = HttpHeaders()
         headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
-        val safresponse = opprettSafResponse(journalpostId.toString(), journalpostType = JournalpostType.U, journalstatus = JournalStatus.FERDIGSTILT)
+        val safresponse = opprettSafResponse(
+            journalpostId.toString(),
+            journalpostType = JournalpostType.U,
+            journalstatus = JournalStatus.FERDIGSTILT
+        )
         stubs.mockSafResponseHentJournalpost(safresponse)
         val tilleggsOpplysninger = TilleggsOpplysninger()
         tilleggsOpplysninger.setJournalfortAvIdent("Z99999")
@@ -845,13 +1014,24 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             "ETTER_DIST"
         )
         stubs.mockSafResponseHentJournalpost(
-            safresponse.copy(tilleggsopplysninger = tilleggsOpplysninger, journalstatus = JournalStatus.EKSPEDERT),
+            safresponse.copy(
+                tilleggsopplysninger = tilleggsOpplysninger,
+                journalstatus = JournalStatus.EKSPEDERT
+            ),
             "ETTER_DIST",
-            "ETTER_DIST2"
+            null
         )
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
-        stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(journalpostId, JournalStatus.FERDIGSTILT, Sak("5276661"))))
+        stubs.mockSafResponseTilknyttedeJournalposter(
+            listOf(
+                TilknyttetJournalpost(
+                    journalpostId,
+                    JournalStatus.FERDIGSTILT,
+                    Sak("5276661")
+                )
+            )
+        )
         stubs.mockDokarkivOppdaterDistribusjonsInfoRequest(journalpostId)
         val request = DistribuerJournalpostRequest(lokalUtskrift = true)
 
@@ -867,10 +1047,17 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
 
         assertSoftly {
             stubs.verifyStub.dokdistFordelingIkkeKalt()
-            stubs.verifyStub.dokarkivOppdaterDistribusjonsInfoKalt(journalpostId, "{\"settStatusEkspedert\":true,\"utsendingsKanal\":\"L\"}")
+            stubs.verifyStub.dokarkivOppdaterDistribusjonsInfoKalt(
+                journalpostId,
+                "{\"settStatusEkspedert\":true,\"utsendingsKanal\":\"L\"}"
+            )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 journalpostId,
                 "{\"tilleggsopplysninger\":[{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
+            )
+            stubs.verifyStub.dokarkivOppdaterKalt(
+                journalpostId,
+                "{\"tittel\":\"Tittel på dokument 1 (dokumentet er sendt per post med vedlegg)\",\"dokumenter\":[{\"tittel\":\"Tittel på dokument 1 (dokumentet er sendt per post med vedlegg)\"}]}"
             )
         }
     }
@@ -946,7 +1133,15 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponse.json", HttpStatus.OK)
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
-        stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(journalpostIdFraJson, JournalStatus.FERDIGSTILT, Sak("5276661"))))
+        stubs.mockSafResponseTilknyttedeJournalposter(
+            listOf(
+                TilknyttetJournalpost(
+                    journalpostIdFraJson,
+                    JournalStatus.FERDIGSTILT,
+                    Sak("5276661")
+                )
+            )
+        )
         stubs.mockPersonAdresseResponse(postadresse)
 
         // when
@@ -989,8 +1184,19 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             Executable { stubs.verifyStub.dokdistFordelingKalt(DistribusjonsTidspunkt.KJERNETID.name) },
             Executable { stubs.verifyStub.dokdistFordelingKalt(batchId) },
             Executable { stubs.verifyStub.hentPersonAdresseKalt(mottakerId) },
-            Executable { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "Ramsegata 1", "NO") },
-            Executable { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}") }
+            Executable {
+                stubs.verifyStub.dokarkivOppdaterKalt(
+                    journalpostIdFraJson,
+                    "Ramsegata 1",
+                    "NO"
+                )
+            },
+            Executable {
+                stubs.verifyStub.dokarkivOppdaterKalt(
+                    journalpostIdFraJson,
+                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}"
+                )
+            }
         )
     }
 
@@ -1004,7 +1210,10 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val journalpostIdFraJson = 201028011L
         val headersMedEnhet = HttpHeaders()
         headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
-        stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponseVedtakTittel.json", HttpStatus.OK)
+        stubs.mockSafResponseHentJournalpost(
+            "journalpostSafUtgaaendeResponseVedtakTittel.json",
+            HttpStatus.OK
+        )
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
@@ -1044,8 +1253,19 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             },
             Executable { stubs.verifyStub.dokdistFordelingKalt(DistribusjonsType.VEDTAK.name) },
             Executable { stubs.verifyStub.dokdistFordelingKalt(DistribusjonsTidspunkt.KJERNETID.name) },
-            Executable { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, request.adresse!!.adresselinje1, request.adresse!!.land) },
-            Executable { stubs.verifyStub.dokarkivOppdaterKalt(journalpostIdFraJson, "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}") }
+            Executable {
+                stubs.verifyStub.dokarkivOppdaterKalt(
+                    journalpostIdFraJson,
+                    request.adresse!!.adresselinje1,
+                    request.adresse!!.land
+                )
+            },
+            Executable {
+                stubs.verifyStub.dokarkivOppdaterKalt(
+                    journalpostIdFraJson,
+                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}"
+                )
+            }
         )
     }
 
@@ -1059,7 +1279,10 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val journalpostIdFraJson = 201028011L
         val headersMedEnhet = HttpHeaders()
         headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
-        stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponseNoMottaker.json", HttpStatus.OK)
+        stubs.mockSafResponseHentJournalpost(
+            "journalpostSafUtgaaendeResponseNoMottaker.json",
+            HttpStatus.OK
+        )
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         val request = DistribuerJournalpostRequest(adresse = createDistribuerTilAdresse())
@@ -1126,7 +1349,10 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val journalpostIdFraJson = 201028011L
         val headersMedEnhet = HttpHeaders()
         headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
-        stubs.mockSafResponseHentJournalpost("journalpostSafUtgaaendeResponseNoMottaker.json", HttpStatus.OK)
+        stubs.mockSafResponseHentJournalpost(
+            "journalpostSafUtgaaendeResponseNoMottaker.json",
+            HttpStatus.OK
+        )
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         // when
         val response = httpHeaderTestRestTemplate.exchange(
