@@ -28,7 +28,12 @@ class OppgaveService(
     private val oppgaveConsumers: ResourceByDiscriminator<OppgaveConsumer>,
     private val saksbehandlerInfoManager: SaksbehandlerInfoManager
 ) {
-    fun leggTilKommentarPaaJournalforingsoppgave(journalpost: Journalpost, saksbehandlerMedEnhet: SaksbehandlerMedEnhet, kommentar: String) {
+
+    fun leggTilKommentarPaaJournalforingsoppgave(
+        journalpost: Journalpost,
+        saksbehandlerMedEnhet: SaksbehandlerMedEnhet,
+        kommentar: String
+    ) {
         val oppgaver = finnJournalforingOppgaverForJournalpost(journalpost.hentJournalpostIdLong())
         oppgaver.filter { it.tildeltEnhetsnr != OppgaveEnhet.FAGPOST }.forEach(
             Consumer { oppgave: OppgaveData ->
@@ -54,7 +59,13 @@ class OppgaveService(
         opprettOppgave(opprettOppgaveFagpostRequest)
     }
 
-    fun opprettVurderDokumentOppgave(journalpost: Journalpost, journalpostId: String, tildeltEnhetsnr: String, tema: String, kommentar: String?) {
+    fun opprettVurderDokumentOppgave(
+        journalpost: Journalpost,
+        journalpostId: String,
+        tildeltEnhetsnr: String,
+        tema: String,
+        kommentar: String?
+    ) {
         val aktorId = hentAktorId(journalpost.hentGjelderId())
         opprettOppgave(
             OpprettVurderDokumentOppgaveRequest(
@@ -75,8 +86,13 @@ class OppgaveService(
     }
 
     private fun ferdigstillOppgave(oppgaveData: OppgaveData, enhetsnr: String) {
-        LOGGER.info("Ferdigstiller oppgave {} med oppgavetype {}", oppgaveData.id, oppgaveData.oppgavetype)
-        oppgaveConsumers.get(Discriminator.SERVICE_USER).patchOppgave(FerdigstillOppgaveRequest(oppgaveData, enhetsnr))
+        LOGGER.info(
+            "Ferdigstiller oppgave {} med oppgavetype {}",
+            oppgaveData.id,
+            oppgaveData.oppgavetype
+        )
+        oppgaveConsumers.get(Discriminator.SERVICE_USER)
+            .patchOppgave(FerdigstillOppgaveRequest(oppgaveData, enhetsnr))
     }
 
     private fun hentSaksbehandlerMedEnhet(journalforendeEnhet: String?): SaksbehandlerMedEnhet {
@@ -93,7 +109,12 @@ class OppgaveService(
     private fun hentAktorId(gjelder: String?): String? {
         if (gjelder == null) return null
         return personConsumers.get(Discriminator.SERVICE_USER).hentPerson(gjelder)
-            .orElseGet { PersonDto(ident = PersonIdent(gjelder), aktørId = AktørId(gjelder)) }.aktørId?.verdi
+            .orElseGet {
+                PersonDto(
+                    ident = PersonIdent(gjelder),
+                    aktørId = AktørId(gjelder)
+                )
+            }.aktørId?.verdi
     }
 
     private fun finnVurderDokumentOppgaverForJournalpost(journalpostId: Long): List<OppgaveData> {
@@ -101,7 +122,8 @@ class OppgaveService(
             .leggTilFagomrade("BID")
             .leggTilJournalpostId(journalpostId)
             .brukVurderDokumentSomOppgaveType()
-        return oppgaveConsumers.get(Discriminator.SERVICE_USER).finnOppgaver(parametre)?.oppgaver ?: emptyList()
+        return oppgaveConsumers.get(Discriminator.SERVICE_USER).finnOppgaver(parametre)?.oppgaver
+            ?: emptyList()
     }
 
     private fun finnJournalforingOppgaverForJournalpost(journalpostId: Long?): List<OppgaveData> {
@@ -109,7 +131,8 @@ class OppgaveService(
             .leggTilFagomrade("BID")
             .leggTilJournalpostId(journalpostId!!)
             .brukJournalforingSomOppgaveType()
-        return oppgaveConsumers.get(Discriminator.SERVICE_USER).finnOppgaver(parametre)?.oppgaver ?: emptyList()
+        return oppgaveConsumers.get(Discriminator.SERVICE_USER).finnOppgaver(parametre)?.oppgaver
+            ?: emptyList()
     }
 
     companion object {

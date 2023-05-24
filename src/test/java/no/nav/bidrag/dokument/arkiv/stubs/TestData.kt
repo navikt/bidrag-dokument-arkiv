@@ -12,9 +12,12 @@ import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostType
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveData
+import no.nav.bidrag.dokument.arkiv.dto.OppgaveResponse
 import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
+import no.nav.bidrag.dokument.arkiv.model.OppgaveHendelse
+import no.nav.bidrag.dokument.arkiv.model.OppgaveStatus
 import no.nav.bidrag.dokument.dto.AvsenderMottakerDto
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 import no.nav.bidrag.dokument.dto.EndreDokument
@@ -62,6 +65,17 @@ var RETUR_DETALJER_DATO_1 = LocalDate.parse("2021-08-20")
 var RETUR_DETALJER_DATO_2 = LocalDate.parse("2021-11-22")
 var TILLEGGSOPPLYSNINGER_RETUR: MutableList<Map<String, String>> =
     mutableListOf(mapOf("nokkel" to "retur0_2020-11-15", "verdi" to "Beskrivelse av retur"))
+
+fun OppgaveHendelse.toOppgaveData(_versjon: Int? = null) = OppgaveData(
+    id = id,
+    versjon = _versjon ?: versjon,
+    journalpostId = journalpostId,
+    oppgavetype = oppgavetype,
+    status = status?.name,
+    tema = tema,
+    saksreferanse = saksreferanse
+
+)
 
 fun createDistribuerTilAdresse(): DistribuerTilAdresse {
     return DistribuerTilAdresse(
