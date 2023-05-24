@@ -12,12 +12,10 @@ import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostType
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveData
-import no.nav.bidrag.dokument.arkiv.dto.OppgaveResponse
 import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
 import no.nav.bidrag.dokument.arkiv.model.OppgaveHendelse
-import no.nav.bidrag.dokument.arkiv.model.OppgaveStatus
 import no.nav.bidrag.dokument.dto.AvsenderMottakerDto
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 import no.nav.bidrag.dokument.dto.EndreDokument

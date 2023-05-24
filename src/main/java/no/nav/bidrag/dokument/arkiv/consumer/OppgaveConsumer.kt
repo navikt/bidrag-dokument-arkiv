@@ -54,7 +54,12 @@ class OppgaveConsumer(restTemplate: RestTemplate?) : AbstractConsumer(restTempla
 
     fun hentOppgave(oppgaveId: Long): OppgaveData? {
         LOGGER.info("Henter oppgave $oppgaveId")
-        return restTemplate.getForObject("/${oppgaveId}", OppgaveData::class.java)
+        return restTemplate.exchange(
+            "/$oppgaveId",
+            HttpMethod.GET,
+            null,
+            OppgaveData::class.java
+        ).body
     }
 
     companion object {

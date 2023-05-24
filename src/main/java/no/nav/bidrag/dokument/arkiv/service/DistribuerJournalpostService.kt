@@ -208,16 +208,16 @@ class DistribuerJournalpostService(
         val beskrivelseJournalpostSendtPerPost = "dokumentet er sendt per post med vedlegg"
         val journalpostEtter = hentJournalpost(journalpostId)
         if (journalpostEtter.hentTittel()
-                ?.contains(beskrivelseJournalpostSendtPerPost, true) == false
+            ?.contains(beskrivelseJournalpostSendtPerPost, true) == false
         ) {
             endreJournalpostService.lagreJournalpost(
                 LeggTilBeskjedPåTittel(
                     journalpostEtter.hentJournalpostIdLong()!!,
-                    journalpostEtter, "dokumentet er sendt per post med vedlegg"
+                    journalpostEtter,
+                    "dokumentet er sendt per post med vedlegg"
                 )
             )
         }
-
     }
 
     private fun oppdaterTilleggsopplysninger(
@@ -247,11 +247,13 @@ class DistribuerJournalpostService(
         journalpostFør: Journalpost
     ) {
         journalpostEtter.tilleggsopplysninger
-            .addAll(journalpostFør.tilleggsopplysninger.filter {
-                !journalpostEtter.tilleggsopplysninger.contains(
-                    it
-                )
-            })
+            .addAll(
+                journalpostFør.tilleggsopplysninger.filter {
+                    !journalpostEtter.tilleggsopplysninger.contains(
+                        it
+                    )
+                }
+            )
     }
 
     private fun hentJournalpost(journalpostId: Long): Journalpost {

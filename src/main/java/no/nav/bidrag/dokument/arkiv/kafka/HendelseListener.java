@@ -25,42 +25,53 @@ public class HendelseListener {
   private final BehandleOppgaveHendelseService behandleOppgaveHendelseService;
   private final JsonMapperService jsonMapperService;
 
-  public HendelseListener(BehandleJournalforingHendelseService behandleJournalforingHendelseService,
-      BehandleOppgaveHendelseService behandleOppgaveHendelseService, JsonMapperService jsonMapperService){
+  public HendelseListener(
+      BehandleJournalforingHendelseService behandleJournalforingHendelseService,
+      BehandleOppgaveHendelseService behandleOppgaveHendelseService,
+      JsonMapperService jsonMapperService) {
     this.behandleJournalforingHendelseService = behandleJournalforingHendelseService;
     this.behandleOppgaveHendelseService = behandleOppgaveHendelseService;
     this.jsonMapperService = jsonMapperService;
   }
 
-  @KafkaListener(containerFactory="oppgaveKafkaListenerContainerFactory", topics = "${TOPIC_OPPGAVE_OPPRETTET}")
+  @KafkaListener(
+      containerFactory = "oppgaveKafkaListenerContainerFactory",
+      topics = "${TOPIC_OPPGAVE_OPPRETTET}")
   public void lesOppgaveOpprettetHendelse(ConsumerRecord<String, String> consumerRecord) {
-    OppgaveHendelse oppgaveOpprettetHendelse = jsonMapperService.mapOppgaveHendelse(consumerRecord.value());
+
+    OppgaveHendelse oppgaveOpprettetHendelse =
+        jsonMapperService.mapOppgaveHendelse(consumerRecord.value());
 
     if (oppgaveOpprettetHendelse.erTemaBIDEllerFAR() && oppgaveOpprettetHendelse.erReturOppgave()) {
       LOGGER.info("Mottatt retur oppgave opprettet hendelse {}", oppgaveOpprettetHendelse);
-      behandleOppgaveHendelseService.behandleReturOppgaveOpprettetHendelse(oppgaveOpprettetHendelse);
-    } else if (oppgaveOpprettetHendelse.erTemaBIDEllerFAR() && oppgaveOpprettetHendelse.erJournalforingOppgave()){
+      behandleOppgaveHendelseService.behandleReturOppgaveOpprettetHendelse(
+          oppgaveOpprettetHendelse);
+    } else if (oppgaveOpprettetHendelse.erTemaBIDEllerFAR()
+        && oppgaveOpprettetHendelse.erJournalforingOppgave()) {
       LOGGER.info("Mottatt journalforing oppgave opprettet hendelse {}", oppgaveOpprettetHendelse);
-      behandleOppgaveHendelseService.behandleJournalforingOppgaveOpprettetHendelse(oppgaveOpprettetHendelse);
+      behandleOppgaveHendelseService.behandleJournalforingOppgaveOpprettetHendelse(
+          oppgaveOpprettetHendelse);
     }
   }
 
   @KafkaListener(groupId = "bidrag-dokument-arkiv", topics = "${TOPIC_JOURNALFOERING}")
-  public void listenJournalforingHendelse(@Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
+  public void listenJournalforingHendelse(
+      @Payload JournalfoeringHendelseRecord journalfoeringHendelseRecord) {
     JournalpostTema journalpostTema = new JournalpostTema(journalfoeringHendelseRecord);
     if (!journalpostTema.erOmhandlingAvBidrag()) {
       LOGGER.debug("JournalpostTema omhandler ikke bidrag");
       return;
     }
 
-    if (erOpprettetAvNKS(journalfoeringHendelseRecord)){
+    if (erOpprettetAvNKS(journalfoeringHendelseRecord)) {
       LOGGER.debug("Journalpost er opprettet av NKS. Stopper videre behandling");
       return;
     }
 
     LOGGER.info("Mottok journalføringshendelse {}", journalfoeringHendelseRecord);
 
-    behandleJournalforingHendelseService.behandleJournalforingHendelse(journalfoeringHendelseRecord);
+    behandleJournalforingHendelseService.behandleJournalforingHendelse(
+        journalfoeringHendelseRecord);
   }
 
   private boolean erOpprettetAvNKS(JournalfoeringHendelseRecord record) {

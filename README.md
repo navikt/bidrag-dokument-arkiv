@@ -6,8 +6,10 @@
 
 ## Beskrivelse
 
-Bidrag-dokument-arkiv er en mikrotjeneste som fungerer som en facade mot fagarkivet (JOARK) for Bidrag/Farskap journalposter.<br/>
-Tjenestene i denne applikasjonen blir primært brukt av `bidrag-dokument` for å hente/endre data fra fagarkivet.
+Bidrag-dokument-arkiv er en mikrotjeneste som fungerer som en facade mot fagarkivet (JOARK) for
+Bidrag/Farskap journalposter.<br/>
+Tjenestene i denne applikasjonen blir primært brukt av `bidrag-dokument` for å hente/endre data fra
+fagarkivet.
 
 Denne applikasjonen tilbyr følgende operasjoner mot fagarkivet:
 
@@ -18,16 +20,20 @@ Denne applikasjonen tilbyr følgende operasjoner mot fagarkivet:
 * Lytt på oppgave-opprettet og Joark journalføring
   hendelser [HendelseListener](src/main/java/no/nav/bidrag/dokument/arkiv/kafka/HendelseListener.java)
     * Lytt på oppgave opprettet hendelse som sjekker om en returoppgave er opprettet
-        * Hendelsen oppdaterer returdato på journalpost hvis returoppgave er opprettet for en Bidrag journalpost
+        * Hendelsen oppdaterer returdato på journalpost hvis returoppgave er opprettet for en Bidrag
+          journalpost
     * Lytt på journalføringshendelse for mottatte og journalførte inngående journalposter
-        * Hendelsen henter journalpost og publiserer ny hendelse til `bidrag.journalpost` topic med journalpost metadata
+        * Hendelsen henter journalpost og publiserer ny hendelse til `bidrag.journalpost` topic med
+          journalpost metadata
         * Hendelser lagt til `bidrag.journalpost` blir lest av `bidrag-arbeidsflyt`.
-        * `bidrag-arbeidsflyt` oppretter journalføringsoppgave for journalpost hvis status er MOTTATT og lukker journalføringsoppgaver hvis status er
+        * `bidrag-arbeidsflyt` oppretter journalføringsoppgave for journalpost hvis status er
+          MOTTATT og lukker journalføringsoppgaver hvis status er
           journalført eller endret tema til ikke bidrag tema
 
 ## Lokal utvikling
 
-Verdiene i `src/test/resources/application-local.yaml` må settes opp som miljøvariabler når en starter
+Verdiene i `src/test/resources/application-local.yaml` må settes opp som miljøvariabler når en
+starter
 `BidragDokumentArkiv` for kjøring lokalt. Start applikasjon med `spring.profiles.active=local,live`
 `SRV_BD_ARKIV_AUTH` kan hentes fra Vault
 
@@ -66,12 +72,13 @@ kcat -b localhost:9092 -t oppgave-opprettet -P -K:
 og lim inn eks:
 
 ```bash
-12345678:{"id":"344986232","tema":"BID", "oppgavetype": "RETUR", "journalpostId": "525112325", "versjon": "1"}
+12345678:{"id":135894,"tildeltEnhetsnr":"4806","opprettetAvEnhetsnr":"9999","journalpostId":"453836528","saksreferanse":"123213123","tema":"BID","oppgavetype":"RETUR","versjon":1,"beskrivelse":"Returpost","fristFerdigstillelse":"2022-06-09","aktivDato":"2022-03-29","opprettetTidspunkt":"2023-05-24T13:19:35.25+02:00","opprettetAv":"srvbisys","prioritet":"HOY","status":"OPPRETTET","statuskategori":"AAPEN","ident":{"identType":"AKTOERID","verdi":"2421516513291","folkeregisterident":"22447402207"}}
 ```
 
 og deretter trykk Ctrl+D. Da vil meldingen bli sendt til topic oppgave-opprettet
 
-Det er ikke mulig å sende hendelse til journalforinghendelse topic da lytteren forventer avro melding og kcat støtter ikke å serialisere json til avro
+Det er ikke mulig å sende hendelse til journalforinghendelse topic da lytteren forventer avro
+melding og kcat støtter ikke å serialisere json til avro
 på en enkel måte
 
 #### Kjøre lokalt mot sky
@@ -92,12 +99,14 @@ kubens bidrag
 kubectl config use dev-fss
 ```
 
-Deretter kjør følgende kommando for å importere secrets. Viktig at filen som opprettes ikke committes til git
+Deretter kjør følgende kommando for å importere secrets. Viktig at filen som opprettes ikke
+committes til git
 
 ```bash
-kubectl exec --tty deployment/bidrag-dokument-arkiv-feature printenv | grep -E 'AZURE_|_URL|SCOPE|SRV|NAIS_APP_NAME|TOPIC' > src/test/resources/application-lokal-nais-secrets.properties
+kubectl exec --tty deployment/bidrag-dokument-arkiv printenv | grep -E 'AZURE_|_URL|SCOPE|SRV|NAIS_APP_NAME|TOPIC' > src/test/resources/application-lokal-nais-secrets.properties
 ```
 
-Kjør filen [BidragDokumentArkivLokalNais](src/test/java/no/nav/bidrag/dokument/arkiv/BidragDokumentArkivLokalNais.java)
+Kjør
+filen [BidragDokumentArkivLokalNais](src/test/java/no/nav/bidrag/dokument/arkiv/BidragDokumentArkivLokalNais.java)
 
 Deretter kan tokenet brukes til å logge inn på swagger-ui http://localhost:8082/swagger-ui.html

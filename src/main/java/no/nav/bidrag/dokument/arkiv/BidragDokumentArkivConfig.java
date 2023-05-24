@@ -49,14 +49,12 @@ import org.springframework.retry.annotation.EnableRetry;
 @EnableRetry
 @OpenAPIDefinition(
     info = @Info(title = "bidrag-dokument-arkiv", version = "v1"),
-    security = @SecurityRequirement(name = "bearer-key")
-)
+    security = @SecurityRequirement(name = "bearer-key"))
 @SecurityScheme(
     bearerFormat = "JWT",
     name = "bearer-key",
     scheme = "bearer",
-    type = SecuritySchemeType.HTTP
-)
+    type = SecuritySchemeType.HTTP)
 @Import(StsTokenService.class)
 public class BidragDokumentArkivConfig {
 
@@ -70,10 +68,11 @@ public class BidragDokumentArkivConfig {
   @Scope("prototype")
   public SafConsumer baseSafConsumer(
       @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
-      EnvironmentProperties environmentProperties
-  ) {
-    httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.safUrl));
-    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
+      EnvironmentProperties environmentProperties) {
+    httpHeaderRestTemplate.setUriTemplateHandler(
+        new RootUriTemplateHandler(environmentProperties.safUrl));
+    httpHeaderRestTemplate.addHeaderGenerator(
+        HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
     return new SafConsumer(httpHeaderRestTemplate);
   }
 
@@ -81,10 +80,11 @@ public class BidragDokumentArkivConfig {
   @Scope("prototype")
   public OppgaveConsumer baseOppgaveConsumer(
       @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
-      EnvironmentProperties environmentProperties
-  ) {
-    httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.oppgaveUrl));
-    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
+      EnvironmentProperties environmentProperties) {
+    httpHeaderRestTemplate.setUriTemplateHandler(
+        new RootUriTemplateHandler(environmentProperties.oppgaveUrl));
+    httpHeaderRestTemplate.addHeaderGenerator(
+        HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
     return new OppgaveConsumer(httpHeaderRestTemplate);
   }
 
@@ -93,10 +93,11 @@ public class BidragDokumentArkivConfig {
   public DokarkivConsumer baseDokarkivConsumer(
       @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
       EnvironmentProperties environmentProperties,
-      ObjectMapper objectMapper
-  ) {
-    httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.dokarkivUrl));
-    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
+      ObjectMapper objectMapper) {
+    httpHeaderRestTemplate.setUriTemplateHandler(
+        new RootUriTemplateHandler(environmentProperties.dokarkivUrl));
+    httpHeaderRestTemplate.addHeaderGenerator(
+        HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
     return new DokarkivConsumer(httpHeaderRestTemplate, objectMapper);
   }
 
@@ -106,12 +107,15 @@ public class BidragDokumentArkivConfig {
       @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
       EnvironmentProperties environmentProperties,
       ObjectMapper objectMapper,
-      SecurityTokenService securityTokenService
-  ) {
-    httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.dokdistFordelingUrl));
-    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
-    DokdistFordelingConsumer dokdistFordelingConsumer = new DokdistFordelingConsumer(httpHeaderRestTemplate, objectMapper);
-    dokdistFordelingConsumer.leggTilInterceptor(securityTokenService.clientCredentialsTokenInterceptor(null));
+      SecurityTokenService securityTokenService) {
+    httpHeaderRestTemplate.setUriTemplateHandler(
+        new RootUriTemplateHandler(environmentProperties.dokdistFordelingUrl));
+    httpHeaderRestTemplate.addHeaderGenerator(
+        HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
+    DokdistFordelingConsumer dokdistFordelingConsumer =
+        new DokdistFordelingConsumer(httpHeaderRestTemplate, objectMapper);
+    dokdistFordelingConsumer.leggTilInterceptor(
+        securityTokenService.clientCredentialsTokenInterceptor(null));
     return dokdistFordelingConsumer;
   }
 
@@ -119,9 +123,9 @@ public class BidragDokumentArkivConfig {
   @Scope("prototype")
   PersonConsumer basePersonConsumer(
       @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
-      EnvironmentProperties environmentProperties
-  ) {
-    httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.bidragPersonUrl + "/bidrag-person"));
+      EnvironmentProperties environmentProperties) {
+    httpHeaderRestTemplate.setUriTemplateHandler(
+        new RootUriTemplateHandler(environmentProperties.bidragPersonUrl + "/bidrag-person"));
     return new PersonConsumer(httpHeaderRestTemplate);
   }
 
@@ -129,12 +133,8 @@ public class BidragDokumentArkivConfig {
   public OppgaveService oppgaveService(
       ResourceByDiscriminator<PersonConsumer> personConsumers,
       ResourceByDiscriminator<OppgaveConsumer> oppgaveConsumers,
-      SaksbehandlerInfoManager saksbehandlerInfoManager
-  ) {
-    return new OppgaveService(
-        personConsumers,
-        oppgaveConsumers,
-        saksbehandlerInfoManager);
+      SaksbehandlerInfoManager saksbehandlerInfoManager) {
+    return new OppgaveService(personConsumers, oppgaveConsumers, saksbehandlerInfoManager);
   }
 
   @Bean
@@ -143,25 +143,27 @@ public class BidragDokumentArkivConfig {
       ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers,
       DokarkivKnyttTilSakConsumer dokarkivKnyttTilSakConsumer,
       HendelserProducer hendelserProducer,
-      SaksbehandlerInfoManager saksbehandlerInfoManager
-  ) {
+      SaksbehandlerInfoManager saksbehandlerInfoManager) {
     return new EndreJournalpostService(
         journalpostServices.get(Discriminator.REGULAR_USER),
         dokarkivConsumers.get(Discriminator.REGULAR_USER),
-        dokarkivKnyttTilSakConsumer, hendelserProducer, saksbehandlerInfoManager);
+        dokarkivKnyttTilSakConsumer,
+        hendelserProducer,
+        saksbehandlerInfoManager);
   }
 
   @Bean
   public ResourceByDiscriminator<JournalpostService> journalpostServices(
       ResourceByDiscriminator<SafConsumer> safConsumers,
-      ResourceByDiscriminator<PersonConsumer> personConsumers
-  ) {
-    var journalpostServiceRegularUser = new JournalpostService(
-        safConsumers.get(Discriminator.REGULAR_USER),
-        personConsumers.get(Discriminator.SERVICE_USER));
-    var journalpostServiceServiceUser = new JournalpostService(
-        safConsumers.get(Discriminator.SERVICE_USER),
-        personConsumers.get(Discriminator.SERVICE_USER));
+      ResourceByDiscriminator<PersonConsumer> personConsumers) {
+    var journalpostServiceRegularUser =
+        new JournalpostService(
+            safConsumers.get(Discriminator.REGULAR_USER),
+            personConsumers.get(Discriminator.SERVICE_USER));
+    var journalpostServiceServiceUser =
+        new JournalpostService(
+            safConsumers.get(Discriminator.SERVICE_USER),
+            personConsumers.get(Discriminator.SERVICE_USER));
     var journalpostServices = new HashMap<Discriminator, JournalpostService>();
     journalpostServices.put(Discriminator.REGULAR_USER, journalpostServiceRegularUser);
     journalpostServices.put(Discriminator.SERVICE_USER, journalpostServiceServiceUser);
@@ -172,10 +174,10 @@ public class BidragDokumentArkivConfig {
   public ResourceByDiscriminator<SafConsumer> safConsumers(
       SafConsumer safConsumerRegularUser,
       SafConsumer safConsumerServiceUser,
-      SecurityTokenService securityTokenService
-  ) {
+      SecurityTokenService securityTokenService) {
     safConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor("saf"));
-    safConsumerServiceUser.leggTilInterceptor(securityTokenService.clientCredentialsTokenInterceptor("saf"));
+    safConsumerServiceUser.leggTilInterceptor(
+        securityTokenService.clientCredentialsTokenInterceptor("saf"));
     var safConsumers = new HashMap<Discriminator, SafConsumer>();
     safConsumers.put(Discriminator.REGULAR_USER, safConsumerRegularUser);
     safConsumers.put(Discriminator.SERVICE_USER, safConsumerServiceUser);
@@ -186,10 +188,11 @@ public class BidragDokumentArkivConfig {
   public ResourceByDiscriminator<OppgaveConsumer> oppgaveConsumers(
       OppgaveConsumer oppgaveConsumerRegularUser,
       OppgaveConsumer oppgaveConsumerServiceUser,
-      SecurityTokenService securityTokenService
-  ) {
-    oppgaveConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor("oppgave"));
-    oppgaveConsumerServiceUser.leggTilInterceptor(securityTokenService.clientCredentialsTokenInterceptor("oppgave"));
+      SecurityTokenService securityTokenService) {
+    oppgaveConsumerRegularUser.leggTilInterceptor(
+        securityTokenService.authTokenInterceptor("oppgave"));
+    oppgaveConsumerServiceUser.leggTilInterceptor(
+        securityTokenService.clientCredentialsTokenInterceptor("oppgave"));
     var safConsumers = new HashMap<Discriminator, OppgaveConsumer>();
     safConsumers.put(Discriminator.REGULAR_USER, oppgaveConsumerRegularUser);
     safConsumers.put(Discriminator.SERVICE_USER, oppgaveConsumerServiceUser);
@@ -200,10 +203,11 @@ public class BidragDokumentArkivConfig {
   public ResourceByDiscriminator<PersonConsumer> personConsumers(
       PersonConsumer personConsumerRegularUser,
       PersonConsumer personConsumerServiceUser,
-      SecurityTokenService securityTokenService
-  ) {
-    personConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor("bidrag-person"));
-    personConsumerServiceUser.leggTilInterceptor(securityTokenService.clientCredentialsTokenInterceptor("bidrag-person"));
+      SecurityTokenService securityTokenService) {
+    personConsumerRegularUser.leggTilInterceptor(
+        securityTokenService.authTokenInterceptor("bidrag-person"));
+    personConsumerServiceUser.leggTilInterceptor(
+        securityTokenService.clientCredentialsTokenInterceptor("bidrag-person"));
     var personConsumers = new HashMap<Discriminator, PersonConsumer>();
     personConsumers.put(Discriminator.REGULAR_USER, personConsumerRegularUser);
     personConsumers.put(Discriminator.SERVICE_USER, personConsumerServiceUser);
@@ -214,13 +218,16 @@ public class BidragDokumentArkivConfig {
   public DokarkivKnyttTilSakConsumer dokarkivKnyttTilSakConsumer(
       @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
       EnvironmentProperties environmentProperties,
-      SecurityTokenService securityTokenService
-  ) {
-    httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.dokarkivKnyttTilSakUrl));
-    httpHeaderRestTemplate.addHeaderGenerator(HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
+      SecurityTokenService securityTokenService) {
+    httpHeaderRestTemplate.setUriTemplateHandler(
+        new RootUriTemplateHandler(environmentProperties.dokarkivKnyttTilSakUrl));
+    httpHeaderRestTemplate.addHeaderGenerator(
+        HttpHeaders.CONTENT_TYPE, () -> MediaType.APPLICATION_JSON_VALUE);
 
-    DokarkivKnyttTilSakConsumer dokarkivKnyttTilSakConsumer = new DokarkivKnyttTilSakConsumer(httpHeaderRestTemplate);
-    dokarkivKnyttTilSakConsumer.leggTilInterceptor(securityTokenService.authTokenInterceptor("dokarkiv"));
+    DokarkivKnyttTilSakConsumer dokarkivKnyttTilSakConsumer =
+        new DokarkivKnyttTilSakConsumer(httpHeaderRestTemplate);
+    dokarkivKnyttTilSakConsumer.leggTilInterceptor(
+        securityTokenService.authTokenInterceptor("dokarkiv"));
     return dokarkivKnyttTilSakConsumer;
   }
 
@@ -228,10 +235,11 @@ public class BidragDokumentArkivConfig {
   public ResourceByDiscriminator<DokarkivConsumer> dokarkivConsumers(
       DokarkivConsumer dokarkivConsumerRegularUser,
       DokarkivConsumer dokarkivConsumerServiceUser,
-      SecurityTokenService securityTokenService
-  ) {
-    dokarkivConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor("dokarkiv"));
-    dokarkivConsumerServiceUser.leggTilInterceptor(securityTokenService.clientCredentialsTokenInterceptor("dokarkiv"));
+      SecurityTokenService securityTokenService) {
+    dokarkivConsumerRegularUser.leggTilInterceptor(
+        securityTokenService.authTokenInterceptor("dokarkiv"));
+    dokarkivConsumerServiceUser.leggTilInterceptor(
+        securityTokenService.clientCredentialsTokenInterceptor("dokarkiv"));
     var dokarkivConsumers = new HashMap<Discriminator, DokarkivConsumer>();
     dokarkivConsumers.put(Discriminator.REGULAR_USER, dokarkivConsumerRegularUser);
     dokarkivConsumers.put(Discriminator.SERVICE_USER, dokarkivConsumerServiceUser);
@@ -242,10 +250,13 @@ public class BidragDokumentArkivConfig {
   public BidragOrganisasjonConsumer bidragOrganisasjonConsumer(
       HttpHeaderRestTemplate httpHeaderRestTemplate,
       SecurityTokenService securityTokenService,
-      EnvironmentProperties environmentProperties
-  ) {
-    httpHeaderRestTemplate.setUriTemplateHandler(new RootUriTemplateHandler(environmentProperties.bidragOrganisasjonUrl + "/bidrag-organisasjon"));
-    httpHeaderRestTemplate.getInterceptors().add(securityTokenService.clientCredentialsTokenInterceptor("bidrag-organisasjon"));
+      EnvironmentProperties environmentProperties) {
+    httpHeaderRestTemplate.setUriTemplateHandler(
+        new RootUriTemplateHandler(
+            environmentProperties.bidragOrganisasjonUrl + "/bidrag-organisasjon"));
+    httpHeaderRestTemplate
+        .getInterceptors()
+        .add(securityTokenService.clientCredentialsTokenInterceptor("bidrag-organisasjon"));
     return new BidragOrganisasjonConsumer(httpHeaderRestTemplate);
   }
 
@@ -267,8 +278,9 @@ public class BidragDokumentArkivConfig {
   @Bean
   public ExceptionLogger exceptionLogger() {
     return new ExceptionLogger(
-        BidragDokumentArkiv.class.getSimpleName(), AspectExceptionLogger.class, HttpStatusRestControllerAdvice.class
-    );
+        BidragDokumentArkiv.class.getSimpleName(),
+        AspectExceptionLogger.class,
+        HttpStatusRestControllerAdvice.class);
   }
 
   @Bean
@@ -282,11 +294,19 @@ public class BidragDokumentArkivConfig {
       @Value("${SRV_BD_ARKIV_AUTH}") String secretForServiceUser,
       @Value("${ACCESS_TOKEN_URL}") String securityTokenUrl,
       @Value("${BIDRAG_ORGANISASJON_URL}") String bidragOrganisasjonUrl,
-      @Value("${NAIS_APP_NAME}") String naisAppName
-  ) {
-    var environmentProperties = new EnvironmentProperties(dokdistFordelingUrl, dokarkivUrl, dokarkivKnyttTilSakUrl, safUrl, oppgaveUrl,
-        secretForServiceUser, securityTokenUrl,
-        naisAppName, bidragPersonUrl, bidragOrganisasjonUrl);
+      @Value("${NAIS_APP_NAME}") String naisAppName) {
+    var environmentProperties =
+        new EnvironmentProperties(
+            dokdistFordelingUrl,
+            dokarkivUrl,
+            dokarkivKnyttTilSakUrl,
+            safUrl,
+            oppgaveUrl,
+            secretForServiceUser,
+            securityTokenUrl,
+            naisAppName,
+            bidragPersonUrl,
+            bidragOrganisasjonUrl);
     LOGGER.info(String.format("> Environment: %s", environmentProperties));
 
     return environmentProperties;
@@ -307,9 +327,15 @@ public class BidragDokumentArkivConfig {
 
     public EnvironmentProperties(
         String dokdistFordelingUrl,
-        String dokarkivUrl, String dokarkivKnyttTilSakUrl, String safUrl, String oppgaveUrl, String secretForServiceUser,
-        String securityTokenUrl, String naisAppName, String bidragPersonUrl, String bidragOrganisasjonUrl
-    ) {
+        String dokarkivUrl,
+        String dokarkivKnyttTilSakUrl,
+        String safUrl,
+        String oppgaveUrl,
+        String secretForServiceUser,
+        String securityTokenUrl,
+        String naisAppName,
+        String bidragPersonUrl,
+        String bidragOrganisasjonUrl) {
       this.dokdistFordelingUrl = dokdistFordelingUrl;
       this.dokarkivKnyttTilSakUrl = dokarkivKnyttTilSakUrl;
       this.oppgaveUrl = oppgaveUrl;
@@ -324,18 +350,36 @@ public class BidragDokumentArkivConfig {
 
     @Override
     public String toString() {
-      return "dokarkivUrl='" + dokarkivUrl + '\'' +
-          ", safUrl='" + safUrl + '\'' +
-          ", bidragPersonUrl='" + bidragPersonUrl + '\'' +
-          ", dokarkivKnyttTilSakUrl='" + dokarkivKnyttTilSakUrl + '\'' +
-          ", securityTokenUrl='" + securityTokenUrl + '\'' +
-          ", bidragOrganisasjonUrl='" + bidragOrganisasjonUrl + '\'' +
-          ", naisAppName='" + naisAppName + '\'' +
-          ", secretForServiceUser '" + notActualValue() + "'.";
+      return "dokarkivUrl='"
+          + dokarkivUrl
+          + '\''
+          + ", safUrl='"
+          + safUrl
+          + '\''
+          + ", bidragPersonUrl='"
+          + bidragPersonUrl
+          + '\''
+          + ", dokarkivKnyttTilSakUrl='"
+          + dokarkivKnyttTilSakUrl
+          + '\''
+          + ", securityTokenUrl='"
+          + securityTokenUrl
+          + '\''
+          + ", bidragOrganisasjonUrl='"
+          + bidragOrganisasjonUrl
+          + '\''
+          + ", naisAppName='"
+          + naisAppName
+          + '\''
+          + ", secretForServiceUser '"
+          + notActualValue()
+          + "'.";
     }
 
     private String notActualValue() {
-      return "No authentication available".equals(secretForServiceUser) ? "is not initialized" : "seems to be initialized by init_srvbdarkiv.sh";
+      return "No authentication available".equals(secretForServiceUser)
+          ? "is not initialized"
+          : "seems to be initialized by init_srvbdarkiv.sh";
     }
   }
 }
