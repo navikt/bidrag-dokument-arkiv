@@ -1,26 +1,28 @@
 name: continuous integration
 on:
+  pull_request:
   push:
     branches:
-      - '**'
-      - '!release'
+      - 'main'
 
 env:
   IMAGE: ghcr.io/${{ github.repository }}:${{ github.sha }}
   GITHUB_USERNAME: x-access-token
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-jobs:
 
+jobs:
   build:
+    permissions:
+      contents: "read"
+      id-token: "write"
     name: Build with maven and docker
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
         with:
           java-version: '17'
-          distribution: 'corretto'
+          distribution: 'temurin'
       - uses: actions/cache@v3
         with:
           path: ~/.m2
@@ -28,31 +30,31 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
       - run: mvn -B -e --settings .m2/maven-settings.xml clean install
-      - name: Build and publish Docker image
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          docker image build --tag ${IMAGE} .
-          echo ${GITHUB_TOKEN} | docker login ghcr.io --username ${GITHUB_REPOSITORY} --password-stdin
-          docker image push ${IMAGE}
+      - uses: nais/docker-build-push@v0
+        id: docker-push
+        with:
+          team: bidrag
+          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
+    outputs:
+      image: ${{ steps.docker-push.outputs.image }}
 
   deploy:
     runs-on: ubuntu-latest
     name: Deploy docker image to dev
     needs: build
-
     steps:
       - uses: actions/checkout@v3
         with:
           path: deploy
-      - name: Deploy main to dev-fss
-        if: github.ref == 'refs/heads/main'
+      - name: Deploy main branch to dev-fss
         uses: nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-fss
           RESOURCE: deploy/.nais/nais.yaml
           VARS: deploy/.nais/main.yaml
+          IMAGE: ${{ needs.build.outputs.image }}
       - name: Deploy feature to dev-fss
         if: github.ref != 'refs/heads/main'
         uses: nais/deploy/actions/deploy@v1
@@ -61,6 +63,7 @@ jobs:
           CLUSTER: dev-fss
           RESOURCE: deploy/.nais/nais.yaml
           VARS: deploy/.nais/feature.yaml
+          IMAGE: ${{ needs.build.outputs.image }}
 
   run_cucumber:
     runs-on: self-hosted

@@ -82,6 +82,13 @@ data class DistribusjonsInfo(
         return registrert?.dato?.let { LocalDateTime.parse(it) }
     }
 
+    fun hentDatoEkspedert(): LocalDateTime? {
+        val registrert = relevanteDatoer
+            .find { it.datotype == DATO_EKSPEDERT }
+
+        return registrert?.dato?.let { LocalDateTime.parse(it) }
+    }
+
     fun hentDistribuertAvIdent(): String? {
         return tilleggsopplysninger.hentDistribuertAvIdent()
     }

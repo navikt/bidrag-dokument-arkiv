@@ -2,6 +2,7 @@ package no.nav.bidrag.dokument.arkiv.hendelser
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
+import io.kotest.assertions.assertSoftly
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivTest
 import no.nav.bidrag.dokument.arkiv.dto.DatoType
@@ -13,6 +14,7 @@ import no.nav.bidrag.dokument.arkiv.model.OppgaveHendelse
 import no.nav.bidrag.dokument.arkiv.model.OppgaveStatus
 import no.nav.bidrag.dokument.arkiv.stubs.Stubs
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
+import no.nav.bidrag.dokument.arkiv.stubs.toOppgaveData
 import no.nav.bidrag.dokument.arkiv.utils.DateUtils
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -87,7 +89,8 @@ class OppgaveHendelseListenerTest {
         stubs.mockDokarkivOppdaterRequest(journalpostId)
 
         val oppgaveHendelse = createReturOppgaveHendelse(journalpostId.toString())
-        val consumerRecord = ConsumerRecord("test", 0, 0L, "key", objectMapper.writeValueAsString(oppgaveHendelse))
+        val consumerRecord =
+            ConsumerRecord("test", 0, 0L, "key", objectMapper.writeValueAsString(oppgaveHendelse))
         hendelseListener.lesOppgaveOpprettetHendelse(consumerRecord)
 
         Assertions.assertAll(
@@ -103,6 +106,40 @@ class OppgaveHendelseListenerTest {
             },
             { stubs.verifyStub.oppgaveOppdaterKalt(1, safResponse.hentSaksnummer()) }
         )
+    }
+
+    @Test
+    fun `skal oppdatere saksreferanse oppgave med retry`() {
+        stubs.mockSts()
+        stubs.mockBidragOrganisasjonSaksbehandler()
+        stubs.mockOppdaterOppgave(HttpStatus.CONFLICT, null, "correct")
+        stubs.mockOppdaterOppgave(HttpStatus.OK, "correct", null)
+        val journalpostId = 201028011L
+        val tilleggsopplysninger = TilleggsOpplysninger()
+        tilleggsopplysninger.setDistribusjonBestillt()
+        val safResponse = opprettUtgaendeSafResponse(
+            journalpostId = journalpostId.toString(),
+            tilleggsopplysninger = tilleggsopplysninger,
+            relevanteDatoer = listOf(
+                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
+            )
+        )
+        safResponse.antallRetur = 1
+
+        stubs.mockSafResponseHentJournalpost(safResponse)
+        stubs.mockDokarkivOppdaterRequest(journalpostId)
+
+        val oppgaveHendelse = createReturOppgaveHendelse(journalpostId.toString())
+        stubs.mockHentOppgave(oppgaveHendelse.id, oppgaveHendelse.toOppgaveData(22))
+
+        val consumerRecord =
+            ConsumerRecord("test", 0, 0L, "key", objectMapper.writeValueAsString(oppgaveHendelse))
+        hendelseListener.lesOppgaveOpprettetHendelse(consumerRecord)
+
+        assertSoftly {
+            stubs.verifyStub.oppgaveOppdaterKalt(2, safResponse.hentSaksnummer())
+            stubs.verifyStub.oppgaveOppdaterKalt(1, safResponse.hentSaksnummer(), "\"versjon\":22")
+        }
     }
 
     @Test
@@ -140,8 +177,10 @@ class OppgaveHendelseListenerTest {
         stubs.mockSafResponseHentJournalpost(safResponse)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
 
-        val oppgaveHendelse = createReturOppgaveHendelse(journalpostId.toString(), saksref = "5276661")
-        val consumerRecord = ConsumerRecord("test", 0, 0L, "key", objectMapper.writeValueAsString(oppgaveHendelse))
+        val oppgaveHendelse =
+            createReturOppgaveHendelse(journalpostId.toString(), saksref = "5276661")
+        val consumerRecord =
+            ConsumerRecord("test", 0, 0L, "key", objectMapper.writeValueAsString(oppgaveHendelse))
         hendelseListener.lesOppgaveOpprettetHendelse(consumerRecord)
 
         Assertions.assertAll(
@@ -180,7 +219,8 @@ class OppgaveHendelseListenerTest {
         stubs.mockDokarkivOppdaterRequest(journalpostId)
 
         val oppgaveHendelse = createReturOppgaveHendelse(journalpostId.toString())
-        val consumerRecord = ConsumerRecord("test", 0, 0L, "key", objectMapper.writeValueAsString(oppgaveHendelse))
+        val consumerRecord =
+            ConsumerRecord("test", 0, 0L, "key", objectMapper.writeValueAsString(oppgaveHendelse))
         hendelseListener.lesOppgaveOpprettetHendelse(consumerRecord)
 
         Assertions.assertAll(
@@ -230,7 +270,8 @@ class OppgaveHendelseListenerTest {
         stubs.mockDokarkivOppdaterRequest(journalpostId)
 
         val oppgaveHendelse = createReturOppgaveHendelse(journalpostId.toString())
-        val consumerRecord = ConsumerRecord("test", 0, 0L, "key", objectMapper.writeValueAsString(oppgaveHendelse))
+        val consumerRecord =
+            ConsumerRecord("test", 0, 0L, "key", objectMapper.writeValueAsString(oppgaveHendelse))
         hendelseListener.lesOppgaveOpprettetHendelse(consumerRecord)
 
         Assertions.assertAll(
@@ -274,7 +315,8 @@ class OppgaveHendelseListenerTest {
         stubs.mockDokarkivOppdaterRequest(journalpostId)
 
         val oppgaveHendelse = createReturOppgaveHendelse(journalpostId.toString())
-        val consumerRecord = ConsumerRecord("test", 0, 0L, "key", objectMapper.writeValueAsString(oppgaveHendelse))
+        val consumerRecord =
+            ConsumerRecord("test", 0, 0L, "key", objectMapper.writeValueAsString(oppgaveHendelse))
         hendelseListener.lesOppgaveOpprettetHendelse(consumerRecord)
 
         Assertions.assertAll(
@@ -290,7 +332,10 @@ class OppgaveHendelseListenerTest {
         )
     }
 
-    fun createReturOppgaveHendelse(journalpostId: String, saksref: String? = null): OppgaveHendelse {
+    fun createReturOppgaveHendelse(
+        journalpostId: String,
+        saksref: String? = null
+    ): OppgaveHendelse {
         return OppgaveHendelse(
             journalpostId = journalpostId,
             id = 1,
