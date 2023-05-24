@@ -9,8 +9,8 @@ env:
   IMAGE: ghcr.io/${{ github.repository }}:${{ github.sha }}
   GITHUB_USERNAME: x-access-token
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-jobs:
 
+jobs:
   build:
     permissions:
       contents: "read"
@@ -36,6 +36,8 @@ jobs:
           team: bidrag
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
+    outputs:
+      image: ${{ steps.docker-push.outputs.image }}
 
   deploy:
     runs-on: ubuntu-latest
