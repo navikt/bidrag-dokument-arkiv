@@ -87,7 +87,6 @@ data class LeggTilBeskjedPåTittel(
     OppdaterJournalpostRequest(journalpostId) {
     init {
         val hoveddokument = journalpost.hentHoveddokument()
-        tittel = "${journalpost.tittel} ($beskjed)"
         dokumenter =
             listOf(Dokument(tittel = "${hoveddokument!!.tittel} ($beskjed)"))
     }

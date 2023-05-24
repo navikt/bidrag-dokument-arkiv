@@ -1058,7 +1058,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 journalpostId,
-                "{\"tittel\":\"Tittel på dokument 1 (dokumentet er sendt per post med vedlegg)\",\"dokumenter\":[{\"tittel\":\"Tittel på dokument 1 (dokumentet er sendt per post med vedlegg)\"}]}"
+                "{\"dokumenter\":[{\"tittel\":\"Tittel på dokument 1 (dokumentet er sendt per post med vedlegg)\"}]}"
             )
         }
     }

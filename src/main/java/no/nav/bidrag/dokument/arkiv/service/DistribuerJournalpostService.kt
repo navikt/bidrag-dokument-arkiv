@@ -160,10 +160,10 @@ class DistribuerJournalpostService(
 
         if (distribuerJournalpostRequest.erLokalUtskrift()) {
             LOGGER.info("Journalpost $journalpostId er distribuert via lokal utskrift. Oppdaterer journalpost status")
-            leggTilBeskrivelsePåTittelAtDokumentetErSendtPerPost(journalpostId)
             oppdaterDistribusjonsInfoLokalUtskrift(journalpostId)
             oppdaterTilleggsopplysninger(journalpostId, journalpost, erLokalUtskrift = true)
             oppdaterDokumentdatoTilIdag(journalpostId, journalpost)
+            leggTilBeskrivelsePåTittelAtDokumentetErSendtPerPost(journalpostId)
             return DistribuerJournalpostResponse("JOARK-$journalpostId", null)
         }
 
