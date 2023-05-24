@@ -10,7 +10,10 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
-data class OppdaterFlaggNyDistribusjonBestiltRequest(private var journalpostId: Long, private var journalpost: Journalpost) :
+data class OppdaterFlaggNyDistribusjonBestiltRequest(
+    private var journalpostId: Long,
+    private var journalpost: Journalpost
+) :
     OppdaterJournalpostRequest(journalpostId) {
     init {
         journalpost.tilleggsopplysninger.setNyDistribusjonBestiltFlagg()
@@ -32,7 +35,12 @@ data class OpprettNyReturLoggRequest(private var journalpost: Journalpost) :
         if (returDetaljLoggWithSameDate != null) {
             journalpost.tilleggsopplysninger.unlockReturDetaljerLog(dateNow)
         } else {
-            journalpost.tilleggsopplysninger.addReturDetaljLog(ReturDetaljerLogDO("Returpost", dateNow))
+            journalpost.tilleggsopplysninger.addReturDetaljLog(
+                ReturDetaljerLogDO(
+                    "Returpost",
+                    dateNow
+                )
+            )
         }
         tilleggsopplysninger = journalpost.tilleggsopplysninger
     }
@@ -41,12 +49,20 @@ data class OpprettNyReturLoggRequest(private var journalpost: Journalpost) :
 data class LagreReturDetaljForSisteReturRequest(private var journalpost: Journalpost) :
     OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {
     init {
-        journalpost.tilleggsopplysninger.addReturDetaljLog(ReturDetaljerLogDO("Returpost", journalpost.hentDatoRetur()!!))
+        journalpost.tilleggsopplysninger.addReturDetaljLog(
+            ReturDetaljerLogDO(
+                "Returpost",
+                journalpost.hentDatoRetur()!!
+            )
+        )
         tilleggsopplysninger = journalpost.tilleggsopplysninger
     }
 }
 
-data class LagreAvsenderNavnRequest(private var journalpostId: Long, private var avsenderNavn: String) :
+data class LagreAvsenderNavnRequest(
+    private var journalpostId: Long,
+    private var avsenderNavn: String
+) :
     OppdaterJournalpostRequest(journalpostId = journalpostId) {
     init {
         avsenderMottaker = AvsenderMottaker(avsenderNavn)
@@ -63,21 +79,48 @@ data class LockReturDetaljerRequest(private var journalpost: Journalpost) :
     }
 }
 
-data class OppdaterDokumentdatoTilIdag(private var journalpostId: Long, private var journalpost: Journalpost) :
+data class LeggTilBeskjedPåTittel(
+    private var journalpostId: Long,
+    private var journalpost: Journalpost,
+    private val beskjed: String
+) :
+    OppdaterJournalpostRequest(journalpostId) {
+    init {
+        val hoveddokument = journalpost.hentHoveddokument()!!
+        dokumenter =
+            listOf(
+                Dokument(
+                    dokumentInfoId = hoveddokument.dokumentInfoId,
+                    tittel = "${hoveddokument.tittel} ($beskjed)"
+                )
+            )
+    }
+}
+
+data class OppdaterDokumentdatoTilIdag(
+    private var journalpostId: Long,
+    private var journalpost: Journalpost
+) :
     OppdaterJournalpostRequest(journalpostId) {
     init {
         datoDokument = LocalDateTime.now().toString()
     }
 }
 
-data class OppdaterJournalpostTilleggsopplysninger(private var journalpostId: Long, private var journalpost: Journalpost) :
+data class OppdaterJournalpostTilleggsopplysninger(
+    private var journalpostId: Long,
+    private var journalpost: Journalpost
+) :
     OppdaterJournalpostRequest(journalpostId) {
     init {
         tilleggsopplysninger = journalpost.tilleggsopplysninger
     }
 }
 
-data class OppdaterJournalpostDistribusjonsInfoRequest(private var journalpostId: Long, private var journalpost: Journalpost) :
+data class OppdaterJournalpostDistribusjonsInfoRequest(
+    private var journalpostId: Long,
+    private var journalpost: Journalpost
+) :
     OppdaterJournalpostRequest(journalpostId) {
     init {
         journalpost.tilleggsopplysninger.setDistribusjonBestillt()
@@ -134,23 +177,39 @@ data class LagreJournalpostRequest(
         tittel = endreJournalpostCommand.endreJournalpostCommand.tittel
 
         if (journalpost.isNotat()) {
-            datoDokument = endreJournalpostCommand.endreJournalpostCommand.dokumentDato?.let { LocalDateTime.of(it, LocalTime.MIDNIGHT) }?.toString()
+            datoDokument = endreJournalpostCommand.endreJournalpostCommand.dokumentDato?.let {
+                LocalDateTime.of(
+                    it,
+                    LocalTime.MIDNIGHT
+                )
+            }?.toString()
         }
 
         if (endreJournalpostCommand.endreJournalpostCommand.endreDokumenter.isNotEmpty()) {
             dokumenter = endreJournalpostCommand.endreJournalpostCommand.endreDokumenter
-                .map { dokument -> Dokument(dokument.dokId.toString(), dokument.tittel, dokument.brevkode) }
+                .map { dokument ->
+                    Dokument(
+                        dokument.dokId.toString(),
+                        dokument.tittel,
+                        dokument.brevkode
+                    )
+                }
         }
 
         if (journalpost.isInngaaendeDokument()) {
-            avsenderMottaker = AvsenderMottaker(endreJournalpostCommand.hentAvsenderNavn(journalpost))
-            datoMottatt = DateUtils.formatDate(endreJournalpostCommand.endreJournalpostCommand.dokumentDato)
+            avsenderMottaker =
+                AvsenderMottaker(endreJournalpostCommand.hentAvsenderNavn(journalpost))
+            datoMottatt =
+                DateUtils.formatDate(endreJournalpostCommand.endreJournalpostCommand.dokumentDato)
         }
 
         if (journalpost.isStatusMottatt()) updateValuesForMottattJournalpost()
 
         if (journalpost.isUtgaaendeDokument()) {
-            val endreReturDetaljer = endreJournalpostCommand.endreJournalpostCommand.endreReturDetaljer?.filter { Strings.isNotEmpty(it.beskrivelse) }
+            val endreReturDetaljer =
+                endreJournalpostCommand.endreJournalpostCommand.endreReturDetaljer?.filter {
+                    Strings.isNotEmpty(it.beskrivelse)
+                }
             if (!endreReturDetaljer.isNullOrEmpty()) {
                 endreReturDetaljer
                     .forEach {
@@ -159,7 +218,10 @@ data class LagreJournalpostRequest(
                                 it.originalDato!!,
                                 ReturDetaljerLogDO(it.beskrivelse, it.nyDato ?: it.originalDato!!)
                             )
-                        } else if (journalpost.manglerReturDetaljForSisteRetur() && it.nyDato != null && !journalpost.hasReturDetaljerWithDate(it.nyDato!!)) {
+                        } else if (journalpost.manglerReturDetaljForSisteRetur() && it.nyDato != null && !journalpost.hasReturDetaljerWithDate(
+                                it.nyDato!!
+                            )
+                        ) {
                             journalpost.tilleggsopplysninger.addReturDetaljLog(
                                 ReturDetaljerLogDO(it.beskrivelse, it.nyDato!!)
                             )
@@ -177,7 +239,8 @@ data class LagreJournalpostRequest(
     }
 
     private fun updateValuesForMottattJournalpost() {
-        val saksnummer = if (endreJournalpostCommand.harEnTilknyttetSak()) endreJournalpostCommand.hentTilknyttetSak() else null
+        val saksnummer =
+            if (endreJournalpostCommand.harEnTilknyttetSak()) endreJournalpostCommand.hentTilknyttetSak() else null
         sak = if (saksnummer != null) Sak(saksnummer) else null
 
         bruker = if (endreJournalpostCommand.hentGjelder() != null) {
@@ -190,7 +253,8 @@ data class LagreJournalpostRequest(
         } else {
             null
         }
-        tema = if (endreJournalpostCommand.hentFagomrade() != null) endreJournalpostCommand.hentFagomrade() else journalpost.tema
+        tema =
+            if (endreJournalpostCommand.hentFagomrade() != null) endreJournalpostCommand.hentFagomrade() else journalpost.tema
     }
 }
 
@@ -213,11 +277,19 @@ sealed class OppdaterJournalpostRequest(private var journalpostId: Long? = -1) {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    data class AvsenderMottaker(val navn: String? = null, var id: String? = null, var idType: AvsenderMottakerIdType? = null)
+    data class AvsenderMottaker(
+        val navn: String? = null,
+        var id: String? = null,
+        var idType: AvsenderMottakerIdType? = null
+    )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    data class Dokument(val dokumentInfoId: String? = null, val tittel: String? = null, val brevkode: String? = null)
+    data class Dokument(
+        val dokumentInfoId: String? = null,
+        var tittel: String? = null,
+        val brevkode: String? = null
+    )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -244,7 +316,13 @@ data class FerdigstillJournalpostRequest(
     val opprettetAvNavn: String? = null,
     val datoJournal: LocalDate? = null
 ) {
-    constructor(journalpostId: Long, journalfoerendeEnhet: String) : this(journalpostId, journalfoerendeEnhet, null, null, null)
+    constructor(journalpostId: Long, journalfoerendeEnhet: String) : this(
+        journalpostId,
+        journalfoerendeEnhet,
+        null,
+        null,
+        null
+    )
 }
 
 enum class Sakstype {

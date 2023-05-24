@@ -82,6 +82,13 @@ data class DistribusjonsInfo(
         return registrert?.dato?.let { LocalDateTime.parse(it) }
     }
 
+    fun hentDatoEkspedert(): LocalDateTime? {
+        val registrert = relevanteDatoer
+            .find { it.datotype == DATO_EKSPEDERT }
+
+        return registrert?.dato?.let { LocalDateTime.parse(it) }
+    }
+
     fun hentDistribuertAvIdent(): String? {
         return tilleggsopplysninger.hentDistribuertAvIdent()
     }
@@ -186,30 +193,34 @@ data class Journalpost(
 
     fun hentAvsenderMottakerId(): String? = avsenderMottaker?.id
     fun hentJournalStatus(): String? {
-        return if (isDistribusjonKommetIRetur()) JournalstatusDto.RETUR
-        else when (journalstatus) {
-            JournalStatus.MOTTATT -> JournalstatusDto.MOTTAKSREGISTRERT
-            JournalStatus.JOURNALFOERT -> JournalstatusDto.JOURNALFORT
-            JournalStatus.FEILREGISTRERT -> JournalstatusDto.FEILREGISTRERT
-            JournalStatus.EKSPEDERT -> JournalstatusDto.EKSPEDERT
-            JournalStatus.FERDIGSTILT ->
-                if (hentBrevkodeDto()?.kode == "CRM_MELDINGSKJEDE") JournalstatusDto.JOURNALFORT
-                else if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
-                    if (isDistribusjonBestilt()) {
-                        JournalstatusDto.EKSPEDERT
+        return if (isDistribusjonKommetIRetur()) {
+            JournalstatusDto.RETUR
+        } else {
+            when (journalstatus) {
+                JournalStatus.MOTTATT -> JournalstatusDto.MOTTAKSREGISTRERT
+                JournalStatus.JOURNALFOERT -> JournalstatusDto.JOURNALFORT
+                JournalStatus.FEILREGISTRERT -> JournalstatusDto.FEILREGISTRERT
+                JournalStatus.EKSPEDERT -> JournalstatusDto.EKSPEDERT
+                JournalStatus.FERDIGSTILT ->
+                    if (hentBrevkodeDto()?.kode == "CRM_MELDINGSKJEDE") {
+                        JournalstatusDto.JOURNALFORT
+                    } else if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
+                        if (isDistribusjonBestilt()) {
+                            JournalstatusDto.EKSPEDERT
+                        } else {
+                            JournalstatusDto.KLAR_TIL_PRINT
+                        }
+                    } else if (isNotat()) {
+                        JournalstatusDto.RESERVERT
                     } else {
-                        JournalstatusDto.KLAR_TIL_PRINT
+                        JournalstatusDto.JOURNALFORT
                     }
-                } else if (isNotat()) {
-                    JournalstatusDto.RESERVERT
-                } else {
-                    JournalstatusDto.JOURNALFORT
-                }
 
-            JournalStatus.UNDER_ARBEID, JournalStatus.RESERVERT -> JournalstatusDto.UNDER_PRODUKSJON
-            JournalStatus.UTGAAR -> JournalstatusDto.UTGAR
-            JournalStatus.AVBRUTT -> JournalstatusDto.AVBRUTT
-            else -> journalstatus?.name
+                JournalStatus.UNDER_ARBEID, JournalStatus.RESERVERT -> JournalstatusDto.UNDER_PRODUKSJON
+                JournalStatus.UTGAAR -> JournalstatusDto.UTGAR
+                JournalStatus.AVBRUTT -> JournalstatusDto.AVBRUTT
+                else -> journalstatus?.name
+            }
         }
     }
 
@@ -280,8 +291,12 @@ data class Journalpost(
                 }
                 .maxOfOrNull { it.dato!! }
             return ReturDetaljer(
-                dato = if (isDistribusjonKommetIRetur()) hentDatoRetur()
-                    ?: senestReturDato else null,
+                dato = if (isDistribusjonKommetIRetur()) {
+                    hentDatoRetur()
+                        ?: senestReturDato
+                } else {
+                    null
+                },
                 logg = returDetaljerLog,
                 antall = returDetaljerLog.size
             )
@@ -412,18 +427,22 @@ data class Journalpost(
         val avvikTypeList = mutableListOf<AvvikType>()
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
         if (isStatusMottatt() && isTemaBidrag()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
-        if (isSkanning() && !tilleggsopplysninger.isOriginalBestilt() && !isFeilregistrert()) avvikTypeList.add(
-            AvvikType.BESTILL_ORIGINAL
-        )
+        if (isSkanning() && !tilleggsopplysninger.isOriginalBestilt() && !isFeilregistrert()) {
+            avvikTypeList.add(
+                AvvikType.BESTILL_ORIGINAL
+            )
+        }
         if (isSkanning() && !isFeilregistrert()) avvikTypeList.add(AvvikType.BESTILL_RESKANNING)
         if (isSkanning() && !isFeilregistrert()) avvikTypeList.add(AvvikType.BESTILL_SPLITTING)
         if (!isStatusMottatt() && hasSak() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.FEILFORE_SAK)
         if (isInngaaendeDokument() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.ENDRE_FAGOMRADE)
         if (isInngaaendeDokument() && isStatusJournalfort()) avvikTypeList.add(AvvikType.SEND_TIL_FAGOMRADE)
 
-        if (isUtgaaendeDokument() && isStatusEkspedert() && isLokalUtksrift()) avvikTypeList.add(
-            AvvikType.REGISTRER_RETUR
-        )
+        if (isUtgaaendeDokument() && isStatusEkspedert() && isLokalUtksrift()) {
+            avvikTypeList.add(
+                AvvikType.REGISTRER_RETUR
+            )
+        }
         if (isUtgaaendeDokument() && !isLokalUtksrift() && isDistribusjonKommetIRetur() && !tilleggsopplysninger.isNyDistribusjonBestilt()) {
             avvikTypeList.add(
                 AvvikType.BESTILL_NY_DISTRIBUSJON
@@ -786,9 +805,9 @@ data class ReturDetaljerLogDO(
     fun toMap(): List<Map<String, String>> = beskrivelse.chunked(100).mapIndexed { index, it ->
         mapOf(
             "nokkel" to "${if (locked == true) "L" else ""}$RETUR_DETALJER_KEY${index}_${
-                DateUtils.formatDate(
-                    dato
-                )
+            DateUtils.formatDate(
+                dato
+            )
             }",
             "verdi" to it
         )
@@ -820,10 +839,14 @@ data class Bruker(
     var type: String? = null
 ) {
     fun tilAktorDto(): AktorDto {
-        return if (id != null) AktorDto(
-            id!!,
-            type ?: BrukerType.FNR.name
-        ) else throw JournalpostDataException("ingen id i $this")
+        return if (id != null) {
+            AktorDto(
+                id!!,
+                type ?: BrukerType.FNR.name
+            )
+        } else {
+            throw JournalpostDataException("ingen id i $this")
+        }
     }
 
     @JsonIgnore
@@ -854,9 +877,13 @@ data class DatoType(
     fun somDato(): LocalDate {
         val datoStreng = dato?.substring(0, 10)
 
-        return if (datoStreng != null) LocalDate.parse(datoStreng) else throw JournalpostDataException(
-            "Kunne ikke trekke ut dato fra: $dato"
-        )
+        return if (datoStreng != null) {
+            LocalDate.parse(datoStreng)
+        } else {
+            throw JournalpostDataException(
+                "Kunne ikke trekke ut dato fra: $dato"
+            )
+        }
     }
 }
 
