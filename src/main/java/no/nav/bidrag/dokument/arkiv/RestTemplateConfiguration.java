@@ -23,8 +23,6 @@ public class RestTemplateConfiguration {
     httpHeaderRestTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
     httpHeaderRestTemplate.withDefaultHeaders();
     httpHeaderRestTemplate.addHeaderGenerator(
-        CorrelationId.CORRELATION_ID_HEADER, CorrelationId::fetchCorrelationIdForThread);
-    httpHeaderRestTemplate.addHeaderGenerator(
         "Nav-Callid", CorrelationId::fetchCorrelationIdForThread);
     httpHeaderRestTemplate.addHeaderGenerator(
         "Nav-Consumer-Id", () -> environmentProperties.naisAppName);
