@@ -82,7 +82,7 @@ class DistribuerJournalpostService(
                         tittel = utsendingsinfo?.epostVarselSendt?.tittel
                     ),
                     distribuertAvIdent = it.hentDistribuertAvIdent(),
-                    distribuertDato = it.hentDatoEkspedert(),
+                    distribuertDato = it.hentDatoEkspedert() ?: it.hentDatoDokument(),
                     bestillingId = it.hentBestillingId()
                 )
             }
@@ -160,10 +160,10 @@ class DistribuerJournalpostService(
 
         if (distribuerJournalpostRequest.erLokalUtskrift()) {
             LOGGER.info("Journalpost $journalpostId er distribuert via lokal utskrift. Oppdaterer journalpost status")
+            leggTilBeskrivelsePåTittelAtDokumentetErSendtPerPost(journalpostId)
             oppdaterDistribusjonsInfoLokalUtskrift(journalpostId)
             oppdaterTilleggsopplysninger(journalpostId, journalpost, erLokalUtskrift = true)
             oppdaterDokumentdatoTilIdag(journalpostId, journalpost)
-            leggTilBeskrivelsePåTittelAtDokumentetErSendtPerPost(journalpostId)
             return DistribuerJournalpostResponse("JOARK-$journalpostId", null)
         }
 
@@ -205,13 +205,19 @@ class DistribuerJournalpostService(
     }
 
     private fun leggTilBeskrivelsePåTittelAtDokumentetErSendtPerPost(journalpostId: Long) {
+        val beskrivelseJournalpostSendtPerPost = "dokumentet er sendt per post med vedlegg"
         val journalpostEtter = hentJournalpost(journalpostId)
-        endreJournalpostService.lagreJournalpost(
-            LeggTilBeskjedPåTittel(
-                journalpostEtter.hentJournalpostIdLong()!!,
-                journalpostEtter, "dokumentet er sendt per post med vedlegg"
+        if (journalpostEtter.hentTittel()
+                ?.contains(beskrivelseJournalpostSendtPerPost, true) == false
+        ) {
+            endreJournalpostService.lagreJournalpost(
+                LeggTilBeskjedPåTittel(
+                    journalpostEtter.hentJournalpostIdLong()!!,
+                    journalpostEtter, "dokumentet er sendt per post med vedlegg"
+                )
             )
-        )
+        }
+
     }
 
     private fun oppdaterTilleggsopplysninger(
