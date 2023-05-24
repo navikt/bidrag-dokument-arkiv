@@ -18,15 +18,17 @@ public class RestTemplateConfiguration {
   @Scope("prototype")
   public HttpHeaderRestTemplate restTemplate(
       EnvironmentProperties environmentProperties,
-      MetricsRestTemplateCustomizer metricsRestTemplateCustomizer
-  ) {
+      MetricsRestTemplateCustomizer metricsRestTemplateCustomizer) {
     HttpHeaderRestTemplate httpHeaderRestTemplate = new HttpHeaderRestTemplate();
     httpHeaderRestTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
     httpHeaderRestTemplate.withDefaultHeaders();
-    httpHeaderRestTemplate.addHeaderGenerator("Nav-Callid", CorrelationId::fetchCorrelationIdForThread);
-    httpHeaderRestTemplate.addHeaderGenerator("Nav-Consumer-Id", ()-> environmentProperties.naisAppName);
+    httpHeaderRestTemplate.addHeaderGenerator(
+        CorrelationId.CORRELATION_ID_HEADER, CorrelationId::fetchCorrelationIdForThread);
+    httpHeaderRestTemplate.addHeaderGenerator(
+        "Nav-Callid", CorrelationId::fetchCorrelationIdForThread);
+    httpHeaderRestTemplate.addHeaderGenerator(
+        "Nav-Consumer-Id", () -> environmentProperties.naisAppName);
     metricsRestTemplateCustomizer.customize(httpHeaderRestTemplate);
     return httpHeaderRestTemplate;
   }
-
 }
