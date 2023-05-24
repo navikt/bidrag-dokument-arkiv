@@ -207,9 +207,9 @@ class DistribuerJournalpostService(
     private fun leggTilBeskrivelsePåTittelAtDokumentetErSendtPerPost(journalpostId: Long) {
         val beskrivelseJournalpostSendtPerPost = "dokumentet er sendt per post med vedlegg"
         val journalpostEtter = hentJournalpost(journalpostId)
-        if (journalpostEtter.hentTittel()
-            ?.contains(beskrivelseJournalpostSendtPerPost, true) == false
-        ) {
+        val harBeskrivelse = journalpostEtter.hentTittel()
+            ?.contains(beskrivelseJournalpostSendtPerPost, true) == true
+        if (!harBeskrivelse && !journalpostEtter.isFarskap()) {
             endreJournalpostService.lagreJournalpost(
                 LeggTilBeskjedPåTittel(
                     journalpostEtter.hentJournalpostIdLong()!!,

@@ -679,11 +679,11 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
                 "{\"tilleggsopplysninger\":[" +
-                    "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
-                    "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
-                    "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
-                    "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
-                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
+                        "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
+                        "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
+                        "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
+                        "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
+                        "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
             )
         }
     }
@@ -774,11 +774,11 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
                 "{\"tilleggsopplysninger\":[" +
-                    "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
-                    "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
-                    "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
-                    "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
-                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
+                        "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
+                        "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
+                        "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
+                        "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
+                        "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
             )
         }
     }
@@ -1058,6 +1058,80 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                 "{\"tilleggsopplysninger\":[{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
             )
             stubs.verifyStub.dokarkivOppdaterKalt(
+                journalpostId,
+                "{\"dokumenter\":[{\"dokumentInfoId\":\"$DOKUMENT_1_ID\",\"tittel\":\"Tittel på dokument 1 (dokumentet er sendt per post med vedlegg)\"}]}"
+            )
+        }
+    }
+
+    @Test
+    fun `skal markere journalpost distribuert lokalt farskap`() {
+        // given
+        val xEnhet = "1234"
+        val bestillingId = "TEST_BEST_ID"
+        val journalpostId = 201028011L
+        val headersMedEnhet = HttpHeaders()
+        headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
+        val safresponse = opprettSafResponse(
+            journalpostId.toString(),
+            journalpostType = JournalpostType.U,
+            journalstatus = JournalStatus.FERDIGSTILT,
+            tema = "FAR"
+        )
+        stubs.mockSafResponseHentJournalpost(safresponse)
+        val tilleggsOpplysninger = TilleggsOpplysninger()
+        tilleggsOpplysninger.setJournalfortAvIdent("Z99999")
+        stubs.mockSafResponseHentJournalpost(
+            safresponse.copy(
+                tilleggsopplysninger = tilleggsOpplysninger,
+                relevanteDatoer = listOf(DatoType(LocalDateTime.now().toString(), "DATO_DOKUMENT"))
+            ),
+            null,
+            "ETTER_DIST"
+        )
+        stubs.mockSafResponseHentJournalpost(
+            safresponse.copy(
+                tilleggsopplysninger = tilleggsOpplysninger,
+                journalstatus = JournalStatus.EKSPEDERT
+            ),
+            "ETTER_DIST",
+            null
+        )
+        stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
+        stubs.mockDokarkivOppdaterRequest(journalpostId)
+        stubs.mockSafResponseTilknyttedeJournalposter(
+            listOf(
+                TilknyttetJournalpost(
+                    journalpostId,
+                    JournalStatus.FERDIGSTILT,
+                    Sak("5276661")
+                )
+            )
+        )
+        stubs.mockDokarkivOppdaterDistribusjonsInfoRequest(journalpostId)
+        val request = DistribuerJournalpostRequest(lokalUtskrift = true)
+
+        // when
+        val response = httpHeaderTestRestTemplate.exchange(
+            initUrl() + "/journal/distribuer/JOARK-" + journalpostId,
+            HttpMethod.POST,
+            HttpEntity(request, headersMedEnhet),
+            JournalpostDto::class.java
+        )
+
+        response.statusCode shouldBe HttpStatus.OK
+
+        assertSoftly {
+            stubs.verifyStub.dokdistFordelingIkkeKalt()
+            stubs.verifyStub.dokarkivOppdaterDistribusjonsInfoKalt(
+                journalpostId,
+                "{\"settStatusEkspedert\":true,\"utsendingsKanal\":\"L\"}"
+            )
+            stubs.verifyStub.dokarkivOppdaterKalt(
+                journalpostId,
+                "{\"tilleggsopplysninger\":[{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
+            )
+            stubs.verifyStub.dokarkivIkkeOppdaterKalt(
                 journalpostId,
                 "{\"dokumenter\":[{\"dokumentInfoId\":\"$DOKUMENT_1_ID\",\"tittel\":\"Tittel på dokument 1 (dokumentet er sendt per post med vedlegg)\"}]}"
             )
