@@ -82,7 +82,7 @@ public class DokarkivConsumer extends AbstractConsumer {
     } catch (HttpStatusCodeException e){
       var erSakstilknytningAlleredeFeilregistrert = e.getStatusCode().equals(HttpStatus.BAD_REQUEST);
       if (erSakstilknytningAlleredeFeilregistrert){
-        return HttpResponse.from(HttpStatus.OK);
+        return HttpResponse.Companion.from(HttpStatus.OK);
       }
       throw e;
     }
@@ -99,7 +99,7 @@ public class DokarkivConsumer extends AbstractConsumer {
       // Antar at status allerede er satt til ekspedert. Ignorer feil for å gjøre kallet idempotent
       if (clientErrorException.getStatusCode() == HttpStatus.BAD_REQUEST && clientErrorException.getResponseBodyAsString().contains("Kan ikke ekspedere journalpost med status E")){
         LOGGER.warn("Sett status til EKSPEDERT for journalpost {} feilet med melding {}", journalpostId, clientErrorException.getResponseBodyAsString());
-        return HttpResponse.from(HttpStatus.OK);
+        return HttpResponse.Companion.from(HttpStatus.OK);
       }
       throw clientErrorException;
     }

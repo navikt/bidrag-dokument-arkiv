@@ -1,5 +1,5 @@
 SRV_BD_ARKIV_AUTH: changme
-server.port: 8082
+server.port: 8083
 KAFKA_GROUP_ID: bidrag-arkiv-consumer
 KAFKA_BROKERS: localhost:9092
 KAFKA_BOOTSTRAP_SERVERS: localhost:9092

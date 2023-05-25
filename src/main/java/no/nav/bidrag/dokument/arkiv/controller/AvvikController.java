@@ -1,7 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.controller;
 
 
-import static no.nav.bidrag.commons.web.WebUtil.initHttpHeadersWith;
 import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Protected
 public class AvvikController extends BaseController {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(AvvikController.class);
 
   private final AvvikService avvikService;
@@ -47,7 +47,7 @@ public class AvvikController extends BaseController {
     this.avvikService = avvikService;
   }
 
-  @GetMapping(ROOT_JOURNAL+"/{journalpostId}/avvik")
+  @GetMapping(ROOT_JOURNAL + "/{journalpostId}/avvik")
   @Operation(
       security = {@SecurityRequirement(name = "bearer-key")},
       summary = "Henter mulige avvik for en journalpost, id på formatet '" + KildesystemIdenfikator.PREFIX_JOARK + "<journalpostId>'"
@@ -61,7 +61,7 @@ public class AvvikController extends BaseController {
   public ResponseEntity<List<AvvikType>> hentAvvik(
       @PathVariable String journalpostId,
       @Parameter(name = "saksnummer", description = "journalposten tilhører sak") @RequestParam(required = false) String saksnummer
-  ){
+  ) {
     var muligSak = Optional.ofNullable(saksnummer);
 
     if (muligSak.isPresent()) {
@@ -125,8 +125,16 @@ public class AvvikController extends BaseController {
 
       return new ResponseEntity<>(initHttpHeadersWith(HttpHeaders.WARNING, message), HttpStatus.BAD_REQUEST);
     }
-    var behandleAvvikResponse = avvikService.behandleAvvik(new AvvikshendelseIntern(avvikshendelse, enhet, Long.valueOf(kildesystemIdenfikator.hentJournalpostId())));
+    var behandleAvvikResponse = avvikService.behandleAvvik(new AvvikshendelseIntern(avvikshendelse,
+        enhet,
+        Long.valueOf(kildesystemIdenfikator.hentJournalpostId())));
     return behandleAvvikResponse.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.badRequest().build());
   }
 
+  private HttpHeaders initHttpHeadersWith(String httpHeader, String message) {
+    var headers = new HttpHeaders();
+    headers.add(httpHeader, message);
+    return headers;
+
+  }
 }

@@ -292,8 +292,7 @@ data class Journalpost(
                 .maxOfOrNull { it.dato!! }
             return ReturDetaljer(
                 dato = if (isDistribusjonKommetIRetur()) {
-                    hentDatoRetur()
-                        ?: senestReturDato
+                    hentDatoRetur() ?: senestReturDato
                 } else {
                     null
                 },
@@ -428,9 +427,7 @@ data class Journalpost(
         if (isStatusMottatt()) avvikTypeList.add(AvvikType.OVERFOR_TIL_ANNEN_ENHET)
         if (isStatusMottatt() && isTemaBidrag()) avvikTypeList.add(AvvikType.TREKK_JOURNALPOST)
         if (isSkanning() && !tilleggsopplysninger.isOriginalBestilt() && !isFeilregistrert()) {
-            avvikTypeList.add(
-                AvvikType.BESTILL_ORIGINAL
-            )
+            avvikTypeList.add(AvvikType.BESTILL_ORIGINAL)
         }
         if (isSkanning() && !isFeilregistrert()) avvikTypeList.add(AvvikType.BESTILL_RESKANNING)
         if (isSkanning() && !isFeilregistrert()) avvikTypeList.add(AvvikType.BESTILL_SPLITTING)
@@ -439,9 +436,7 @@ data class Journalpost(
         if (isInngaaendeDokument() && isStatusJournalfort()) avvikTypeList.add(AvvikType.SEND_TIL_FAGOMRADE)
 
         if (isUtgaaendeDokument() && isStatusEkspedert() && isLokalUtksrift()) {
-            avvikTypeList.add(
-                AvvikType.REGISTRER_RETUR
-            )
+            avvikTypeList.add(AvvikType.REGISTRER_RETUR)
         }
         if (isUtgaaendeDokument() && !isLokalUtksrift() && isDistribusjonKommetIRetur() && !tilleggsopplysninger.isNyDistribusjonBestilt()) {
             avvikTypeList.add(

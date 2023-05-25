@@ -29,7 +29,7 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.kafka.test.utils.KafkaTestUtils
 import org.springframework.test.context.ActiveProfiles
-import java.util.Collections
+import java.time.Duration
 
 @SpringBootTest(classes = [BidragDokumentArkivTest::class])
 @ActiveProfiles(value = [PROFILE_KAFKA_TEST, PROFILE_TEST, BidragDokumentArkivTest.PROFILE_INTEGRATION])
@@ -67,7 +67,7 @@ abstract class BaseKafkaHendelseTest {
     fun readFromJournalpostTopic(): JournalpostHendelse? {
         val consumer = configureConsumer(topicJournalpost!!)
         return try {
-            val singleRecord = KafkaTestUtils.getSingleRecord(consumer, topicJournalpost, 4000)
+            val singleRecord = KafkaTestUtils.getSingleRecord(consumer, topicJournalpost, Duration.ofMillis(4000))
             Assertions.assertThat(singleRecord).isNotNull
             objectMapper.readValue(singleRecord.value(), JournalpostHendelse::class.java)
         } catch (e: Exception) {
@@ -85,7 +85,7 @@ abstract class BaseKafkaHendelseTest {
         consumerProps[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = "org.apache.kafka.common.serialization.StringDeserializer"
         val consumer: Consumer<Int, String> = DefaultKafkaConsumerFactory<Int, String>(consumerProps)
             .createConsumer()
-        consumer.subscribe(Collections.singleton(topic), MockRebalanceListener())
+        consumer.subscribe(listOf(topic), MockRebalanceListener())
         return consumer
     }
 
