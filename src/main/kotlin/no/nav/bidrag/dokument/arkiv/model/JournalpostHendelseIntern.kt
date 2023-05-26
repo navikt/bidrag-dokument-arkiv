@@ -31,7 +31,7 @@ class JournalpostHendelseIntern(
             tittel = journalpost.hentTittel(),
             sporing = opprettSporingsData(),
             sakstilknytninger = journalpost.hentTilknyttetSaker().toList(),
-            dokumentDato = journalpost.hentDatoDokument(),
+            dokumentDato = journalpost.hentDatoDokument() ?: journalpost.hentDatoRegistrert(),
             journalfortDato = journalpost.hentDatoJournalfort(),
             hendelseType = if (journalforingHendelse?.hendelsesType == JoarkHendelseType.ENDELIG_JOURNALFORT.hendelsesType) HendelseType.JOURNALFORING else HendelseType.ENDRING,
             journalposttype = journalpost.journalposttype?.name,
@@ -71,7 +71,11 @@ class JournalforingHendelseIntern(var journalforingHendelse: JournalfoeringHende
 
     fun toJournalpostHendelse(journalpost: Journalpost?): JournalpostHendelse {
         if (journalpost != null) {
-            return JournalpostHendelseIntern(journalpost, hentSaksbehandler(journalpost), journalforingHendelse).hentJournalpostHendelse()
+            return JournalpostHendelseIntern(
+                journalpost,
+                hentSaksbehandler(journalpost),
+                journalforingHendelse
+            ).hentJournalpostHendelse()
         }
 
         return journalforingHendelseToJournalpostHendelse()
@@ -79,7 +83,10 @@ class JournalforingHendelseIntern(var journalforingHendelse: JournalfoeringHende
 
     fun hentSaksbehandler(journalpost: Journalpost): SaksbehandlerMedEnhet {
         if (journalpost.isStatusJournalfort()) {
-            return Saksbehandler(journalpost.hentJournalfortAvIdent(), journalpost.journalfortAvNavn).tilEnhet(journalpost.journalforendeEnhet)
+            return Saksbehandler(
+                journalpost.hentJournalfortAvIdent(),
+                journalpost.journalfortAvNavn
+            ).tilEnhet(journalpost.journalforendeEnhet)
         }
 
         return Saksbehandler(null, "bidrag-dokument-arkiv").tilEnhet("9999")
