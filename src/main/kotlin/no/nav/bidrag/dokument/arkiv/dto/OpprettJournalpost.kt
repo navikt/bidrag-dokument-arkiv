@@ -3,7 +3,7 @@ package no.nav.bidrag.dokument.arkiv.dto
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
-import no.nav.bidrag.dokument.dto.OpprettJournalpostRequest
+import no.nav.bidrag.transport.dokument.OpprettJournalpostRequest
 import org.apache.commons.lang3.Validate
 
 typealias DokumentId = String
@@ -286,7 +286,7 @@ fun validerKanOppretteJournalpost(request: OpprettJournalpostRequest) {
     request.dokumenter.forEachIndexed { index, it ->
         Validate.isTrue(it.tittel.isNotEmpty(), "Dokument ${index + 1} mangler tittel. Alle dokumenter må ha satt tittel")
     }
-    if (request.journalposttype != no.nav.bidrag.dokument.dto.JournalpostType.NOTAT) {
+    if (request.journalposttype != no.nav.bidrag.transport.dokument.JournalpostType.NOTAT) {
         Validate.isTrue(request.hasAvsenderMottaker(), "Journalpost må ha satt avsender/mottaker navn eller ident")
     }
 

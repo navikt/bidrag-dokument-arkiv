@@ -13,9 +13,9 @@ import no.nav.bidrag.dokument.arkiv.model.Discriminator
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
 import no.nav.bidrag.dokument.arkiv.service.EndreJournalpostService
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService
-import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
-import no.nav.bidrag.dokument.dto.JournalpostDto
-import no.nav.bidrag.dokument.dto.JournalpostResponse
+import no.nav.bidrag.transport.dokument.EndreJournalpostCommand
+import no.nav.bidrag.transport.dokument.JournalpostDto
+import no.nav.bidrag.transport.dokument.JournalpostResponse
 import no.nav.security.token.support.core.api.Protected
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders

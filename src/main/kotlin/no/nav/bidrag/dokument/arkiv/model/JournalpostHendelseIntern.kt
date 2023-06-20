@@ -6,9 +6,10 @@ import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.JournalstatusDto
 import no.nav.bidrag.dokument.arkiv.dto.Saksbehandler
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerMedEnhet
-import no.nav.bidrag.dokument.dto.HendelseType
-import no.nav.bidrag.dokument.dto.JournalpostHendelse
-import no.nav.bidrag.dokument.dto.Sporingsdata
+import no.nav.bidrag.transport.dokument.HendelseType
+import no.nav.bidrag.transport.dokument.JournalpostHendelse
+import no.nav.bidrag.transport.dokument.JournalpostStatus
+import no.nav.bidrag.transport.dokument.Sporingsdata
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord
 
 class JournalpostHendelseIntern(
@@ -96,10 +97,10 @@ class JournalforingHendelseIntern(var journalforingHendelse: JournalfoeringHende
         return JournalpostHendelse(
             sporing = opprettSporingsData(),
             journalpostId = "JOARK-${journalforingHendelse.journalpostId}",
-            journalstatus = when (journalforingHendelse.journalpostStatus) {
-                "MOTTATT" -> JournalstatusDto.MOTTAKSREGISTRERT
-                "JOURNALFOERT" -> JournalstatusDto.JOURNALFORT
-                "UTGAAR" -> JournalstatusDto.UTGAR
+            status = when (journalforingHendelse.journalpostStatus) {
+                "MOTTATT" -> JournalpostStatus.MOTTATT
+                "JOURNALFOERT" -> JournalpostStatus.JOURNALFØRT
+                "UTGAAR" -> JournalpostStatus.UTGÅR
                 else -> null
             },
             enhet = null,

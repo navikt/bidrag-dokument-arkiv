@@ -8,7 +8,7 @@ import mu.KotlinLogging
 import no.nav.bidrag.commons.util.KildesystemIdenfikator
 import no.nav.bidrag.commons.web.WebUtil
 import no.nav.bidrag.dokument.arkiv.service.DokumentService
-import no.nav.bidrag.dokument.dto.DokumentMetadata
+import no.nav.bidrag.transport.dokument.DokumentMetadata
 import no.nav.security.token.support.core.api.Protected
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus

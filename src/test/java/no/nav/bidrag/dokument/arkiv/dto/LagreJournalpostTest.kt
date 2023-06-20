@@ -2,7 +2,7 @@ package no.nav.bidrag.dokument.arkiv.dto
 
 import no.nav.bidrag.dokument.arkiv.stubs.createEndreJournalpostCommand
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
-import no.nav.bidrag.dokument.dto.EndreReturDetaljer
+import no.nav.bidrag.transport.dokument.EndreReturDetaljer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test

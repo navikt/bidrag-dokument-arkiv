@@ -2,10 +2,10 @@ package no.nav.bidrag.dokument.arkiv.dto
 
 import no.nav.bidrag.dokument.arkiv.model.AvvikDetaljException
 import no.nav.bidrag.dokument.arkiv.utils.DateUtils
-import no.nav.bidrag.dokument.dto.AvvikType
-import no.nav.bidrag.dokument.dto.Avvikshendelse
-import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
-import no.nav.bidrag.dokument.dto.FARSKAP_UTELUKKET_PREFIKS
+import no.nav.bidrag.transport.dokument.AvvikType
+import no.nav.bidrag.transport.dokument.Avvikshendelse
+import no.nav.bidrag.transport.dokument.DistribuerTilAdresse
+import no.nav.bidrag.transport.dokument.FARSKAP_UTELUKKET_PREFIKS
 import java.time.LocalDate
 
 object AvvikDetaljer {
@@ -26,7 +26,7 @@ data class AvvikshendelseIntern(
     val saksbehandlersEnhet: String?,
     val journalpostId: Long = -1,
     var saksnummer: String? = null,
-    var dokumenter: List<no.nav.bidrag.dokument.dto.DokumentDto>? = emptyList(),
+    var dokumenter: List<no.nav.bidrag.transport.dokument.DokumentDto>? = emptyList(),
     var adresse: DistribuerTilAdresse? = null,
     private val detaljer: Map<String, String?> = HashMap()
 ) {

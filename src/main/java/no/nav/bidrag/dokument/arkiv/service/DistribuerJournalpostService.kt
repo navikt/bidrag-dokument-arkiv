@@ -25,11 +25,11 @@ import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
 import no.nav.bidrag.dokument.arkiv.model.UgyldigDistribusjonException
 import no.nav.bidrag.dokument.arkiv.model.ifFalse
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager
-import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse
-import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
-import no.nav.bidrag.dokument.dto.DistribusjonInfoDto
-import no.nav.bidrag.dokument.dto.UtsendingsInfoDto
-import no.nav.bidrag.dokument.dto.UtsendingsInfoVarselTypeDto
+import no.nav.bidrag.transport.dokument.DistribuerJournalpostResponse
+import no.nav.bidrag.transport.dokument.DistribuerTilAdresse
+import no.nav.bidrag.transport.dokument.DistribusjonInfoDto
+import no.nav.bidrag.transport.dokument.UtsendingsInfoDto
+import no.nav.bidrag.transport.dokument.UtsendingsInfoVarselTypeDto
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.LocalDate

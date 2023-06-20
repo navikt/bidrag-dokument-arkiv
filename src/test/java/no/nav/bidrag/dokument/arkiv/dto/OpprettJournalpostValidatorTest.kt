@@ -3,8 +3,8 @@ package no.nav.bidrag.dokument.arkiv.dto
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import no.nav.bidrag.dokument.arkiv.stubs.createOpprettJournalpostRequest
-import no.nav.bidrag.dokument.dto.AvsenderMottakerDto
-import no.nav.bidrag.dokument.dto.OpprettDokumentDto
+import no.nav.bidrag.transport.dokument.AvsenderMottakerDto
+import no.nav.bidrag.transport.dokument.OpprettDokumentDto
 import org.junit.jupiter.api.Test
 
 class OpprettJournalpostValidatorTest {

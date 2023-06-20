@@ -7,7 +7,7 @@ import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.validerAdresse
 import no.nav.bidrag.dokument.arkiv.dto.validerKanDistribueres
 import no.nav.bidrag.dokument.arkiv.stubs.createDistribuerTilAdresse
-import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest
+import no.nav.bidrag.transport.dokument.DistribuerJournalpostRequest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName

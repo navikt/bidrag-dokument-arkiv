@@ -18,10 +18,10 @@ import no.nav.bidrag.dokument.arkiv.stubs.createOppgaveDataWithSaksnummer
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponseWithReturDetaljer
-import no.nav.bidrag.dokument.dto.EndreDokument
-import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
-import no.nav.bidrag.dokument.dto.EndreReturDetaljer
-import no.nav.bidrag.dokument.dto.JournalpostDto
+import no.nav.bidrag.transport.dokument.EndreDokument
+import no.nav.bidrag.transport.dokument.EndreJournalpostCommand
+import no.nav.bidrag.transport.dokument.EndreReturDetaljer
+import no.nav.bidrag.transport.dokument.JournalpostDto
 import no.nav.bidrag.transport.person.PersonDto
 import org.assertj.core.api.Assertions.assertThat
 import org.json.JSONException

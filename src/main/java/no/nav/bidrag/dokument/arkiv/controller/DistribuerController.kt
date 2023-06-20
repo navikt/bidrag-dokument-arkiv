@@ -7,10 +7,10 @@ import no.nav.bidrag.commons.util.KildesystemIdenfikator
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER
 import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal
 import no.nav.bidrag.dokument.arkiv.service.DistribuerJournalpostService
-import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest
-import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse
-import no.nav.bidrag.dokument.dto.DistribusjonInfoDto
-import no.nav.bidrag.dokument.dto.JournalpostId
+import no.nav.bidrag.transport.dokument.DistribuerJournalpostRequest
+import no.nav.bidrag.transport.dokument.DistribuerJournalpostResponse
+import no.nav.bidrag.transport.dokument.DistribusjonInfoDto
+import no.nav.bidrag.transport.dokument.JournalpostId
 import no.nav.security.token.support.core.api.Protected
 import org.apache.logging.log4j.util.Strings
 import org.slf4j.LoggerFactory

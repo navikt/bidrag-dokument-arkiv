@@ -13,10 +13,10 @@ import no.nav.bidrag.dokument.arkiv.stubs.TITTEL_HOVEDDOKUMENT
 import no.nav.bidrag.dokument.arkiv.stubs.TITTEL_VEDLEGG1
 import no.nav.bidrag.dokument.arkiv.stubs.createOpprettJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
-import no.nav.bidrag.dokument.dto.AvsenderMottakerDto
-import no.nav.bidrag.dokument.dto.AvsenderMottakerDtoIdType
-import no.nav.bidrag.dokument.dto.JournalpostType
-import no.nav.bidrag.dokument.dto.OpprettJournalpostResponse
+import no.nav.bidrag.transport.dokument.AvsenderMottakerDto
+import no.nav.bidrag.transport.dokument.AvsenderMottakerDtoIdType
+import no.nav.bidrag.transport.dokument.JournalpostType
+import no.nav.bidrag.transport.dokument.OpprettJournalpostResponse
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpEntity

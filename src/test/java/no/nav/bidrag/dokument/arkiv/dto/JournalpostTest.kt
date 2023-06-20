@@ -5,8 +5,8 @@ import no.nav.bidrag.dokument.arkiv.stubs.RETUR_DETALJER_DATO_1
 import no.nav.bidrag.dokument.arkiv.stubs.RETUR_DETALJER_DATO_2
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponseWithReturDetaljer
-import no.nav.bidrag.dokument.dto.AvvikType
-import no.nav.bidrag.dokument.dto.FARSKAP_UTELUKKET_PREFIKS
+import no.nav.bidrag.transport.dokument.AvvikType
+import no.nav.bidrag.transport.dokument.FARSKAP_UTELUKKET_PREFIKS
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach

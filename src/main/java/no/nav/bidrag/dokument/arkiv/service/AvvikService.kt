@@ -35,13 +35,13 @@ import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer
 import no.nav.bidrag.dokument.arkiv.model.AvvikDetaljException
 import no.nav.bidrag.dokument.arkiv.model.AvvikNotSupportedException
 import no.nav.bidrag.dokument.arkiv.model.Discriminator
+import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
 import no.nav.bidrag.dokument.arkiv.model.UgyldigAvvikException
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager
-import no.nav.bidrag.dokument.dto.AvvikType
-import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse
-import no.nav.bidrag.dokument.dto.DokumentDto
-import no.nav.bidrag.dokument.dto.JournalpostIkkeFunnetException
+import no.nav.bidrag.transport.dokument.AvvikType
+import no.nav.bidrag.transport.dokument.BehandleAvvikshendelseResponse
+import no.nav.bidrag.transport.dokument.DokumentDto
 import org.apache.logging.log4j.util.Strings
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service

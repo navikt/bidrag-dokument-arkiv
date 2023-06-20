@@ -1,8 +1,8 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
-import no.nav.bidrag.dokument.dto.AvsenderMottakerDto
-import no.nav.bidrag.dokument.dto.AvsenderMottakerDtoIdType
-import no.nav.bidrag.dokument.dto.OpprettJournalpostRequest
+import no.nav.bidrag.transport.dokument.AvsenderMottakerDto
+import no.nav.bidrag.transport.dokument.AvsenderMottakerDtoIdType
+import no.nav.bidrag.transport.dokument.OpprettJournalpostRequest
 
 fun OpprettJournalpostRequest.hasAvsenderMottaker(): Boolean = !avsenderMottaker?.navn.isNullOrEmpty() || !avsenderMottaker?.ident.isNullOrEmpty()
 fun OpprettJournalpostRequest.hasSak(): Boolean = skalFerdigstilles && tilknyttSaker.isNotEmpty()

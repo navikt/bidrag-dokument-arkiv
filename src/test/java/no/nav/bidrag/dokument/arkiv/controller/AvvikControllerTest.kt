@@ -26,11 +26,11 @@ import no.nav.bidrag.dokument.arkiv.stubs.createOppgaveDataWithJournalpostId
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeDistribuertSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
-import no.nav.bidrag.dokument.dto.AvvikType
-import no.nav.bidrag.dokument.dto.Avvikshendelse
-import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse
-import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
-import no.nav.bidrag.dokument.dto.DokumentDto
+import no.nav.bidrag.transport.dokument.AvvikType
+import no.nav.bidrag.transport.dokument.Avvikshendelse
+import no.nav.bidrag.transport.dokument.BehandleAvvikshendelseResponse
+import no.nav.bidrag.transport.dokument.DistribuerTilAdresse
+import no.nav.bidrag.transport.dokument.DokumentDto
 import no.nav.bidrag.domain.string.FulltNavn
 import no.nav.bidrag.transport.person.PersonDto
 import org.assertj.core.api.Assertions
@@ -57,7 +57,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val xEnhet = "1234"
         val overforTilEnhet = "4833"
         val journalpostIdFraJson = 201028011L
-        val avvikHendelse = createAvvikHendelse(AvvikType.OVERFOR_TIL_ANNEN_ENHET, java.util.Map.of("nyttEnhetsnummer", overforTilEnhet))
+        val avvikHendelse = createAvvikHendelse(AvvikType.OVERFOR_TIL_ANNEN_ENHET, java.util.Map.of("nyttEnhetsnummer", overforTilEnhet), null)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(responseJournalpostJson, HttpStatus.OK)
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
@@ -87,7 +87,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         // given
         val xEnhet = "1234"
         val journalpostIdFraJson = 201028011L
-        val avvikHendelse = createAvvikHendelse(AvvikType.FARSKAP_UTELUKKET, emptyMap())
+        val avvikHendelse = createAvvikHendelse(AvvikType.FARSKAP_UTELUKKET, emptyMap(), null)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(
             opprettSafResponse(
@@ -132,8 +132,7 @@ class AvvikControllerTest : AbstractControllerTest() {
     fun `skal utfore avvik REGISTRER_RETUR`() {
         // given
         val xEnhet = "1234"
-        val avvikHendelse = createAvvikHendelse(AvvikType.REGISTRER_RETUR, java.util.Map.of("returDato", "2023-03-01"))
-        avvikHendelse.beskrivelse = "DEtte er test"
+        val avvikHendelse = createAvvikHendelse(AvvikType.REGISTRER_RETUR, java.util.Map.of("returDato", "2023-03-01"), "DEtte er test")
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(
             opprettSafResponse().copy(
@@ -167,7 +166,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val xEnhet = "1234"
         val overforTilEnhet = "4833"
         val journalpostIdFraJson = 201028011L
-        val avvikHendelse = createAvvikHendelse(AvvikType.OVERFOR_TIL_ANNEN_ENHET, java.util.Map.of("nyttEnhetsnummer", overforTilEnhet))
+        val avvikHendelse = createAvvikHendelse(AvvikType.OVERFOR_TIL_ANNEN_ENHET, java.util.Map.of("nyttEnhetsnummer", overforTilEnhet), null)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(responseJournalpostJson, HttpStatus.OK)
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
@@ -203,7 +202,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val xEnhet = "1234"
         val geografiskEnhet = "1234"
         val nyttFagomrade = "FAR"
-        val avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, java.util.Map.of("fagomrade", nyttFagomrade))
+        val avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, java.util.Map.of("fagomrade", nyttFagomrade), null)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockOrganisasjonGeografiskTilknytning(geografiskEnhet)
         stubs.mockSafResponseHentJournalpost(opprettSafResponse())
@@ -238,7 +237,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val xEnhet = "1234"
         val geografiskEnhet = "1234"
         val nyttFagomrade = "BID"
-        val avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, java.util.Map.of("fagomrade", nyttFagomrade))
+        val avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, java.util.Map.of("fagomrade", nyttFagomrade), null)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockOrganisasjonGeografiskTilknytning(geografiskEnhet)
         stubs.mockSafResponseHentJournalpost(opprettSafResponse().copy(tema = "BAR"))
@@ -267,7 +266,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         // given
         val xEnhet = "1234"
         val nyttFagomrade = "FAR"
-        val avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, java.util.Map.of("fagomrade", nyttFagomrade))
+        val avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, java.util.Map.of("fagomrade", nyttFagomrade), null)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseDokumentOversiktFagsak()
         stubs.mockSafResponseHentJournalpost(opprettSafResponse(journalstatus = JournalStatus.JOURNALFOERT))
@@ -314,7 +313,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         // given
         val xEnhet = "1234"
         val nyttFagomrade = "FAR"
-        val avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, java.util.Map.of("fagomrade", nyttFagomrade))
+        val avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, java.util.Map.of("fagomrade", nyttFagomrade), null)
 
         val tilleggsOpplysninger = TilleggsOpplysninger()
         tilleggsOpplysninger.setEndretTemaFlagg()
@@ -395,7 +394,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val nyttFagomrade = "AAP"
         val originalJournalpostId = 201028011L
         val nyJournalpostId = 301028011L
-        val avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, java.util.Map.of("fagomrade", nyttFagomrade))
+        val avvikHendelse = createAvvikHendelse(AvvikType.ENDRE_FAGOMRADE, java.util.Map.of("fagomrade", nyttFagomrade), null)
         val journalpost = opprettSafResponse(originalJournalpostId.toString())
             .copy(
                 journalstatus = JournalStatus.JOURNALFOERT,
@@ -457,7 +456,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         // given
         val xEnhet = "1234"
         val journalpostIdFraJson = 201028011L
-        val avvikHendelse = createAvvikHendelse(AvvikType.FEILFORE_SAK, java.util.Map.of())
+        val avvikHendelse = createAvvikHendelse(AvvikType.FEILFORE_SAK, java.util.Map.of(), null)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(journalpostJournalfortSafResponse, HttpStatus.OK)
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
@@ -495,7 +494,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         // given
         val xEnhet = "1234"
         val journalpostIdFraJson = 201028011L
-        val avvikHendelse = createAvvikHendelse(AvvikType.TREKK_JOURNALPOST, java.util.Map.of())
+        val avvikHendelse = createAvvikHendelse(AvvikType.TREKK_JOURNALPOST, java.util.Map.of(), null)
         val detaljer: MutableMap<String, String> = HashMap()
         avvikHendelse.detaljer = detaljer
         avvikHendelse.beskrivelse = "En begrunnelse"
@@ -559,7 +558,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         // given
         val xEnhet = "1234"
         val journalpostIdFraJson = 201028011L
-        val avvikHendelse = createAvvikHendelse(AvvikType.TREKK_JOURNALPOST, java.util.Map.of())
+        val avvikHendelse = createAvvikHendelse(AvvikType.TREKK_JOURNALPOST, java.util.Map.of(), null)
         val detaljer: MutableMap<String, String> = HashMap()
         avvikHendelse.detaljer = detaljer
         avvikHendelse.beskrivelse = "En begrunnelse"
@@ -626,7 +625,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val xEnhet = "1234"
         val journalpostId = 201028011L
         val journalpostId2 = 301028011L
-        val avvikHendelse = createAvvikHendelse(AvvikType.MANGLER_ADRESSE, java.util.Map.of())
+        val avvikHendelse = createAvvikHendelse(AvvikType.MANGLER_ADRESSE, java.util.Map.of(), null)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(opprettUtgaendeSafResponse(journalpostId = journalpostId.toString()))
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
@@ -683,7 +682,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val safResponse = opprettUtgaendeDistribuertSafResponse(journalpostId = journalpostId.toString())
         safResponse.antallRetur = 1
         safResponse.kanal = JournalpostKanal.SENTRAL_UTSKRIFT
-        val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_NY_DISTRIBUSJON, java.util.Map.of())
+        val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_NY_DISTRIBUSJON, java.util.Map.of(), null)
         avvikHendelse.adresse = postadresse
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
@@ -773,7 +772,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val journalpostId = 201028011L
         val safResponse = opprettSafResponse(journalpostId = journalpostId.toString())
         safResponse.kanal = JournalpostKanal.SKAN_IM
-        val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_RESKANNING, mapOf())
+        val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_RESKANNING, mapOf(), null)
         avvikHendelse.beskrivelse = "Innholdet er uleselig"
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
@@ -833,7 +832,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val safResponse = opprettSafResponse(journalpostId = journalpostId.toString())
         safResponse.kanal = JournalpostKanal.SKAN_IM
         safResponse.journalforendeEnhet = null
-        val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_SPLITTING, mapOf("enhetsnummer" to xEnhet))
+        val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_SPLITTING, mapOf("enhetsnummer" to xEnhet), null)
         avvikHendelse.beskrivelse = "Jeg ønsker å splitte etter side 5"
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
@@ -894,7 +893,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val safResponse = opprettSafResponse(journalpostId = journalpostId.toString())
         safResponse.kanal = JournalpostKanal.SKAN_IM
         safResponse.journalforendeEnhet = OppgaveEnhet.FAGPOST
-        val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_SPLITTING, mapOf())
+        val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_SPLITTING, mapOf(), null)
         avvikHendelse.beskrivelse = "Jeg ønsker å splitte etter side 5"
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
@@ -941,7 +940,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         safResponse.kanal = JournalpostKanal.SKAN_IM
         safResponse.sak = Sak(sak)
         safResponse.journalstatus = JournalStatus.JOURNALFOERT
-        val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_RESKANNING, mapOf())
+        val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_RESKANNING, mapOf(), null)
         avvikHendelse.beskrivelse = null
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
@@ -1001,7 +1000,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         safResponse.kanal = JournalpostKanal.SKAN_IM
         safResponse.sak = Sak(sak)
         safResponse.journalstatus = JournalStatus.JOURNALFOERT
-        val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_SPLITTING, mapOf())
+        val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_SPLITTING, mapOf(), null)
         avvikHendelse.beskrivelse = "Jeg ønsker å splitte etter side 5"
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
@@ -1060,7 +1059,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         val journalpostId = 201028011L
         val safResponse = opprettSafResponse(journalpostId = journalpostId.toString())
         safResponse.kanal = JournalpostKanal.SKAN_IM
-        val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_ORIGINAL, mapOf("enhetsnummer" to xEnhet))
+        val avvikHendelse = createAvvikHendelse(AvvikType.BESTILL_ORIGINAL, mapOf("enhetsnummer" to xEnhet), null)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
@@ -1140,7 +1139,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         safResponseAnnenFagomrade.sak = Sak("51233aA", "IT01")
         stubs.mockSafResponseHentJournalpost(safResponseAnnenFagomrade, journalpostIdAnnenFagomrade)
 
-        val avvikHendelse = createAvvikHendelse(AvvikType.KOPIER_FRA_ANNEN_FAGOMRADE, java.util.Map.of("knyttTilSaker", "$sak1,$sak2"))
+        val avvikHendelse = createAvvikHendelse(AvvikType.KOPIER_FRA_ANNEN_FAGOMRADE, java.util.Map.of("knyttTilSaker", "$sak1,$sak2"), null)
         avvikHendelse.dokumenter = listOf(
             DokumentDto(
                 dokumentreferanse = DOKUMENT_1_ID,
@@ -1241,7 +1240,7 @@ class AvvikControllerTest : AbstractControllerTest() {
         safResponseAnnenFagomrade.sak = Sak("51233aA", "IT01")
         stubs.mockSafResponseHentJournalpost(safResponseAnnenFagomrade, journalpostIdAnnenFagomrade)
 
-        val avvikHendelse = createAvvikHendelse(AvvikType.KOPIER_FRA_ANNEN_FAGOMRADE, java.util.Map.of("knyttTilSaker", "$sak1,$sak2"))
+        val avvikHendelse = createAvvikHendelse(AvvikType.KOPIER_FRA_ANNEN_FAGOMRADE, java.util.Map.of("knyttTilSaker", "$sak1,$sak2"), null)
         avvikHendelse.dokumenter = listOf(
             DokumentDto(
                 DOKUMENT_1_ID,
@@ -1297,10 +1296,8 @@ class AvvikControllerTest : AbstractControllerTest() {
         )
     }
 
-    private fun createAvvikHendelse(avvikType: AvvikType, detaljer: Map<String, String>): Avvikshendelse {
-        val avvikHendelse = Avvikshendelse()
-        avvikHendelse.avvikType = avvikType.name
-        avvikHendelse.detaljer = detaljer
+    private fun createAvvikHendelse(avvikType: AvvikType, detaljer: Map<String, String>, beskrivelse: String): Avvikshendelse {
+        val avvikHendelse = Avvikshendelse(avvikType = avvikType.name, detaljer = detaljer, beskrivelse = beskrivelse)
         return avvikHendelse
     }
 }

@@ -16,9 +16,9 @@ import no.nav.bidrag.commons.util.KildesystemIdenfikator;
 import no.nav.bidrag.commons.web.EnhetFilter;
 import no.nav.bidrag.dokument.arkiv.dto.AvvikshendelseIntern;
 import no.nav.bidrag.dokument.arkiv.service.AvvikService;
-import no.nav.bidrag.dokument.dto.AvvikType;
-import no.nav.bidrag.dokument.dto.Avvikshendelse;
-import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse;
+import no.nav.bidrag.transport.dokument.AvvikType;
+import no.nav.bidrag.transport.dokument.Avvikshendelse;
+import no.nav.bidrag.transport.dokument.BehandleAvvikshendelseResponse;
 import no.nav.security.token.support.core.api.Protected;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,10 +113,9 @@ public class AvvikController extends BaseController {
       return new ResponseEntity<>(initHttpHeadersWith(HttpHeaders.WARNING, "Ugyldig prefix på journalpostId"), HttpStatus.BAD_REQUEST);
     }
 
-    var muligAvvikstype = avvikshendelse.hent()
-        .map(type -> AvvikType.valueOf(type.name()));
+    var muligAvvikstype = avvikshendelse.hent();
 
-    if (muligAvvikstype.isEmpty() || enhet == null || enhet.isBlank()) {
+    if (muligAvvikstype == null || enhet == null || enhet.isBlank()) {
       var message = String.format(
           "BAD REQUEST: avvikshendelse: %s, mulig avvik: %s, enhet: %s", avvikshendelse, muligAvvikstype, enhet
       );
