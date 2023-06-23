@@ -34,7 +34,7 @@ public class PersonConsumer {
 
   @Cacheable(value = PERSON_CACHE, unless = "#result==null")
   @Retryable(
-      value = Exception.class,
+      retryFor = Exception.class,
       maxAttempts = 5,
       backoff = @Backoff(delay = 500, maxDelay = 3000, multiplier = 2.0))
   public Optional<PersonDto> hentPerson(String id) {

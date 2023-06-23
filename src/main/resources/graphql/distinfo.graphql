@@ -27,6 +27,13 @@ query journalpost($journalpostId: String!) {
             digitalpostSendt {
                 adresse
             }
+            varselSendt {
+                tittel
+                type
+                varslingstekst
+                adresse
+                varslingstidspunkt
+            }
         }
     }
 }

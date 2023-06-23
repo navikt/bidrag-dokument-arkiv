@@ -1,4 +1,4 @@
-# This file was generated based on ".graphqlconfig". Do not edit manually.
+# This file was generated. Do not edit manually.
 
 schema {
     query: Query
@@ -126,6 +126,7 @@ type Dokumentvariant {
 
 Epostvarsel sendt til bruker ved distribusjon til nav.no
 Vil kun være satt hvis brevet er distribuert til nav.no
+Deprecated: bruk VarselSendt
 """
 type EpostVarselSendt {
     " Epostadressen som varselet ble sendt til."
@@ -503,6 +504,7 @@ type SideInfo {
 
 SMS varsel sendt til bruker ved distribusjon til nav.no
 Vil kun være satt hvis brevet er distribuert til nav.no
+Deprecated: bruk VarselSendt
 """
 type SmsVarselSendt {
     " Mobilnummeret som varselet ble sendt til."
@@ -541,8 +543,9 @@ type Utsendingsinfo {
 
     Epostvarsel sendt til bruker ved distribusjon til nav.no
     Vil kun være satt hvis brevet er distribuert til nav.no
+    Dette feltet vil fjernes og erstattes med varselSendt
     """
-    epostVarselSendt: EpostVarselSendt
+    epostVarselSendt: EpostVarselSendt @deprecated(reason: "alle epost-varsler kommer nå i feltet varselSendt")
     """
 
     Informasjon om distribusjon til fysisk post gjennom Posten Norge
@@ -553,8 +556,37 @@ type Utsendingsinfo {
 
     SMS varsel sendt til bruker ved distribusjon til nav.no
     Vil kun være satt hvis brevet er distribuert til nav.no
+    Dette feltet vil fjernes og erstattes med varselSendt
     """
-    smsVarselSendt: SmsVarselSendt
+    smsVarselSendt: SmsVarselSendt @deprecated(reason: "alle sms-varsler kommer nå i feltet varselSendt")
+    """
+
+    Informasjon om varsel som er sendt til mottaker ved digital distribusjon.
+    Sortert slik at nyeste varsel kommer først
+    """
+    varselSendt: [VarselSendt!]!
+}
+
+" Informasjon om sms- og epost-varsel som er sendt til mottaker ved digital distribusjon"
+type VarselSendt {
+    """
+
+    Adressen varsel ble sendt til.
+    Kan være en epostadresse (hvis epostvarsel) eller et telefonnummer (hvis smsvarsel).
+    """
+    adresse: String!
+    " Tittel på epost hvis epost-varsel. Vil være null hvis sms-varsel."
+    tittel: String
+    """
+
+    Type varsel som er sendt til mottaker.
+    "EPOST" dersom epost-varsel eller "SMS" dersom sms-varsel
+    """
+    type: String!
+    " Innhold i varsel som er sendt til mottaker. Kan inneholde HTML."
+    varslingstekst: String!
+    " Tidspunkt når varselet ble sendt. Lokal norsk tid."
+    varslingstidspunkt: DateTime
 }
 
 """

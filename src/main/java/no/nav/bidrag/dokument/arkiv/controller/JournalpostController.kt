@@ -63,7 +63,10 @@ class JournalpostController(
     ): ResponseEntity<JournalpostResponse> {
         LOGGER.info("Henter journalpost {} med saksnummer {}", joarkJournalpostId, saksnummer)
         val kildesystemIdenfikator = KildesystemIdenfikator(joarkJournalpostId)
-        if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix() || erIkkePrefixetMedJoark(joarkJournalpostId)) {
+        if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix() || erIkkePrefixetMedJoark(
+                joarkJournalpostId
+            )
+        ) {
             return ResponseEntity
                 .badRequest()
                 .header(HttpHeaders.WARNING, "Ukjent prefix på journalpostId: $joarkJournalpostId")
@@ -72,15 +75,28 @@ class JournalpostController(
         val journalpostId = kildesystemIdenfikator.hentJournalpostId()
             ?: return ResponseEntity
                 .badRequest()
-                .header(HttpHeaders.WARNING, "Kunne ikke hente id fra prefikset journalpostId: $joarkJournalpostId")
+                .header(
+                    HttpHeaders.WARNING,
+                    "Kunne ikke hente id fra prefikset journalpostId: $joarkJournalpostId"
+                )
                 .build()
-        return journalpostService.hentJournalpostMedFnrOgTilknyttedeSaker(java.lang.Long.valueOf(journalpostId.toLong()), saksnummer)
-            .map { journalpost: Journalpost -> ResponseEntity.ok(journalpost.tilJournalpostResponse()) }
-            .orElse(
-                ResponseEntity.notFound()
-                    .header(HttpHeaders.WARNING, String.format("Fant ingen journalpost med id %s og saksnummer %s", journalpostId, saksnummer))
-                    .build()
-            )
+        return journalpostService.hentJournalpostMedFnrOgTilknyttedeSaker(
+            java.lang.Long.valueOf(
+                journalpostId.toLong()
+            ), saksnummer
+        )
+            ?.let { ResponseEntity.ok(it.tilJournalpostResponse()) }
+            ?: ResponseEntity.notFound()
+                .header(
+                    HttpHeaders.WARNING,
+                    String.format(
+                        "Fant ingen journalpost med id %s og saksnummer %s",
+                        journalpostId,
+                        saksnummer
+                    )
+                )
+                .build()
+
     }
 
     private fun erIkkePrefixetMedJoark(joarkJournalpostId: String): Boolean {
@@ -100,7 +116,10 @@ class JournalpostController(
             )
         ]
     )
-    fun hentJournal(@PathVariable saksnummer: String, @RequestParam fagomrade: List<String> = emptyList()): ResponseEntity<List<JournalpostDto>> {
+    fun hentJournal(
+        @PathVariable saksnummer: String,
+        @RequestParam fagomrade: List<String> = emptyList()
+    ): ResponseEntity<List<JournalpostDto>> {
         LOGGER.info("Henter journal for saksnummer {} og tema {}", saksnummer, fagomrade)
         return ResponseEntity.ok(journalpostService.finnJournalposter(saksnummer, fagomrade))
     }
@@ -124,7 +143,11 @@ class JournalpostController(
         @RequestHeader(EnhetFilter.X_ENHET_HEADER) enhet: String?
     ): ResponseEntity<Void> {
         LOGGER.info("Mottatt oppdater journalpost {} kall", joarkJournalpostId)
-        SECURE_LOGGER.info("Oppdater journalpost {} med body: {}", joarkJournalpostId, endreJournalpostCommand)
+        SECURE_LOGGER.info(
+            "Oppdater journalpost {} med body: {}",
+            joarkJournalpostId,
+            endreJournalpostCommand
+        )
         val kildesystemIdenfikator = KildesystemIdenfikator(joarkJournalpostId)
         if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix()) {
             val msgBadRequest = String.format(

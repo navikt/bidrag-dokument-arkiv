@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig
@@ -63,11 +64,14 @@ internal class JournalpostServiceTest {
     @DisplayName("skal oversette Map fra consumer til JournalpostDto")
     @Throws(IOException::class)
     fun skalOversetteMapFraConsumerTilJournalpostDto() {
-        val jsonResponse = Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJsonResource!!.file.toURI())))
+        val jsonResponse =
+            Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJsonResource!!.file.toURI())))
 
-        val dokumentoversiktFagsakQueryResponse = objectMapper!!.readValue(jsonResponse, DokumentoversiktFagsakQueryResponse::class.java)
+        val dokumentoversiktFagsakQueryResponse =
+            objectMapper!!.readValue(jsonResponse, DokumentoversiktFagsakQueryResponse::class.java)
         val journalpostIdFraJson = 201028011L
-        val journalpostDokOversikt = dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostIdFraJson)
+        val journalpostDokOversikt =
+            dokumentoversiktFagsakQueryResponse.hentJournalpost(journalpostIdFraJson)
         every { safConsumerMock.hentJournalpost(journalpostIdFraJson) } returns journalpostDokOversikt
         every { personConsumerMock.hentPerson(journalpostDokOversikt.bruker!!.id) } returns Optional.of(
             PersonDto(
@@ -76,12 +80,12 @@ internal class JournalpostServiceTest {
                 aktørId = AktørId("555555")
             )
         )
-        val muligJournalpost =
-            journalpostService!!.get(Discriminator.REGULAR_USER).hentJournalpostMedFnrOgTilknyttedeSaker(journalpostIdFraJson, null)
+        val journalpost =
+            journalpostService!!.get(Discriminator.REGULAR_USER)
+                .hentJournalpostMedFnrOgTilknyttedeSaker(journalpostIdFraJson, null)
 
-        muligJournalpost.isPresent shouldBe true
-        val journalpost = muligJournalpost.get()
-        val avsenderMottaker = journalpost.avsenderMottaker
+        journalpost shouldNotBe null
+        val avsenderMottaker = journalpost!!.avsenderMottaker
         val bruker = journalpost.bruker
         val dokumenter = journalpost.dokumenter
         assertSoftly {
