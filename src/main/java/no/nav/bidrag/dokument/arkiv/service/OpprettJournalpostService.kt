@@ -14,7 +14,6 @@ import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
 import no.nav.bidrag.dokument.arkiv.dto.erSamhandler
 import no.nav.bidrag.dokument.arkiv.dto.hentGjelderIdent
 import no.nav.bidrag.dokument.arkiv.dto.hentGjelderType
-import no.nav.bidrag.dokument.arkiv.dto.hentJournalførendeEnhet
 import no.nav.bidrag.dokument.arkiv.dto.opprettDokumentVariant
 import no.nav.bidrag.dokument.arkiv.dto.validerKanOppretteJournalpost
 import no.nav.bidrag.dokument.arkiv.model.Discriminator
@@ -60,7 +59,7 @@ class OpprettJournalpostService(
         if (request.skalFerdigstilles && request.erNotat && !request.saksbehandlerIdent.isNullOrEmpty()) {
             val respons = opprettJournalpost(opprettJournalpostRequest, request.tilknyttSaker, skalFerdigstilles = false)
             val journalpostId = respons.journalpostId!!.toLong()
-            ferdigstillJournalpost(journalpostId, request.hentJournalførendeEnhet()!!, request.saksbehandlerIdent)
+            ferdigstillJournalpost(journalpostId, request.journalførendeEnhet!!, request.saksbehandlerIdent)
             lagreSaksbehandlerIdentOgKnyttFerdigstiltJournalpostTilSaker(journalpostId, request.tilknyttSaker, request.saksbehandlerIdent)
             return respons
         }
@@ -193,18 +192,18 @@ class OpprettJournalpostService(
 
         return JoarkOpprettJournalpostRequest(
             tittel = hovedTittel,
-            tema = request.tema ?: "BID",
+            tema = request.tema,
             journalpostType = when (request.journalposttype) {
-                JournalpostType.UTGÅENDE, JournalpostType.UTGAAENDE -> JoarkJournalpostType.UTGAAENDE // DEPRECATED
+                JournalpostType.UTGÅENDE -> JoarkJournalpostType.UTGAAENDE
                 JournalpostType.INNGÅENDE -> JoarkJournalpostType.INNGAAENDE
                 JournalpostType.NOTAT -> JoarkJournalpostType.NOTAT
                 else -> JoarkJournalpostType.UTGAAENDE
             },
             eksternReferanseId = request.referanseId,
             behandlingstema = request.behandlingstema,
-            journalfoerendeEnhet = if (erInngaendeOgSkalIkkeJournalfores) null else request.hentJournalførendeEnhet(),
+            journalfoerendeEnhet = if (erInngaendeOgSkalIkkeJournalfores) null else request.journalførendeEnhet,
             kanal = when (request.journalposttype) {
-                JournalpostType.UTGÅENDE, JournalpostType.UTGAAENDE ->
+                JournalpostType.UTGÅENDE ->
                     if (request.kanal == MottakUtsendingKanal.LOKAL_UTSKRIFT) {
                         JoarkMottakUtsendingKanal.L
                     } else {
@@ -235,7 +234,7 @@ class OpprettJournalpostService(
                 JoarkOpprettJournalpostRequest.Dokument(
                     brevkode = it.brevkode,
                     tittel = it.tittel,
-                    dokumentvarianter = listOf(opprettDokumentVariant(null, it.fysiskDokument ?: Base64.getDecoder().decode(it.dokument)))
+                    dokumentvarianter = listOf(opprettDokumentVariant(null, it.fysiskDokument))
                 )
             },
             tilleggsopplysninger = tilleggsOpplysninger

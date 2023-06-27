@@ -17,7 +17,6 @@ import no.nav.bidrag.transport.dokument.AvsenderMottakerDto
 import no.nav.bidrag.transport.dokument.AvsenderMottakerDtoIdType
 import no.nav.bidrag.transport.dokument.JournalpostType
 import no.nav.bidrag.transport.dokument.OpprettJournalpostResponse
-import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
@@ -295,30 +294,6 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivTilknyttSakerKalt(1, nyJpId)
             stubs.verifyStub.dokarkivTilknyttSakerKalt(nyJpId, saksnummer2)
             stubs.verifyStub.dokarkivOppdaterKalt(nyJpId, "Z9494124")
-        }
-    }
-
-    @Nested
-    inner class Feilhåndtering {
-        @Test
-        fun `skal feile hvis journalpost opprettet uten journalposttype`() {
-            val request = createOpprettJournalpostRequest().copy(journalposttype = null)
-
-            val nyJpId = 123123123L
-            stubs.mockDokarkivOpprettRequest(
-                nyJpId,
-                ferdigstill = false,
-                dokumentList = request.dokumenter.map { DokumentInfo("DOK_ID_${it.tittel}") }
-            )
-
-            val response = httpHeaderTestRestTemplate.exchange(
-                initUrl() + "/journalpost",
-                HttpMethod.POST,
-                HttpEntity(request),
-                OpprettJournalpostResponse::class.java
-            )
-
-            response.statusCode shouldBe HttpStatus.BAD_REQUEST
         }
     }
 }

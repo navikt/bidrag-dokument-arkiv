@@ -133,11 +133,6 @@
       <groupId>io.micrometer</groupId>
       <artifactId>micrometer-registry-prometheus</artifactId>
     </dependency>
-    <dependency>
-      <groupId>no.nav.bidrag.dokument</groupId>
-      <artifactId>bidrag-dokument-dto</artifactId>
-      <version>${bidrag-dokument-dto.version}</version>
-    </dependency>
 
     <dependency>
       <groupId>no.nav.bidrag</groupId>

@@ -100,7 +100,6 @@ class AvvikService(
             AvvikType.KOPIER_FRA_ANNEN_FAGOMRADE -> kopierFraAnnenFagomrade(journalpost, avvikshendelseIntern)
             AvvikType.OVERFOR_TIL_ANNEN_ENHET -> overforJournalpostTilEnhet(journalpost, avvikshendelseIntern.enhetsnummerNytt)
             AvvikType.ENDRE_FAGOMRADE -> endreFagomrade(journalpost, avvikshendelseIntern)
-            AvvikType.SEND_TIL_FAGOMRADE -> onlyLogging()
             AvvikType.TREKK_JOURNALPOST -> trekkJournalpost(journalpost, avvikshendelseIntern)
             AvvikType.FEILFORE_SAK -> feilregistrerSakstilknytning(avvikshendelseIntern.journalpostId)
             AvvikType.REGISTRER_RETUR -> registrerRetur(journalpost, avvikshendelseIntern)

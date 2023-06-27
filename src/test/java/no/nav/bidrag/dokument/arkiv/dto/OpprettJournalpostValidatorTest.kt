@@ -10,14 +10,6 @@ import org.junit.jupiter.api.Test
 class OpprettJournalpostValidatorTest {
 
     @Test
-    fun `Validering skal feile hvis journalposttype er tom`() {
-        val request = createOpprettJournalpostRequest().copy(journalposttype = null)
-        val result = shouldThrow<IllegalArgumentException> { validerKanOppretteJournalpost(request) }
-
-        result.message shouldBe "Journalposttype må settes"
-    }
-
-    @Test
     fun `Validering skal feile hvis gjelder ikke er satt`() {
         val request = createOpprettJournalpostRequest().copy(gjelder = null, gjelderIdent = null)
         val result = shouldThrow<IllegalArgumentException> { validerKanOppretteJournalpost(request) }

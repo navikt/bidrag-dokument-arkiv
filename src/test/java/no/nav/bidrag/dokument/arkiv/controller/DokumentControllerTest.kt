@@ -63,9 +63,9 @@ class DokumentControllerTest : AbstractControllerTest() {
         )
 
         response.statusCode shouldBe HttpStatus.OK
-        response.body.size shouldBe 1
+        response.body!!.size shouldBe 1
 
-        val dokumentmetadata = response.body[0]
+        val dokumentmetadata = response.body!![0]
         dokumentmetadata.dokumentreferanse shouldBe DOKUMENT_1_ID
         dokumentmetadata.journalpostId shouldBe "JOARK-$journalpostId"
         dokumentmetadata.arkivsystem shouldBe DokumentArkivSystemDto.JOARK
@@ -102,9 +102,9 @@ class DokumentControllerTest : AbstractControllerTest() {
         )
 
         response.statusCode shouldBe HttpStatus.OK
-        response.body.size shouldBe 1
+        response.body!!.size shouldBe 1
 
-        val dokumentmetadata = response.body[0]
+        val dokumentmetadata = response.body!![0]
         dokumentmetadata.dokumentreferanse shouldBe DOKUMENT_1_ID
         dokumentmetadata.journalpostId shouldBe "JOARK-$journalpostId"
         dokumentmetadata.arkivsystem shouldBe DokumentArkivSystemDto.JOARK
@@ -141,16 +141,16 @@ class DokumentControllerTest : AbstractControllerTest() {
         )
 
         response.statusCode shouldBe HttpStatus.OK
-        response.body.size shouldBe 2
+        response.body!!.size shouldBe 2
 
-        val dokumentmetadata = response.body[0]
+        val dokumentmetadata = response.body!![0]
         dokumentmetadata.dokumentreferanse shouldBe DOKUMENT_1_ID
         dokumentmetadata.journalpostId shouldBe "JOARK-$journalpostId"
         dokumentmetadata.arkivsystem shouldBe DokumentArkivSystemDto.JOARK
         dokumentmetadata.format shouldBe DokumentFormatDto.PDF
         dokumentmetadata.status shouldBe DokumentStatusDto.FERDIGSTILT
 
-        val dokumentmetadata2 = response.body[1]
+        val dokumentmetadata2 = response.body!![1]
         dokumentmetadata2.dokumentreferanse shouldBe DOKUMENT_2_ID
         dokumentmetadata2.journalpostId shouldBe "JOARK-$journalpostId"
         dokumentmetadata2.arkivsystem shouldBe DokumentArkivSystemDto.JOARK

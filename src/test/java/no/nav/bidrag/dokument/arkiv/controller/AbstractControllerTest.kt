@@ -66,11 +66,11 @@ abstract class AbstractControllerTest {
     fun initMocks() {
         headerMedEnhet = HttpHeaders()
         headerMedEnhet.add(EnhetFilter.X_ENHET_HEADER, X_ENHET_HEADER)
-        stubs!!.mockOppdaterOppgave(HttpStatus.OK)
-        stubs!!.mockOpprettOppgave(HttpStatus.OK)
-        stubs!!.mockSokOppgave()
-        stubs!!.mockSts()
-        stubs!!.mockBidragOrganisasjonSaksbehandler()
+        stubs.mockOppdaterOppgave(HttpStatus.OK)
+        stubs.mockOpprettOppgave(HttpStatus.OK)
+        stubs.mockSokOppgave()
+        stubs.mockSts()
+        stubs.mockBidragOrganisasjonSaksbehandler()
     }
 
     @AfterEach

@@ -23,10 +23,11 @@ import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_ID
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
 import no.nav.bidrag.dokument.arkiv.stubs.Stubs
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
-import no.nav.bidrag.transport.dokument.HendelseType
-import no.nav.bidrag.transport.dokument.JournalpostHendelse
 import no.nav.bidrag.domain.ident.AktørId
 import no.nav.bidrag.domain.ident.PersonIdent
+import no.nav.bidrag.transport.dokument.HendelseType
+import no.nav.bidrag.transport.dokument.JournalpostHendelse
+import no.nav.bidrag.transport.dokument.JournalpostStatus
 import no.nav.bidrag.transport.person.PersonDto
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
 import org.assertj.core.api.Assertions.assertThat
@@ -107,7 +108,7 @@ class JoarkHendelseTest {
             { assertThat(journalpostHendelse.sporing?.enhetsnummer).isEqualTo("9999") },
             { assertThat(journalpostHendelse.sakstilknytninger).isEmpty() },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isEqualTo(BRUKER_AKTOER_ID) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus).isEqualTo("M") },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::status).isEqualTo(JournalpostStatus.MOTTATT) },
             { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() }
         )
     }
@@ -162,7 +163,7 @@ class JoarkHendelseTest {
             { assertThat(journalpostHendelse.sakstilknytninger).isNotEmpty() },
             { assertThat(journalpostHendelse.sakstilknytninger).contains(sak1, sak2) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isEqualTo(BRUKER_AKTOER_ID) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus).isEqualTo("J") },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::status).isEqualTo(JournalpostStatus.JOURNALFØRT) },
             { stubs.verifyStub.harEnSafKallEtterTilknyttedeJournalposter() }
         )
     }
@@ -199,7 +200,7 @@ class JoarkHendelseTest {
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isEqualTo(BRUKER_ENHET) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isNull() },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::fnr).isEqualTo(AVSENDER_ID) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus).isEqualTo("M") }
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::status).isEqualTo(JournalpostStatus.MOTTATT) }
         )
     }
 
@@ -235,7 +236,7 @@ class JoarkHendelseTest {
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isEqualTo(BRUKER_ENHET) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isNull() },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::fnr).isEqualTo(BRUKER_FNR) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus).isEqualTo("M") },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::status).isEqualTo(JournalpostStatus.MOTTATT) },
             { stubs.verifyStub.bidragPersonIkkeKalt() }
         )
     }
@@ -268,7 +269,7 @@ class JoarkHendelseTest {
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId).isEqualTo(expectedJoarkJournalpostId) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isEqualTo(BRUKER_ENHET) },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isEqualTo(BRUKER_AKTOER_ID) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus).isEqualTo("M") },
+            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::status).isEqualTo(JournalpostStatus.MOTTATT) },
             { stubs.verifyStub.dokarkivOppdaterIkkeKalt(journalpostId) }
         )
     }

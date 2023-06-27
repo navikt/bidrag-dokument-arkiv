@@ -106,15 +106,14 @@ class DistribuerJournalpostServiceTest {
         @Test
         @DisplayName("skal validere adresse")
         fun skalValidereAdresse() {
-            val adresse = createDistribuerTilAdresse()
+            val adresse = createDistribuerTilAdresse(null)
             Assertions.assertDoesNotThrow({ validerAdresse(adresse) }, "Skal validere adresse")
         }
 
         @Test
         @DisplayName("skal ikke validere norsk adresse uten postnummer")
         fun skalIkkeValidereNorskAdresseSomManglerPostnummer() {
-            val adresse = createDistribuerTilAdresse()
-            adresse.postnummer = null
+            val adresse = createDistribuerTilAdresse(postnummer = null)
             Assertions.assertThrows(
                 IllegalArgumentException::class.java,
                 { validerAdresse(adresse) },
@@ -125,8 +124,7 @@ class DistribuerJournalpostServiceTest {
         @Test
         @DisplayName("skal ikke validere norsk adresse uten poststed")
         fun skalIkkeValidereNorskAdresseSomManglerPoststed() {
-            val adresse = createDistribuerTilAdresse()
-            adresse.poststed = null
+            val adresse = createDistribuerTilAdresse(poststed = null)
             Assertions.assertThrows(
                 IllegalArgumentException::class.java,
                 { validerAdresse(adresse) },
@@ -137,9 +135,7 @@ class DistribuerJournalpostServiceTest {
         @Test
         @DisplayName("skal ikke validere utenlandsk adresse uten adresselinje1")
         fun skalIkkeValidereUtenlandskAdresseSomManglerAdresselinje1() {
-            val adresse = createDistribuerTilAdresse()
-            adresse.adresselinje1 = null
-            adresse.land = "SE"
+            val adresse = createDistribuerTilAdresse(adresselinje1 = null, land = "SE")
             Assertions.assertThrows(
                 IllegalArgumentException::class.java,
                 { validerAdresse(adresse) },
@@ -150,9 +146,7 @@ class DistribuerJournalpostServiceTest {
         @Test
         @DisplayName("skal ikke validere hvis landkode ikke er formatert som alpha-2 kode")
         fun skalIkkeValidereLandSomErFormatertFeil() {
-            val adresse = createDistribuerTilAdresse()
-            adresse.adresselinje1 = null
-            adresse.land = "SER"
+            val adresse = createDistribuerTilAdresse(land = "SER")
             Assertions.assertThrows(
                 IllegalArgumentException::class.java,
                 { validerAdresse(adresse) },
@@ -162,7 +156,7 @@ class DistribuerJournalpostServiceTest {
     }
 
     private fun createValidDistribuerJournalpostRequest(): DistribuerJournalpostRequest {
-        return DistribuerJournalpostRequest(null, false, createDistribuerTilAdresse())
+        return DistribuerJournalpostRequest(null, false, createDistribuerTilAdresse(null))
     }
 
     private fun createValidJournalpost(): Journalpost {

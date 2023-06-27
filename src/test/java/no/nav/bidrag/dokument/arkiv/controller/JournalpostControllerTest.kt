@@ -15,7 +15,6 @@ import no.nav.bidrag.dokument.arkiv.dto.EpostVarselSendt
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostType
-import no.nav.bidrag.dokument.arkiv.dto.JournalstatusDto
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
@@ -23,13 +22,19 @@ import no.nav.bidrag.dokument.arkiv.dto.UtsendingsInfo
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_NAVN
 import no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT
-import no.nav.bidrag.dokument.arkiv.stubs.DATO_EKSPEDERT
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_ID
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
 import no.nav.bidrag.dokument.arkiv.stubs.JOURNALPOST_ID
 import no.nav.bidrag.dokument.arkiv.stubs.createDistribuerTilAdresse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
+import no.nav.bidrag.domain.enums.Adressetype
+import no.nav.bidrag.domain.string.Adresselinje1
+import no.nav.bidrag.domain.string.Adresselinje2
+import no.nav.bidrag.domain.string.Landkode2
+import no.nav.bidrag.domain.string.Landkode3
+import no.nav.bidrag.domain.string.Postnummer
+import no.nav.bidrag.domain.string.Poststed
 import no.nav.bidrag.transport.dokument.AvsenderMottakerDto
 import no.nav.bidrag.transport.dokument.AvsenderMottakerDtoIdType
 import no.nav.bidrag.transport.dokument.DistribuerJournalpostRequest
@@ -40,31 +45,19 @@ import no.nav.bidrag.transport.dokument.JournalpostDto
 import no.nav.bidrag.transport.dokument.JournalpostResponse
 import no.nav.bidrag.transport.dokument.JournalpostStatus
 import no.nav.bidrag.transport.dokument.ReturDetaljerLog
-import no.nav.bidrag.domain.enums.Adressetype
-import no.nav.bidrag.domain.string.Adresselinje1
-import no.nav.bidrag.domain.string.Adresselinje2
-import no.nav.bidrag.domain.string.Landkode2
-import no.nav.bidrag.domain.string.Landkode3
-import no.nav.bidrag.domain.string.Postnummer
-import no.nav.bidrag.domain.string.Poststed
 import no.nav.bidrag.transport.person.PersonAdresseDto
 import no.nav.bidrag.transport.person.PersonDto
 import org.assertj.core.api.Assertions
 import org.json.JSONException
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.function.Executable
-import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import java.io.IOException
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.Optional
-import java.util.function.Consumer
 
 internal class JournalpostControllerTest : AbstractControllerTest() {
     @Test
@@ -190,7 +183,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             org.junit.jupiter.api.Assertions.assertAll(
                 { Assertions.assertThat(it.statusCode).isEqualTo(HttpStatus.OK) },
                 {
-                    Assertions.assertThat(journalpost).isNotNull.extracting { it?.avsenderNavn }
+                    Assertions.assertThat(journalpost).isNotNull.extracting { it?.avsenderMottaker?.navn }
                         .isEqualTo(AVSENDER_NAVN)
                 },
                 {
@@ -244,8 +237,8 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                         .isEqualTo("JOARK-$journalpostIdFraJson")
                 },
                 {
-                    Assertions.assertThat(journalpost).isNotNull.extracting { it.journalstatus }
-                        .isEqualTo(JournalstatusDto.EKSPEDERT)
+                    Assertions.assertThat(journalpost).isNotNull.extracting { it.status }
+                        .isEqualTo(JournalpostStatus.EKSPEDERT)
                 },
                 { Assertions.assertThat(distribuertTilAdresse).isNotNull() },
                 {
@@ -564,9 +557,10 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                 )
             )
         )
-        val distribuerTilAdresse = createDistribuerTilAdresse()
-        distribuerTilAdresse.adresselinje2 = "Adresselinje2"
-        distribuerTilAdresse.adresselinje3 = "Adresselinje3"
+        val distribuerTilAdresse = createDistribuerTilAdresse(
+            adresselinje2 = "Adresselinje2",
+            adresselinje3 = "Adresselinje3"
+        )
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
@@ -603,11 +597,11 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
                 "{\"tilleggsopplysninger\":[" +
-                        "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
-                        "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
-                        "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
-                        "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
-                        "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
+                    "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
+                    "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
+                    "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
+                    "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
+                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
             )
         }
     }
@@ -657,9 +651,10 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                 )
             )
         )
-        val distribuerTilAdresse = createDistribuerTilAdresse()
-        distribuerTilAdresse.adresselinje2 = "Adresselinje2"
-        distribuerTilAdresse.adresselinje3 = "Adresselinje3"
+        val distribuerTilAdresse = createDistribuerTilAdresse(
+            adresselinje2 = "Adresselinje2",
+            adresselinje3 = "Adresselinje3"
+        )
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
@@ -696,11 +691,11 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
                 "{\"tilleggsopplysninger\":[" +
-                        "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
-                        "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
-                        "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
-                        "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
-                        "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
+                    "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
+                    "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
+                    "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
+                    "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
+                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
             )
         }
     }
@@ -732,9 +727,10 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                 )
             )
         )
-        val distribuerTilAdresse = createDistribuerTilAdresse()
-        distribuerTilAdresse.adresselinje2 = "Adresselinje2"
-        distribuerTilAdresse.adresselinje3 = "Adresselinje3"
+        val distribuerTilAdresse = createDistribuerTilAdresse(
+            adresselinje2 = "Adresselinje2",
+            adresselinje3 = "Adresselinje3"
+        )
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
@@ -792,9 +788,10 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                 )
             )
         )
-        val distribuerTilAdresse = createDistribuerTilAdresse()
-        distribuerTilAdresse.adresselinje2 = "Adresselinje2"
-        distribuerTilAdresse.adresselinje3 = "Adresselinje3"
+        val distribuerTilAdresse = createDistribuerTilAdresse(
+            adresselinje2 = "Adresselinje2",
+            adresselinje3 = "Adresselinje3"
+        )
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
@@ -1062,9 +1059,10 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost(responseJournalpostJsonWithAdresse, HttpStatus.OK)
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
-        val distribuerTilAdresse = createDistribuerTilAdresse()
-        distribuerTilAdresse.adresselinje2 = "Adresselinje2"
-        distribuerTilAdresse.adresselinje3 = "Adresselinje3"
+        val distribuerTilAdresse = createDistribuerTilAdresse(
+            adresselinje2 = "Adresselinje2",
+            adresselinje3 = "Adresselinje3"
+        )
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
@@ -1193,9 +1191,10 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        val distribuerTilAdresse = createDistribuerTilAdresse()
-        distribuerTilAdresse.adresselinje2 = "Adresselinje2"
-        distribuerTilAdresse.adresselinje3 = "Adresselinje3"
+        val distribuerTilAdresse = createDistribuerTilAdresse(
+            adresselinje2 = "Adresselinje2",
+            adresselinje3 = "Adresselinje3"
+        )
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
@@ -1260,7 +1259,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         )
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
-        val request = DistribuerJournalpostRequest(adresse = createDistribuerTilAdresse())
+        val request = DistribuerJournalpostRequest(adresse = createDistribuerTilAdresse(null))
 
         // when
         val oppdaterJournalpostResponseEntity =

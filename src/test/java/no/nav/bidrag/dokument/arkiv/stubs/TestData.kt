@@ -20,6 +20,7 @@ import no.nav.bidrag.transport.dokument.AvsenderMottakerDto
 import no.nav.bidrag.transport.dokument.DistribuerTilAdresse
 import no.nav.bidrag.transport.dokument.EndreDokument
 import no.nav.bidrag.transport.dokument.EndreJournalpostCommand
+import no.nav.bidrag.transport.dokument.EndreReturDetaljer
 import no.nav.bidrag.transport.dokument.Kanal
 import no.nav.bidrag.transport.dokument.MottakUtsendingKanal
 import no.nav.bidrag.transport.dokument.OpprettDokumentDto
@@ -75,14 +76,22 @@ fun OppgaveHendelse.toOppgaveData(_versjon: Int? = null) = OppgaveData(
 
 )
 
-fun createDistribuerTilAdresse(): DistribuerTilAdresse {
+fun createDistribuerTilAdresse(
+    adresselinje1: String? = "Adresselinje1",
+    adresselinje2: String? = null,
+    adresselinje3: String? = null,
+    postnummer: String? = "3000",
+    poststed: String? = "Ingen",
+    land: String? = "NO"
+
+): DistribuerTilAdresse {
     return DistribuerTilAdresse(
-        adresselinje1 = "Adresselinje1",
-        adresselinje2 = null,
-        adresselinje3 = null,
-        land = "NO",
-        postnummer = "3000",
-        poststed = "Ingen"
+        adresselinje1 = adresselinje1,
+        adresselinje2 = adresselinje2,
+        adresselinje3 = adresselinje3,
+        land = land,
+        postnummer = postnummer,
+        poststed = poststed
     )
 }
 
@@ -265,15 +274,14 @@ fun createTillegsopplysningerWithReturDetaljer(): TilleggsOpplysninger {
     return tilleggsopplysninger
 }
 
-fun createEndreJournalpostCommand(): EndreJournalpostCommand {
-    val endreJournalpostCommand = EndreJournalpostCommand()
-    endreJournalpostCommand.avsenderNavn = "Dauden, Svarte"
-    endreJournalpostCommand.gjelder = "06127412345"
-    endreJournalpostCommand.tittel = "So Tired"
-    endreJournalpostCommand.endreDokumenter = java.util.List.of(
-        EndreDokument("BLABLA", "1", "In a galazy far far away")
+fun createEndreJournalpostCommand(endreReturDetaljer: List<EndreReturDetaljer> = listOf()): EndreJournalpostCommand {
+    return EndreJournalpostCommand(
+        avsenderNavn = "Dauden, Svarte",
+        gjelder = "06127412345",
+        tittel = "So Tired",
+        endreReturDetaljer = endreReturDetaljer,
+        endreDokumenter = listOf(EndreDokument("BLABLA", "1", "In a galaxy far far away"))
     )
-    return endreJournalpostCommand
 }
 
 val TITTEL_HOVEDDOKUMENT = "Tittel på hoveddokument"

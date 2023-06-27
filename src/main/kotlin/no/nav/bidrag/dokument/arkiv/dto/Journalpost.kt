@@ -436,7 +436,6 @@ data class Journalpost(
         if (isSkanning() && !isFeilregistrert()) avvikTypeList.add(AvvikType.BESTILL_SPLITTING)
         if (!isStatusMottatt() && hasSak() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.FEILFORE_SAK)
         if (isInngaaendeDokument() && !isStatusFeilregistrert()) avvikTypeList.add(AvvikType.ENDRE_FAGOMRADE)
-        if (isInngaaendeDokument() && isStatusJournalfort()) avvikTypeList.add(AvvikType.SEND_TIL_FAGOMRADE)
 
         if (isUtgaaendeDokument() && isStatusEkspedert() && isLokalUtksrift()) {
             avvikTypeList.add(AvvikType.REGISTRER_RETUR)

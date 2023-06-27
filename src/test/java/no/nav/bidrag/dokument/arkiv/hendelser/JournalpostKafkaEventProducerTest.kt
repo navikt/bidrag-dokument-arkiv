@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.hendelser
 
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
+import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
@@ -10,6 +11,7 @@ import no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT
 import no.nav.bidrag.dokument.arkiv.stubs.DATO_JOURNALFORT
 import no.nav.bidrag.dokument.arkiv.stubs.Stubs
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
+import no.nav.bidrag.transport.dokument.JournalpostStatus
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
@@ -43,8 +45,8 @@ internal class JournalpostKafkaEventProducerTest : BaseKafkaHendelseTest() {
         val journalpostHendelse = readFromJournalpostTopic()!!
         assertThat(journalpostHendelse).isNotNull
         assertThat(journalpostHendelse.journalpostId).isEqualTo("JOARK-$journalpostId")
-        assertThat(journalpostHendelse.journalstatus).isEqualTo("M")
-        assertThat(journalpostHendelse.fagomrade).isEqualTo("BID")
+        assertThat(journalpostHendelse.status).isEqualTo(JournalpostStatus.MOTTATT)
+        assertThat(journalpostHendelse.tema).isEqualTo("BID")
         assertThat(journalpostHendelse.aktorId).isEqualTo(BRUKER_AKTOER_ID)
         assertThat(journalpostHendelse.enhet).isNull()
         assertThat(journalpostHendelse.dokumentDato).isEqualTo(DATO_DOKUMENT.somDato())
@@ -88,8 +90,8 @@ internal class JournalpostKafkaEventProducerTest : BaseKafkaHendelseTest() {
         val journalpostHendelse = readFromJournalpostTopic()!!
         assertThat(journalpostHendelse).isNotNull
         assertThat(journalpostHendelse.journalpostId).isEqualTo("JOARK-$journalpostId")
-        assertThat(journalpostHendelse.journalstatus).isEqualTo("J")
-        assertThat(journalpostHendelse.fagomrade).isEqualTo("BID")
+        assertThat(journalpostHendelse.status).isEqualTo(JournalpostStatus.JOURNALFØRT)
+        assertThat(journalpostHendelse.tema).isEqualTo("BID")
         assertThat(journalpostHendelse.aktorId).isEqualTo(BRUKER_AKTOER_ID)
         assertThat(journalpostHendelse.enhet).isNull()
         assertThat(journalpostHendelse.dokumentDato).isEqualTo(LocalDateTime.parse(DATO_DOKUMENT.dato).toLocalDate())
