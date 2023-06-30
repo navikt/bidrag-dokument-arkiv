@@ -21,6 +21,7 @@ import no.nav.bidrag.transport.dokument.DistribuerTilAdresse
 import no.nav.bidrag.transport.dokument.EndreDokument
 import no.nav.bidrag.transport.dokument.EndreJournalpostCommand
 import no.nav.bidrag.transport.dokument.EndreReturDetaljer
+import no.nav.bidrag.transport.dokument.IdentType
 import no.nav.bidrag.transport.dokument.Kanal
 import no.nav.bidrag.transport.dokument.MottakUtsendingKanal
 import no.nav.bidrag.transport.dokument.OpprettDokumentDto
@@ -50,7 +51,7 @@ var AVSENDER_ID = "112312385076492416"
 var AVSENDER_NAVN = "Avsender Avsendersen"
 var BRUKER_AKTOER_ID = "123213213213"
 var BRUKER_FNR = "333232323"
-var BRUKER_TYPE_AKTOERID = "AKTOERID"
+var BRUKER_TYPE_AKTOERID = IdentType.AKTOERID
 
 var BREVKODE = "BI01S02"
 var JOURNALFORENDE_ENHET = "4833"

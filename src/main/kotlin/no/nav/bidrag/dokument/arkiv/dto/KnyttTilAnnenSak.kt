@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
 import no.nav.bidrag.dokument.arkiv.model.KnyttTilSakManglerTemaException
+import no.nav.bidrag.transport.dokument.IdentType
 
 open class KnyttTilAnnenSakRequest(
     open var fagsakId: String? = null,
@@ -55,5 +56,5 @@ data class KnyttTilAnnenSakResponse(
 
 data class KnyttTilBruker(
     val id: String?,
-    val idType: String?
+    val idType: IdentType?
 )

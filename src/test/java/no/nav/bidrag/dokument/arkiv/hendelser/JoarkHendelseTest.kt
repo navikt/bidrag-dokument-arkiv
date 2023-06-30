@@ -5,7 +5,6 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivTest
 import no.nav.bidrag.dokument.arkiv.dto.Bruker
-import no.nav.bidrag.dokument.arkiv.dto.BrukerType
 import no.nav.bidrag.dokument.arkiv.dto.Dokument
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
@@ -26,6 +25,7 @@ import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.domain.ident.AktørId
 import no.nav.bidrag.domain.ident.PersonIdent
 import no.nav.bidrag.transport.dokument.HendelseType
+import no.nav.bidrag.transport.dokument.IdentType
 import no.nav.bidrag.transport.dokument.JournalpostHendelse
 import no.nav.bidrag.transport.dokument.JournalpostStatus
 import no.nav.bidrag.transport.person.PersonDto
@@ -213,7 +213,7 @@ class JoarkHendelseTest {
         stubs.mockSafResponseHentJournalpost(
             opprettSafResponse(
                 journalpostId = journalpostId.toString(),
-                bruker = Bruker(BRUKER_FNR, BrukerType.FNR.name),
+                bruker = Bruker(BRUKER_FNR, IdentType.FNR),
                 journalstatus = JournalStatus.MOTTATT,
                 journalforendeEnhet = BRUKER_ENHET
             )

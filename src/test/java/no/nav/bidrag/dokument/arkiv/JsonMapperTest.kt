@@ -10,6 +10,7 @@ import no.nav.bidrag.dokument.arkiv.query.DokumentoversiktFagsakQuery
 import no.nav.bidrag.dokument.arkiv.query.JournalpostQuery
 import no.nav.bidrag.transport.dokument.EndreDokument
 import no.nav.bidrag.transport.dokument.EndreJournalpostCommand
+import no.nav.bidrag.transport.dokument.IdentType
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertAll
@@ -40,7 +41,7 @@ internal class JsonMapperTest {
             fagomrade = "BID",
             gjelder = "1234",
             tittel = "Tittelen på journalposten",
-            gjelderType = "FNR",
+            gjelderType = IdentType.FNR,
             tilknyttSaker = listOf("sakIdent")
         )
         val endreJournalpostIntern = EndreJournalpostCommandIntern(endreJournalpostCommand, "4805")

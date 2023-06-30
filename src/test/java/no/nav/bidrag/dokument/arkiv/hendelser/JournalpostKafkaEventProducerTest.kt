@@ -1,7 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.hendelser
 
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
-import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger

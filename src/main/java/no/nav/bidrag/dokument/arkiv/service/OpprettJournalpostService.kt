@@ -32,7 +32,6 @@ import org.apache.logging.log4j.util.Strings
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
-import java.util.Base64
 
 @Service
 class OpprettJournalpostService(
@@ -209,6 +208,7 @@ class OpprettJournalpostService(
                     } else {
                         null // Settes av distribusjonsløpet
                     }
+
                 JournalpostType.INNGÅENDE -> // TODO: Joark få en ny mottakskanal for skanning fra Bidrag
                     if (request.kanal == MottakUtsendingKanal.SKANNING_BIDRAG) {
                         JoarkMottakUtsendingKanal.SKAN_BID
@@ -222,7 +222,7 @@ class OpprettJournalpostService(
             datoMottatt = if (erInngaende) request.datoMottatt?.toString() ?: LocalDateTime.now().toString() else null,
             bruker = JoarkOpprettJournalpostRequest.OpprettJournalpostBruker(
                 id = request.hentGjelderIdent(),
-                idType = request.hentGjelderType()?.name
+                idType = request.hentGjelderType()
             ),
             avsenderMottaker = if (request.journalposttype != JournalpostType.NOTAT) mapMottaker(request) else null,
             sak = if (erInngaendeOgSkalIkkeJournalfores || tilknyttSaker.isEmpty()) {
@@ -234,7 +234,12 @@ class OpprettJournalpostService(
                 JoarkOpprettJournalpostRequest.Dokument(
                     brevkode = it.brevkode,
                     tittel = it.tittel,
-                    dokumentvarianter = listOf(opprettDokumentVariant(null, it.fysiskDokument))
+                    dokumentvarianter = listOf(
+                        opprettDokumentVariant(
+                            null,
+                            it.fysiskDokument ?: error("Kan ikke opprettet dokumentvariant uten fysiskDokument")
+                        )
+                    )
                 )
             },
             tilleggsopplysninger = tilleggsOpplysninger

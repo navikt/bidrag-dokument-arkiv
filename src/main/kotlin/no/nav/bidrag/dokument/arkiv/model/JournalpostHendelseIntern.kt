@@ -21,7 +21,7 @@ class JournalpostHendelseIntern(
     init {
         journalpostHendelse = JournalpostHendelse(
             journalpostId = journalpost.hentJournalpostIdMedPrefix(),
-            journalstatus = journalpost.hentJournalStatus(),
+            journalstatus = journalpost.hentJournalStatus()?.toString(),
             status = journalpost.hentJournalStatus(),
             enhet = journalpost.journalforendeEnhet,
             fagomrade = journalforingHendelse?.temaNytt ?: journalpost.tema,
@@ -96,6 +96,12 @@ class JournalforingHendelseIntern(var journalforingHendelse: JournalfoeringHende
         return JournalpostHendelse(
             sporing = opprettSporingsData(),
             journalpostId = "JOARK-${journalforingHendelse.journalpostId}",
+            journalstatus = when (journalforingHendelse.journalpostStatus) {
+                "MOTTATT" -> JournalpostStatus.MOTTATT.name
+                "JOURNALFOERT" -> JournalpostStatus.JOURNALFØRT.name
+                "UTGAAR" -> JournalpostStatus.UTGÅR.name
+                else -> null
+            },
             status = when (journalforingHendelse.journalpostStatus) {
                 "MOTTATT" -> JournalpostStatus.MOTTATT
                 "JOURNALFOERT" -> JournalpostStatus.JOURNALFØRT
@@ -103,6 +109,7 @@ class JournalforingHendelseIntern(var journalforingHendelse: JournalfoeringHende
                 else -> null
             },
             enhet = null,
+            tema = journalforingHendelse.temaNytt ?: journalforingHendelse.temaGammelt,
             fagomrade = journalforingHendelse.temaNytt ?: journalforingHendelse.temaGammelt
         )
     }

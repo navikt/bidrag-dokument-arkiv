@@ -7,6 +7,7 @@ import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponseWithReturDetaljer
 import no.nav.bidrag.transport.dokument.AvvikType
 import no.nav.bidrag.transport.dokument.FARSKAP_UTELUKKET_PREFIKS
+import no.nav.bidrag.transport.dokument.IdentType
 import no.nav.bidrag.transport.dokument.JournalpostStatus
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
@@ -50,7 +51,7 @@ internal class JournalpostTest {
                     avsenderMottaker
                 ).`as`("avsenderMottaker").isEqualTo(AvsenderMottaker("Tuborg", null, null))
             },
-            Executable { assertThat(bruker).`as`("bruker").isEqualTo(Bruker("1000024690889", "AKTOERID")) },
+            Executable { assertThat(bruker).`as`("bruker").isEqualTo(Bruker("1000024690889", IdentType.AKTOERID)) },
             Executable {
                 assertThat(dokumenter).`as`("dokumenter").isEqualTo(
                     java.util.List.of(

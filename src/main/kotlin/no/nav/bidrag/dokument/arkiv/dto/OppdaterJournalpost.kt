@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import no.nav.bidrag.dokument.arkiv.utils.DateUtils
 import no.nav.bidrag.transport.dokument.DistribuerTilAdresse
+import no.nav.bidrag.transport.dokument.IdentType
 import org.apache.logging.log4j.util.Strings
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -293,7 +294,7 @@ sealed class OppdaterJournalpostRequest(private var journalpostId: Long? = -1) {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    data class Bruker(val id: String? = null, val idType: String? = null)
+    data class Bruker(val id: String? = null, val idType: IdentType? = null)
 
     @Suppress("unused") // properties used by jackson
     @JsonIgnoreProperties(ignoreUnknown = true)

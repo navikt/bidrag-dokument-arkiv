@@ -3,6 +3,7 @@ package no.nav.bidrag.dokument.arkiv.dto
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
+import no.nav.bidrag.transport.dokument.IdentType
 import no.nav.bidrag.transport.dokument.OpprettJournalpostRequest
 import org.apache.commons.lang3.Validate
 
@@ -42,7 +43,7 @@ data class JoarkOpprettJournalpostRequest(
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    data class OpprettJournalpostBruker(val id: String? = null, val idType: String?)
+    data class OpprettJournalpostBruker(val id: String? = null, val idType: IdentType?)
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -295,7 +296,7 @@ fun validerKanOppretteJournalpost(request: OpprettJournalpostRequest) {
             request.tema == null || request.tema == "BID" || request.tema == "FAR",
             "Journalpost som skal ferdigstilles må ha tema BID/FAR"
         )
-        Validate.isTrue(!request.hentJournalførendeEnhet().isNullOrEmpty(), "Journalpost som skal ferdigstilles må ha satt journalførendeEnhet")
+        Validate.isTrue(!request.journalførendeEnhet.isNullOrEmpty(), "Journalpost som skal ferdigstilles må ha satt journalførendeEnhet")
         Validate.isTrue(request.hasSak(), "Journalpost som skal ferdigstilles må ha minst en sak")
     }
 }

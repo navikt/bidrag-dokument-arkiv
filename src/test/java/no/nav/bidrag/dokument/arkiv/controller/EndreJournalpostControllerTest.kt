@@ -21,6 +21,7 @@ import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponseWithReturDet
 import no.nav.bidrag.transport.dokument.EndreDokument
 import no.nav.bidrag.transport.dokument.EndreJournalpostCommand
 import no.nav.bidrag.transport.dokument.EndreReturDetaljer
+import no.nav.bidrag.transport.dokument.IdentType
 import no.nav.bidrag.transport.dokument.JournalpostDto
 import no.nav.bidrag.transport.person.PersonDto
 import org.assertj.core.api.Assertions.assertThat
@@ -228,7 +229,7 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
                 journalpostId = journalpostId.toString(),
                 journalstatus = JournalStatus.JOURNALFOERT,
                 sak = Sak(saksnummer1),
-                bruker = Bruker(endreJournalpostCommand.gjelder, "FNR"),
+                bruker = Bruker(endreJournalpostCommand.gjelder, IdentType.FNR),
                 journalforendeEnhet = "4806"
             ),
             "AFTER",

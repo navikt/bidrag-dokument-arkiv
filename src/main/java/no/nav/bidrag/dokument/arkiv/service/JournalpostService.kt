@@ -3,12 +3,12 @@ package no.nav.bidrag.dokument.arkiv.service
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer
 import no.nav.bidrag.dokument.arkiv.dto.Bruker
-import no.nav.bidrag.dokument.arkiv.dto.BrukerType
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsInfo
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.model.kanIkkeHenteJournalMedUgyldigFagomrade
+import no.nav.bidrag.transport.dokument.IdentType
 import no.nav.bidrag.transport.dokument.JournalpostDto
 import no.nav.bidrag.transport.person.PersonDto
 import org.slf4j.LoggerFactory
@@ -95,7 +95,7 @@ class JournalpostService(private val safConsumer: SafConsumer, private val perso
             return journalpost
         }
         personConsumer.hentPerson(bruker.id).ifPresent { (brukerId): PersonDto ->
-            journalpost.bruker = Bruker(brukerId.verdi, BrukerType.FNR.name)
+            journalpost.bruker = Bruker(brukerId.verdi, IdentType.FNR)
         }
         return journalpost
     }

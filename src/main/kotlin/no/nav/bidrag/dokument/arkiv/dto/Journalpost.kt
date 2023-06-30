@@ -21,6 +21,7 @@ import no.nav.bidrag.transport.dokument.DokumentDto
 import no.nav.bidrag.transport.dokument.DokumentStatusDto
 import no.nav.bidrag.transport.dokument.EndreJournalpostCommand
 import no.nav.bidrag.transport.dokument.FARSKAP_UTELUKKET_PREFIKS
+import no.nav.bidrag.transport.dokument.IdentType
 import no.nav.bidrag.transport.dokument.JournalpostDto
 import no.nav.bidrag.transport.dokument.JournalpostResponse
 import no.nav.bidrag.transport.dokument.JournalpostStatus
@@ -408,6 +409,7 @@ data class Journalpost(
             journalforendeEnhet = journalforendeEnhet,
             journalfortAv = hentJournalfortAvNavn(),
             journalpostId = "JOARK-$journalpostId",
+            journalstatus = hentJournalStatus()?.toString(),
             status = hentJournalStatus(),
             mottattDato = hentDatoRegistrert(),
             returDetaljer = hentReturDetaljer(),
@@ -833,13 +835,13 @@ enum class BrukerType {
 
 data class Bruker(
     var id: String? = null,
-    var type: String? = null
+    var type: IdentType? = null
 ) {
     fun tilAktorDto(): AktorDto {
         return if (id != null) {
             AktorDto(
                 id!!,
-                type ?: BrukerType.FNR.name
+                type ?: IdentType.FNR
             )
         } else {
             throw JournalpostDataException("ingen id i $this")
@@ -848,7 +850,7 @@ data class Bruker(
 
     @JsonIgnore
     fun isAktoerId(): Boolean {
-        return this.type == BrukerType.AKTOERID.name
+        return this.type == IdentType.AKTOERID
     }
 }
 
@@ -860,6 +862,7 @@ data class Dokument(
     fun tilDokumentDto(journalposttype: String?): DokumentDto = DokumentDto(
         arkivSystem = DokumentArkivSystemDto.JOARK,
         dokumentmalId = brevkode,
+        brevkode = brevkode,
         dokumentreferanse = this.dokumentInfoId,
         dokumentType = journalposttype,
         status = DokumentStatusDto.FERDIGSTILT,
@@ -932,7 +935,7 @@ data class EndreJournalpostCommandIntern(
     fun hentFagomrade() = endreJournalpostCommand.fagomrade
     fun hentGjelder() = endreJournalpostCommand.gjelder
     fun hentGjelderType() =
-        if (endreJournalpostCommand.gjelderType != null) endreJournalpostCommand.gjelderType!! else "FNR"
+        if (endreJournalpostCommand.gjelderType != null) endreJournalpostCommand.gjelderType!! else IdentType.FNR
 
     fun sjekkGyldigEndring(journalpost: Journalpost) {
         val violations = mutableListOf<String>()
