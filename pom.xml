@@ -35,7 +35,7 @@
     <graphq-dgs-client.version>6.0.5</graphq-dgs-client.version>
     <joark-hendelse.version>67a9be4476b63b7247cfacfaf821ab656bd2a952</joark-hendelse.version>
     <kafka-avro-serializer.version>7.3.3</kafka-avro-serializer.version>
-    <logback-encoder.version>7.3</logback-encoder.version>
+    <logback-encoder.version>7.4</logback-encoder.version>
     <nimbus-jose-jwt.version>9.15.2</nimbus-jose-jwt.version>
     <springdoc-openapi-ui.version>2.1.0</springdoc-openapi-ui.version>
     <springframework-cloud.version>4.0.2</springframework-cloud.version>
@@ -411,8 +411,7 @@
                         <phase>verify</phase>
                         <configuration>
                             <target name="ktlint">
-                                <java taskname="ktlint" dir="${basedir}" fork="true" failonerror="true"
-                                      classpathref="maven.plugin.classpath" classname="com.pinterest.ktlint.Main">
+                                <java taskname="ktlint" dir="${basedir}" fork="true" failonerror="true" classpathref="maven.plugin.classpath" classname="com.pinterest.ktlint.Main">
                                     <arg value="src/**/*.kt"/>
                                 </java>
                             </target>
@@ -426,8 +425,7 @@
                         <phase>validate</phase>
                         <configuration>
                             <target name="ktlint">
-                                <java taskname="ktlint" dir="${basedir}" fork="true" failonerror="true"
-                                      classpathref="maven.plugin.classpath" classname="com.pinterest.ktlint.Main">
+                                <java taskname="ktlint" dir="${basedir}" fork="true" failonerror="true" classpathref="maven.plugin.classpath" classname="com.pinterest.ktlint.Main">
                                     <jvmarg value="--add-opens"/>
                                     <jvmarg value="java.base/java.lang=ALL-UNNAMED"/>
                                     <arg value="-F"/>
