@@ -365,7 +365,7 @@ data class Journalpost(
         if (hentBrevkode() != null) KodeDto(kode = hentBrevkode()) else null
 
     fun hentHoveddokument(): Dokument? = if (dokumenter.isNotEmpty()) dokumenter[0] else null
-    fun hentTittel(): String? = hentHoveddokument()?.tittel ?: tittel
+    fun hentTittel(): String? = tittel ?: hentHoveddokument()?.tittel
     fun tilJournalpostDto(): JournalpostDto {
         val erSamhandlerId = tilleggsopplysninger.hentSamhandlerId() != null
         @Suppress("UNCHECKED_CAST")
@@ -800,9 +800,9 @@ data class ReturDetaljerLogDO(
     fun toMap(): List<Map<String, String>> = beskrivelse.chunked(100).mapIndexed { index, it ->
         mapOf(
             "nokkel" to "${if (locked == true) "L" else ""}$RETUR_DETALJER_KEY${index}_${
-            DateUtils.formatDate(
-                dato
-            )
+                DateUtils.formatDate(
+                    dato
+                )
             }",
             "verdi" to it
         )
