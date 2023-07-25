@@ -31,7 +31,10 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
         val request = createOpprettJournalpostRequest()
 
         val nyJpId = 123123123L
-        stubs.mockDokarkivOpprettRequest(nyJpId, ferdigstill = false, dokumentList = request.dokumenter.map { DokumentInfo("DOK_ID_${it.tittel}") })
+        stubs.mockDokarkivOpprettRequest(
+            nyJpId,
+            ferdigstill = false,
+            dokumentList = request.dokumenter.map { DokumentInfo("DOK_ID_${it.tittel}") })
 
         val response = httpHeaderTestRestTemplate.exchange(
             initUrl() + "/journalpost",
@@ -49,20 +52,20 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivOpprettKalt(
                 false,
                 "{\"tittel\":\"$TITTEL_HOVEDDOKUMENT\"," +
-                    "\"journalpostType\":\"INNGAAENDE\"," +
-                    "\"behandlingstema\":\"$BEHANDLINGSTEMA\"," +
-                    "\"eksternReferanseId\":\"$REFID\"," +
-                    "\"tilleggsopplysninger\":[]," +
-                    "\"tema\":\"BID\"," +
-                    "\"kanal\":\"NAV_NO\"," +
-                    "\"datoMottatt\":\"$DATO_MOTTATT\"," +
-                    "\"bruker\":{\"id\":\"$GJELDER_ID\",\"idType\":\"FNR\"}," +
-                    "\"dokumenter\":[" +
-                    "{\"tittel\":\"$TITTEL_HOVEDDOKUMENT\"," +
-                    "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SW5uaG9sZCBww6UgZG9rdW1lbnRldA==\"}]}," +
-                    "{\"tittel\":\"$TITTEL_VEDLEGG1\"," +
-                    "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SW5uaG9sZCBww6UgZG9rdW1lbnRldCB2ZWRsZWdn\"}]}]," +
-                    "\"avsenderMottaker\":{\"id\":\"$GJELDER_ID\",\"idType\":\"FNR\"}}"
+                        "\"journalpostType\":\"INNGAAENDE\"," +
+                        "\"behandlingstema\":\"$BEHANDLINGSTEMA\"," +
+                        "\"eksternReferanseId\":\"$REFID\"," +
+                        "\"tilleggsopplysninger\":[]," +
+                        "\"tema\":\"BID\"," +
+                        "\"kanal\":\"NAV_NO\"," +
+                        "\"datoMottatt\":\"$DATO_MOTTATT\"," +
+                        "\"bruker\":{\"id\":\"$GJELDER_ID\",\"idType\":\"FNR\"}," +
+                        "\"dokumenter\":[" +
+                        "{\"tittel\":\"$TITTEL_HOVEDDOKUMENT\"," +
+                        "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SW5uaG9sZCBww6UgZG9rdW1lbnRldA==\"}]}," +
+                        "{\"tittel\":\"$TITTEL_VEDLEGG1\"," +
+                        "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SW5uaG9sZCBww6UgZG9rdW1lbnRldCB2ZWRsZWdn\"}]}]," +
+                        "\"avsenderMottaker\":{\"id\":\"$GJELDER_ID\",\"idType\":\"FNR\"}}"
             )
         }
     }
@@ -111,6 +114,61 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
                 true,
                 "\"sak\":{\"fagsakId\":\"$saksnummer1\",\"fagsaksystem\":\"BISYS\",\"sakstype\":\"FAGSAK\"}",
                 "\"tittel\":\"$TITTEL_HOVEDDOKUMENT\"",
+                "\"journalfoerendeEnhet\":\"4806\"",
+                "\"journalpostType\":\"UTGAAENDE\"",
+                "\"avsenderMottaker\":{\"id\":\"12345678910\",\"idType\":\"FNR\"}}"
+            )
+            stubs.verifyStub.dokarkivTilknyttSakerKalt(1, nyJpId)
+            stubs.verifyStub.dokarkivTilknyttSakerKalt(nyJpId, saksnummer2)
+            stubs.verifyStub.dokarkivOppdaterKalt(nyJpId, "aud-localhost")
+        }
+    }
+
+    @Test
+    fun `skal opprette og journalføre utgående journalpost med journalpost tittel`() {
+        val saksnummer1 = "132213"
+        val saksnummer2 = "1233333"
+        val request = createOpprettJournalpostRequest()
+            .copy(
+                skalFerdigstilles = true,
+                journalposttype = JournalpostType.UTGÅENDE,
+                tilknyttSaker = listOf(saksnummer1, saksnummer2),
+                journalførendeEnhet = "4806",
+                tittel = "Journalpost tittel"
+            )
+
+        val nyJpId = 123123123L
+
+        val journalpost = opprettSafResponse(nyJpId.toString()).copy(
+            sak = Sak(saksnummer1)
+        )
+
+        stubs.mockSafResponseHentJournalpost(journalpost)
+        stubs.mockDokarkivOppdaterRequest(nyJpId)
+        stubs.mockDokarkivTilknyttRequest(nyJpId)
+        stubs.mockDokarkivOpprettRequest(
+            nyJpId,
+            ferdigstill = true,
+            dokumentList = request.dokumenter.map { DokumentInfo("DOK_ID_${it.tittel}") }
+        )
+
+        val response = httpHeaderTestRestTemplate.exchange(
+            initUrl() + "/journalpost",
+            HttpMethod.POST,
+            HttpEntity(request),
+            OpprettJournalpostResponse::class.java
+        )
+
+        response.statusCode shouldBe HttpStatus.OK
+
+        val responseBody = response.body!!
+        assertSoftly {
+            responseBody.journalpostId shouldBe nyJpId.toString()
+            responseBody.dokumenter shouldHaveSize 2
+            stubs.verifyStub.dokarkivOpprettKalt(
+                true,
+                "\"sak\":{\"fagsakId\":\"$saksnummer1\",\"fagsaksystem\":\"BISYS\",\"sakstype\":\"FAGSAK\"}",
+                "\"tittel\":\"Journalpost tittel\"",
                 "\"journalfoerendeEnhet\":\"4806\"",
                 "\"journalpostType\":\"UTGAAENDE\"",
                 "\"avsenderMottaker\":{\"id\":\"12345678910\",\"idType\":\"FNR\"}}"
@@ -287,9 +345,9 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
                 1,
                 nyJpId,
                 "{\"journalfoerendeEnhet\":\"4806\"," +
-                    "\"journalfortAvNavn\":\"Hansen, Hans\"," +
-                    "\"opprettetAvNavn\":\"Hansen, Hans\"," +
-                    "\"datoJournal\":null}"
+                        "\"journalfortAvNavn\":\"Hansen, Hans\"," +
+                        "\"opprettetAvNavn\":\"Hansen, Hans\"," +
+                        "\"datoJournal\":null}"
             )
             stubs.verifyStub.dokarkivOpprettKaltNotContains(false, "avsenderMottaker")
             stubs.verifyStub.dokarkivTilknyttSakerKalt(1, nyJpId)

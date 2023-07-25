@@ -19,6 +19,7 @@ import no.nav.bidrag.dokument.arkiv.dto.validerAdresse
 import no.nav.bidrag.dokument.arkiv.dto.validerKanDistribueres
 import no.nav.bidrag.dokument.arkiv.dto.validerKanDistribueresUtenAdresse
 import no.nav.bidrag.dokument.arkiv.dto.validerUtgaaendeJournalpostKanDupliseres
+import no.nav.bidrag.dokument.arkiv.mapper.tilVarselTypeDto
 import no.nav.bidrag.dokument.arkiv.model.Discriminator
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
@@ -29,11 +30,10 @@ import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 import no.nav.bidrag.dokument.dto.DistribusjonInfoDto
 import no.nav.bidrag.dokument.dto.UtsendingsInfoDto
-import no.nav.bidrag.dokument.dto.UtsendingsInfoVarselTypeDto
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.util.Objects
+import java.util.*
 
 @Service
 class DistribuerJournalpostService(
@@ -62,24 +62,17 @@ class DistribuerJournalpostService(
                     journalstatus = it.hentJournalStatus(),
                     kanal = it.kanal?.name ?: JournalpostUtsendingKanal.UKJENT.name,
                     utsendingsinfo = UtsendingsInfoDto(
-                        varseltype = if (utsendingsinfo?.smsVarselSendt != null) {
-                            UtsendingsInfoVarselTypeDto.SMS
-                        } else if (utsendingsinfo?.digitalpostSendt != null) {
-                            UtsendingsInfoVarselTypeDto.DIGIPOST
-                        } else if (utsendingsinfo?.epostVarselSendt != null) {
-                            UtsendingsInfoVarselTypeDto.EPOST
-                        } else if (utsendingsinfo?.fysiskpostSendt != null) {
-                            UtsendingsInfoVarselTypeDto.FYSISK_POST
-                        } else {
-                            null
-                        },
-                        adresse = utsendingsinfo?.smsVarselSendt?.adresse
+                        varseltype = utsendingsinfo?.tilVarselTypeDto(),
+                        adresse = utsendingsinfo?.sisteVarselSendt?.adresse
+                            ?: utsendingsinfo?.smsVarselSendt?.adresse
                             ?: utsendingsinfo?.epostVarselSendt?.adresse
                             ?: utsendingsinfo?.digitalpostSendt?.adresse
                             ?: utsendingsinfo?.fysiskpostSendt?.adressetekstKonvolutt,
-                        varslingstekst = utsendingsinfo?.smsVarselSendt?.varslingstekst
+                        varslingstekst = utsendingsinfo?.sisteVarselSendt?.varslingstekst
+                            ?: utsendingsinfo?.smsVarselSendt?.varslingstekst
                             ?: utsendingsinfo?.epostVarselSendt?.varslingstekst,
-                        tittel = utsendingsinfo?.epostVarselSendt?.tittel
+                        tittel = utsendingsinfo?.sisteVarselSendt?.tittel
+                            ?: utsendingsinfo?.epostVarselSendt?.tittel
                     ),
                     distribuertAvIdent = it.hentDistribuertAvIdent(),
                     distribuertDato = it.hentDatoEkspedert() ?: it.hentDatoDokument(),
