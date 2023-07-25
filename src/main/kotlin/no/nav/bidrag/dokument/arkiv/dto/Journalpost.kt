@@ -132,8 +132,13 @@ data class UtsendingsInfo(
     val digitalpostSendt: DigitalpostSendt? = null,
     val epostVarselSendt: EpostVarselSendt? = null,
     val fysiskpostSendt: FysiskpostSendt? = null,
-    val smsVarselSendt: SmsVarselSendt? = null
-)
+    val smsVarselSendt: SmsVarselSendt? = null,
+    val varselSendt: List<VarselSendt> = emptyList()
+) {
+    val sisteVarselSendt get() = if (varselSendt.isNotEmpty()) varselSendt[0] else null
+    val varselType get() = if (varselSendt.isNotEmpty()) varselSendt[0] else null
+}
+
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class EpostVarselSendt(
@@ -150,6 +155,15 @@ data class DigitalpostSendt(
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class FysiskpostSendt(
     val adressetekstKonvolutt: String
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class VarselSendt(
+    val varslingstidspunkt: LocalDateTime?,
+    val varslingstekst: String,
+    val adresse: String,
+    val tittel: String?,
+    val type: String
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
