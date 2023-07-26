@@ -2,6 +2,8 @@ package no.nav.bidrag.dokument.arkiv.service
 
 import com.google.common.base.Strings
 import io.micrometer.core.instrument.MeterRegistry
+import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv
+import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER
 import no.nav.bidrag.dokument.arkiv.consumer.DokdistFordelingConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer
 import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal
@@ -57,6 +59,7 @@ class DistribuerJournalpostService(
         return journalpostService.hentDistribusjonsInfo(journalpostId)
             .takeIf { it.isUtgaaendeDokument() }
             ?.let {
+                SECURE_LOGGER.info("Hentet utsendinginfo $it for journalpost $journalpostId")
                 val utsendingsinfo = it.utsendingsinfo
                 DistribusjonInfoDto(
                     journalstatus = it.hentJournalStatus(),
