@@ -203,8 +203,11 @@ class DistribuerJournalpostService(
     private fun leggTilBeskrivelsePåTittelAtDokumentetErSendtPerPost(journalpostId: Long) {
         val beskrivelseJournalpostSendtPerPost = "dokumentet er sendt per post med vedlegg"
         val journalpostEtter = hentJournalpost(journalpostId)
-        val harBeskrivelse = journalpostEtter.hentTittel()
+        val harJournalpostTittelBeskrivelse = journalpostEtter.hentTittel()
             ?.contains(beskrivelseJournalpostSendtPerPost, true) == true
+        val harHoveddokumentTittelBeskrivelse = journalpostEtter.hentHoveddokument()?.tittel
+            ?.contains(beskrivelseJournalpostSendtPerPost, true) == true
+        val harBeskrivelse = harJournalpostTittelBeskrivelse || harHoveddokumentTittelBeskrivelse
         if (!harBeskrivelse && !journalpostEtter.isFarskap()) {
             endreJournalpostService.lagreJournalpost(
                 LeggTilBeskjedPåTittel(

@@ -23,7 +23,6 @@ import no.nav.bidrag.dokument.arkiv.dto.UtsendingsInfo
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_NAVN
 import no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT
-import no.nav.bidrag.dokument.arkiv.stubs.DATO_EKSPEDERT
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_ID
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
 import no.nav.bidrag.dokument.arkiv.stubs.JOURNALPOST_ID
@@ -53,18 +52,13 @@ import org.assertj.core.api.Assertions
 import org.json.JSONException
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.function.Executable
-import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import java.io.IOException
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.Optional
-import java.util.function.Consumer
 
 internal class JournalpostControllerTest : AbstractControllerTest() {
     @Test
@@ -899,6 +893,84 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             responseBody.distribuertDato shouldBe LocalDateTime.parse(DATO_DOKUMENT.dato)
             responseBody.distribuertAvIdent shouldBe "Z99999"
             responseBody.bestillingId shouldBe bestillingId
+        }
+    }
+
+    @Test
+    fun `skal ikke markere journalpost distribuert lokalt hvis allerede har tittel`() {
+        // given
+        val xEnhet = "1234"
+        val bestillingId = "TEST_BEST_ID"
+        val journalpostId = 201028011L
+        val headersMedEnhet = HttpHeaders()
+        headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
+        val safresponse = opprettSafResponse(
+            journalpostId.toString(),
+            journalpostType = JournalpostType.U,
+            journalstatus = JournalStatus.FERDIGSTILT
+        )
+        stubs.mockSafResponseHentJournalpost(safresponse)
+        val tilleggsOpplysninger = TilleggsOpplysninger()
+        tilleggsOpplysninger.setJournalfortAvIdent("Z99999")
+        stubs.mockSafResponseHentJournalpost(
+            safresponse.copy(
+                tilleggsopplysninger = tilleggsOpplysninger,
+                relevanteDatoer = listOf(DatoType(LocalDateTime.now().toString(), "DATO_DOKUMENT"))
+            ),
+            null,
+            "ETTER_DIST"
+        )
+        stubs.mockSafResponseHentJournalpost(
+            safresponse.copy(
+                tilleggsopplysninger = tilleggsOpplysninger,
+                journalstatus = JournalStatus.EKSPEDERT,
+                dokumenter = safresponse.dokumenter.mapIndexed { index, dokument ->
+                    if (index == 0) {
+                        dokument.copy(tittel = "Tittel (dokumentet er sendt per post med vedlegg)")
+                    } else dokument
+                }
+            ),
+            "ETTER_DIST",
+            null
+        )
+        stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
+        stubs.mockDokarkivOppdaterRequest(journalpostId)
+        stubs.mockSafResponseTilknyttedeJournalposter(
+            listOf(
+                TilknyttetJournalpost(
+                    journalpostId,
+                    JournalStatus.FERDIGSTILT,
+                    Sak("5276661")
+                )
+            )
+        )
+        stubs.mockDokarkivOppdaterDistribusjonsInfoRequest(journalpostId)
+        val request = DistribuerJournalpostRequest(lokalUtskrift = true)
+
+        // when
+        val response = httpHeaderTestRestTemplate.exchange(
+            initUrl() + "/journal/distribuer/JOARK-" + journalpostId,
+            HttpMethod.POST,
+            HttpEntity(request, headersMedEnhet),
+            JournalpostDto::class.java
+        )
+
+        response.statusCode shouldBe HttpStatus.OK
+
+        assertSoftly {
+            stubs.verifyStub.dokdistFordelingIkkeKalt()
+            stubs.verifyStub.dokarkivOppdaterDistribusjonsInfoKalt(
+                journalpostId,
+                "{\"settStatusEkspedert\":true,\"utsendingsKanal\":\"L\"}"
+            )
+            stubs.verifyStub.dokarkivOppdaterKalt(
+                journalpostId,
+                "{\"tilleggsopplysninger\":[{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
+            )
+            stubs.verifyStub.dokarkivIkkeOppdaterKalt(
+                journalpostId,
+                "{\"dokumenter\":[{\"dokumentInfoId\":\"$DOKUMENT_1_ID\",\"tittel\":\"Tittel på dokument 1 (dokumentet er sendt per post med vedlegg)\"}]}"
+            )
         }
     }
 
