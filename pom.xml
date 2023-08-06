@@ -37,7 +37,7 @@
     <kafka-avro-serializer.version>7.3.3</kafka-avro-serializer.version>
     <logback-encoder.version>7.3</logback-encoder.version>
     <nimbus-jose-jwt.version>9.15.2</nimbus-jose-jwt.version>
-    <springdoc-openapi-ui.version>2.1.0</springdoc-openapi-ui.version>
+    <springdoc-openapi-ui.version>2.2.0</springdoc-openapi-ui.version>
     <springframework-cloud.version>4.0.2</springframework-cloud.version>
     <squareup.version>4.11.0</squareup.version>
     <token-support.version>3.0.11</token-support.version>
