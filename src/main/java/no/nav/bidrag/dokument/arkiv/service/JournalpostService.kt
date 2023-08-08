@@ -55,7 +55,7 @@ class JournalpostService(
             fagomrade.hentIkkeBidragFagomrader().joinToString(",")
         )
         return finnJournalposterForSaksnummer(saksnummer, fagomrade)
-//            .map { journalpost: Journalpost -> konverterAktoerIdTilFnr(journalpost) }
+            .map { journalpost: Journalpost -> konverterAktoerIdTilFnr(journalpost) }
             .filter { !(it.tilleggsopplysninger.isEndretTema() || it.tilleggsopplysninger.isNyDistribusjonBestilt()) }
             .map { it.tilJournalpostDto() }
     }
