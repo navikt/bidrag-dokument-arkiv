@@ -14,9 +14,13 @@ import no.nav.bidrag.transport.person.PersonDto
 import org.slf4j.LoggerFactory
 import java.util.Optional
 
-class JournalpostService(private val safConsumer: SafConsumer, private val personConsumer: PersonConsumer) {
+class JournalpostService(
+    private val safConsumer: SafConsumer,
+    private val personConsumer: PersonConsumer
+) {
     fun hentJournalpost(journalpostId: Long): Optional<Journalpost> {
-        return hentJournalpost(journalpostId, null)?.let { Optional.ofNullable(it) } ?: Optional.empty()
+        return hentJournalpost(journalpostId, null)?.let { Optional.ofNullable(it) }
+            ?: Optional.empty()
     }
 
     fun hentJournalpostMedTilknyttedeSaker(journalpostId: Long): Optional<Journalpost> {
@@ -28,16 +32,30 @@ class JournalpostService(private val safConsumer: SafConsumer, private val perso
         }
     }
 
-    fun hentJournalpostMedFnrOgTilknyttedeSaker(journalpostId: Long, saksnummer: String?): Optional<Journalpost> {
-        return hentJournalpostMedFnr(journalpostId, saksnummer)?.let { Optional.ofNullable(populerMedTilknyttedeSaker(it)) } ?: Optional.empty()
+    fun hentJournalpostMedFnrOgTilknyttedeSaker(
+        journalpostId: Long,
+        saksnummer: String?
+    ): Optional<Journalpost> {
+        return hentJournalpostMedFnr(journalpostId, saksnummer)?.let {
+            Optional.ofNullable(
+                populerMedTilknyttedeSaker(it)
+            )
+        } ?: Optional.empty()
     }
 
-    fun List<String>.inneholderBidragFagomrader() = this.isEmpty() || this.hentIkkeBidragFagomrader().isEmpty()
+    fun List<String>.inneholderBidragFagomrader() =
+        this.isEmpty() || this.hentIkkeBidragFagomrader().isEmpty()
+
     fun List<String>.hentIkkeBidragFagomrader() = this.filter { it != "BID" && it != "FAR" }
-    fun finnJournalposter(saksnummer: String, fagomrade: List<String> = emptyList()): List<JournalpostDto> {
-        if (!fagomrade.inneholderBidragFagomrader()) kanIkkeHenteJournalMedUgyldigFagomrade(fagomrade.hentIkkeBidragFagomrader().joinToString(","))
+    fun finnJournalposter(
+        saksnummer: String,
+        fagomrade: List<String> = emptyList()
+    ): List<JournalpostDto> {
+        if (!fagomrade.inneholderBidragFagomrader()) kanIkkeHenteJournalMedUgyldigFagomrade(
+            fagomrade.hentIkkeBidragFagomrader().joinToString(",")
+        )
         return finnJournalposterForSaksnummer(saksnummer, fagomrade)
-            .map { journalpost: Journalpost -> konverterAktoerIdTilFnr(journalpost) }
+//            .map { journalpost: Journalpost -> konverterAktoerIdTilFnr(journalpost) }
             .filter { !(it.tilleggsopplysninger.isEndretTema() || it.tilleggsopplysninger.isNyDistribusjonBestilt()) }
             .map { it.tilJournalpostDto() }
     }
@@ -81,7 +99,10 @@ class JournalpostService(private val safConsumer: SafConsumer, private val perso
         return hentJournalpost(journalpostId, saksummer)?.let { konverterAktoerIdTilFnr(it) }
     }
 
-    fun finnJournalposterForSaksnummer(saksnummer: String, fagomrade: List<String> = emptyList()): List<Journalpost> {
+    fun finnJournalposterForSaksnummer(
+        saksnummer: String,
+        fagomrade: List<String> = emptyList()
+    ): List<Journalpost> {
         return safConsumer.finnJournalposter(saksnummer, fagomrade)
     }
 

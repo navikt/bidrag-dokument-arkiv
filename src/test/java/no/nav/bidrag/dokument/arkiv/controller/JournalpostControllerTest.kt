@@ -505,7 +505,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                     .isEqualTo(HttpStatus.OK)
             },
             { Assertions.assertThat(jouralposterResponseEntity.body).hasSize(3) },
-            { stubs.verifyStub.bidragPersonKalt() },
+//            { stubs.verifyStub.bidragPersonKalt() },
             { stubs.verifyStub.harSafEnKallEtterDokumentOversiktFagsak() }
         )
     }
