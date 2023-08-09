@@ -254,7 +254,7 @@ data class Journalpost(
             JournalpostKanal.NAV_NO_CHAT -> Kanal.NAV_NO
             JournalpostKanal.NAV_NO_UINNLOGGET -> Kanal.NAV_NO
             JournalpostKanal.SKAN_NETS -> Kanal.SKAN_NETS
-            JournalpostKanal.SKAN_IM -> Kanal.SKAN_IM
+//            JournalpostKanal.SKAN_IM -> Kanal.SKAN_IM
             JournalpostKanal.LOKAL_UTSKRIFT -> Kanal.LOKAL_UTSKRIFT
             JournalpostKanal.SENTRAL_UTSKRIFT -> Kanal.SENTRAL_UTSKRIFT
             JournalpostKanal.SDP -> Kanal.SDP
