@@ -37,7 +37,7 @@ class JournalpostService(private val safConsumer: SafConsumer, private val perso
     fun finnJournalposter(saksnummer: String, fagomrade: List<String> = emptyList()): List<JournalpostDto> {
         if (!fagomrade.inneholderBidragFagomrader()) kanIkkeHenteJournalMedUgyldigFagomrade(fagomrade.hentIkkeBidragFagomrader().joinToString(","))
         return finnJournalposterForSaksnummer(saksnummer, fagomrade)
-            .map { journalpost: Journalpost -> konverterAktoerIdTilFnr(journalpost) }
+            .map { konverterAktoerIdTilFnr(it) }
             .filter { !(it.tilleggsopplysninger.isEndretTema() || it.tilleggsopplysninger.isNyDistribusjonBestilt()) }
             .map { it.tilJournalpostDto() }
     }
