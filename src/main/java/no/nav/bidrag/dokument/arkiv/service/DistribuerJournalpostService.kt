@@ -4,8 +4,11 @@ import com.google.common.base.Strings
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER
+import no.nav.bidrag.dokument.arkiv.consumer.BestemKanalResponse
 import no.nav.bidrag.dokument.arkiv.consumer.DokdistFordelingConsumer
+import no.nav.bidrag.dokument.arkiv.consumer.DokdistKanalConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer
+import no.nav.bidrag.dokument.arkiv.dto.BestemDistribusjonKanalRequest
 import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal
 import no.nav.bidrag.dokument.arkiv.dto.DistribuertTilAdresseDo
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
@@ -45,6 +48,7 @@ class DistribuerJournalpostService(
     val opprettJournalpostService: OpprettJournalpostService,
     val dokdistFordelingConsumer: DokdistFordelingConsumer,
     val saksbehandlerInfoManager: SaksbehandlerInfoManager,
+    val dokdistKanalConsumer: DokdistKanalConsumer,
     val meterRegistry: MeterRegistry
 ) {
     private final val journalpostService: JournalpostService
@@ -53,6 +57,10 @@ class DistribuerJournalpostService(
     init {
         journalpostService = journalpostServices.get(Discriminator.REGULAR_USER)
         personConsumer = personConsumers.get(Discriminator.REGULAR_USER)
+    }
+
+    fun hentDistribusjonKanal(request: BestemDistribusjonKanalRequest): BestemKanalResponse {
+        return dokdistKanalConsumer.bestimDistribusjonsKanal(request.gjelderId, request.mottakerId)
     }
 
     fun hentDistribusjonsInfo(journalpostId: Long): DistribusjonInfoDto? {

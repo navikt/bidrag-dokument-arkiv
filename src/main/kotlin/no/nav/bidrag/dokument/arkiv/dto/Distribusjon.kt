@@ -8,6 +8,11 @@ import org.apache.commons.lang3.Validate
 
 private val ALPHA2_NORGE = "NO"
 
+data class BestemDistribusjonKanalRequest(
+    val mottakerId: String?,
+    val gjelderId: String
+)
+
 data class DokDistDistribuerJournalpostRequest(
     var journalpostId: Long,
     var batchId: String? = null,
@@ -33,12 +38,19 @@ data class DokDistDistribuerJournalpostRequest(
         )
     }
 
-    constructor(journalpostId: Long, brevkode: String?, tittel: String?, distribuerTilAdresse: DistribuerTilAdresse?, _batchId: String?) : this(
+    constructor(
+        journalpostId: Long,
+        brevkode: String?,
+        tittel: String?,
+        distribuerTilAdresse: DistribuerTilAdresse?,
+        _batchId: String?
+    ) : this(
         journalpostId = journalpostId
     ) {
         batchId = _batchId
         adresse = mapAdresse(distribuerTilAdresse)
-        distribusjonstype = BrevkodeToDistribusjonstypeMapper().toDistribusjonsType(brevkode, tittel)
+        distribusjonstype =
+            BrevkodeToDistribusjonstypeMapper().toDistribusjonsType(brevkode, tittel)
     }
 }
 
@@ -73,7 +85,11 @@ data class DistribuerJournalpostRequestInternal(
     var request: DistribuerJournalpostRequest? = null
 ) {
 
-    constructor(distribuerTilAdresse: DistribuerTilAdresse?) : this(DistribuerJournalpostRequest(adresse = distribuerTilAdresse))
+    constructor(distribuerTilAdresse: DistribuerTilAdresse?) : this(
+        DistribuerJournalpostRequest(
+            adresse = distribuerTilAdresse
+        )
+    )
 
     fun erLokalUtskrift(): Boolean = request?.lokalUtskrift ?: false
     fun hasAdresse(): Boolean = request?.adresse != null
@@ -104,28 +120,47 @@ data class DokDistDistribuerJournalpostResponse(
 
 fun validerKanDistribueres(journalpost: Journalpost?) {
     Validate.isTrue(journalpost != null, "Fant ingen journalpost")
-    Validate.isTrue(journalpost != null && journalpost.hentTilknyttetSaker().size < 2, "Kan bare distribuere journalpost med 1 sak")
-    Validate.isTrue(journalpost?.journalstatus == JournalStatus.FERDIGSTILT, "Journalpost må ha status FERDIGSTILT")
-    Validate.isTrue(journalpost?.tilleggsopplysninger?.isDistribusjonBestilt() == false, "Journalpost er allerede distribuert")
     Validate.isTrue(
-        journalpost?.hasMottakerId() == true || journalpost?.hentAvsenderNavn()?.isNotEmpty() == true,
+        journalpost != null && journalpost.hentTilknyttetSaker().size < 2,
+        "Kan bare distribuere journalpost med 1 sak"
+    )
+    Validate.isTrue(
+        journalpost?.journalstatus == JournalStatus.FERDIGSTILT,
+        "Journalpost må ha status FERDIGSTILT"
+    )
+    Validate.isTrue(
+        journalpost?.tilleggsopplysninger?.isDistribusjonBestilt() == false,
+        "Journalpost er allerede distribuert"
+    )
+    Validate.isTrue(
+        journalpost?.hasMottakerId() == true || journalpost?.hentAvsenderNavn()
+            ?.isNotEmpty() == true,
         "Journalpost må ha satt mottakerId eller mottakerNavn"
     )
 }
 
 fun validerKanDistribueresUtenAdresse(journalpost: Journalpost?) {
-    Validate.isTrue(journalpost?.hasMottakerId() == true, "Journalpost må ha satt mottakerId for å kunne distribuere uten å sette adresse")
+    Validate.isTrue(
+        journalpost?.hasMottakerId() == true,
+        "Journalpost må ha satt mottakerId for å kunne distribuere uten å sette adresse"
+    )
 }
 
 fun validerAdresse(adresse: DistribuerTilAdresse?) {
     Validate.isTrue(adresse != null, "Adresse må være satt")
     validateNotNullOrEmpty(adresse?.land, "Land er påkrevd på adresse")
-    Validate.isTrue(adresse?.land?.length == 2, "Land må være formatert som Alpha-2 to-bokstavers landkode ")
+    Validate.isTrue(
+        adresse?.land?.length == 2,
+        "Land må være formatert som Alpha-2 to-bokstavers landkode "
+    )
     if (ALPHA2_NORGE == adresse?.land) {
         validateNotNullOrEmpty(adresse.postnummer, "Postnummer er påkrevd på norsk adresse")
         validateNotNullOrEmpty(adresse.poststed, "Poststed er påkrevd på norsk adresse")
     } else {
-        validateNotNullOrEmpty(adresse?.adresselinje1, "Adresselinje1 er påkrevd på utenlandsk adresse")
+        validateNotNullOrEmpty(
+            adresse?.adresselinje1,
+            "Adresselinje1 er påkrevd på utenlandsk adresse"
+        )
     }
 }
 
@@ -138,7 +173,8 @@ class BrevkodeToDistribusjonstypeMapper {
         brevkodemap["BI01A04"] = DistribusjonsType.VIKTIG // Revurdering forskudd settes ned
         brevkodemap["BI01A05"] = DistribusjonsType.VEDTAK // Vedtak ikke             tilbakekreving
         brevkodemap["BI01A06"] = DistribusjonsType.VIKTIG // Forhøyet forskudd 11 år
-        brevkodemap["BI01A07"] = DistribusjonsType.VIKTIG // Revurdering forskudd kan justeres automatisk
+        brevkodemap["BI01A07"] =
+            DistribusjonsType.VIKTIG // Revurdering forskudd kan justeres automatisk
         brevkodemap["BI01A08"] = DistribusjonsType.VEDTAK // Vedtak omregning av forskudd
         brevkodemap["BI01A50"] = DistribusjonsType.VEDTAK // Klage - vedtak forskudd
         brevkodemap["BI01B01"] = DistribusjonsType.VEDTAK // Vedtak barnebidrag
@@ -166,13 +202,15 @@ class BrevkodeToDistribusjonstypeMapper {
         brevkodemap["BI01H01"] = DistribusjonsType.VIKTIG // Farskap innkalling mor
         brevkodemap["BI01H02"] = DistribusjonsType.VIKTIG // Innkalling farskapssak  oppgitt far
         brevkodemap["BI01H03"] = DistribusjonsType.VIKTIG // Melding om blodprøver i farskapsak
-        brevkodemap["BI01H04"] = DistribusjonsType.VIKTIG // Pålegg om å framstille barn for å gi blodprøve
+        brevkodemap["BI01H04"] =
+            DistribusjonsType.VIKTIG // Pålegg om å framstille barn for å gi blodprøve
         brevkodemap["BI01H05"] = DistribusjonsType.VIKTIG // Pålegg om blodprøve i farskapssak
         brevkodemap["BI01I01"] = DistribusjonsType.VEDTAK // Vedtak ektefellebidrag
         brevkodemap["BI01I50"] = DistribusjonsType.VEDTAK // Klage - vedtak ektefellebidrag
         brevkodemap["BI01J50"] = DistribusjonsType.VEDTAK // Klage - vedtak gebyr
         brevkodemap["BI01K50"] = DistribusjonsType.VEDTAK // Klage - vedtak tilbakekreving
-        brevkodemap["BI01P11"] = DistribusjonsType.VIKTIG // Notat P11                                   t
+        brevkodemap["BI01P11"] =
+            DistribusjonsType.VIKTIG // Notat P11                                   t
         brevkodemap["BI01P17"] = DistribusjonsType.VIKTIG // Innstilling til klageinstans
         brevkodemap["BI01P18"] = DistribusjonsType.VIKTIG // Saksbehandlingsnotat
         brevkodemap["BI01S01"] = DistribusjonsType.VIKTIG // Fastsettelse varsel til motparten
@@ -184,8 +222,10 @@ class BrevkodeToDistribusjonstypeMapper {
         brevkodemap["BI01S07"] = DistribusjonsType.VIKTIG // Fastsettelse eget tiltak varsel til BP
         brevkodemap["BI01S08"] = DistribusjonsType.VIKTIG // Varsel revurd forskudd
         brevkodemap["BI01S09"] = DistribusjonsType.VIKTIG // Varsel opphør bidrag v 18år
-        brevkodemap["BI01S10"] = DistribusjonsType.VIKTIG // Kopiforside                                 t
-        brevkodemap["BI01S11"] = DistribusjonsType.VIKTIG // Varsel om automatisk justering av barnebidrag
+        brevkodemap["BI01S10"] =
+            DistribusjonsType.VIKTIG // Kopiforside                                 t
+        brevkodemap["BI01S11"] =
+            DistribusjonsType.VIKTIG // Varsel om automatisk justering av barnebidrag
         brevkodemap["BI01S12"] = DistribusjonsType.VIKTIG // Fastsettelse orientering til BM
         brevkodemap["BI01S13"] = DistribusjonsType.VIKTIG // Fastsettelse orientering til BP
         brevkodemap["BI01S14"] = DistribusjonsType.VIKTIG // Endring orientering til søkeren
@@ -198,45 +238,77 @@ class BrevkodeToDistribusjonstypeMapper {
         brevkodemap["BI01S21"] = DistribusjonsType.VIKTIG // Klage orientering til klageren
         brevkodemap["BI01S22"] = DistribusjonsType.VIKTIG // Revurd bidrag pga FO til BM
         brevkodemap["BI01S23"] = DistribusjonsType.VIKTIG // Revurd bidrag pga FO til BP
-        brevkodemap["BI01S24"] = DistribusjonsType.VIKTIG // STANDARDBREV OM INNHENTING AV OPPLYSNINGER 18år
+        brevkodemap["BI01S24"] =
+            DistribusjonsType.VIKTIG // STANDARDBREV OM INNHENTING AV OPPLYSNINGER 18år
         brevkodemap["BI01S25"] = DistribusjonsType.VIKTIG // Info til BM når farskap OK
         brevkodemap["BI01S26"] = DistribusjonsType.VIKTIG // Endring varsel til motparten
-        brevkodemap["BI01S27"] = DistribusjonsType.VIKTIG // Varsel opph tilbake i tid §2 ikke opphold i Riket
-        brevkodemap["BI01S28"] = DistribusjonsType.VIKTIG // Varsel opph tilbake i tid §2 partene bor sammen
-        brevkodemap["BI01S29"] = DistribusjonsType.VIKTIG // Varsel opph tilbake i tid §3 direkte betalinger
-        brevkodemap["BI01S30"] = DistribusjonsType.VIKTIG // Varsel opph tilbake i tid §6 ikke omsorg
-        brevkodemap["BI01S31"] = DistribusjonsType.VIKTIG // Fasts. eget tiltak uten innkr varsel til partene
+        brevkodemap["BI01S27"] =
+            DistribusjonsType.VIKTIG // Varsel opph tilbake i tid §2 ikke opphold i Riket
+        brevkodemap["BI01S28"] =
+            DistribusjonsType.VIKTIG // Varsel opph tilbake i tid §2 partene bor sammen
+        brevkodemap["BI01S29"] =
+            DistribusjonsType.VIKTIG // Varsel opph tilbake i tid §3 direkte betalinger
+        brevkodemap["BI01S30"] =
+            DistribusjonsType.VIKTIG // Varsel opph tilbake i tid §6 ikke omsorg
+        brevkodemap["BI01S31"] =
+            DistribusjonsType.VIKTIG // Fasts. eget tiltak uten innkr varsel til partene
         brevkodemap["BI01S32"] = DistribusjonsType.VIKTIG // Fastsettelse eget tiltak varsel til BM
         brevkodemap["BI01S33"] = DistribusjonsType.VIKTIG // Endring varsel eget tiltak pga 25%
-        brevkodemap["BI01S34"] = DistribusjonsType.VIKTIG // Endring varsel eget tiltak pga barnetillegg
-        brevkodemap["BI01S35"] = DistribusjonsType.VIKTIG // Endring varsel eget tiltak pga forholds fordel
-        brevkodemap["BI01S36"] = DistribusjonsType.VIKTIG // Endring varsel eget tiltak pga forsørgingstillegg
-        brevkodemap["BI01S37"] = DistribusjonsType.VIKTIG // Bortfall ektefellebidrag BP død orientering til BM
-        brevkodemap["BI01S38"] = DistribusjonsType.VIKTIG // Bortfall ektefellebidrag orientering til partene
-        brevkodemap["BI01S39"] = DistribusjonsType.VIKTIG // Bortfall ektefellebidrag nytt ekteskap orientering
+        brevkodemap["BI01S34"] =
+            DistribusjonsType.VIKTIG // Endring varsel eget tiltak pga barnetillegg
+        brevkodemap["BI01S35"] =
+            DistribusjonsType.VIKTIG // Endring varsel eget tiltak pga forholds fordel
+        brevkodemap["BI01S36"] =
+            DistribusjonsType.VIKTIG // Endring varsel eget tiltak pga forsørgingstillegg
+        brevkodemap["BI01S37"] =
+            DistribusjonsType.VIKTIG // Bortfall ektefellebidrag BP død orientering til BM
+        brevkodemap["BI01S38"] =
+            DistribusjonsType.VIKTIG // Bortfall ektefellebidrag orientering til partene
+        brevkodemap["BI01S39"] =
+            DistribusjonsType.VIKTIG // Bortfall ektefellebidrag nytt ekteskap orientering
         brevkodemap["BI01S41"] = DistribusjonsType.VEDTAK // Vedtak - bortfall nytt ekteskap
-        brevkodemap["BI01S42"] = DistribusjonsType.VIKTIG // Endring ektefellebidrag orientering til søkeren
-        brevkodemap["BI01S43"] = DistribusjonsType.VIKTIG // Fastsettelse ektefellebidrag orientering
-        brevkodemap["BI01S44"] = DistribusjonsType.VIKTIG // Fastsettelse ektefellebidrag varsel til BP
+        brevkodemap["BI01S42"] =
+            DistribusjonsType.VIKTIG // Endring ektefellebidrag orientering til søkeren
+        brevkodemap["BI01S43"] =
+            DistribusjonsType.VIKTIG // Fastsettelse ektefellebidrag orientering
+        brevkodemap["BI01S44"] =
+            DistribusjonsType.VIKTIG // Fastsettelse ektefellebidrag varsel til BP
         brevkodemap["BI01S45"] = DistribusjonsType.VIKTIG // Varsel revurd forskudd tilbake i tid
-        brevkodemap["BI01S46"] = DistribusjonsType.VIKTIG // Varsel oppfostringsbidrag forholdsmessig fordeling
-        brevkodemap["BI01S47"] = DistribusjonsType.VIKTIG // Endring oppfostringsbidrag orientering til BP
-        brevkodemap["BI01S48"] = DistribusjonsType.VIKTIG // Endring oppfostringsbidrag orientering kommune
-        brevkodemap["BI01S49"] = DistribusjonsType.VIKTIG // Endring oppfostringsbidrag varsel til motparten
-        brevkodemap["BI01S50"] = DistribusjonsType.VIKTIG // Ettergivelse oppfostringsbidrag orientering til BP
-        brevkodemap["BI01S51"] = DistribusjonsType.VIKTIG // Ettergivelse oppfostringsbidrag varsel kommune
-        brevkodemap["BI01S52"] = DistribusjonsType.VIKTIG // Fastsettelse oppfostringsbidrag orienter kommune
-        brevkodemap["BI01S53"] = DistribusjonsType.VIKTIG // Fastsettelse oppfostringsbidrag varsel til BP
+        brevkodemap["BI01S46"] =
+            DistribusjonsType.VIKTIG // Varsel oppfostringsbidrag forholdsmessig fordeling
+        brevkodemap["BI01S47"] =
+            DistribusjonsType.VIKTIG // Endring oppfostringsbidrag orientering til BP
+        brevkodemap["BI01S48"] =
+            DistribusjonsType.VIKTIG // Endring oppfostringsbidrag orientering kommune
+        brevkodemap["BI01S49"] =
+            DistribusjonsType.VIKTIG // Endring oppfostringsbidrag varsel til motparten
+        brevkodemap["BI01S50"] =
+            DistribusjonsType.VIKTIG // Ettergivelse oppfostringsbidrag orientering til BP
+        brevkodemap["BI01S51"] =
+            DistribusjonsType.VIKTIG // Ettergivelse oppfostringsbidrag varsel kommune
+        brevkodemap["BI01S52"] =
+            DistribusjonsType.VIKTIG // Fastsettelse oppfostringsbidrag orienter kommune
+        brevkodemap["BI01S53"] =
+            DistribusjonsType.VIKTIG // Fastsettelse oppfostringsbidrag varsel til BP
         brevkodemap["BI01S54"] = DistribusjonsType.VIKTIG // Varsel tilb.kr. paragraf 5 inntekt
-        brevkodemap["BI01S55"] = DistribusjonsType.VIKTIG // Varsel tilb.kr. paragraf 2 - partene bor sammen
-        brevkodemap["BI01S56"] = DistribusjonsType.VIKTIG // Varsel tilb.kr. paragraf 2 ikke opphold i Riket
-        brevkodemap["BI01S57"] = DistribusjonsType.VIKTIG // Varsel tilb.kr. NAV paragraf 3 direkte betalinger
-        brevkodemap["BI01S58"] = DistribusjonsType.VIKTIG // Varsel tilb.kr. NAV paragraf 6 ikke omsorg
-        brevkodemap["BI01S59"] = DistribusjonsType.VIKTIG // Orientering ettergivelse av tilbakekrevingsbeløp
-        brevkodemap["BI01S60"] = DistribusjonsType.VIKTIG // Infobrev til partene oversendelse klageinstans
-        brevkodemap["BI01S61"] = DistribusjonsType.VIKTIG // Innhenting opplysninger paragraf 10 i barnelova
-        brevkodemap["BI01S62"] = DistribusjonsType.VIKTIG // Fastsettelse bidrag barnetillegg varsel partene
-        brevkodemap["BI01S63"] = DistribusjonsType.VIKTIG // Fastsettelse bidrag forsørgingstillegg varsel
+        brevkodemap["BI01S55"] =
+            DistribusjonsType.VIKTIG // Varsel tilb.kr. paragraf 2 - partene bor sammen
+        brevkodemap["BI01S56"] =
+            DistribusjonsType.VIKTIG // Varsel tilb.kr. paragraf 2 ikke opphold i Riket
+        brevkodemap["BI01S57"] =
+            DistribusjonsType.VIKTIG // Varsel tilb.kr. NAV paragraf 3 direkte betalinger
+        brevkodemap["BI01S58"] =
+            DistribusjonsType.VIKTIG // Varsel tilb.kr. NAV paragraf 6 ikke omsorg
+        brevkodemap["BI01S59"] =
+            DistribusjonsType.VIKTIG // Orientering ettergivelse av tilbakekrevingsbeløp
+        brevkodemap["BI01S60"] =
+            DistribusjonsType.VIKTIG // Infobrev til partene oversendelse klageinstans
+        brevkodemap["BI01S61"] =
+            DistribusjonsType.VIKTIG // Innhenting opplysninger paragraf 10 i barnelova
+        brevkodemap["BI01S62"] =
+            DistribusjonsType.VIKTIG // Fastsettelse bidrag barnetillegg varsel partene
+        brevkodemap["BI01S63"] =
+            DistribusjonsType.VIKTIG // Fastsettelse bidrag forsørgingstillegg varsel
         brevkodemap["BI01S64"] = DistribusjonsType.VIKTIG // Varsel klage fvt 35
         brevkodemap["BI01S65"] = DistribusjonsType.VIKTIG // Varsel om motregning
         brevkodemap["BI01S67"] = DistribusjonsType.VIKTIG // Adresseforespørsel

@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import no.nav.bidrag.commons.util.KildesystemIdenfikator
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER
+import no.nav.bidrag.dokument.arkiv.consumer.BestemKanalResponse
+import no.nav.bidrag.dokument.arkiv.dto.BestemDistribusjonKanalRequest
 import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal
 import no.nav.bidrag.dokument.arkiv.service.DistribuerJournalpostService
 import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest
@@ -27,7 +29,8 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @Protected
-class DistribuerController(private val distribuerJournalpostService: DistribuerJournalpostService) : BaseController() {
+class DistribuerController(private val distribuerJournalpostService: DistribuerJournalpostService) :
+    BaseController() {
     @PostMapping("$ROOT_JOURNAL/distribuer/{joarkJournalpostId}")
     @Operation(description = "Bestill distribusjon av journalpost")
     @ApiResponses(
@@ -35,7 +38,10 @@ class DistribuerController(private val distribuerJournalpostService: DistribuerJ
             ApiResponse(
                 responseCode = "200",
                 description = "Distribusjon av journalpost er bestilt"
-            ), ApiResponse(responseCode = "400", description = "Journalpost mangler mottakerid eller adresse er ikke oppgitt i kallet")
+            ), ApiResponse(
+                responseCode = "400",
+                description = "Journalpost mangler mottakerid eller adresse er ikke oppgitt i kallet"
+            )
         ]
     )
     @ResponseBody
@@ -76,7 +82,10 @@ class DistribuerController(private val distribuerJournalpostService: DistribuerJ
             ApiResponse(
                 responseCode = "200",
                 description = "Distribusjon av journalpost kan bestilles"
-            ), ApiResponse(responseCode = "406", description = "Distribusjon av journalpost kan ikke bestilles")
+            ), ApiResponse(
+                responseCode = "406",
+                description = "Distribusjon av journalpost kan ikke bestilles"
+            )
         ]
     )
     @ResponseBody
@@ -109,7 +118,10 @@ class DistribuerController(private val distribuerJournalpostService: DistribuerJ
                 responseCode = "200",
                 description = "Hentet informasjon om distribusjon av journalpost"
             ),
-            ApiResponse(responseCode = "202", description = "Journalpost er ikke distribuert eller er av type NOTAT eller INNGÅENDE"),
+            ApiResponse(
+                responseCode = "202",
+                description = "Journalpost er ikke distribuert eller er av type NOTAT eller INNGÅENDE"
+            ),
             ApiResponse(responseCode = "404", description = "Fant ikke journalpost")
         ]
     )
@@ -126,10 +138,26 @@ class DistribuerController(private val distribuerJournalpostService: DistribuerJ
                 .build()
         }
 
-        return distribuerJournalpostService.hentDistribusjonsInfo(kildesystemIdenfikator.idNumerisk!!)?.let {
-            SECURE_LOGGER.info("Hentet distribusjonsinfo $it for journalpost $journalpostId")
-            ResponseEntity.ok(it)
-        } ?: ResponseEntity.noContent().build()
+        return distribuerJournalpostService.hentDistribusjonsInfo(kildesystemIdenfikator.idNumerisk!!)
+            ?.let {
+                SECURE_LOGGER.info("Hentet distribusjonsinfo $it for journalpost $journalpostId")
+                ResponseEntity.ok(it)
+            } ?: ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("$ROOT_JOURNAL/distribuer/kanal")
+    @Operation(description = "Hent kanal journalost vil bli distribuert på etter distribusjon er bestilt")
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Hentet informasjon om hvilken kanal mottaker vil motta forsendelse på"
+            ),
+        ]
+    )
+    @ResponseBody
+    fun hentDistribusjonKanal(@RequestBody request: BestemDistribusjonKanalRequest): BestemKanalResponse {
+        return distribuerJournalpostService.hentDistribusjonKanal(request)
     }
 
     companion object {
