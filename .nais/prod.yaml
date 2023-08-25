@@ -8,8 +8,8 @@ kafka:
   pool: nav-prod
 env:
   ACCEPTED_SERVICE_USER_AUDIENCE: srvbdarkivering,srvbisys
-  STS_ISSUER_URL: https://security-token-service.intern.nav.no
-  ACCESS_TOKEN_URL: https://security-token-service.intern.nav.no
+  STS_ISSUER_URL: https://security-token-service.nais.adeo.no
+  ACCESS_TOKEN_URL: https://security-token-service.nais.adeo.no
   DOKARKIV_URL: https://dokarkiv.intern.nav.no/
   DOKARKIV_KNYTT_TIL_SAK_URL: https://dokarkiv.intern.nav.no
   DOKDISTFORDELING_URL: https://dokdistfordeling.intern.nav.no
