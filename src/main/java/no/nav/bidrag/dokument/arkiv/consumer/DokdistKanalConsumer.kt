@@ -23,8 +23,8 @@ class DokdistKanalConsumer(
 
     private val dokdistkanalUrl
         get() =
-            UriComponentsBuilder.fromUri(url).pathSegment("rest").pathSegment("v1")
-                .pathSegment("distribuerjournalpost")
+            UriComponentsBuilder.fromUri(url).pathSegment("rest")
+                .pathSegment("bestemDistribusjonskanal")
 
     @Retryable(
         value = [DistribusjonFeiletTekniskException::class],
@@ -35,7 +35,10 @@ class DokdistKanalConsumer(
         mottakerId: String? = null,
     ): BestemKanalResponse = postForNonNullEntity(
         dokdistkanalUrl.build().toUri(),
-        HttpEntity(BestemKanalRequest(gjelderId, mottakerId ?: "11111111111")),
+        BestemKanalRequest(
+            brukerId = gjelderId,
+            mottakerId = mottakerId ?: "11111111111"
+        ),
     )
 
 }

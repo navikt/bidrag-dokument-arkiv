@@ -38,3 +38,6 @@ azureAccessInbound:
   - application: bidrag-cucumber-onprem
     namespace: bidrag
     cluster: dev-fss
+  - application: bidrag-ui
+    namespace: bidrag
+    cluster: dev-fss

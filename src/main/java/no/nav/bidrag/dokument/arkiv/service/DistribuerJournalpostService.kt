@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER
 import no.nav.bidrag.dokument.arkiv.consumer.BestemKanalResponse
+import no.nav.bidrag.dokument.arkiv.consumer.DistribusjonsKanal
 import no.nav.bidrag.dokument.arkiv.consumer.DokdistFordelingConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.DokdistKanalConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer
@@ -279,6 +280,14 @@ class DistribuerJournalpostService(
         distribuerJournalpostRequestInternal: DistribuerJournalpostRequestInternal,
         journalpost: Journalpost
     ): DistribuerTilAdresse? {
+        val distribusjonKanal = this.hentDistribusjonKanal(
+            BestemDistribusjonKanalRequest(
+                journalpost.hentAvsenderMottakerId(),
+                journalpost.hentGjelderId()!!
+            )
+        )
+        if (distribusjonKanal.distribusjonskanal != DistribusjonsKanal.PRINT) return null
+
         if (distribuerJournalpostRequestInternal.hasAdresse()) {
             return distribuerJournalpostRequestInternal.getAdresse()
         }

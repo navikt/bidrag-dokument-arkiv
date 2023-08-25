@@ -27,6 +27,7 @@ no.nav.security.jwt:
   client:
     registration:
       bidrag-person:
+        resource-url: ${BIDRAG_PERSON_URL}
         token-endpoint-url: https://login.microsoftonline.com/${AZURE_APP_TENANT_ID}/oauth2/v2.0/token
         grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
         scope: api://${PERSON_SCOPE}/.default
@@ -35,6 +36,7 @@ no.nav.security.jwt:
           client-secret: ${AZURE_APP_CLIENT_SECRET}
           client-auth-method: client_secret_post
       bidrag-organisasjon:
+        resource-url: ${BIDRAG_ORGANISASJON_URL}
         token-endpoint-url: https://login.microsoftonline.com/${AZURE_APP_TENANT_ID}/oauth2/v2.0/token
         grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
         scope: api://${ORGANISASJON_SCOPE}/.default
@@ -43,6 +45,7 @@ no.nav.security.jwt:
           client-secret: ${AZURE_APP_CLIENT_SECRET}
           client-auth-method: client_secret_post
       oppgave:
+        resource-url: ${OPPGAVE_URL}
         token-endpoint-url: https://login.microsoftonline.com/${AZURE_APP_TENANT_ID}/oauth2/v2.0/token
         grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
         scope: api://${OPPGAVE_SCOPE}/.default
@@ -51,6 +54,7 @@ no.nav.security.jwt:
           client-secret: ${AZURE_APP_CLIENT_SECRET}
           client-auth-method: client_secret_post
       saf:
+        resource-url: ${SAF_URL}
         token-endpoint-url: https://login.microsoftonline.com/${AZURE_APP_TENANT_ID}/oauth2/v2.0/token
         grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
         scope: api://${SAF_SCOPE}/.default
@@ -59,6 +63,7 @@ no.nav.security.jwt:
           client-secret: ${AZURE_APP_CLIENT_SECRET}
           client-auth-method: client_secret_post
       dokarkiv:
+        resource-url: ${DOKARKIV_URL}
         token-endpoint-url: https://login.microsoftonline.com/${AZURE_APP_TENANT_ID}/oauth2/v2.0/token
         grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
         scope: api://${DOKARKIV_SCOPE}/.default
