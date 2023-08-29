@@ -280,13 +280,13 @@ class DistribuerJournalpostService(
         distribuerJournalpostRequestInternal: DistribuerJournalpostRequestInternal,
         journalpost: Journalpost
     ): DistribuerTilAdresse? {
-        val distribusjonKanal = this.hentDistribusjonKanal(
-            BestemDistribusjonKanalRequest(
-                journalpost.hentAvsenderMottakerId(),
-                journalpost.hentGjelderId()!!
-            )
-        )
-        if (distribusjonKanal.distribusjonskanal != DistribusjonsKanal.PRINT) return null
+//        val distribusjonKanal = this.hentDistribusjonKanal(
+//            BestemDistribusjonKanalRequest(
+//                journalpost.hentAvsenderMottakerId(),
+//                journalpost.hentGjelderId()!!
+//            )
+//        )
+//        if (distribusjonKanal.distribusjonskanal != DistribusjonsKanal.PRINT) return null
 
         if (distribuerJournalpostRequestInternal.hasAdresse()) {
             return distribuerJournalpostRequestInternal.getAdresse()
