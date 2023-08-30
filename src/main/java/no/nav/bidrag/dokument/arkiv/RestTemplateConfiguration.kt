@@ -23,7 +23,9 @@ class RestTemplateConfiguration {
         observationRestTemplateCustomizer: ObservationRestTemplateCustomizer
     ): HttpHeaderRestTemplate {
         val httpHeaderRestTemplate = HttpHeaderRestTemplate()
-        httpHeaderRestTemplate.requestFactory = HttpComponentsClientHttpRequestFactory()
+        val cf = HttpComponentsClientHttpRequestFactory()
+        cf.setBufferRequestBody(false)
+        httpHeaderRestTemplate.requestFactory = cf
         httpHeaderRestTemplate.withDefaultHeaders()
         httpHeaderRestTemplate.addHeaderGenerator(
             "Nav-Callid"
