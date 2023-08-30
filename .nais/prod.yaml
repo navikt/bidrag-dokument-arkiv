@@ -28,7 +28,7 @@ env:
   ORGANISASJON_SCOPE: prod-fss.bidrag.bidrag-organisasjon
   DOKDISTKANAL_URL: https://dokdistkanal.intern.nav.no
   DOKDISTKANAL_SCOPE: prod-fss.teamdokumenthandtering.dokdistkanal
-  JAVA_OPTS: -Xmx1500m
+  JAVA_OPTS: -Xmx2048m
 vault:
   kvPath: prod
 azureAccessInbound:
