@@ -45,10 +45,11 @@ spec:
     enabled: true
     path: /bidrag-dokument-arkiv/actuator/prometheus
   resources:
+    requests:
+      cpu: 1500m
+      memory: 2048Mi
     limits:
       memory: 4096Mi
-    requests:
-      memory: 2560Mi
   ingresses:
   {{#each ingresses as |url|}}
       - {{url}}
