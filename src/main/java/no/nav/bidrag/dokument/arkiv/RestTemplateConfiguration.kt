@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Scope
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
-import org.springframework.http.client.SimpleClientHttpRequestFactory
 
 @Configuration
 @Import(RestOperationsAzure::class)
@@ -24,7 +23,7 @@ class RestTemplateConfiguration {
         observationRestTemplateCustomizer: ObservationRestTemplateCustomizer
     ): HttpHeaderRestTemplate {
         val httpHeaderRestTemplate = HttpHeaderRestTemplate()
-        val cf = SimpleClientHttpRequestFactory()
+        val cf = HttpComponentsClientHttpRequestFactory()
         cf.setBufferRequestBody(false)
         httpHeaderRestTemplate.requestFactory = cf
         httpHeaderRestTemplate.withDefaultHeaders()
