@@ -16,6 +16,7 @@ import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.dokument.dto.AvsenderMottakerDto
 import no.nav.bidrag.dokument.dto.AvsenderMottakerDtoIdType
 import no.nav.bidrag.dokument.dto.JournalpostType
+import no.nav.bidrag.dokument.dto.OpprettDokumentDto
 import no.nav.bidrag.dokument.dto.OpprettJournalpostResponse
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -23,6 +24,7 @@ import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import java.time.LocalDateTime
+import java.util.*
 
 internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
 
@@ -123,6 +125,80 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivOppdaterKalt(nyJpId, "aud-localhost")
         }
     }
+
+    @Test
+    fun `skal opprette og journalføre utgående journalpost ved å hente dokumenter fra annen kilde`() {
+        val saksnummer1 = "132213"
+        val saksnummer2 = "1233333"
+        val request = createOpprettJournalpostRequest()
+            .copy(
+                skalFerdigstilles = true,
+                journalposttype = JournalpostType.UTGÅENDE,
+                tilknyttSaker = listOf(saksnummer1, saksnummer2),
+                journalførendeEnhet = "4806",
+                dokumenter = listOf(
+                    OpprettDokumentDto(
+                        tittel = TITTEL_HOVEDDOKUMENT,
+                        dokumentreferanse = "DOKREF1"
+                    ),
+                    OpprettDokumentDto(
+                        tittel = TITTEL_VEDLEGG1,
+                        dokumentreferanse = "DOKREF2"
+                    )
+                ),
+            )
+
+
+        val nyJpId = 123123123L
+
+        val journalpost = opprettSafResponse(nyJpId.toString()).copy(
+            sak = Sak(saksnummer1)
+        )
+        stubs.mockBidragDokumentHentDokumentResponse("DOKREF1", "DOK1".toByteArray())
+        stubs.mockBidragDokumentHentDokumentResponse("DOKREF2", "DOK2".toByteArray())
+        stubs.mockSafResponseHentJournalpost(journalpost)
+        stubs.mockDokarkivOppdaterRequest(nyJpId)
+        stubs.mockDokarkivTilknyttRequest(nyJpId)
+        stubs.mockDokarkivOpprettRequest(
+            nyJpId,
+            ferdigstill = true,
+            dokumentList = request.dokumenter.map { DokumentInfo("DOK_ID_${it.tittel}") }
+        )
+
+        val response = httpHeaderTestRestTemplate.exchange(
+            initUrl() + "/journalpost",
+            HttpMethod.POST,
+            HttpEntity(request),
+            OpprettJournalpostResponse::class.java
+        )
+
+        response.statusCode shouldBe HttpStatus.OK
+
+        val responseBody = response.body!!
+        assertSoftly {
+            responseBody.journalpostId shouldBe nyJpId.toString()
+            responseBody.dokumenter shouldHaveSize 2
+            stubs.verifyStub.dokarkivOpprettKalt(
+                true,
+                "\"sak\":{\"fagsakId\":\"$saksnummer1\",\"fagsaksystem\":\"BISYS\",\"sakstype\":\"FAGSAK\"}",
+                "\"tittel\":\"$TITTEL_HOVEDDOKUMENT\"",
+                "\"journalfoerendeEnhet\":\"4806\"",
+                "\"journalpostType\":\"UTGAAENDE\"",
+                "\"avsenderMottaker\":{\"id\":\"12345678910\",\"idType\":\"FNR\"}}",
+                "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"${
+                    Base64.getEncoder().encodeToString("DOK1".toByteArray())
+                }\"}]},{\"tittel\":\"Tittel på vedlegg\",\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"${
+                    Base64.getEncoder().encodeToString("DOK2".toByteArray())
+                }\"}]}]"
+            )
+            stubs.verifyStub.dokarkivTilknyttSakerKalt(1, nyJpId)
+            stubs.verifyStub.dokarkivTilknyttSakerKalt(nyJpId, saksnummer2)
+            stubs.verifyStub.dokarkivOppdaterKalt(nyJpId, "aud-localhost")
+            stubs.verifyStub.bidragDokumentHentKalt("DOKREF1")
+            stubs.verifyStub.bidragDokumentHentKalt("DOKREF2")
+        }
+    }
+
 
     @Test
     fun `skal opprette og journalføre utgående journalpost med journalpost tittel`() {

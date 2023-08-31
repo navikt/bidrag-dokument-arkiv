@@ -20,6 +20,7 @@ no.nav.security.jwt:
   client:
     registration:
       bidrag-person:
+        resource-url: ${BIDRAG_PERSON_URL}
         token-endpoint-url: http://localhost:${mock-oauth2-server.port:1234}/aad/token
         grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
         scope: api://123/.default
@@ -28,6 +29,7 @@ no.nav.security.jwt:
           client-secret: 123
           client-auth-method: client_secret_basic
       bidrag-organisasjon:
+        resource-url: ${BIDRAG_ORGANISASJON_URL}
         token-endpoint-url: http://localhost:${mock-oauth2-server.port:1234}/aad/token
         grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
         scope: api://123/.default
@@ -36,6 +38,7 @@ no.nav.security.jwt:
           client-secret: 123
           client-auth-method: client_secret_basic
       oppgave:
+        resource-url: ${OPPGAVE_URL}
         token-endpoint-url: http://localhost:${mock-oauth2-server.port:1234}/aad/token
         grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
         scope: api://123/.default
@@ -44,6 +47,7 @@ no.nav.security.jwt:
           client-secret: 123
           client-auth-method: client_secret_basic
       saf:
+        resource-url: ${SAF_URL}
         token-endpoint-url: http://localhost:${mock-oauth2-server.port:1234}/aad/token
         grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
         scope: api://123/.default
@@ -52,6 +56,7 @@ no.nav.security.jwt:
           client-secret: 123
           client-auth-method: client_secret_basic
       dokarkiv:
+        resource-url: ${DOKARKIV_URL}
         token-endpoint-url: http://localhost:${mock-oauth2-server.port:1234}/aad/token
         grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
         scope: api://123/.default

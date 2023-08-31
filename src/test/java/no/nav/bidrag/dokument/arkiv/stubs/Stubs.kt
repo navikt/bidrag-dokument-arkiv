@@ -176,6 +176,21 @@ class Stubs {
     }
 
     @Throws(JsonProcessingException::class)
+    fun mockBidragDokumentHentDokumentResponse(
+        dokumentref: String = "(.*)",
+        response: ByteArray = DOKUMENT_FIL.toByteArray()
+    ) {
+        WireMock.stubFor(
+            WireMock.get(WireMock.urlMatching("/dokument/dokumentreferanse/$dokumentref"))
+                .willReturn(
+                    aClosedJsonResponse()
+                        .withStatus(HttpStatus.OK.value())
+                        .withBody(response)
+                )
+        )
+    }
+
+    @Throws(JsonProcessingException::class)
     fun mockDokarkivOpprettRequest(
         nyJournalpostId: Long?,
         status: HttpStatus = HttpStatus.OK,
@@ -295,9 +310,9 @@ class Stubs {
                             .withStatus(HttpStatus.OK.value())
                             .withBody(
                                 "{\"data\":{\"journalpost\": ${
-                                objectMapper.writeValueAsString(
-                                    distribusjonsInfo
-                                )
+                                    objectMapper.writeValueAsString(
+                                        distribusjonsInfo
+                                    )
                                 } }}"
                             )
                     )
@@ -319,9 +334,9 @@ class Stubs {
                             .withStatus(HttpStatus.OK.value())
                             .withBody(
                                 "{\"data\":{\"journalpost\": ${
-                                objectMapper.writeValueAsString(
-                                    journalpost
-                                )
+                                    objectMapper.writeValueAsString(
+                                        journalpost
+                                    )
                                 } }}"
                             )
                     )
@@ -394,9 +409,9 @@ class Stubs {
                             .withStatus(HttpStatus.OK.value())
                             .withBody(
                                 "{\"data\":{\"tilknyttedeJournalposter\": ${
-                                objectMapper.writeValueAsString(
-                                    tilknyttetJournalposts
-                                )
+                                    objectMapper.writeValueAsString(
+                                        tilknyttetJournalposts
+                                    )
                                 }}}"
                             )
                     )
@@ -666,6 +681,16 @@ class Stubs {
             // anyMatch shouldBe true
         }
 
+        fun bidragDokumentHentKalt(dokumentId: String) {
+            val requestPattern =
+                WireMock.getRequestedFor(
+                    WireMock.urlEqualTo(
+                        "/dokument/dokumentreferanse/$dokumentId",
+                    )
+                )
+            WireMock.verify(requestPattern)
+        }
+
         fun safHentDokumentKalt(journalpostId: Long?, dokumentId: Long?) {
             val requestPattern =
                 WireMock.getRequestedFor(
@@ -803,8 +828,8 @@ class Stubs {
                 WireMock.patchRequestedFor(
                     WireMock.urlMatching(
                         "/dokarkiv" +
-                            DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" +
-                            journalpostId + "/oppdaterDistribusjonsinfo"
+                                DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" +
+                                journalpostId + "/oppdaterDistribusjonsinfo"
                     )
                 ).withRequestBody(ContainsPattern(kanal.name))
             )
