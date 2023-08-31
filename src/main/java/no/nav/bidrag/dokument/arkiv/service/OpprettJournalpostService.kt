@@ -308,6 +308,7 @@ class OpprettJournalpostService(
         return dokumentDto.fysiskDokument ?: dokumentDto.dokument?.let {
             Base64.getDecoder().decode(it)
         } ?: dokumentDto.dokumentreferanse?.let {
+            LOGGER.info("Henter dokument bytedata for dokument med tittel ${dokumentDto.tittel} og dokumentreferanse ${dokumentDto.dokumentreferanse}")
             bidragDokumentConsumer.hentDokument(
                 it
             )

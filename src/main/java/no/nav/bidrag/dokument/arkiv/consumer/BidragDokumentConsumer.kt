@@ -24,15 +24,15 @@ class BidragDokumentConsumer(
         get() =
             UriComponentsBuilder.fromUri(url)
 
-    @Retryable(
-        value = [DistribusjonFeiletTekniskException::class],
-        backoff = Backoff(delay = 500, maxDelay = 2000, multiplier = 2.0)
-    )
+    @Retryable(backoff = Backoff(delay = 500, maxDelay = 2000, multiplier = 2.0))
     fun hentDokument(
         dokumentId: String
-    ): ByteArray = getForNonNullEntity(
-        dokumentUrl.pathSegment("dokumentreferanse").pathSegment(dokumentId)
-            .build().toUri()
-    )
+    ): ByteArray {
+        LOGGER.info { "Henter dokument bytedata for dokumentreferanse $dokumentId" }
+        return getForNonNullEntity(
+            dokumentUrl.pathSegment("dokumentreferanse").pathSegment(dokumentId)
+                .build().toUri()
+        )
+    }
 
 }

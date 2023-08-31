@@ -26,10 +26,7 @@ class DokdistKanalConsumer(
             UriComponentsBuilder.fromUri(url).pathSegment("rest")
                 .pathSegment("bestemDistribusjonskanal")
 
-    @Retryable(
-        value = [DistribusjonFeiletTekniskException::class],
-        backoff = Backoff(delay = 500, maxDelay = 2000, multiplier = 2.0)
-    )
+    @Retryable(backoff = Backoff(delay = 500, maxDelay = 2000, multiplier = 2.0))
     fun bestimDistribusjonsKanal(
         gjelderId: String,
         mottakerId: String? = null,
