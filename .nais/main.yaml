@@ -30,7 +30,7 @@ env:
   ORGANISASJON_SCOPE: dev-fss.bidrag.bidrag-organisasjon
   DOKDISTKANAL_URL: https://dokdistkanal.dev.intern.nav.no
   DOKDISTKANAL_SCOPE: dev-fss.teamdokumenthandtering.dokdistkanal
-  JAVA_OPTS: -Xmx2048m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
+  JAVA_OPTS: -Xmx2048m -Xms2048m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
 vault:
   kvPath: dev
 azureAccessInbound:
