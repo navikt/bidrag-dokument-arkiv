@@ -24,6 +24,8 @@ env:
   TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering
   BIDRAG_PERSON_URL: https://bidrag-person.dev.intern.nav.no
   PERSON_SCOPE: dev-fss.bidrag.bidrag-person
+  BIDRAG_DOKUMENT_URL: https://bidrag-dokument.dev.intern.nav.no/bidrag-dokument
+  BIDRAG_DOKUMENT_SCOPE: dev-fss.bidrag.bidrag-dokument
   BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon.dev.intern.nav.no
   ORGANISASJON_SCOPE: dev-fss.bidrag.bidrag-organisasjon
   DOKDISTKANAL_URL: https://dokdistkanal.dev.intern.nav.no

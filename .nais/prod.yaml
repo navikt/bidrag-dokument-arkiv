@@ -24,6 +24,8 @@ env:
   TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering
   BIDRAG_PERSON_URL: https://bidrag-person.nais.adeo.no
   PERSON_SCOPE: prod-fss.bidrag.bidrag-person
+  BIDRAG_DOKUMENT_URL: https://bidrag-dokument.intern.nav.no/bidrag-dokument
+  BIDRAG_DOKUMENT_SCOPE: prod-fss.bidrag.bidrag-dokument
   BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon.intern.nav.no
   ORGANISASJON_SCOPE: prod-fss.bidrag.bidrag-organisasjon
   DOKDISTKANAL_URL: https://dokdistkanal.intern.nav.no
