@@ -32,24 +32,4 @@ class RestTemplateConfiguration {
         observationRestTemplateCustomizer.customize(httpHeaderRestTemplate)
         return httpHeaderRestTemplate
     }
-
-    @Bean
-    @Qualifier("base_no_buffer")
-    @Scope("prototype")
-    fun restTemplateNoBuffer(
-        environmentProperties: EnvironmentProperties,
-        observationRestTemplateCustomizer: ObservationRestTemplateCustomizer
-    ): HttpHeaderRestTemplate {
-        val httpHeaderRestTemplate = HttpHeaderRestTemplate()
-        val cf = HttpComponentsClientHttpRequestFactory()
-        cf.setBufferRequestBody(false)
-        httpHeaderRestTemplate.requestFactory = cf
-        httpHeaderRestTemplate.withDefaultHeaders()
-        httpHeaderRestTemplate.addHeaderGenerator(
-            "Nav-Callid"
-        ) { CorrelationId.fetchCorrelationIdForThread() }
-        httpHeaderRestTemplate.addHeaderGenerator("Nav-Consumer-Id") { environmentProperties.naisAppName }
-        observationRestTemplateCustomizer.customize(httpHeaderRestTemplate)
-        return httpHeaderRestTemplate
-    }
 }
