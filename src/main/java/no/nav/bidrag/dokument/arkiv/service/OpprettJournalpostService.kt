@@ -2,6 +2,7 @@ package no.nav.bidrag.dokument.arkiv.service
 
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer
+import no.nav.bidrag.dokument.arkiv.consumer.BidragDokumentConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottakerIdType
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest
@@ -31,7 +32,9 @@ import no.nav.bidrag.dokument.dto.OpprettJournalpostRequest
 import no.nav.bidrag.dokument.dto.OpprettJournalpostResponse
 import org.apache.logging.log4j.util.Strings
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.client.HttpClientErrorException
 import java.time.LocalDateTime
 import java.util.Base64
 
@@ -41,7 +44,8 @@ class OpprettJournalpostService(
     safConsumers: ResourceByDiscriminator<SafConsumer?>,
     private val saksbehandlerInfoManager: SaksbehandlerInfoManager,
     private val dokumentService: DokumentService,
-    private val endreJournalpostService: EndreJournalpostService
+    private val endreJournalpostService: EndreJournalpostService,
+    private val bidragDokumentConsumer: BidragDokumentConsumer
 ) {
     private val dokarkivConsumer: DokarkivConsumer
     private val safConsumer: SafConsumer
@@ -291,13 +295,28 @@ class OpprettJournalpostService(
                     dokumentvarianter = listOf(
                         opprettDokumentVariant(
                             null,
-                            it.fysiskDokument ?: Base64.getDecoder().decode(it.dokument)
+                            hentDokument(it)
                         )
                     )
                 )
             },
             tilleggsopplysninger = tilleggsOpplysninger
         )
+    }
+
+    private fun hentDokument(dokumentDto: OpprettDokumentDto): ByteArray {
+        return dokumentDto.fysiskDokument ?: dokumentDto.dokument?.let {
+            Base64.getDecoder().decode(it)
+        } ?: dokumentDto.dokumentreferanse?.let {
+            LOGGER.info("Henter dokument bytedata for dokument med tittel ${dokumentDto.tittel} og dokumentreferanse ${dokumentDto.dokumentreferanse}")
+            bidragDokumentConsumer.hentDokument(
+                it
+            )
+        } ?: throw HttpClientErrorException(
+            HttpStatus.BAD_REQUEST,
+            "Fant ikke referanse eller data for dokument med tittel ${dokumentDto.tittel}"
+        )
+
     }
 
     private fun mapMottaker(request: OpprettJournalpostRequest): JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker =

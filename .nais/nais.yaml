@@ -1,15 +1,15 @@
 apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
-  name: {{ name }}
+  name: {{name}}
   namespace: bidrag
   labels:
     team: bidrag
   annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: "256m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "512m"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
 spec:
-  image: {{ image }}
+  image: {{image}}
   azure:
     application:
       enabled: true
@@ -23,14 +23,14 @@ spec:
     inbound:
       rules:
       {{#each azureAccessInbound}}
-         - application: {{this.application}}
-           namespace: {{this.namespace}}
-           cluster: {{this.cluster}}
+          - application: {{this.application}}
+            namespace: {{this.namespace}}
+            cluster: {{this.cluster}}
       {{/each}}
   secureLogs:
     enabled: true
   kafka:
-    pool: {{ kafka.pool }}
+    pool: {{kafka.pool}}
   liveness:
     path: /bidrag-dokument-arkiv/actuator/health
     initialDelay: 20
@@ -45,20 +45,19 @@ spec:
     enabled: true
     path: /bidrag-dokument-arkiv/actuator/prometheus
   resources:
-    limits:
-      cpu: 1000m
-      memory: 2048Mi
     requests:
-      cpu: 500m
-      memory: 1500Mi
+      cpu: 1500m
+      memory: 2500Mi
+    limits:
+      memory: 4096Mi
   ingresses:
   {{#each ingresses as |url|}}
-    - {{url}}
+      - {{url}}
   {{/each}}
   env:
   {{#each env}}
-     - name: {{@key}}
-       value: "{{this}}"
+    - name: {{@key}}
+      value: "{{this}}"
   {{/each}}
   vault:
     enabled: true

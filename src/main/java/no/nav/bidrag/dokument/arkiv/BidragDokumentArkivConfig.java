@@ -12,6 +12,7 @@ import no.nav.bidrag.commons.security.api.EnableSecurityConfiguration;
 import no.nav.bidrag.commons.security.service.SecurityTokenService;
 import no.nav.bidrag.commons.security.service.StsTokenService;
 import no.nav.bidrag.commons.web.CorrelationIdFilter;
+import no.nav.bidrag.commons.web.DefaultCorsFilter;
 import no.nav.bidrag.commons.web.EnhetFilter;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.bidrag.commons.web.UserMdcFilter;
@@ -55,7 +56,7 @@ import org.springframework.retry.annotation.EnableRetry;
     name = "bearer-key",
     scheme = "bearer",
     type = SecuritySchemeType.HTTP)
-@Import(StsTokenService.class)
+@Import({StsTokenService.class, DefaultCorsFilter.class})
 public class BidragDokumentArkivConfig {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BidragDokumentArkivConfig.class);

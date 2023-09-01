@@ -10,9 +10,9 @@ env:
   ACCEPTED_SERVICE_USER_AUDIENCE: srvbdarkivering,srvbisys
   STS_ISSUER_URL: https://security-token-service.nais.adeo.no
   ACCESS_TOKEN_URL: https://security-token-service.nais.adeo.no
-  DOKARKIV_URL: https://dokarkiv.nais.adeo.no/
-  DOKARKIV_KNYTT_TIL_SAK_URL:  https://dokarkiv.nais.adeo.no
-  DOKDISTFORDELING_URL: https://dokdistfordeling.nais.adeo.no
+  DOKARKIV_URL: https://dokarkiv.intern.nav.no/
+  DOKARKIV_KNYTT_TIL_SAK_URL: https://dokarkiv.intern.nav.no
+  DOKDISTFORDELING_URL: https://dokdistfordeling.intern.nav.no
   SAF_URL: https://saf.nais.adeo.no
   OPPGAVE_URL: https://oppgave.nais.adeo.no/api/v1/oppgaver
   OPPGAVE_SCOPE: prod-fss.oppgavehandtering.oppgave
@@ -24,12 +24,19 @@ env:
   TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering
   BIDRAG_PERSON_URL: https://bidrag-person.nais.adeo.no
   PERSON_SCOPE: prod-fss.bidrag.bidrag-person
-  BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon.nais.adeo.no
+  BIDRAG_DOKUMENT_URL: https://bidrag-dokument.intern.nav.no/bidrag-dokument
+  BIDRAG_DOKUMENT_SCOPE: prod-fss.bidrag.bidrag-dokument
+  BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon.intern.nav.no
   ORGANISASJON_SCOPE: prod-fss.bidrag.bidrag-organisasjon
-  JAVA_OPTS: -Xmx1500m
+  DOKDISTKANAL_URL: https://dokdistkanal.intern.nav.no
+  DOKDISTKANAL_SCOPE: prod-fss.teamdokumenthandtering.dokdistkanal
+  JAVA_OPTS: -Xmx2500m -Xms2500m
 vault:
   kvPath: prod
 azureAccessInbound:
   - application: bidrag-dokument
+    namespace: bidrag
+    cluster: prod-fss
+  - application: bidrag-ui
     namespace: bidrag
     cluster: prod-fss

@@ -6,6 +6,8 @@ DOKARKIV_KNYTT_TIL_SAK_URL: http://localhost:${wiremock.server.port}/dokarkivkny
 ACCESS_TOKEN_URL: http://localhost:${wiremock.server.port}/sts
 BIDRAG_PERSON_URL: http://localhost:${wiremock.server.port}/person
 BIDRAG_ORGANISASJON_URL: http://localhost:${wiremock.server.port}/organisasjon
+DOKDISTKANAL_URL: http://localhost:${wiremock.server.port}/dokdistkanal
+BIDRAG_DOKUMENT_URL: http://localhost:${wiremock.server.port}/dokument
 AZURE_OPENID_CONFIG_ISSUER: http://localhost:${mock-oauth2-server.port}/aad
 SRVBIDRAG_USERNAME: srvbidrag
 SRVBIDRAG_PASSWORD: bareForTest
@@ -18,6 +20,7 @@ no.nav.security.jwt:
   client:
     registration:
       bidrag-person:
+        resource-url: ${BIDRAG_PERSON_URL}
         token-endpoint-url: http://localhost:${mock-oauth2-server.port:1234}/aad/token
         grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
         scope: api://123/.default
@@ -26,6 +29,7 @@ no.nav.security.jwt:
           client-secret: 123
           client-auth-method: client_secret_basic
       bidrag-organisasjon:
+        resource-url: ${BIDRAG_ORGANISASJON_URL}
         token-endpoint-url: http://localhost:${mock-oauth2-server.port:1234}/aad/token
         grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
         scope: api://123/.default
@@ -34,6 +38,7 @@ no.nav.security.jwt:
           client-secret: 123
           client-auth-method: client_secret_basic
       oppgave:
+        resource-url: ${OPPGAVE_URL}
         token-endpoint-url: http://localhost:${mock-oauth2-server.port:1234}/aad/token
         grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
         scope: api://123/.default
@@ -42,6 +47,7 @@ no.nav.security.jwt:
           client-secret: 123
           client-auth-method: client_secret_basic
       saf:
+        resource-url: ${SAF_URL}
         token-endpoint-url: http://localhost:${mock-oauth2-server.port:1234}/aad/token
         grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
         scope: api://123/.default
@@ -50,6 +56,25 @@ no.nav.security.jwt:
           client-secret: 123
           client-auth-method: client_secret_basic
       dokarkiv:
+        resource-url: ${DOKARKIV_URL}
+        token-endpoint-url: http://localhost:${mock-oauth2-server.port:1234}/aad/token
+        grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
+        scope: api://123/.default
+        authentication:
+          client-id: 123
+          client-secret: 123
+          client-auth-method: client_secret_basic
+      dokdistkanal:
+        resource-url: ${DOKDISTKANAL_URL}
+        token-endpoint-url: http://localhost:${mock-oauth2-server.port:1234}/aad/token
+        grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
+        scope: api://123/.default
+        authentication:
+          client-id: 123
+          client-secret: 123
+          client-auth-method: client_secret_basic
+      bidrag-dokument:
+        resource-url: ${BIDRAG_DOKUMENT_URL}
         token-endpoint-url: http://localhost:${mock-oauth2-server.port:1234}/aad/token
         grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
         scope: api://123/.default
