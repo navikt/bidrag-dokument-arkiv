@@ -92,7 +92,7 @@ public class BidragDokumentArkivConfig {
   @Bean
   @Scope("prototype")
   public DokarkivConsumer baseDokarkivConsumer(
-      @Qualifier("base") HttpHeaderRestTemplate httpHeaderRestTemplate,
+      @Qualifier("base_no_buffer") HttpHeaderRestTemplate httpHeaderRestTemplate,
       EnvironmentProperties environmentProperties,
       ObjectMapper objectMapper) {
     httpHeaderRestTemplate.setUriTemplateHandler(
