@@ -36,7 +36,8 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
         stubs.mockDokarkivOpprettRequest(
             nyJpId,
             ferdigstill = false,
-            dokumentList = request.dokumenter.map { DokumentInfo("DOK_ID_${it.tittel}") })
+            dokumentList = request.dokumenter.map { DokumentInfo("DOK_ID_${it.tittel}") }
+        )
 
         val response = httpHeaderTestRestTemplate.exchange(
             initUrl() + "/journalpost",
@@ -54,20 +55,20 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivOpprettKalt(
                 false,
                 "{\"tittel\":\"$TITTEL_HOVEDDOKUMENT\"," +
-                        "\"journalpostType\":\"INNGAAENDE\"," +
-                        "\"behandlingstema\":\"$BEHANDLINGSTEMA\"," +
-                        "\"eksternReferanseId\":\"$REFID\"," +
-                        "\"tilleggsopplysninger\":[]," +
-                        "\"tema\":\"BID\"," +
-                        "\"kanal\":\"NAV_NO\"," +
-                        "\"datoMottatt\":\"$DATO_MOTTATT\"," +
-                        "\"bruker\":{\"id\":\"$GJELDER_ID\",\"idType\":\"FNR\"}," +
-                        "\"dokumenter\":[" +
-                        "{\"tittel\":\"$TITTEL_HOVEDDOKUMENT\"," +
-                        "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SW5uaG9sZCBww6UgZG9rdW1lbnRldA==\"}]}," +
-                        "{\"tittel\":\"$TITTEL_VEDLEGG1\"," +
-                        "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SW5uaG9sZCBww6UgZG9rdW1lbnRldCB2ZWRsZWdn\"}]}]," +
-                        "\"avsenderMottaker\":{\"id\":\"$GJELDER_ID\",\"idType\":\"FNR\"}}"
+                    "\"journalpostType\":\"INNGAAENDE\"," +
+                    "\"behandlingstema\":\"$BEHANDLINGSTEMA\"," +
+                    "\"eksternReferanseId\":\"$REFID\"," +
+                    "\"tilleggsopplysninger\":[]," +
+                    "\"tema\":\"BID\"," +
+                    "\"kanal\":\"NAV_NO\"," +
+                    "\"datoMottatt\":\"$DATO_MOTTATT\"," +
+                    "\"bruker\":{\"id\":\"$GJELDER_ID\",\"idType\":\"FNR\"}," +
+                    "\"dokumenter\":[" +
+                    "{\"tittel\":\"$TITTEL_HOVEDDOKUMENT\"," +
+                    "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SW5uaG9sZCBww6UgZG9rdW1lbnRldA==\"}]}," +
+                    "{\"tittel\":\"$TITTEL_VEDLEGG1\"," +
+                    "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SW5uaG9sZCBww6UgZG9rdW1lbnRldCB2ZWRsZWdn\"}]}]," +
+                    "\"avsenderMottaker\":{\"id\":\"$GJELDER_ID\",\"idType\":\"FNR\"}}"
             )
         }
     }
@@ -145,9 +146,8 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
                         tittel = TITTEL_VEDLEGG1,
                         dokumentreferanse = "DOKREF2"
                     )
-                ),
+                )
             )
-
 
         val nyJpId = 123123123L
 
@@ -186,9 +186,9 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
                 "\"journalpostType\":\"UTGAAENDE\"",
                 "\"avsenderMottaker\":{\"id\":\"12345678910\",\"idType\":\"FNR\"}}",
                 "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"${
-                    Base64.getEncoder().encodeToString("DOK1".toByteArray())
+                Base64.getEncoder().encodeToString("DOK1".toByteArray())
                 }\"}]},{\"tittel\":\"Tittel på vedlegg\",\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"${
-                    Base64.getEncoder().encodeToString("DOK2".toByteArray())
+                Base64.getEncoder().encodeToString("DOK2".toByteArray())
                 }\"}]}]"
             )
             stubs.verifyStub.dokarkivTilknyttSakerKalt(1, nyJpId)
@@ -198,7 +198,6 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
             stubs.verifyStub.bidragDokumentHentKalt("DOKREF2")
         }
     }
-
 
     @Test
     fun `skal opprette og journalføre utgående journalpost med journalpost tittel`() {
@@ -421,9 +420,9 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
                 1,
                 nyJpId,
                 "{\"journalfoerendeEnhet\":\"4806\"," +
-                        "\"journalfortAvNavn\":\"Hansen, Hans\"," +
-                        "\"opprettetAvNavn\":\"Hansen, Hans\"," +
-                        "\"datoJournal\":null}"
+                    "\"journalfortAvNavn\":\"Hansen, Hans\"," +
+                    "\"opprettetAvNavn\":\"Hansen, Hans\"," +
+                    "\"datoJournal\":null}"
             )
             stubs.verifyStub.dokarkivOpprettKaltNotContains(false, "avsenderMottaker")
             stubs.verifyStub.dokarkivTilknyttSakerKalt(1, nyJpId)

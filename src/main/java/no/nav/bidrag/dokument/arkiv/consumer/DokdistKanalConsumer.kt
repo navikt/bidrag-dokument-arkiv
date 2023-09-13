@@ -2,10 +2,8 @@ package no.nav.bidrag.dokument.arkiv.consumer
 
 import mu.KotlinLogging
 import no.nav.bidrag.commons.web.client.AbstractRestClient
-import no.nav.bidrag.dokument.arkiv.model.DistribusjonFeiletTekniskException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpEntity
 import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Service
@@ -18,7 +16,7 @@ private val LOGGER = KotlinLogging.logger {}
 @Service
 class DokdistKanalConsumer(
     @Value("\${DOKDISTKANAL_URL}") val url: URI,
-    @Qualifier("azure") private val restTemplate: RestOperations,
+    @Qualifier("azure") private val restTemplate: RestOperations
 ) : AbstractRestClient(restTemplate, "dokdistkanal") {
 
     private val dokdistkanalUrl
@@ -29,15 +27,14 @@ class DokdistKanalConsumer(
     @Retryable(backoff = Backoff(delay = 500, maxDelay = 2000, multiplier = 2.0))
     fun bestimDistribusjonsKanal(
         gjelderId: String,
-        mottakerId: String? = null,
+        mottakerId: String? = null
     ): BestemKanalResponse = postForNonNullEntity(
         dokdistkanalUrl.build().toUri(),
         BestemKanalRequest(
             brukerId = gjelderId,
             mottakerId = mottakerId ?: "11111111111"
-        ),
+        )
     )
-
 }
 
 data class BestemKanalRequest(

@@ -2,7 +2,6 @@ package no.nav.bidrag.dokument.arkiv.consumer
 
 import mu.KotlinLogging
 import no.nav.bidrag.commons.web.client.AbstractRestClient
-import no.nav.bidrag.dokument.arkiv.model.DistribusjonFeiletTekniskException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.retry.annotation.Backoff
@@ -17,7 +16,7 @@ private val LOGGER = KotlinLogging.logger {}
 @Service
 class BidragDokumentConsumer(
     @Value("\${BIDRAG_DOKUMENT_URL}") val url: URI,
-    @Qualifier("azure") private val restTemplate: RestOperations,
+    @Qualifier("azure") private val restTemplate: RestOperations
 ) : AbstractRestClient(restTemplate, "bidrag_dokument") {
 
     private val dokumentUrl
@@ -34,5 +33,4 @@ class BidragDokumentConsumer(
                 .build().toUri()
         )
     }
-
 }

@@ -1,8 +1,8 @@
 package no.nav.bidrag.dokument.arkiv.service
 
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER
-import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.BidragDokumentConsumer
+import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottakerIdType
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillJournalpostRequest
@@ -115,9 +115,13 @@ class OpprettJournalpostService(
             if (knyttTilSaker.isNotEmpty()) knyttTilSaker[0] else _request.sak?.fagsakId
         var request =
             _request.copy(
-                sak = if (tilknyttetSak.isNullOrEmpty()) null else JoarkOpprettJournalpostRequest.OpprettJournalpostSak(
-                    tilknyttetSak
-                )
+                sak = if (tilknyttetSak.isNullOrEmpty()) {
+                    null
+                } else {
+                    JoarkOpprettJournalpostRequest.OpprettJournalpostSak(
+                        tilknyttetSak
+                    )
+                }
             )
         request = populerMedDokumenterByteData(request, originalJournalpostId)
         return opprettJournalpost(request, knyttTilSaker, skalFerdigstilles)
@@ -274,15 +278,23 @@ class OpprettJournalpostService(
                 else -> null
             }?.name,
             datoDokument = if (erNotat) request.datoDokument?.toString() else null,
-            datoMottatt = if (erInngaende) request.datoMottatt?.toString() ?: LocalDateTime.now()
-                .toString() else null,
+            datoMottatt = if (erInngaende) {
+                request.datoMottatt?.toString() ?: LocalDateTime.now()
+                    .toString()
+            } else {
+                null
+            },
             bruker = JoarkOpprettJournalpostRequest.OpprettJournalpostBruker(
                 id = request.hentGjelderIdent(),
                 idType = request.hentGjelderType()?.name
             ),
-            avsenderMottaker = if (request.journalposttype != JournalpostType.NOTAT) mapMottaker(
-                request
-            ) else null,
+            avsenderMottaker = if (request.journalposttype != JournalpostType.NOTAT) {
+                mapMottaker(
+                    request
+                )
+            } else {
+                null
+            },
             sak = if (erInngaendeOgSkalIkkeJournalfores || tilknyttSaker.isEmpty()) {
                 null
             } else {
@@ -316,7 +328,6 @@ class OpprettJournalpostService(
             HttpStatus.BAD_REQUEST,
             "Fant ikke referanse eller data for dokument med tittel ${dokumentDto.tittel}"
         )
-
     }
 
     private fun mapMottaker(request: OpprettJournalpostRequest): JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker =

@@ -5,6 +5,10 @@ KAFKA_BROKERS: localhost:9092
 KAFKA_BOOTSTRAP_SERVERS: localhost:9092
 NAV_TRUSTSTORE_PATH: test
 NAV_TRUSTSTORE_PASSWORD: test
+NAIS_APP_NAME: bidrag-dokument-arkiv-local
+TOPIC_OPPGAVE_HENDELSE: oppgavehandtering.oppgavehendelse-v1
+---
+spring.config.activate.on-profile: local-kafka
 spring:
   kafka:
     bootstrap-servers: ${KAFKA_BROKERS}

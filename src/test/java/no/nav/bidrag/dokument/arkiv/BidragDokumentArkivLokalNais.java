@@ -8,12 +8,14 @@ import org.springframework.boot.actuate.autoconfigure.security.servlet.Managemen
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 
-@SpringBootApplication(exclude = { SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class })
+@SpringBootApplication(
+    exclude = {SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class})
 @EnableJwtTokenValidation(ignore = {"org.springframework", "org.springdoc"})
 public class BidragDokumentArkivLokalNais {
   public static void main(String[] args) {
     SpringApplication app = new SpringApplication(BidragDokumentArkivLokalNais.class);
-    app.setAdditionalProfiles(PROFILE_KAFKA_TEST, "live", "lokal", "lokal-nais", "lokal-nais-secrets");
+    app.setAdditionalProfiles(
+        "live", "lokal", "lokal-nais", "lokal-nais-secrets", "lokal-nais-kafka");
     app.run(args);
   }
 }
