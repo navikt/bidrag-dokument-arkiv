@@ -2,6 +2,8 @@ name: Deploy to dev
 on:
   pull_request:
     types: [ ready_for_review, opened, synchronize ]
+    branches-ignore:
+      - 'dependabot/**'
 
 env:
   GITHUB_USERNAME: x-access-token
@@ -13,7 +15,7 @@ jobs:
       contents: "read"
       id-token: "write"
     name: Build with maven and docker
-    if: github.event.pull_request.draft == false && ${{ github.actor != 'dependabot[bot]' }}
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
