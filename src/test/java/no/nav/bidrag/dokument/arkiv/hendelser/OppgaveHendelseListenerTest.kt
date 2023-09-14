@@ -6,12 +6,16 @@ import io.kotest.assertions.assertSoftly
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivTest
 import no.nav.bidrag.dokument.arkiv.dto.DatoType
+import no.nav.bidrag.dokument.arkiv.dto.OppgaveData
 import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
 import no.nav.bidrag.dokument.arkiv.kafka.HendelseListener
+import no.nav.bidrag.dokument.arkiv.kafka.dto.OppgaveKafkaHendelse
 import no.nav.bidrag.dokument.arkiv.model.OppgaveHendelse
 import no.nav.bidrag.dokument.arkiv.model.OppgaveStatus
+import no.nav.bidrag.dokument.arkiv.model.Oppgavestatuskategori
+import no.nav.bidrag.dokument.arkiv.stubs.BRUKER_AKTOER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.Stubs
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.toOppgaveData
@@ -30,6 +34,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @ActiveProfiles(value = [BidragDokumentArkivConfig.PROFILE_KAFKA_TEST, BidragDokumentArkivConfig.PROFILE_TEST, BidragDokumentArkivTest.PROFILE_INTEGRATION])
 @SpringBootTest(classes = [BidragDokumentArkivTest::class])
@@ -88,9 +93,17 @@ class OppgaveHendelseListenerTest {
         stubs.mockSafResponseHentJournalpost(safResponse)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
 
-        val oppgaveHendelse = createReturOppgaveHendelse(journalpostId.toString())
+        val oppgaveData = createOppgaveData(journalpostId = journalpostId.toString())
+        stubs.mockHentOppgave(oppgaveData.id, oppgaveData)
+
         val consumerRecord =
-            ConsumerRecord("test", 0, 0L, "key", objectMapper.writeValueAsString(oppgaveHendelse))
+            ConsumerRecord(
+                "test",
+                0,
+                0L,
+                "key",
+                objectMapper.writeValueAsString(oppgaveData.toHendelse())
+            )
         hendelseListener.lesOppgaveOpprettetHendelse(consumerRecord)
 
         Assertions.assertAll(
@@ -98,10 +111,10 @@ class OppgaveHendelseListenerTest {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostId,
                     "\"tilleggsopplysninger\":" +
-                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                        "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
-                        "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
-                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
+                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                            "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
+                            "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
+                            "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
                 )
             },
             { stubs.verifyStub.oppgaveOppdaterKalt(1, safResponse.hentSaksnummer()) }
@@ -129,11 +142,18 @@ class OppgaveHendelseListenerTest {
         stubs.mockSafResponseHentJournalpost(safResponse)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
 
-        val oppgaveHendelse = createReturOppgaveHendelse(journalpostId.toString())
-        stubs.mockHentOppgave(oppgaveHendelse.id, oppgaveHendelse.toOppgaveData(22))
+        val oppgaveData = createOppgaveData(versjon = 20, journalpostId = journalpostId.toString())
+        stubs.mockHentOppgave(oppgaveData.id, oppgaveData, null, "fetch1")
+        stubs.mockHentOppgave(oppgaveData.id, oppgaveData.copy(versjon = 22), "fetch1", null)
 
         val consumerRecord =
-            ConsumerRecord("test", 0, 0L, "key", objectMapper.writeValueAsString(oppgaveHendelse))
+            ConsumerRecord(
+                "test",
+                0,
+                0L,
+                "key",
+                objectMapper.writeValueAsString(oppgaveData.toHendelse())
+            )
         hendelseListener.lesOppgaveOpprettetHendelse(consumerRecord)
 
         assertSoftly {
@@ -176,11 +196,18 @@ class OppgaveHendelseListenerTest {
 
         stubs.mockSafResponseHentJournalpost(safResponse)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
+        val oppgaveData =
+            createOppgaveData(journalpostId = journalpostId.toString(), saksref = "5276661")
+        stubs.mockHentOppgave(oppgaveData.id, oppgaveData)
 
-        val oppgaveHendelse =
-            createReturOppgaveHendelse(journalpostId.toString(), saksref = "5276661")
         val consumerRecord =
-            ConsumerRecord("test", 0, 0L, "key", objectMapper.writeValueAsString(oppgaveHendelse))
+            ConsumerRecord(
+                "test",
+                0,
+                0L,
+                "key",
+                objectMapper.writeValueAsString(oppgaveData.toHendelse())
+            )
         hendelseListener.lesOppgaveOpprettetHendelse(consumerRecord)
 
         Assertions.assertAll(
@@ -188,10 +215,10 @@ class OppgaveHendelseListenerTest {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostId,
                     "\"tilleggsopplysninger\":" +
-                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                        "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
-                        "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
-                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
+                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                            "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
+                            "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
+                            "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
                 )
             },
             { stubs.verifyStub.oppgaveOpprettIkkeKalt() }
@@ -218,9 +245,17 @@ class OppgaveHendelseListenerTest {
         stubs.mockSafResponseHentJournalpost(safResponse, "NO_RETUR", "NO_RETUR2")
         stubs.mockDokarkivOppdaterRequest(journalpostId)
 
-        val oppgaveHendelse = createReturOppgaveHendelse(journalpostId.toString())
+        val oppgaveData = createOppgaveData(journalpostId = journalpostId.toString())
+        stubs.mockHentOppgave(oppgaveData.id, oppgaveData)
+
         val consumerRecord =
-            ConsumerRecord("test", 0, 0L, "key", objectMapper.writeValueAsString(oppgaveHendelse))
+            ConsumerRecord(
+                "test",
+                0,
+                0L,
+                "key",
+                objectMapper.writeValueAsString(oppgaveData.toHendelse())
+            )
         hendelseListener.lesOppgaveOpprettetHendelse(consumerRecord)
 
         Assertions.assertAll(
@@ -229,8 +264,8 @@ class OppgaveHendelseListenerTest {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostId,
                     "\"tilleggsopplysninger\":" +
-                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
+                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                            "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
                 )
             }
         )
@@ -269,9 +304,17 @@ class OppgaveHendelseListenerTest {
         stubs.mockSafResponseHentJournalpost(safResponse)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
 
-        val oppgaveHendelse = createReturOppgaveHendelse(journalpostId.toString())
+        val oppgaveData = createOppgaveData(journalpostId = journalpostId.toString())
+        stubs.mockHentOppgave(oppgaveData.id, oppgaveData)
+
         val consumerRecord =
-            ConsumerRecord("test", 0, 0L, "key", objectMapper.writeValueAsString(oppgaveHendelse))
+            ConsumerRecord(
+                "test",
+                0,
+                0L,
+                "key",
+                objectMapper.writeValueAsString(oppgaveData.toHendelse())
+            )
         hendelseListener.lesOppgaveOpprettetHendelse(consumerRecord)
 
         Assertions.assertAll(
@@ -314,9 +357,16 @@ class OppgaveHendelseListenerTest {
         stubs.mockSafResponseHentJournalpost(safResponse)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
 
-        val oppgaveHendelse = createReturOppgaveHendelse(journalpostId.toString())
+        val oppgaveData = createOppgaveData(journalpostId = journalpostId.toString())
+        stubs.mockHentOppgave(oppgaveData.id, oppgaveData)
         val consumerRecord =
-            ConsumerRecord("test", 0, 0L, "key", objectMapper.writeValueAsString(oppgaveHendelse))
+            ConsumerRecord(
+                "test",
+                0,
+                0L,
+                "key",
+                objectMapper.writeValueAsString(oppgaveData.toHendelse())
+            )
         hendelseListener.lesOppgaveOpprettetHendelse(consumerRecord)
 
         Assertions.assertAll(
@@ -324,25 +374,69 @@ class OppgaveHendelseListenerTest {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostId,
                     "\"tilleggsopplysninger\":" +
-                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                        "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
-                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}"
+                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                            "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
+                            "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}"
                 )
             }
         )
     }
 
-    fun createReturOppgaveHendelse(
-        journalpostId: String,
-        saksref: String? = null
-    ): OppgaveHendelse {
-        return OppgaveHendelse(
-            journalpostId = journalpostId,
-            id = 1,
-            oppgavetype = "RETUR",
-            status = OppgaveStatus.OPPRETTET,
-            tema = "BID",
-            saksreferanse = saksref
+    fun createOppgaveData(
+        id: Long = 1,
+        versjon: Int = 1,
+        journalpostId: String? = "123213",
+        tildeltEnhetsnr: String? = "4806",
+        statuskategori: Oppgavestatuskategori = Oppgavestatuskategori.AAPEN,
+        status: OppgaveStatus? = null,
+        oppgavetype: String = "RETUR",
+        tema: String = "BID",
+        aktoerId: String = BRUKER_AKTOER_ID,
+        beskrivelse: String? = null,
+        tilordnetRessurs: String? = null,
+        saksref: String = "123213123"
+    ) = OppgaveData(
+        id = id,
+        versjon = versjon,
+        journalpostId = journalpostId,
+        tildeltEnhetsnr = "4806",
+        status = status ?: when (statuskategori) {
+            Oppgavestatuskategori.AAPEN -> OppgaveStatus.OPPRETTET
+            Oppgavestatuskategori.AVSLUTTET -> OppgaveStatus.FERDIGSTILT
+        },
+        oppgavetype = oppgavetype,
+        tema = tema,
+        tilordnetRessurs = tilordnetRessurs,
+        beskrivelse = beskrivelse,
+        aktoerId = aktoerId,
+        saksreferanse = saksref
+    )
+
+    fun OppgaveData.toHendelse(
+        type: OppgaveKafkaHendelse.Hendelse.Hendelsestype? = null
+    ) = OppgaveKafkaHendelse(
+        hendelse = OppgaveKafkaHendelse.Hendelse(
+            type ?: when (status) {
+                OppgaveStatus.FERDIGSTILT -> OppgaveKafkaHendelse.Hendelse.Hendelsestype.OPPGAVE_FERDIGSTILT
+                OppgaveStatus.OPPRETTET -> OppgaveKafkaHendelse.Hendelse.Hendelsestype.OPPGAVE_OPPRETTET
+                OppgaveStatus.UNDER_BEHANDLING -> OppgaveKafkaHendelse.Hendelse.Hendelsestype.OPPGAVE_ENDRET
+                OppgaveStatus.FEILREGISTRERT -> OppgaveKafkaHendelse.Hendelse.Hendelsestype.OPPGAVE_FEILREGISTRERT
+                else -> OppgaveKafkaHendelse.Hendelse.Hendelsestype.OPPGAVE_ENDRET
+            },
+            LocalDateTime.now()
+        ),
+        utfortAv = OppgaveKafkaHendelse.UtfortAv(tilordnetRessurs, tildeltEnhetsnr),
+        oppgave = OppgaveKafkaHendelse.Oppgave(
+            id,
+            1,
+            kategorisering = OppgaveKafkaHendelse.Kategorisering(
+                tema ?: "BID",
+                oppgavetype = oppgavetype ?: "JFR"
+            ),
+            bruker = OppgaveKafkaHendelse.Bruker(
+                aktoerId,
+                OppgaveKafkaHendelse.Bruker.IdentType.FOLKEREGISTERIDENT
+            )
         )
-    }
+    )
 }

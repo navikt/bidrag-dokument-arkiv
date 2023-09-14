@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.consumer
 
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveData
+import no.nav.bidrag.dokument.arkiv.dto.OppgaveRequest
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveResponse
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse
 import no.nav.bidrag.dokument.arkiv.dto.OpprettOppgaveRequest
@@ -30,7 +31,7 @@ class OppgaveConsumer(restTemplate: RestTemplate?) : AbstractConsumer(restTempla
         return oppgaveResponse.body?.id
     }
 
-    fun patchOppgave(oppgavePatch: OppgaveData): OppgaveData? {
+    fun patchOppgave(oppgavePatch: OppgaveRequest): OppgaveData? {
         LOGGER.info("${oppgavePatch.javaClass.simpleName} for oppgave med id: ${oppgavePatch.id}")
         return restTemplate.patchForObject(
             "/${oppgavePatch.id}",
@@ -39,12 +40,12 @@ class OppgaveConsumer(restTemplate: RestTemplate?) : AbstractConsumer(restTempla
         )
     }
 
-    fun patchOppgaveWithVersionRetry(oppgavePatch: OppgaveData): OppgaveData? {
+    fun patchOppgaveWithVersionRetry(oppgavePatch: OppgaveRequest): OppgaveData? {
         try {
             return patchOppgave(oppgavePatch)
         } catch (e: HttpStatusCodeException) {
             if (e.statusCode == HttpStatus.CONFLICT) {
-                val oppgaveData = hentOppgave(oppgavePatch.id!!)!!
+                val oppgaveData = hentOppgave(oppgavePatch.id)!!
                 oppgavePatch.versjon = oppgaveData.versjon
                 return patchOppgave(oppgavePatch)
             }

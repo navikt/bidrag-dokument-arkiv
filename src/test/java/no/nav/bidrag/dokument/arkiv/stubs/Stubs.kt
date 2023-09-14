@@ -310,9 +310,9 @@ class Stubs {
                             .withStatus(HttpStatus.OK.value())
                             .withBody(
                                 "{\"data\":{\"journalpost\": ${
-                                objectMapper.writeValueAsString(
-                                    distribusjonsInfo
-                                )
+                                    objectMapper.writeValueAsString(
+                                        distribusjonsInfo
+                                    )
                                 } }}"
                             )
                     )
@@ -334,9 +334,9 @@ class Stubs {
                             .withStatus(HttpStatus.OK.value())
                             .withBody(
                                 "{\"data\":{\"journalpost\": ${
-                                objectMapper.writeValueAsString(
-                                    journalpost
-                                )
+                                    objectMapper.writeValueAsString(
+                                        journalpost
+                                    )
                                 } }}"
                             )
                     )
@@ -409,9 +409,9 @@ class Stubs {
                             .withStatus(HttpStatus.OK.value())
                             .withBody(
                                 "{\"data\":{\"tilknyttedeJournalposter\": ${
-                                objectMapper.writeValueAsString(
-                                    tilknyttetJournalposts
-                                )
+                                    objectMapper.writeValueAsString(
+                                        tilknyttetJournalposts
+                                    )
                                 }}}"
                             )
                     )
@@ -482,14 +482,19 @@ class Stubs {
 
     fun mockHentOppgave(
         oppgaveId: Long,
-        oppgaveResponse: OppgaveData
+        oppgaveResponse: OppgaveData,
+        scenarioState: String? = null,
+        nextScenario: String? = null
     ) {
         WireMock.stubFor(
-            WireMock.get(WireMock.urlMatching("/oppgave/$oppgaveId")).willReturn(
-                aClosedJsonResponse()
-                    .withStatus(HttpStatus.OK.value())
-                    .withBody(ObjectMapper().writeValueAsString(oppgaveResponse))
-            )
+            WireMock.get(WireMock.urlMatching("/oppgave/$oppgaveId"))
+                .inScenario("Oppgave response")
+                .whenScenarioStateIs(scenarioState ?: Scenario.STARTED).willReturn(
+                    aClosedJsonResponse()
+                        .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                        .withStatus(HttpStatus.OK.value())
+                        .withBody(ObjectMapper().writeValueAsString(oppgaveResponse))
+                ).willSetStateTo(nextScenario)
         )
     }
 
@@ -500,7 +505,7 @@ class Stubs {
     ) {
         WireMock.stubFor(
             WireMock.patch(WireMock.urlMatching("/oppgave/.*"))
-                .inScenario("Oppgave response")
+                .inScenario("Oppdater oppgave")
                 .whenScenarioStateIs(scenarioState ?: Scenario.STARTED).willReturn(
                     aClosedJsonResponse()
                         .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
@@ -828,8 +833,8 @@ class Stubs {
                 WireMock.patchRequestedFor(
                     WireMock.urlMatching(
                         "/dokarkiv" +
-                            DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" +
-                            journalpostId + "/oppdaterDistribusjonsinfo"
+                                DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" +
+                                journalpostId + "/oppdaterDistribusjonsinfo"
                     )
                 ).withRequestBody(ContainsPattern(kanal.name))
             )

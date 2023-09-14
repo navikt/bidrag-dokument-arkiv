@@ -50,7 +50,7 @@ class BehandleOppgaveHendelseService(
             "Sjekker om det skal legges til returlogg med dagens dato på journalpost ${oppgave.journalpostId}"
         }
         journalpostService
-            .hentJournalpost(java.lang.Long.valueOf(oppgave.journalpostId))
+            .hentJournalpost(oppgave.journalpostId!!.toLong())
             .ifPresentOrElse(
                 { journalpost: Journalpost ->
                     if (journalpost.manglerReturDetaljForSisteRetur()) {
@@ -82,10 +82,7 @@ class BehandleOppgaveHendelseService(
 
     private fun validerOgHentOppgave(oppgaveHendelse: OppgaveKafkaHendelse): OppgaveData? {
         if (!oppgaveHendelse.erReturOppgave()) {
-            LOGGER.warn(
-                "Oppgave {} er ikke returoppgave. Avslutter behandling",
-                oppgaveHendelse.oppgaveId
-            )
+            LOGGER.warn("Oppgave ${oppgaveHendelse.oppgaveId} er ikke returoppgave. Avslutter behandling")
             return null
         }
         val oppgave = oppgaveConsumer.hentOppgave(oppgaveHendelse.oppgaveId)

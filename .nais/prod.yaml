@@ -13,7 +13,7 @@ env:
   DOKARKIV_URL: https://dokarkiv.intern.nav.no/
   DOKARKIV_KNYTT_TIL_SAK_URL: https://dokarkiv.intern.nav.no
   DOKDISTFORDELING_URL: https://dokdistfordeling.intern.nav.no
-  SAF_URL: https://saf.nais.adeo.no
+  SAF_URL: https://saf.intern.nav.no
   OPPGAVE_URL: https://oppgave.nais.adeo.no/api/v1/oppgaver
   OPPGAVE_SCOPE: prod-fss.oppgavehandtering.oppgave
   SAF_SCOPE: prod-fss.teamdokumenthandtering.saf
@@ -21,7 +21,7 @@ env:
   TOPIC_JOURNALPOST: bidrag.journalpost
   TOPIC_OPPGAVE_HENDELSE: oppgavehandtering.oppgavehendelse-v1
   TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering
-  BIDRAG_PERSON_URL: https://bidrag-person.nais.adeo.no
+  BIDRAG_PERSON_URL: https://bidrag-person.intern.nav.no
   PERSON_SCOPE: prod-fss.bidrag.bidrag-person
   BIDRAG_DOKUMENT_URL: https://bidrag-dokument.intern.nav.no/bidrag-dokument
   BIDRAG_DOKUMENT_SCOPE: prod-fss.bidrag.bidrag-dokument

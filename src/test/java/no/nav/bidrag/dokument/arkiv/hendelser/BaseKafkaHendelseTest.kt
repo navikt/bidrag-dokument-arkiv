@@ -36,7 +36,11 @@ import java.time.Duration
 @DisplayName("OppgaveEndretHendelseListenerTest")
 @EnableMockOAuth2Server
 @AutoConfigureWireMock(port = 0)
-@EmbeddedKafka(partitions = 1, brokerProperties = ["listeners=PLAINTEXT://localhost:9092", "port=9092"], topics = ["topic_joark", "topic_journalpost"])
+@EmbeddedKafka(
+    partitions = 1,
+    brokerProperties = ["listeners=PLAINTEXT://localhost:9092", "port=9092"],
+    topics = ["topic_joark", "topic_journalpost", "oppgave-hendelse"]
+)
 abstract class BaseKafkaHendelseTest {
     private val LOGGER = LoggerFactory.getLogger(BaseKafkaHendelseTest::class.java)
 
@@ -67,7 +71,8 @@ abstract class BaseKafkaHendelseTest {
     fun readFromJournalpostTopic(): JournalpostHendelse? {
         val consumer = configureConsumer(topicJournalpost!!)
         return try {
-            val singleRecord = KafkaTestUtils.getSingleRecord(consumer, topicJournalpost, Duration.ofMillis(4000))
+            val singleRecord =
+                KafkaTestUtils.getSingleRecord(consumer, topicJournalpost, Duration.ofMillis(4000))
             Assertions.assertThat(singleRecord).isNotNull
             objectMapper.readValue(singleRecord.value(), JournalpostHendelse::class.java)
         } catch (e: Exception) {
@@ -81,18 +86,23 @@ abstract class BaseKafkaHendelseTest {
     fun configureConsumer(topic: String): Consumer<Int, String> {
         val consumerProps = KafkaTestUtils.consumerProps("testGroup", "true", embeddedKafkaBroker)
         consumerProps[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
-        consumerProps[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = "org.apache.kafka.common.serialization.StringDeserializer"
-        consumerProps[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = "org.apache.kafka.common.serialization.StringDeserializer"
-        val consumer: Consumer<Int, String> = DefaultKafkaConsumerFactory<Int, String>(consumerProps)
-            .createConsumer()
+        consumerProps[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] =
+            "org.apache.kafka.common.serialization.StringDeserializer"
+        consumerProps[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] =
+            "org.apache.kafka.common.serialization.StringDeserializer"
+        val consumer: Consumer<Int, String> =
+            DefaultKafkaConsumerFactory<Int, String>(consumerProps)
+                .createConsumer()
         consumer.subscribe(listOf(topic), MockRebalanceListener())
         return consumer
     }
 
     private fun configureProducer(): Producer<Int, JournalfoeringHendelseRecord>? {
         val props = KafkaTestUtils.producerProps(embeddedKafkaBroker)
-        props[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = "org.apache.kafka.common.serialization.StringSerializer"
-        props[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = "io.confluent.kafka.serializers.KafkaAvroSerializer"
+        props[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] =
+            "org.apache.kafka.common.serialization.StringSerializer"
+        props[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] =
+            "io.confluent.kafka.serializers.KafkaAvroSerializer"
         props[KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG] = "mock://testUrl"
         props[KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG] = "true"
         val producerProps: Map<String, Any> = HashMap(props)
