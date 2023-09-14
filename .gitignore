@@ -12,3 +12,5 @@ buildNumber.properties
 .project
 *.iml
 application-lokal-nais-secrets.properties
+**/resources/kafka/**
+*nais-kafka*

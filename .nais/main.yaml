@@ -13,14 +13,13 @@ env:
   DOKARKIV_URL: https://dokarkiv-q2.dev.intern.nav.no/
   DOKARKIV_KNYTT_TIL_SAK_URL: https://dokarkiv-q2.dev.intern.nav.no
   DOKDISTFORDELING_URL: https://dokdistfordeling-q2.dev.intern.nav.no
-  SAF_URL: https://saf-q2.dev.adeo.no
+  SAF_URL: https://saf-q2.dev.intern.nav.no
   OPPGAVE_URL: https://oppgave.dev.intern.nav.no/api/v1/oppgaver
   OPPGAVE_SCOPE: dev-fss.oppgavehandtering.oppgave
   SAF_SCOPE: dev-fss.teamdokumenthandtering.saf
   DOKARKIV_SCOPE: dev-fss.teamdokumenthandtering.dokarkiv
   TOPIC_JOURNALPOST: bidrag.journalpost
-  TOPIC_OPPGAVE_OPPRETTET: aapen-oppgave-opprettet-v1-dev-syntetisk
-  KAFKA_BOOTSTRAP_SERVERS: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
+  TOPIC_OPPGAVE_HENDELSE: oppgavehandtering.oppgavehendelse-v1
   TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering
   BIDRAG_PERSON_URL: https://bidrag-person.dev.intern.nav.no
   PERSON_SCOPE: dev-fss.bidrag.bidrag-person

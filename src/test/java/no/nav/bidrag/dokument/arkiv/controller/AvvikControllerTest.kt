@@ -618,7 +618,8 @@ class AvvikControllerTest : AbstractControllerTest() {
                 PERSON_IDENT,
                 aktørId = AKTOR_IDENT,
                 navn = FulltNavn("Personnavn")
-            ), HttpStatus.OK
+            ),
+            HttpStatus.OK
         )
         stubs.mockDokarkivFeilregistrerRequest(journalpostIdFraJson)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
@@ -846,8 +847,8 @@ class AvvikControllerTest : AbstractControllerTest() {
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockOpprettOppgave(HttpStatus.OK)
 
-        val jfrOppgave = createOppgaveDataWithJournalpostId(journalpostId.toString())
-        jfrOppgave.beskrivelse = "Beskrivelse som var der fra før"
+        val jfrOppgave =
+            createOppgaveDataWithJournalpostId(journalpostId.toString()).copy(beskrivelse = "Beskrivelse som var der fra før")
         stubs.mockSokOppgave(OppgaveSokResponse(1, listOf(jfrOppgave)), HttpStatus.OK)
         val overforEnhetResponse = sendAvvikRequest(xEnhet, journalpostId, avvikHendelse)
 
@@ -913,9 +914,11 @@ class AvvikControllerTest : AbstractControllerTest() {
         stubs.mockOpprettOppgave(HttpStatus.OK)
 
         val jfrOppgave = createOppgaveDataWithJournalpostId(journalpostId.toString())
-        jfrOppgave.tildeltEnhetsnr = "4806"
-        jfrOppgave.beskrivelse = "Beskrivelse som var der fra før"
-        jfrOppgave.tilordnetRessurs = "Z999999"
+            .copy(
+                tildeltEnhetsnr = "4806",
+                beskrivelse = "Beskrivelse som var der fra før",
+                tilordnetRessurs = "Z999999"
+            )
         stubs.mockSokOppgave(OppgaveSokResponse(1, listOf(jfrOppgave)), HttpStatus.OK)
         val overforEnhetResponse = sendAvvikRequest(xEnhet, journalpostId, avvikHendelse)
 
@@ -978,9 +981,10 @@ class AvvikControllerTest : AbstractControllerTest() {
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockOpprettOppgave(HttpStatus.OK)
 
-        val jfrOppgave = createOppgaveDataWithJournalpostId(journalpostId.toString())
-        jfrOppgave.tildeltEnhetsnr = OppgaveEnhet.FAGPOST
-        jfrOppgave.beskrivelse = "Beskrivelse som var der fra før"
+        val jfrOppgave = createOppgaveDataWithJournalpostId(journalpostId.toString()).copy(
+            tildeltEnhetsnr = OppgaveEnhet.FAGPOST,
+            beskrivelse = "Beskrivelse som var der fra før",
+        )
         stubs.mockSokOppgave(OppgaveSokResponse(1, listOf(jfrOppgave)), HttpStatus.OK)
         val overforEnhetResponse = sendAvvikRequest(xEnhet, journalpostId, avvikHendelse)
 
@@ -1027,7 +1031,9 @@ class AvvikControllerTest : AbstractControllerTest() {
         stubs.mockOpprettOppgave(HttpStatus.OK)
 
         val jfrOppgave = createOppgaveDataWithJournalpostId(journalpostId.toString())
-        jfrOppgave.beskrivelse = "Beskrivelse som var der fra før"
+            .copy(
+                beskrivelse = "Beskrivelse som var der fra før"
+            )
         stubs.mockSokOppgave(OppgaveSokResponse(1, listOf(jfrOppgave)), HttpStatus.OK)
         val overforEnhetResponse = sendAvvikRequest(xEnhet, journalpostId, avvikHendelse)
 
@@ -1087,7 +1093,9 @@ class AvvikControllerTest : AbstractControllerTest() {
         stubs.mockOpprettOppgave(HttpStatus.OK)
 
         val jfrOppgave = createOppgaveDataWithJournalpostId(journalpostId.toString())
-        jfrOppgave.beskrivelse = "Beskrivelse som var der fra før"
+            .copy(
+                beskrivelse = "Beskrivelse som var der fra før"
+            )
         stubs.mockSokOppgave(OppgaveSokResponse(1, listOf(jfrOppgave)), HttpStatus.OK)
         val overforEnhetResponse = sendAvvikRequest(xEnhet, journalpostId, avvikHendelse)
 
@@ -1196,7 +1204,9 @@ class AvvikControllerTest : AbstractControllerTest() {
         val journalpostId2 = 201028012L
         val vurderDokumentOppgave =
             createOppgaveDataWithJournalpostId(journalpostIdAnnenFagomrade.toString())
-        vurderDokumentOppgave.oppgavetype = "VUR"
+                .copy(
+                    oppgavetype = "VUR"
+                )
         val sak1 = "2132131"
         val sak2 = "213213213"
         val newJournalpostId = 301028011L
@@ -1246,7 +1256,8 @@ class AvvikControllerTest : AbstractControllerTest() {
             opprettSafResponse(
                 journalpostId = newJournalpostId.toString(),
                 sak = Sak(sak1)
-            ), newJournalpostId
+            ),
+            newJournalpostId
         )
         stubs.mockSafHentDokumentResponse()
         stubs.mockSokOppgave(OppgaveSokResponse(1, listOf(vurderDokumentOppgave)), HttpStatus.OK)
@@ -1327,7 +1338,9 @@ class AvvikControllerTest : AbstractControllerTest() {
         val journalpostIdAnnenFagomrade = 201028011L
         val vurderDokumentOppgave =
             createOppgaveDataWithJournalpostId(journalpostIdAnnenFagomrade.toString())
-        vurderDokumentOppgave.oppgavetype = "VUR"
+                .copy(
+                    oppgavetype = "VUR"
+                )
         val sak1 = "2132131"
         val sak2 = "213213213"
         val newJournalpostId = 301028011L
@@ -1362,7 +1375,8 @@ class AvvikControllerTest : AbstractControllerTest() {
             opprettSafResponse(
                 journalpostId = newJournalpostId.toString(),
                 sak = Sak(sak1)
-            ), newJournalpostId
+            ),
+            newJournalpostId
         )
         stubs.mockSafHentDokumentResponse()
         stubs.mockSokOppgave(OppgaveSokResponse(1, listOf(vurderDokumentOppgave)), HttpStatus.OK)

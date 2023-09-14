@@ -10,17 +10,16 @@ env:
   ACCEPTED_SERVICE_USER_AUDIENCE: srvbdarkivering,srvbisys
   STS_ISSUER_URL: https://security-token-service.dev.adeo.no
   ACCESS_TOKEN_URL: https://security-token-service.dev.adeo.no
-  DOKARKIV_URL: https://dokarkiv-q1.dev.adeo.no/
+  DOKARKIV_URL: https://dokarkiv-q1.dev.intern.nav.no/
   DOKARKIV_KNYTT_TIL_SAK_URL: https://dokarkiv-q1.dev.intern.nav.no
   DOKDISTFORDELING_URL: https://dokdistfordeling-q1.dev.intern.nav.no
-  SAF_URL: https://saf-q1.dev.adeo.no
+  SAF_URL: https://saf-q1.dev.intern.nav.no
   OPPGAVE_URL: https://oppgave-q1.dev.intern.nav.no/api/v1/oppgaver
   OPPGAVE_SCOPE: dev-fss.oppgavehandtering.oppgave-q1
   SAF_SCOPE: dev-fss.teamdokumenthandtering.saf-q1
   DOKARKIV_SCOPE: dev-fss.teamdokumenthandtering.dokarkiv-q1
   TOPIC_JOURNALPOST: bidrag.journalpost-feature
-  TOPIC_OPPGAVE_OPPRETTET: aapen-oppgave-opprettet-v1-preprod
-  KAFKA_BOOTSTRAP_SERVERS: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
+  TOPIC_OPPGAVE_HENDELSE: oppgavehandtering.oppgavehendelse-q1-v1
   TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering-q1
   BIDRAG_PERSON_URL: https://bidrag-person-feature.dev.intern.nav.no
   PERSON_SCOPE: dev-fss.bidrag.bidrag-person-feature

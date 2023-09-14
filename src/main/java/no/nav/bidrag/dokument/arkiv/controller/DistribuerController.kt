@@ -152,7 +152,7 @@ class DistribuerController(private val distribuerJournalpostService: DistribuerJ
             ApiResponse(
                 responseCode = "200",
                 description = "Hentet informasjon om hvilken kanal mottaker vil motta forsendelse på"
-            ),
+            )
         ]
     )
     @ResponseBody

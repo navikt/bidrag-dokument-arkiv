@@ -3,7 +3,7 @@ package no.nav.bidrag.dokument.arkiv.dto
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
-import no.nav.bidrag.dokument.arkiv.model.OppgaveHendelse
+import no.nav.bidrag.dokument.arkiv.model.OppgaveStatus
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -15,7 +15,10 @@ private val NORSK_DATO_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 private val NORSK_TIDSSTEMPEL_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
 
 data class OppgaveResponse(var id: Long?)
-data class OppgaveSokResponse(var antallTreffTotalt: Int = 0, var oppgaver: List<OppgaveData> = ArrayList())
+data class OppgaveSokResponse(
+    var antallTreffTotalt: Int = 0,
+    var oppgaver: List<OppgaveData> = ArrayList()
+)
 
 data class OpprettOppgaveResponse(
     var id: Long? = null,
@@ -26,57 +29,84 @@ data class OpprettOppgaveResponse(
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-open class OppgaveData(
-    var id: Long? = null,
-    var versjon: Int = -1,
-    var tildeltEnhetsnr: String? = null,
-    open var endretAvEnhetsnr: String? = null,
-    var opprettetAvEnhetsnr: String? = null,
-    var journalpostId: String? = null,
-    var journalpostkilde: String? = null,
-    var behandlesAvApplikasjon: String? = null,
-    open var saksreferanse: String? = null,
-    var bnr: String? = null,
-    var samhandlernr: String? = null,
-    var aktoerId: String? = null,
-    var orgnr: String? = null,
-    var tilordnetRessurs: String? = null,
-    var beskrivelse: String? = null,
-    var temagruppe: String? = null,
-    open var tema: String? = null,
-    var behandlingstema: String? = null,
-    var oppgavetype: String? = null,
-    var behandlingstype: String? = null,
-    var mappeId: String? = null,
-    var fristFerdigstillelse: String? = null,
-    var aktivDato: String? = null,
-    var opprettetTidspunkt: String? = null,
-    var opprettetAv: String? = null,
-    var endretAv: String? = null,
-    var ferdigstiltTidspunkt: String? = null,
-    var endretTidspunkt: String? = null,
-    var prioritet: String? = null,
-    var status: String? = null,
-    var metadata: Map<String, String>? = null
+data class OppgaveData(
+    val id: Long,
+    val versjon: Int = -1,
+    val tildeltEnhetsnr: String? = null,
+    val endretAvEnhetsnr: String? = null,
+    val opprettetAvEnhetsnr: String? = null,
+    val journalpostId: String? = null,
+    val journalpostkilde: String? = null,
+    val behandlesAvApplikasjon: String? = null,
+    val saksreferanse: String? = null,
+    val bnr: String? = null,
+    val samhandlernr: String? = null,
+    val aktoerId: String? = null,
+    val orgnr: String? = null,
+    val tilordnetRessurs: String? = null,
+    val beskrivelse: String? = null,
+    val temagruppe: String? = null,
+    val tema: String? = null,
+    val behandlingstema: String? = null,
+    val oppgavetype: String? = null,
+    val behandlingstype: String? = null,
+    val mappeId: String? = null,
+    val fristFerdigstillelse: LocalDate? = null,
+    val aktivDato: String? = null,
+    val opprettetTidspunkt: String? = null,
+    val opprettetAv: String? = null,
+    val endretAv: String? = null,
+    val ferdigstiltTidspunkt: String? = null,
+    val endretTidspunkt: String? = null,
+    val prioritet: String? = null,
+    val status: OppgaveStatus? = null,
+    val metadata: Map<String, String>? = null
 )
 
-data class OppdaterSakRequest(private var oppgaveHendelse: OppgaveHendelse, override var saksreferanse: String?) : OppgaveData(id = oppgaveHendelse.id, versjon = oppgaveHendelse.versjon)
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+open class OppgaveRequest(
+    val id: Long,
+    var versjon: Int = -1,
+    val endretAvEnhetsnr: String? = null,
+    val journalpostId: String? = null,
+    open val saksreferanse: String? = null,
+    val beskrivelse: String? = null,
+    val tema: String? = null,
+    val behandlingstema: String? = null,
+    val oppgavetype: String? = null,
+    val status: OppgaveStatus? = null,
+)
 
-data class LeggTilKommentarPaaOppgave(private var oppgaveData: OppgaveData, private var _endretAvEnhetsnr: String, private val saksbehandlersInfo: String, private val kommentar: String) :
-    OppgaveData(
+
+data class OppdaterSakRequest(
+    private var oppgaveHendelse: OppgaveData,
+    override var saksreferanse: String?
+) : OppgaveRequest(id = oppgaveHendelse.id, versjon = oppgaveHendelse.versjon)
+
+data class LeggTilKommentarPaaOppgave(
+    private var oppgaveData: OppgaveData,
+    private var _endretAvEnhetsnr: String,
+    private val saksbehandlersInfo: String,
+    private val kommentar: String
+) :
+    OppgaveRequest(
         id = oppgaveData.id,
         versjon = oppgaveData.versjon,
         endretAvEnhetsnr = _endretAvEnhetsnr,
         beskrivelse = beskrivelseHeader(saksbehandlersInfo) +
-            "$kommentar\r\n\r\n" +
-            "${oppgaveData.beskrivelse}"
+                "$kommentar\r\n\r\n" +
+                "${oppgaveData.beskrivelse}"
     )
 
-data class FerdigstillOppgaveRequest(private var oppgaveData: OppgaveData, private var _endretAvEnhetsnr: String) :
-    OppgaveData(
+data class FerdigstillOppgaveRequest(
+    private var oppgaveData: OppgaveData,
+    private var _endretAvEnhetsnr: String
+) :
+    OppgaveRequest(
         id = oppgaveData.id,
         versjon = oppgaveData.versjon,
-        status = "FERDIGSTILT",
+        status = OppgaveStatus.FERDIGSTILT,
         endretAvEnhetsnr = _endretAvEnhetsnr
     )
 
@@ -120,7 +150,9 @@ data class BestillSplittingoppgaveRequest(
         gjelderId = journalpost.hentGjelderId()
     ) {
     init {
-        beskrivelse = "${beskrivelseHeader(saksbehandlerMedEnhet.hentSaksbehandlerInfo())}\n${bestillSplittingKommentar(beskrivSplitting)}"
+        beskrivelse = "${beskrivelseHeader(saksbehandlerMedEnhet.hentSaksbehandlerInfo())}\n${
+            bestillSplittingKommentar(beskrivSplitting)
+        }"
     }
 }
 
@@ -140,7 +172,9 @@ data class BestillReskanningOppgaveRequest(
         gjelderId = journalpost.hentGjelderId()
     ) {
     init {
-        beskrivelse = "${beskrivelseHeader(saksbehandlerMedEnhet.hentSaksbehandlerInfo())}\n${bestillReskanningKommentar(kommentar)}"
+        beskrivelse = "${beskrivelseHeader(saksbehandlerMedEnhet.hentSaksbehandlerInfo())}\n${
+            bestillReskanningKommentar(kommentar)
+        }"
     }
 }
 
@@ -208,7 +242,13 @@ data class OpprettVurderDokumentOppgaveRequest(
         prioritet = Prioritet.NORM.name,
         opprettetAvEnhetsnr = saksbehandlerMedEnhet.enhetsnummer,
         fristFerdigstillelse = LocalDate.now().plusDays(1).toString(),
-        beskrivelse = lagVurderDokumentOppgaveBeskrivelse(saksbehandlerMedEnhet, journalpost.dokumenter[0].brevkode, journalpost.tittel!!, kommentar, journalpost.hentDatoRegistrert() ?: LocalDate.now())
+        beskrivelse = lagVurderDokumentOppgaveBeskrivelse(
+            saksbehandlerMedEnhet,
+            journalpost.dokumenter[0].brevkode,
+            journalpost.tittel!!,
+            kommentar,
+            journalpost.hentDatoRegistrert() ?: LocalDate.now()
+        )
     )
 
 @Suppress("unused") // påkrevd felt som brukes av jackson men som ikke brukes aktivt
@@ -220,7 +260,11 @@ data class OpprettBehandleDokumentOppgaveRequest(
 ) :
     OpprettOppgaveRequest(
         journalpostId = journalpost.journalpostId!!,
-        beskrivelse = lagDokumentOppgaveTittel("Behandle dokument", journalpost.tittel!!, journalpost.hentDatoRegistrert() ?: LocalDate.now()),
+        beskrivelse = lagDokumentOppgaveTittel(
+            "Behandle dokument",
+            journalpost.tittel!!,
+            journalpost.hentDatoRegistrert() ?: LocalDate.now()
+        ),
         fristFerdigstillelse = LocalDate.now().plusDays(1).toString(),
         opprettetAvEnhetsnr = saksbehandlerMedEnhet.enhetsnummer!!,
         oppgavetype = OppgaveType.BEH_SAK,
@@ -229,14 +273,30 @@ data class OpprettBehandleDokumentOppgaveRequest(
         tilordnetRessurs = saksbehandlerMedEnhet.saksbehandler.ident
     )
 
-internal fun lagDokumentOppgaveTittelForEndring(oppgaveNavn: String, dokumentbeskrivelse: String, dokumentdato: LocalDate) =
+internal fun lagDokumentOppgaveTittelForEndring(
+    oppgaveNavn: String,
+    dokumentbeskrivelse: String,
+    dokumentdato: LocalDate
+) =
     "\u00B7 ${lagDokumentOppgaveTittel(oppgaveNavn, dokumentbeskrivelse, dokumentdato)}"
 
-internal fun lagDokumentOppgaveTittel(oppgaveNavn: String, dokumentbeskrivelse: String, dokumentdato: LocalDate) =
+internal fun lagDokumentOppgaveTittel(
+    oppgaveNavn: String,
+    dokumentbeskrivelse: String,
+    dokumentdato: LocalDate
+) =
     "$oppgaveNavn ($dokumentbeskrivelse) mottatt ${dokumentdato.format(NORSK_DATO_FORMAT)}"
 
-internal fun lagVurderDokumentOppgaveBeskrivelse(saksbehandlerMedEnhet: SaksbehandlerMedEnhet, brevKode: String?, dokumentTittel: String?, kommentar: String?, regDato: LocalDate): String {
-    var description = "--- ${LocalDate.now().format(NORSK_DATO_FORMAT)} ${saksbehandlerMedEnhet.hentSaksbehandlerInfo()} ---\n $brevKode $dokumentTittel"
+internal fun lagVurderDokumentOppgaveBeskrivelse(
+    saksbehandlerMedEnhet: SaksbehandlerMedEnhet,
+    brevKode: String?,
+    dokumentTittel: String?,
+    kommentar: String?,
+    regDato: LocalDate
+): String {
+    var description = "--- ${
+        LocalDate.now().format(NORSK_DATO_FORMAT)
+    } ${saksbehandlerMedEnhet.hentSaksbehandlerInfo()} ---\n $brevKode $dokumentTittel"
     if (kommentar != null) {
         description += "\n\n $kommentar"
     }
@@ -263,7 +323,9 @@ enum class Prioritet {
     HOY, NORM, LAV
 }
 
-fun beskrivelseHeader(saksbehandlerInfo: String) = "--- ${LocalDateTime.now().format(NORSK_TIDSSTEMPEL_FORMAT)} $saksbehandlerInfo ---\r\n"
+fun beskrivelseHeader(saksbehandlerInfo: String) =
+    "--- ${LocalDateTime.now().format(NORSK_TIDSSTEMPEL_FORMAT)} $saksbehandlerInfo ---\r\n"
+
 fun bestillReskanningKommentar(beskrivReskanning: String?) = """
         Bestill reskanning: 
         Vi ber om reskanning av dokument.

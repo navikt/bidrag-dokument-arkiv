@@ -69,7 +69,7 @@ fun OppgaveHendelse.toOppgaveData(_versjon: Int? = null) = OppgaveData(
     versjon = _versjon ?: versjon,
     journalpostId = journalpostId,
     oppgavetype = oppgavetype,
-    status = status?.name,
+    status = status,
     tema = tema,
     saksreferanse = saksreferanse
 

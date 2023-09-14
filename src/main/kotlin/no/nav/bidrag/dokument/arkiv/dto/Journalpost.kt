@@ -139,7 +139,6 @@ data class UtsendingsInfo(
     val varselType get() = if (varselSendt.isNotEmpty()) varselSendt[0] else null
 }
 
-
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class EpostVarselSendt(
     val adresse: String,
@@ -815,9 +814,9 @@ data class ReturDetaljerLogDO(
     fun toMap(): List<Map<String, String>> = beskrivelse.chunked(100).mapIndexed { index, it ->
         mapOf(
             "nokkel" to "${if (locked == true) "L" else ""}$RETUR_DETALJER_KEY${index}_${
-                DateUtils.formatDate(
-                    dato
-                )
+            DateUtils.formatDate(
+                dato
+            )
             }",
             "verdi" to it
         )

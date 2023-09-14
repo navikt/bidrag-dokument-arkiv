@@ -482,14 +482,19 @@ class Stubs {
 
     fun mockHentOppgave(
         oppgaveId: Long,
-        oppgaveResponse: OppgaveData
+        oppgaveResponse: OppgaveData,
+        scenarioState: String? = null,
+        nextScenario: String? = null
     ) {
         WireMock.stubFor(
-            WireMock.get(WireMock.urlMatching("/oppgave/$oppgaveId")).willReturn(
-                aClosedJsonResponse()
-                    .withStatus(HttpStatus.OK.value())
-                    .withBody(ObjectMapper().writeValueAsString(oppgaveResponse))
-            )
+            WireMock.get(WireMock.urlMatching("/oppgave/$oppgaveId"))
+                .inScenario("Oppgave response")
+                .whenScenarioStateIs(scenarioState ?: Scenario.STARTED).willReturn(
+                    aClosedJsonResponse()
+                        .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                        .withStatus(HttpStatus.OK.value())
+                        .withBody(ObjectMapper().writeValueAsString(oppgaveResponse))
+                ).willSetStateTo(nextScenario)
         )
     }
 
@@ -500,7 +505,7 @@ class Stubs {
     ) {
         WireMock.stubFor(
             WireMock.patch(WireMock.urlMatching("/oppgave/.*"))
-                .inScenario("Oppgave response")
+                .inScenario("Oppdater oppgave")
                 .whenScenarioStateIs(scenarioState ?: Scenario.STARTED).willReturn(
                     aClosedJsonResponse()
                         .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
@@ -685,7 +690,7 @@ class Stubs {
             val requestPattern =
                 WireMock.getRequestedFor(
                     WireMock.urlEqualTo(
-                        "/dokument/dokumentreferanse/$dokumentId",
+                        "/dokument/dokumentreferanse/$dokumentId"
                     )
                 )
             WireMock.verify(requestPattern)
