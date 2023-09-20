@@ -62,7 +62,8 @@ class DistribuerJournalpostService(
         return dokdistKanalConsumer.bestimDistribusjonsKanal(
             request.gjelderId,
             request.mottakerId,
-            request.tema
+            request.tema,
+            request.forsendelseStoerrelse
         )
     }
 
