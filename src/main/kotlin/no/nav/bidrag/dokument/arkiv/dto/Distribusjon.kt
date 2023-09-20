@@ -12,7 +12,7 @@ data class BestemDistribusjonKanalRequest(
     val mottakerId: String?,
     val gjelderId: String,
     val tema: String = "BID",
-    val storrelse: Int? = null
+    val forsendelseStoerrelse: Int? = null
 )
 
 data class DokDistDistribuerJournalpostRequest(
