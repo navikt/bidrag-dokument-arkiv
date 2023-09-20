@@ -28,13 +28,15 @@ class DokdistKanalConsumer(
     fun bestimDistribusjonsKanal(
         gjelderId: String,
         mottakerId: String? = null,
-        tema: String = "BID"
+        tema: String = "BID",
+        forsendelseStoerrelse: Int? = null
     ): BestemKanalResponse = postForNonNullEntity(
         dokdistkanalUrl.build().toUri(),
         BestemKanalRequest(
             brukerId = gjelderId,
             mottakerId = mottakerId ?: "11111111111",
-            tema = tema
+            tema = tema,
+            forsendelseStoerrelse = forsendelseStoerrelse
         )
     )
 }
@@ -43,7 +45,8 @@ data class BestemKanalRequest(
     val brukerId: String,
     val mottakerId: String,
     val erArkivert: Boolean = true,
-    val tema: String = "BID"
+    val tema: String = "BID",
+    val forsendelseStoerrelse: Int? = null
 )
 
 data class BestemKanalResponse(
