@@ -59,7 +59,11 @@ class DistribuerJournalpostService(
     }
 
     fun hentDistribusjonKanal(request: BestemDistribusjonKanalRequest): BestemKanalResponse {
-        return dokdistKanalConsumer.bestimDistribusjonsKanal(request.gjelderId, request.mottakerId)
+        return dokdistKanalConsumer.bestimDistribusjonsKanal(
+            request.gjelderId,
+            request.mottakerId,
+            request.tema
+        )
     }
 
     fun hentDistribusjonsInfo(journalpostId: Long): DistribusjonInfoDto? {

@@ -27,12 +27,14 @@ class DokdistKanalConsumer(
     @Retryable(backoff = Backoff(delay = 500, maxDelay = 2000, multiplier = 2.0))
     fun bestimDistribusjonsKanal(
         gjelderId: String,
-        mottakerId: String? = null
+        mottakerId: String? = null,
+        tema: String = "BID"
     ): BestemKanalResponse = postForNonNullEntity(
         dokdistkanalUrl.build().toUri(),
         BestemKanalRequest(
             brukerId = gjelderId,
-            mottakerId = mottakerId ?: "11111111111"
+            mottakerId = mottakerId ?: "11111111111",
+            tema = tema
         )
     )
 }
