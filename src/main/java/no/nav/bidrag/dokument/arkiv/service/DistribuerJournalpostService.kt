@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.service
 
 import com.google.common.base.Strings
+import io.micrometer.core.instrument.DistributionSummary
 import io.micrometer.core.instrument.MeterRegistry
 import mu.KotlinLogging
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER
@@ -25,6 +26,7 @@ import no.nav.bidrag.dokument.arkiv.dto.validerAdresse
 import no.nav.bidrag.dokument.arkiv.dto.validerKanDistribueres
 import no.nav.bidrag.dokument.arkiv.dto.validerKanDistribueresUtenAdresse
 import no.nav.bidrag.dokument.arkiv.dto.validerUtgaaendeJournalpostKanDupliseres
+import no.nav.bidrag.dokument.arkiv.kafka.BehandleJournalforingHendelseService
 import no.nav.bidrag.dokument.arkiv.mapper.tilVarselTypeDto
 import no.nav.bidrag.dokument.arkiv.model.Discriminator
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException
@@ -36,7 +38,6 @@ import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse
 import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
 import no.nav.bidrag.dokument.dto.DistribusjonInfoDto
 import no.nav.bidrag.dokument.dto.UtsendingsInfoDto
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.*
@@ -52,13 +53,21 @@ class DistribuerJournalpostService(
     val dokdistFordelingConsumer: DokdistFordelingConsumer,
     val saksbehandlerInfoManager: SaksbehandlerInfoManager,
     val dokdistKanalConsumer: DokdistKanalConsumer,
-    val meterRegistry: MeterRegistry
+    final val meterRegistry: MeterRegistry
 ) {
     private final val journalpostService: JournalpostService
     private final val personConsumer: PersonConsumer
+    private final val distributionAntallDokumenter =
+        DistributionSummary.builder(DISTRIBUSJON_DOKUMENTER_GAUGE_NAME)
+            .publishPercentileHistogram()
+            .publishPercentiles(0.1, 0.3, 0.5, 0.95, 0.99)
+            .description("Antall dokumenter journalpost blir distribuert med")
+            .register(meterRegistry)
 
     companion object {
         private const val DISTRIBUSJON_COUNTER_NAME = "distribuer_journalpost"
+        private const val DISTRIBUSJON_DOKUMENTER_GAUGE_NAME =
+            "distribuer_journalpost_antall_dokumenter"
     }
 
     init {
@@ -400,8 +409,9 @@ class DistribuerJournalpostService(
                 "enhet", journalpost.journalforendeEnhet,
                 "tema", journalpost.tema,
                 "kanal", kanal.distribusjonskanal.name,
-                "antallDokumenter", journalpost.dokumenter.size.toString()
             ).increment()
+
+            distributionAntallDokumenter.record(journalpost.dokumenter.size.toDouble())
         } catch (e: Exception) {
             LOGGER.error("Det skjedde en feil ved oppdatering av metrikk", e)
         }
