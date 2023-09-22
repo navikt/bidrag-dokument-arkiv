@@ -48,6 +48,7 @@ import no.nav.bidrag.transport.person.PersonAdresseDto
 import no.nav.bidrag.transport.person.PersonDto
 import org.assertj.core.api.Assertions
 import org.json.JSONException
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpEntity
@@ -59,6 +60,17 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 internal class DistribuerControllerTest : AbstractControllerTest() {
+
+    @BeforeEach
+    fun initDistkanalResponse() {
+        stubs.mockBestmDistribusjonskanal(
+            BestemKanalResponse(
+                regel = "",
+                regelBegrunnelse = "",
+                distribusjonskanal = DistribusjonsKanal.PRINT
+            )
+        )
+    }
 
     @Test
     fun `skal distribuere journalpost`() {
