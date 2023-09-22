@@ -3,6 +3,8 @@ package no.nav.bidrag.dokument.arkiv.controller
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import no.nav.bidrag.commons.web.EnhetFilter
+import no.nav.bidrag.dokument.arkiv.consumer.BestemKanalResponse
+import no.nav.bidrag.dokument.arkiv.consumer.DistribusjonsKanal
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.Dokument
@@ -36,6 +38,7 @@ import no.nav.bidrag.transport.person.PersonDto
 import org.assertj.core.api.Assertions
 import org.json.JSONException
 import org.junit.jupiter.api.Assertions.assertAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
@@ -50,6 +53,17 @@ import java.io.IOException
 import java.util.Base64
 
 class AvvikControllerTest : AbstractControllerTest() {
+    @BeforeEach
+    fun initDistkanalResponse() {
+        stubs.mockBestmDistribusjonskanal(
+            BestemKanalResponse(
+                regel = "",
+                regelBegrunnelse = "",
+                distribusjonskanal = DistribusjonsKanal.PRINT
+            )
+        )
+    }
+
     @Test
     @Throws(IOException::class, JSONException::class)
     fun `skal utfore avvik OVERFOR_TIL_ANNEN_ENHET`() {

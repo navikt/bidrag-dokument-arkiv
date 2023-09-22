@@ -2,8 +2,10 @@ package no.nav.bidrag.dokument.arkiv.consumer
 
 import mu.KotlinLogging
 import no.nav.bidrag.commons.web.client.AbstractRestClient
+import no.nav.bidrag.dokument.arkiv.CacheConfig
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Service
@@ -25,6 +27,7 @@ class DokdistKanalConsumer(
                 .pathSegment("bestemDistribusjonskanal")
 
     @Retryable(backoff = Backoff(delay = 500, maxDelay = 2000, multiplier = 2.0))
+    @Cacheable(value = [CacheConfig.DISTRIBUSJON_KANAL_CACHE])
     fun bestimDistribusjonsKanal(
         gjelderId: String,
         mottakerId: String? = null,
