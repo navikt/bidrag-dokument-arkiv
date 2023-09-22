@@ -201,6 +201,7 @@ class DistribuerJournalpostService(
             oppdaterTilleggsopplysninger(journalpostId, journalpost, erLokalUtskrift = true)
             oppdaterDokumentdatoTilIdag(journalpostId, journalpost)
             leggTilBeskrivelsePåTittelAtDokumentetErSendtPerPost(journalpostId)
+            measureDistribution(journalpost, batchId, true)
             return DistribuerJournalpostResponse("JOARK-$journalpostId", null)
         }
 
@@ -399,16 +400,21 @@ class DistribuerJournalpostService(
         }
     }
 
-    private fun measureDistribution(journalpost: Journalpost, batchId: String?) {
+    private fun measureDistribution(
+        journalpost: Journalpost,
+        batchId: String?,
+        lokalUtskrift: Boolean = false
+    ) {
         try {
-            val kanal = hentDistribusjonKanal(journalpost)
+            val kanal =
+                if (lokalUtskrift) "LOKAL_UTSKRIFT" else hentDistribusjonKanal(journalpost).distribusjonskanal.name
             meterRegistry.counter(
                 DISTRIBUSJON_COUNTER_NAME,
                 "batchId",
                 if (Strings.isNullOrEmpty(batchId)) "NONE" else batchId,
                 "enhet", journalpost.journalforendeEnhet,
                 "tema", journalpost.tema,
-                "kanal", kanal.distribusjonskanal.name,
+                "kanal", kanal,
             ).increment()
 
             distributionAntallDokumenter.record(journalpost.dokumenter.size.toDouble())
