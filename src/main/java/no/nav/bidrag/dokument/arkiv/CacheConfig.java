@@ -16,6 +16,7 @@ public class CacheConfig {
 
   public static final String STS_SERVICE_USER_TOKEN_CACHE = "STS_SERVICE_USER_TOKEN_CACHE";
   public static final String PERSON_CACHE = "PERSON_CACHE";
+  public static final String DISTRIBUSJON_KANAL_CACHE = "DISTRIBUSJON_KANAL_CACHE";
   public static final String PERSON_ADRESSE_CACHE = "PERSON_ADRESSE_CACHE";
   public static final String GEOGRAFISK_ENHET_CACHE = "GEOGRAFISK_ENHET_CACHE";
   public static final String GEOGRAFISK_ENHET_WITH_TEMA_CACHE = "GEOGRAFISK_ENHET_WITH_TEMA_CACHE";
@@ -38,6 +39,9 @@ public class CacheConfig {
         Caffeine.newBuilder().expireAfterWrite(24, TimeUnit.HOURS).recordStats().build());
     caffeineCacheManager.registerCustomCache(
         SAKSBEHANDLERINFO_CACHE,
+        Caffeine.newBuilder().expireAfterWrite(24, TimeUnit.HOURS).recordStats().build());
+    caffeineCacheManager.registerCustomCache(
+        DISTRIBUSJON_KANAL_CACHE,
         Caffeine.newBuilder().expireAfterWrite(24, TimeUnit.HOURS).recordStats().build());
     return caffeineCacheManager;
   }

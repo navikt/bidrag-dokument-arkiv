@@ -10,6 +10,7 @@ import no.nav.bidrag.dokument.arkiv.stubs.Stubs
 import no.nav.bidrag.dokument.arkiv.stubs.X_ENHET_HEADER
 import no.nav.bidrag.domain.ident.AktørId
 import no.nav.bidrag.domain.ident.PersonIdent
+import no.nav.bidrag.transport.person.PersonDto
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -27,7 +28,10 @@ import org.springframework.test.context.ActiveProfiles
 
 @ActiveProfiles(BidragDokumentArkivConfig.PROFILE_TEST, BidragDokumentArkivTest.PROFILE_INTEGRATION)
 @DisplayName("JournalpostController")
-@SpringBootTest(classes = [BidragDokumentArkivTest::class], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    classes = [BidragDokumentArkivTest::class],
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+)
 @AutoConfigureWireMock(port = 0)
 @EnableMockOAuth2Server
 abstract class AbstractControllerTest {
@@ -35,7 +39,8 @@ abstract class AbstractControllerTest {
     protected var AKTOR_IDENT = AktørId("92345678910")
     protected var responseJournalpostJson = "journalpostSafResponse.json"
     protected var responseJournalpostJsonUtgaaende = "journalpostSafUtgaaendeResponse.json"
-    protected var responseJournalpostJsonWithReturDetaljer = "journalpostSafReturDetaljerResponse.json"
+    protected var responseJournalpostJsonWithReturDetaljer =
+        "journalpostSafReturDetaljerResponse.json"
     protected var responseJournalpostJsonWithAdresse = "journalpostSafAdresseResponse.json"
     protected var journalpostSafNotFoundResponse = "journalpostSafNotFoundResponse.json"
     protected var journalpostJournalfortSafResponse = "journalpostJournalfortSafResponse.json"
@@ -70,6 +75,7 @@ abstract class AbstractControllerTest {
         stubs!!.mockOpprettOppgave(HttpStatus.OK)
         stubs!!.mockSokOppgave()
         stubs!!.mockSts()
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT), HttpStatus.OK)
         stubs!!.mockBidragOrganisasjonSaksbehandler()
     }
 

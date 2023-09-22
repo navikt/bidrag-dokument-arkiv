@@ -2,8 +2,10 @@ package no.nav.bidrag.dokument.arkiv.service
 
 import com.google.common.base.Strings
 import io.micrometer.core.instrument.MeterRegistry
+import mu.KotlinLogging
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER
 import no.nav.bidrag.dokument.arkiv.consumer.BestemKanalResponse
+import no.nav.bidrag.dokument.arkiv.consumer.DistribusjonsKanal
 import no.nav.bidrag.dokument.arkiv.consumer.DokdistFordelingConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.DokdistKanalConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer
@@ -39,6 +41,8 @@ import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.*
 
+private val LOGGER = KotlinLogging.logger {}
+
 @Service
 class DistribuerJournalpostService(
     personConsumers: ResourceByDiscriminator<PersonConsumer?>,
@@ -53,13 +57,34 @@ class DistribuerJournalpostService(
     private final val journalpostService: JournalpostService
     private final val personConsumer: PersonConsumer
 
+    companion object {
+        private const val DISTRIBUSJON_COUNTER_NAME = "distribuer_journalpost"
+    }
+
     init {
         journalpostService = journalpostServices.get(Discriminator.REGULAR_USER)
         personConsumer = personConsumers.get(Discriminator.REGULAR_USER)
     }
 
     fun hentDistribusjonKanal(request: BestemDistribusjonKanalRequest): BestemKanalResponse {
-        return dokdistKanalConsumer.bestimDistribusjonsKanal(request.gjelderId, request.mottakerId)
+        val kanal = dokdistKanalConsumer.bestimDistribusjonsKanal(
+            request.gjelderId,
+            request.mottakerId,
+            request.tema,
+            request.forsendelseStoerrelse
+        )
+        SECURE_LOGGER.info("Hentet kanal ${kanal.distribusjonskanal} for forespørsel $request")
+        return kanal;
+    }
+
+    fun hentDistribusjonKanal(journalpost: Journalpost): BestemKanalResponse {
+        return hentDistribusjonKanal(
+            BestemDistribusjonKanalRequest(
+                journalpost.hentAvsenderMottakerId(),
+                journalpost.hentGjelderId()!!,
+                journalpost.tema ?: "BID"
+            )
+        )
     }
 
     fun hentDistribusjonsInfo(journalpostId: Long): DistribusjonInfoDto? {
@@ -170,12 +195,14 @@ class DistribuerJournalpostService(
             return DistribuerJournalpostResponse("JOARK-$journalpostId", null)
         }
 
-        val adresse = hentAdresse(distribuerJournalpostRequest, journalpost)
-        if (adresse != null) {
-            validerAdresse(adresse)
-        } else {
-            validerKanDistribueresUtenAdresse(journalpost)
-        }
+        val distribusjonKanal = hentDistribusjonKanal(journalpost)
+
+        val adresse =
+            if (distribusjonKanal.distribusjonskanal == DistribusjonsKanal.PRINT) hentOgValiderAdresse(
+                distribuerJournalpostRequest,
+                journalpost
+            ) else null
+
 
         // TODO: Lagre bestillingsid når bd-arkiv er koblet mot database
         val distribuerResponse =
@@ -189,7 +216,7 @@ class DistribuerJournalpostService(
         // Distribusjonsløpet oppdaterer journalpost og overskriver alt av tilleggsopplysninger. Hent journalpost på nytt for å unngå overskrive noe som distribusjon har lagret
         oppdaterTilleggsopplysninger(journalpostId, journalpost, adresse)
         oppdaterDokumentdatoTilIdag(journalpostId, journalpost)
-        measureDistribution(batchId)
+        measureDistribution(journalpost, batchId)
         return distribuerResponse
     }
 
@@ -263,9 +290,9 @@ class DistribuerJournalpostService(
     }
 
     private fun hentJournalpost(journalpostId: Long): Journalpost {
-        return journalpostService.hentJournalpost(journalpostId)
-            .orElseThrow {
-                JournalpostIkkeFunnetException(
+        return journalpostService.hentJournalpostMedFnr(journalpostId, null)
+            ?: run {
+                throw JournalpostIkkeFunnetException(
                     String.format(
                         "Fant ingen journalpost med id %s",
                         journalpostId
@@ -274,17 +301,23 @@ class DistribuerJournalpostService(
             }
     }
 
+    private fun hentOgValiderAdresse(
+        distribuerJournalpostRequestInternal: DistribuerJournalpostRequestInternal,
+        journalpost: Journalpost
+    ): DistribuerTilAdresse? {
+        val adresse = hentAdresse(distribuerJournalpostRequestInternal, journalpost)
+        if (adresse != null) {
+            validerAdresse(adresse)
+        } else {
+            validerKanDistribueresUtenAdresse(journalpost)
+        }
+        return adresse
+    }
+
     private fun hentAdresse(
         distribuerJournalpostRequestInternal: DistribuerJournalpostRequestInternal,
         journalpost: Journalpost
     ): DistribuerTilAdresse? {
-//        val distribusjonKanal = this.hentDistribusjonKanal(
-//            BestemDistribusjonKanalRequest(
-//                journalpost.hentAvsenderMottakerId(),
-//                journalpost.hentGjelderId()!!
-//            )
-//        )
-//        if (distribusjonKanal.distribusjonskanal != DistribusjonsKanal.PRINT) return null
 
         if (distribuerJournalpostRequestInternal.hasAdresse()) {
             return distribuerJournalpostRequestInternal.getAdresse()
@@ -357,20 +390,20 @@ class DistribuerJournalpostService(
         }
     }
 
-    private fun measureDistribution(batchId: String?) {
+    private fun measureDistribution(journalpost: Journalpost, batchId: String?) {
         try {
+            val kanal = hentDistribusjonKanal(journalpost)
             meterRegistry.counter(
                 DISTRIBUSJON_COUNTER_NAME,
                 "batchId",
-                if (Strings.isNullOrEmpty(batchId)) "NONE" else batchId
+                if (Strings.isNullOrEmpty(batchId)) "NONE" else batchId,
+                "enhet", journalpost.journalforendeEnhet,
+                "tema", journalpost.tema,
+                "kanal", kanal.distribusjonskanal.name,
+                "antallDokumenter", journalpost.dokumenter.size.toString()
             ).increment()
         } catch (e: Exception) {
             LOGGER.error("Det skjedde en feil ved oppdatering av metrikk", e)
         }
-    }
-
-    companion object {
-        private val LOGGER = LoggerFactory.getLogger(DistribuerJournalpostService::class.java)
-        private const val DISTRIBUSJON_COUNTER_NAME = "distribuer_journalpost"
     }
 }

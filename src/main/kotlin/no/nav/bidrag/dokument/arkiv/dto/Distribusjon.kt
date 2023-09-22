@@ -10,7 +10,9 @@ private val ALPHA2_NORGE = "NO"
 
 data class BestemDistribusjonKanalRequest(
     val mottakerId: String?,
-    val gjelderId: String
+    val gjelderId: String,
+    val tema: String = "BID",
+    val forsendelseStoerrelse: Int? = null
 )
 
 data class DokDistDistribuerJournalpostRequest(
