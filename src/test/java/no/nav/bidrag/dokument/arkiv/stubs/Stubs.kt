@@ -8,8 +8,11 @@ import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.MatchResult
 import com.github.tomakehurst.wiremock.matching.StringValuePattern
 import com.github.tomakehurst.wiremock.stubbing.Scenario
+import no.nav.bidrag.dokument.arkiv.consumer.BestemKanalRequest
+import no.nav.bidrag.dokument.arkiv.consumer.BestemKanalResponse
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivKnyttTilSakConsumer
+import no.nav.bidrag.dokument.arkiv.dto.BestemDistribusjonKanalRequest
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsInfo
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostResponse
 import no.nav.bidrag.dokument.arkiv.dto.DokumentInfo
@@ -143,6 +146,28 @@ class Stubs {
                     )
             )
         )
+    }
+
+    fun mockBestmDistribusjonskanal(
+        response: BestemKanalResponse,
+        status: HttpStatus = HttpStatus.OK
+    ) {
+        try {
+            WireMock.stubFor(
+                WireMock.post(WireMock.urlMatching("/dokdistkanal/rest/bestemDistribusjonskanal"))
+                    .willReturn(
+                        aClosedJsonResponse()
+                            .withStatus(status.value())
+                            .withBody(
+                                objectMapper.writeValueAsString(
+                                    response
+                                )
+                            )
+                    )
+            )
+        } catch (e: JsonProcessingException) {
+            Assert.fail(e.message)
+        }
     }
 
     fun mockDokdistFordelingRequest(status: HttpStatus, bestillingId: String?) {

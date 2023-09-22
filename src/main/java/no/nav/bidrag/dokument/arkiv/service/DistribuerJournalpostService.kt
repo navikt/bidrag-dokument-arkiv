@@ -2,8 +2,10 @@ package no.nav.bidrag.dokument.arkiv.service
 
 import com.google.common.base.Strings
 import io.micrometer.core.instrument.MeterRegistry
+import mu.KotlinLogging
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER
 import no.nav.bidrag.dokument.arkiv.consumer.BestemKanalResponse
+import no.nav.bidrag.dokument.arkiv.consumer.DistribusjonsKanal
 import no.nav.bidrag.dokument.arkiv.consumer.DokdistFordelingConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.DokdistKanalConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer
@@ -39,6 +41,8 @@ import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.*
 
+private val LOGGER = KotlinLogging.logger {}
+
 @Service
 class DistribuerJournalpostService(
     personConsumers: ResourceByDiscriminator<PersonConsumer?>,
@@ -53,18 +57,24 @@ class DistribuerJournalpostService(
     private final val journalpostService: JournalpostService
     private final val personConsumer: PersonConsumer
 
+    companion object {
+        private const val DISTRIBUSJON_COUNTER_NAME = "distribuer_journalpost"
+    }
+
     init {
         journalpostService = journalpostServices.get(Discriminator.REGULAR_USER)
         personConsumer = personConsumers.get(Discriminator.REGULAR_USER)
     }
 
     fun hentDistribusjonKanal(request: BestemDistribusjonKanalRequest): BestemKanalResponse {
-        return dokdistKanalConsumer.bestimDistribusjonsKanal(
+        val kanal = dokdistKanalConsumer.bestimDistribusjonsKanal(
             request.gjelderId,
             request.mottakerId,
             request.tema,
             request.forsendelseStoerrelse
         )
+        SECURE_LOGGER.info("Hentet kanal ${kanal.distribusjonskanal} for forespørsel $request")
+        return kanal;
     }
 
     fun hentDistribusjonsInfo(journalpostId: Long): DistribusjonInfoDto? {
@@ -283,13 +293,13 @@ class DistribuerJournalpostService(
         distribuerJournalpostRequestInternal: DistribuerJournalpostRequestInternal,
         journalpost: Journalpost
     ): DistribuerTilAdresse? {
-//        val distribusjonKanal = this.hentDistribusjonKanal(
-//            BestemDistribusjonKanalRequest(
-//                journalpost.hentAvsenderMottakerId(),
-//                journalpost.hentGjelderId()!!
-//            )
-//        )
-//        if (distribusjonKanal.distribusjonskanal != DistribusjonsKanal.PRINT) return null
+        val distribusjonKanal = this.hentDistribusjonKanal(
+            BestemDistribusjonKanalRequest(
+                journalpost.hentAvsenderMottakerId(),
+                journalpost.hentGjelderId()!!
+            )
+        )
+        if (distribusjonKanal.distribusjonskanal != DistribusjonsKanal.PRINT) return null
 
         if (distribuerJournalpostRequestInternal.hasAdresse()) {
             return distribuerJournalpostRequestInternal.getAdresse()
@@ -383,10 +393,5 @@ class DistribuerJournalpostService(
         } catch (e: Exception) {
             LOGGER.error("Det skjedde en feil ved oppdatering av metrikk", e)
         }
-    }
-
-    companion object {
-        private val LOGGER = LoggerFactory.getLogger(DistribuerJournalpostService::class.java)
-        private const val DISTRIBUSJON_COUNTER_NAME = "distribuer_journalpost"
     }
 }
