@@ -194,7 +194,7 @@ class DistribuerJournalpostService(
         // Distribusjonsløpet oppdaterer journalpost og overskriver alt av tilleggsopplysninger. Hent journalpost på nytt for å unngå overskrive noe som distribusjon har lagret
         oppdaterTilleggsopplysninger(journalpostId, journalpost, adresse)
         oppdaterDokumentdatoTilIdag(journalpostId, journalpost)
-        measureDistribution(batchId)
+        measureDistribution(journalpost, batchId)
         return distribuerResponse
     }
 
@@ -268,9 +268,9 @@ class DistribuerJournalpostService(
     }
 
     private fun hentJournalpost(journalpostId: Long): Journalpost {
-        return journalpostService.hentJournalpost(journalpostId)
-            .orElseThrow {
-                JournalpostIkkeFunnetException(
+        return journalpostService.hentJournalpostMedFnr(journalpostId, null)
+            ?: run {
+                throw JournalpostIkkeFunnetException(
                     String.format(
                         "Fant ingen journalpost med id %s",
                         journalpostId
@@ -362,12 +362,23 @@ class DistribuerJournalpostService(
         }
     }
 
-    private fun measureDistribution(batchId: String?) {
+    private fun measureDistribution(journalpost: Journalpost, batchId: String?) {
         try {
+            val kanal = hentDistribusjonKanal(
+                BestemDistribusjonKanalRequest(
+                    mottakerId = journalpost.hentAvsenderMottakerId(),
+                    gjelderId = journalpost.hentGjelderId()!!,
+                    tema = journalpost.tema ?: "BID"
+                )
+            )
             meterRegistry.counter(
                 DISTRIBUSJON_COUNTER_NAME,
                 "batchId",
-                if (Strings.isNullOrEmpty(batchId)) "NONE" else batchId
+                if (Strings.isNullOrEmpty(batchId)) "NONE" else batchId,
+                "enhet", journalpost.journalforendeEnhet,
+                "tema", journalpost.tema,
+                "kanal", kanal.distribusjonskanal.name,
+                "antallDokumenter", journalpost.dokumenter.size.toString()
             ).increment()
         } catch (e: Exception) {
             LOGGER.error("Det skjedde en feil ved oppdatering av metrikk", e)
