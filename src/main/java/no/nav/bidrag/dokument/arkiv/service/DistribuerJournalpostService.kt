@@ -77,6 +77,16 @@ class DistribuerJournalpostService(
         return kanal;
     }
 
+    fun hentDistribusjonKanal(journalpost: Journalpost): BestemKanalResponse {
+        return hentDistribusjonKanal(
+            BestemDistribusjonKanalRequest(
+                journalpost.hentAvsenderMottakerId(),
+                journalpost.hentGjelderId()!!,
+                journalpost.tema ?: "BID"
+            )
+        )
+    }
+
     fun hentDistribusjonsInfo(journalpostId: Long): DistribusjonInfoDto? {
         return journalpostService.hentDistribusjonsInfo(journalpostId)
             .takeIf { it.isUtgaaendeDokument() }
@@ -185,12 +195,14 @@ class DistribuerJournalpostService(
             return DistribuerJournalpostResponse("JOARK-$journalpostId", null)
         }
 
-        val adresse = hentAdresse(distribuerJournalpostRequest, journalpost)
-        if (adresse != null) {
-            validerAdresse(adresse)
-        } else {
-            validerKanDistribueresUtenAdresse(journalpost)
-        }
+        val distribusjonKanal = hentDistribusjonKanal(journalpost)
+
+        val adresse =
+            if (distribusjonKanal.distribusjonskanal == DistribusjonsKanal.PRINT) hentOgValiderAdresse(
+                distribuerJournalpostRequest,
+                journalpost
+            ) else null
+
 
         // TODO: Lagre bestillingsid når bd-arkiv er koblet mot database
         val distribuerResponse =
@@ -289,17 +301,23 @@ class DistribuerJournalpostService(
             }
     }
 
+    private fun hentOgValiderAdresse(
+        distribuerJournalpostRequestInternal: DistribuerJournalpostRequestInternal,
+        journalpost: Journalpost
+    ): DistribuerTilAdresse? {
+        val adresse = hentAdresse(distribuerJournalpostRequestInternal, journalpost)
+        if (adresse != null) {
+            validerAdresse(adresse)
+        } else {
+            validerKanDistribueresUtenAdresse(journalpost)
+        }
+        return adresse
+    }
+
     private fun hentAdresse(
         distribuerJournalpostRequestInternal: DistribuerJournalpostRequestInternal,
         journalpost: Journalpost
     ): DistribuerTilAdresse? {
-        val distribusjonKanal = this.hentDistribusjonKanal(
-            BestemDistribusjonKanalRequest(
-                journalpost.hentAvsenderMottakerId(),
-                journalpost.hentGjelderId()!!
-            )
-        )
-        if (distribusjonKanal.distribusjonskanal != DistribusjonsKanal.PRINT) return null
 
         if (distribuerJournalpostRequestInternal.hasAdresse()) {
             return distribuerJournalpostRequestInternal.getAdresse()
@@ -374,13 +392,7 @@ class DistribuerJournalpostService(
 
     private fun measureDistribution(journalpost: Journalpost, batchId: String?) {
         try {
-            val kanal = hentDistribusjonKanal(
-                BestemDistribusjonKanalRequest(
-                    mottakerId = journalpost.hentAvsenderMottakerId(),
-                    gjelderId = journalpost.hentGjelderId()!!,
-                    tema = journalpost.tema ?: "BID"
-                )
-            )
+            val kanal = hentDistribusjonKanal(journalpost)
             meterRegistry.counter(
                 DISTRIBUSJON_COUNTER_NAME,
                 "batchId",
