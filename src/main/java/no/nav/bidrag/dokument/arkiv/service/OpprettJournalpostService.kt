@@ -262,10 +262,10 @@ class OpprettJournalpostService(
             journalfoerendeEnhet = if (erInngaendeOgSkalIkkeJournalfores) null else request.hentJournalførendeEnhet(),
             kanal = when (request.journalposttype) {
                 JournalpostType.UTGÅENDE, JournalpostType.UTGAAENDE ->
-                    if (request.kanal == MottakUtsendingKanal.LOKAL_UTSKRIFT) {
-                        JoarkMottakUtsendingKanal.L
-                    } else {
-                        null // Settes av distribusjonsløpet
+                    when (request.kanal) {
+                        MottakUtsendingKanal.LOKAL_UTSKRIFT -> JoarkMottakUtsendingKanal.L
+                        MottakUtsendingKanal.INGEN_DISTRIBUSJON -> JoarkMottakUtsendingKanal.INGEN_DISTRIBUSJON
+                        else -> null // Settes av distribusjonsløpet
                     }
 
                 JournalpostType.INNGÅENDE -> // TODO: Joark få en ny mottakskanal for skanning fra Bidrag
