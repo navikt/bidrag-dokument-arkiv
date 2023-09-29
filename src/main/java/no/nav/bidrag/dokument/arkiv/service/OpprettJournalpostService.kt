@@ -135,7 +135,7 @@ class OpprettJournalpostService(
         validerKanOppretteJournalpost(request, skalFerdigstilles)
 
         val response = dokarkivConsumer.opprett(request, skalFerdigstilles)
-        LOGGER.info("Opprettet ny journalpost {}", response.journalpostId)
+        LOGGER.info("Opprettet ny journalpost ${response.journalpostId} med type=${request.journalpostType} kanal=${request.kanal}, tema=${request.tema}, referanseId=${request.eksternReferanseId} og enhet=${request.journalfoerendeEnhet}")
         SECURE_LOGGER.info("Opprettet ny journalpost {}", response)
 
         validerOpprettJournalpostResponse(skalFerdigstilles, response)
