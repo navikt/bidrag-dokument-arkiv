@@ -14,6 +14,7 @@ import no.nav.bidrag.commons.web.CorrelationIdFilter
 import no.nav.bidrag.commons.web.DefaultCorsFilter
 import no.nav.bidrag.commons.web.EnhetFilter
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate
+import no.nav.bidrag.commons.web.MdcFilter
 import no.nav.bidrag.commons.web.UserMdcFilter
 import no.nav.bidrag.dokument.arkiv.aop.AspectExceptionLogger
 import no.nav.bidrag.dokument.arkiv.aop.HttpStatusRestControllerAdvice
@@ -60,7 +61,8 @@ import org.springframework.retry.annotation.EnableRetry
     CorrelationIdFilter::class,
     DefaultCorsFilter::class,
     UserMdcFilter::class,
-    StsTokenService::class
+    StsTokenService::class,
+    MdcFilter::class
 )
 class BidragDokumentArkivConfig {
     @Bean

@@ -3,8 +3,8 @@ package no.nav.bidrag.dokument.arkiv.hendelser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig
-import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_KAFKA_TEST
-import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.PROFILE_TEST
+import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.Companion.PROFILE_KAFKA_TEST
+import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.Companion.PROFILE_TEST
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivTest
 import no.nav.bidrag.dokument.dto.JournalpostHendelse
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord
