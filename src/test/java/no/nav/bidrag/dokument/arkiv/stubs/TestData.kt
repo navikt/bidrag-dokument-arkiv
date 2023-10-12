@@ -16,14 +16,14 @@ import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
 import no.nav.bidrag.dokument.arkiv.model.OppgaveHendelse
-import no.nav.bidrag.dokument.dto.AvsenderMottakerDto
-import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
-import no.nav.bidrag.dokument.dto.EndreDokument
-import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
-import no.nav.bidrag.dokument.dto.Kanal
-import no.nav.bidrag.dokument.dto.MottakUtsendingKanal
-import no.nav.bidrag.dokument.dto.OpprettDokumentDto
-import no.nav.bidrag.dokument.dto.OpprettJournalpostRequest
+import no.nav.bidrag.transport.dokument.AvsenderMottakerDto
+import no.nav.bidrag.transport.dokument.DistribuerTilAdresse
+import no.nav.bidrag.transport.dokument.EndreDokument
+import no.nav.bidrag.transport.dokument.EndreJournalpostCommand
+import no.nav.bidrag.transport.dokument.Kanal
+import no.nav.bidrag.transport.dokument.MottakUtsendingKanal
+import no.nav.bidrag.transport.dokument.OpprettDokumentDto
+import no.nav.bidrag.transport.dokument.OpprettJournalpostRequest
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -267,12 +267,14 @@ fun createTillegsopplysningerWithReturDetaljer(): TilleggsOpplysninger {
 
 fun createEndreJournalpostCommand(): EndreJournalpostCommand {
     val endreJournalpostCommand = EndreJournalpostCommand()
-    endreJournalpostCommand.avsenderNavn = "Dauden, Svarte"
-    endreJournalpostCommand.gjelder = "06127412345"
-    endreJournalpostCommand.tittel = "So Tired"
-    endreJournalpostCommand.endreDokumenter = java.util.List.of(
-        EndreDokument("BLABLA", "1", "In a galazy far far away")
-    )
+        .copy(
+            avsenderNavn = "Dauden, Svarte",
+            gjelder = "06127412345",
+            tittel = "So Tired",
+            endreDokumenter = java.util.List.of(
+                EndreDokument("BLABLA", "1", "In a galazy far far away")
+            )
+        )
     return endreJournalpostCommand
 }
 
@@ -330,7 +332,7 @@ fun createOpprettJournalpostRequest(): OpprettJournalpostRequest {
                 fysiskDokument = "Innhold på dokumentet vedlegg".toByteArray()
             )
         ),
-        journalposttype = no.nav.bidrag.dokument.dto.JournalpostType.INNGÅENDE,
+        journalposttype = no.nav.bidrag.transport.dokument.JournalpostType.INNGÅENDE,
         gjelderIdent = GJELDER_ID,
         avsenderMottaker = AvsenderMottakerDto(ident = GJELDER_ID),
         behandlingstema = BEHANDLINGSTEMA,

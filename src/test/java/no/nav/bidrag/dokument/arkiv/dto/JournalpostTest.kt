@@ -5,8 +5,8 @@ import no.nav.bidrag.dokument.arkiv.stubs.RETUR_DETALJER_DATO_1
 import no.nav.bidrag.dokument.arkiv.stubs.RETUR_DETALJER_DATO_2
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponseWithReturDetaljer
-import no.nav.bidrag.dokument.dto.AvvikType
-import no.nav.bidrag.dokument.dto.FARSKAP_UTELUKKET_PREFIKS
+import no.nav.bidrag.transport.dokument.AvvikType
+import no.nav.bidrag.transport.dokument.FARSKAP_UTELUKKET_PREFIKS
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -32,7 +32,8 @@ internal class JournalpostTest {
     @Throws(IOException::class)
     fun lesJsonResourceTilStreng() {
         val responseJsonResource: Resource = ClassPathResource("__files/json/journalpost.json")
-        journalpostJsonText = String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJsonResource.file.toURI()))))
+        journalpostJsonText =
+            String(Files.readAllBytes(Paths.get(Objects.requireNonNull(responseJsonResource.file.toURI()))))
     }
 
     @Test
@@ -49,7 +50,9 @@ internal class JournalpostTest {
                     avsenderMottaker
                 ).`as`("avsenderMottaker").isEqualTo(AvsenderMottaker("Tuborg", null, null))
             },
-            Executable { assertThat(bruker).`as`("bruker").isEqualTo(Bruker("1000024690889", "AKTOERID")) },
+            Executable {
+                assertThat(bruker).`as`("bruker").isEqualTo(Bruker("1000024690889", "AKTOERID"))
+            },
             Executable {
                 assertThat(dokumenter).`as`("dokumenter").isEqualTo(
                     java.util.List.of(
@@ -58,11 +61,21 @@ internal class JournalpostTest {
                     )
                 )
             },
-            Executable { assertThat(journalforendeEnhet).`as`("journalforendeEnhet").isEqualTo("0104") },
-            Executable { assertThat(journalfortAvNavn).`as`("journalfortAvNavn").isEqualTo("Terkelsen, Karin") },
+            Executable {
+                assertThat(journalforendeEnhet).`as`("journalforendeEnhet").isEqualTo("0104")
+            },
+            Executable {
+                assertThat(journalfortAvNavn).`as`("journalfortAvNavn")
+                    .isEqualTo("Terkelsen, Karin")
+            },
             Executable { assertThat(journalpostId).`as`("journalpostId").isEqualTo("203915975") },
-            Executable { assertThat(journalposttype).`as`("journalposttype").isEqualTo(JournalpostType.I) },
-            Executable { assertThat(journalstatus).`as`("journalstatus").isEqualTo(JournalStatus.JOURNALFOERT) },
+            Executable {
+                assertThat(journalposttype).`as`("journalposttype").isEqualTo(JournalpostType.I)
+            },
+            Executable {
+                assertThat(journalstatus).`as`("journalstatus")
+                    .isEqualTo(JournalStatus.JOURNALFOERT)
+            },
             Executable {
                 assertThat(relevanteDatoer).`as`("relevanteDater").isEqualTo(
                     java.util.List.of(
@@ -100,20 +113,47 @@ internal class JournalpostTest {
         val journalpost = objectMapper.readValue(journalpostJsonText, Journalpost::class.java)
         val returDetaljer = journalpost.tilleggsopplysninger.hentReturDetaljerLogDO()
         org.junit.jupiter.api.Assertions.assertAll(
-            Executable { assertThat(journalpost.hentDatoRetur()).`as`("datoRegistrert").isEqualTo(LocalDate.parse("2020-12-15")) },
-            Executable { assertThat(returDetaljer.size).isEqualTo(3) },
-            Executable { assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-14")).isNotNull() },
             Executable {
-                assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-14").beskrivelse).isEqualTo(
+                assertThat(journalpost.hentDatoRetur()).`as`("datoRegistrert")
+                    .isEqualTo(LocalDate.parse("2020-12-15"))
+            },
+            Executable { assertThat(returDetaljer.size).isEqualTo(3) },
+            Executable {
+                assertThat(
+                    getReturDetaljerDOByDate(
+                        returDetaljer,
+                        "2020-12-14"
+                    )
+                ).isNotNull()
+            },
+            Executable {
+                assertThat(
+                    getReturDetaljerDOByDate(
+                        returDetaljer,
+                        "2020-12-14"
+                    ).beskrivelse
+                ).isEqualTo(
                     "Beskrivelse av retur mer tekst for å teste lengre verdier"
                 )
             },
             Executable {
-                assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-12-15").beskrivelse).isEqualTo(
+                assertThat(
+                    getReturDetaljerDOByDate(
+                        returDetaljer,
+                        "2020-12-15"
+                    ).beskrivelse
+                ).isEqualTo(
                     "Beskrivelse av retur 2 mer tekst for å teste lengre verdier"
                 )
             },
-            Executable { assertThat(getReturDetaljerDOByDate(returDetaljer, "2020-11-15").beskrivelse).isEqualTo("Beskrivelse av retur") }
+            Executable {
+                assertThat(
+                    getReturDetaljerDOByDate(
+                        returDetaljer,
+                        "2020-11-15"
+                    ).beskrivelse
+                ).isEqualTo("Beskrivelse av retur")
+            }
         )
     }
 
@@ -366,7 +406,10 @@ internal class JournalpostTest {
         val returDato = LocalDateTime.parse("2022-05-10T13:20:33")
         journalpost.journalstatus = JournalStatus.EKSPEDERT
         journalpost.antallRetur = 1
-        journalpost.relevanteDatoer = listOf(DatoType("2023-08-18T13:20:33", "DATO_DOKUMENT"), DatoType(returDato.toString(), "DATO_AVS_RETUR"))
+        journalpost.relevanteDatoer = listOf(
+            DatoType("2023-08-18T13:20:33", "DATO_DOKUMENT"),
+            DatoType(returDato.toString(), "DATO_AVS_RETUR")
+        )
         val journalpostDto = journalpost.tilJournalpostDto()
         assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(3)
         assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(3)
@@ -388,16 +431,29 @@ internal class JournalpostTest {
         val journalpost = opprettUtgaendeSafResponse()
         val tilleggsopplysninger = TilleggsOpplysninger()
         tilleggsopplysninger.addReturDetaljLog(
-            ReturDetaljerLogDO("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", RETUR_DETALJER_DATO_2, true)
+            ReturDetaljerLogDO(
+                "1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier",
+                RETUR_DETALJER_DATO_2,
+                true
+            )
         )
         tilleggsopplysninger.addReturDetaljLog(
-            ReturDetaljerLogDO("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", sistRetur, true)
+            ReturDetaljerLogDO(
+                "2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier",
+                sistRetur,
+                true
+            )
         )
         tilleggsopplysninger.setDistribusjonBestillt()
         journalpost.tilleggsopplysninger = tilleggsopplysninger
         journalpost.journalstatus = JournalStatus.EKSPEDERT
         journalpost.antallRetur = 1
-        journalpost.relevanteDatoer = listOf(DatoType(LocalDateTime.of(sistRetur, LocalTime.of(1, 1)).toString(), "DATO_DOKUMENT"))
+        journalpost.relevanteDatoer = listOf(
+            DatoType(
+                LocalDateTime.of(sistRetur, LocalTime.of(1, 1)).toString(),
+                "DATO_DOKUMENT"
+            )
+        )
         val journalpostDto = journalpost.tilJournalpostDto()
         assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(3)
         assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(3)
@@ -419,16 +475,27 @@ internal class JournalpostTest {
         val journalpost = opprettUtgaendeSafResponse()
         val tilleggsopplysninger = TilleggsOpplysninger()
         tilleggsopplysninger.addReturDetaljLog(
-            ReturDetaljerLogDO("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", LocalDate.parse("2022-10-22"))
+            ReturDetaljerLogDO(
+                "1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier",
+                LocalDate.parse("2022-10-22")
+            )
         )
         tilleggsopplysninger.addReturDetaljLog(
-            ReturDetaljerLogDO("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", sistRetur)
+            ReturDetaljerLogDO(
+                "2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier",
+                sistRetur
+            )
         )
         tilleggsopplysninger.setDistribusjonBestillt()
         journalpost.tilleggsopplysninger = tilleggsopplysninger
         journalpost.journalstatus = JournalStatus.EKSPEDERT
         journalpost.antallRetur = 1
-        journalpost.relevanteDatoer = listOf(DatoType(LocalDateTime.of(sistRetur, LocalTime.of(1, 1)).toString(), "DATO_DOKUMENT"))
+        journalpost.relevanteDatoer = listOf(
+            DatoType(
+                LocalDateTime.of(sistRetur, LocalTime.of(1, 1)).toString(),
+                "DATO_DOKUMENT"
+            )
+        )
         val journalpostDto = journalpost.tilJournalpostDto()
         assertThat(journalpostDto.returDetaljer?.antall).isEqualTo(2)
         assertThat(journalpostDto.returDetaljer?.logg?.size).isEqualTo(2)
@@ -448,10 +515,16 @@ internal class JournalpostTest {
         val journalpost = opprettUtgaendeSafResponse()
         val tilleggsopplysninger = TilleggsOpplysninger()
         tilleggsopplysninger.addReturDetaljLog(
-            ReturDetaljerLogDO("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", LocalDate.parse("2022-10-22"))
+            ReturDetaljerLogDO(
+                "1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier",
+                LocalDate.parse("2022-10-22")
+            )
         )
         tilleggsopplysninger.addReturDetaljLog(
-            ReturDetaljerLogDO("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", sistRetur)
+            ReturDetaljerLogDO(
+                "2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier",
+                sistRetur
+            )
         )
         tilleggsopplysninger.setDistribusjonBestillt()
         journalpost.tilleggsopplysninger = tilleggsopplysninger
@@ -493,10 +566,18 @@ internal class JournalpostTest {
     fun `skal laase returdetaljer`() {
         val tilleggsopplysninger = TilleggsOpplysninger()
         tilleggsopplysninger.addReturDetaljLog(
-            ReturDetaljerLogDO("1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", RETUR_DETALJER_DATO_1, false)
+            ReturDetaljerLogDO(
+                "1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier",
+                RETUR_DETALJER_DATO_1,
+                false
+            )
         )
         tilleggsopplysninger.addReturDetaljLog(
-            ReturDetaljerLogDO("2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier", RETUR_DETALJER_DATO_2, false)
+            ReturDetaljerLogDO(
+                "2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier",
+                RETUR_DETALJER_DATO_2,
+                false
+            )
         )
         tilleggsopplysninger.setDistribusjonBestillt()
         tilleggsopplysninger.lockAllReturDetaljerLog()
@@ -507,9 +588,14 @@ internal class JournalpostTest {
         assertThat(returDetaljerLog[1].dato).isEqualTo(RETUR_DETALJER_DATO_2)
     }
 
-    private fun getReturDetaljerDOByDate(returDetaljerLogDOList: List<ReturDetaljerLogDO>, dato: String): ReturDetaljerLogDO {
-        return returDetaljerLogDOList.stream().filter { (_, dato1): ReturDetaljerLogDO -> dato1 == LocalDate.parse(dato) }.findFirst().orElse(
-            ReturDetaljerLogDO("junit", LocalDate.now())
-        )
+    private fun getReturDetaljerDOByDate(
+        returDetaljerLogDOList: List<ReturDetaljerLogDO>,
+        dato: String
+    ): ReturDetaljerLogDO {
+        return returDetaljerLogDOList.stream()
+            .filter { (_, dato1): ReturDetaljerLogDO -> dato1 == LocalDate.parse(dato) }.findFirst()
+            .orElse(
+                ReturDetaljerLogDO("junit", LocalDate.now())
+            )
     }
 }

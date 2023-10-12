@@ -51,7 +51,10 @@ class EndreJournalpostService(
         endreJournalpostCommand: EndreJournalpostCommandIntern
     ) {
         if (journalpost.isInngaaendeDokument()) {
-            hendelserProducer.publishJournalpostUpdated(journalpostId, endreJournalpostCommand.enhet)
+            hendelserProducer.publishJournalpostUpdated(
+                journalpostId,
+                endreJournalpostCommand.enhet
+            )
         }
     }
 
@@ -59,15 +62,23 @@ class EndreJournalpostService(
         return dokarkivConsumer.endre(oppdaterJournalpostRequest)
     }
 
-    private fun lagreJournalpost(journalpostId: Long, endreJournalpostCommand: EndreJournalpostCommandIntern, journalpost: Journalpost) {
-        val oppdaterJournalpostRequest = LagreJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost)
+    private fun lagreJournalpost(
+        journalpostId: Long,
+        endreJournalpostCommand: EndreJournalpostCommandIntern,
+        journalpost: Journalpost
+    ) {
+        val oppdaterJournalpostRequest =
+            LagreJournalpostRequest(journalpostId, endreJournalpostCommand, journalpost)
         lagreJournalpost(oppdaterJournalpostRequest)
         if (Objects.nonNull(oppdaterJournalpostRequest.sak)) {
             journalpost.sak = Sak(oppdaterJournalpostRequest.sak!!.fagsakId)
         }
     }
 
-    private fun journalfoerJournalpostNarMottaksregistrert(endreJournalpostCommand: EndreJournalpostCommandIntern, journalpost: Journalpost) {
+    private fun journalfoerJournalpostNarMottaksregistrert(
+        endreJournalpostCommand: EndreJournalpostCommandIntern,
+        journalpost: Journalpost
+    ) {
         if (endreJournalpostCommand.skalJournalfores() && journalpost.isStatusMottatt()) {
             val journalpostId = journalpost.hentJournalpostIdLong()
             journalfoerJournalpost(journalpostId, endreJournalpostCommand.enhet, journalpost)
@@ -75,7 +86,10 @@ class EndreJournalpostService(
         }
     }
 
-    fun lagreSaksbehandlerIdentForJournalfortJournalpost(journalpost: Journalpost, saksbehandlerIdent: String?) {
+    fun lagreSaksbehandlerIdentForJournalfortJournalpost(
+        journalpost: Journalpost,
+        saksbehandlerIdent: String?
+    ) {
         try {
             lagreJournalpost(
                 LagreJournalfortAvIdentRequest(
@@ -95,13 +109,21 @@ class EndreJournalpostService(
         }
     }
 
-    private fun tilknyttSakerTilJournalfoertJournalpost(endreJournalpostCommand: EndreJournalpostCommandIntern, journalpost: Journalpost) {
+    private fun tilknyttSakerTilJournalfoertJournalpost(
+        endreJournalpostCommand: EndreJournalpostCommandIntern,
+        journalpost: Journalpost
+    ) {
         if (journalpost.kanTilknytteSaker()) {
             journalpostService.populerMedTilknyttedeSaker(journalpost)
             endreJournalpostCommand.hentTilknyttetSaker().stream()
                 .filter { sak: String? -> !journalpost.hentTilknyttetSaker().contains(sak) }
                 .collect(Collectors.toSet())
-                .forEach(Consumer { saksnummer: String? -> tilknyttTilSak(saksnummer, journalpost) })
+                .forEach(Consumer { saksnummer: String? ->
+                    tilknyttTilSak(
+                        saksnummer,
+                        journalpost
+                    )
+                })
         }
     }
 
@@ -110,8 +132,12 @@ class EndreJournalpostService(
     }
 
     fun tilknyttTilSak(saksnummer: String?, tema: String?, journalpost: Journalpost) {
-        val knyttTilAnnenSakRequest: KnyttTilAnnenSakRequest = KnyttTilSakRequest(saksnummer!!, journalpost, tema)
-        val (nyJournalpostId) = dokarkivKnyttTilSakConsumer.knyttTilSak(journalpost.hentJournalpostIdLong(), knyttTilAnnenSakRequest)
+        val knyttTilAnnenSakRequest: KnyttTilAnnenSakRequest =
+            KnyttTilSakRequest(saksnummer!!, journalpost, tema)
+        val (nyJournalpostId) = dokarkivKnyttTilSakConsumer.knyttTilSak(
+            journalpost.hentJournalpostIdLong(),
+            knyttTilAnnenSakRequest
+        )
         LOGGER.info(
             "Tilknyttet journalpost {} til sak {} med ny journalpostId {} og tema {}",
             journalpost.journalpostId,
@@ -122,14 +148,21 @@ class EndreJournalpostService(
         journalpost.leggTilTilknyttetSak(saksnummer)
     }
 
-    private fun journalfoerJournalpost(journalpostId: Long?, enhet: String?, journalpost: Journalpost) {
+    private fun journalfoerJournalpost(
+        journalpostId: Long?,
+        enhet: String?,
+        journalpost: Journalpost
+    ) {
         val journalforRequest = FerdigstillJournalpostRequest(journalpostId!!, enhet!!)
         dokarkivConsumer.ferdigstill(journalforRequest)
         LOGGER.info("Journalpost med id $journalpostId er journalført")
         lagreSaksbehandlerIdentForJournalfortJournalpost(journalpost, null)
     }
 
-    fun oppdaterJournalpostDistribusjonBestiltStatus(journalpostId: Long, journalpost: Journalpost) {
+    fun oppdaterJournalpostDistribusjonBestiltStatus(
+        journalpostId: Long,
+        journalpost: Journalpost
+    ) {
         lagreJournalpost(OppdaterJournalpostDistribusjonsInfoRequest(journalpostId, journalpost))
     }
 
@@ -143,13 +176,21 @@ class EndreJournalpostService(
 
     private fun hentJournalpost(journalpostId: Long): Journalpost {
         LOGGER.info("Henter jouranlpost $journalpostId")
-        return journalpostService.hentJournalpost(journalpostId).orElseThrow {
-            JournalpostIkkeFunnetException("Kunne ikke finne journalpost med id: $journalpostId")
-        }
+        return journalpostService.hentJournalpost(journalpostId)
+            ?: throw JournalpostIkkeFunnetException("Kunne ikke finne journalpost med id: $journalpostId")
+
     }
 
-    fun oppdaterDistribusjonsInfo(journalpostId: Long?, settStatusEkspedert: Boolean, utsendingsKanal: JournalpostUtsendingKanal?) {
-        dokarkivConsumer.oppdaterDistribusjonsInfo(journalpostId, settStatusEkspedert, utsendingsKanal)
+    fun oppdaterDistribusjonsInfo(
+        journalpostId: Long?,
+        settStatusEkspedert: Boolean,
+        utsendingsKanal: JournalpostUtsendingKanal?
+    ) {
+        dokarkivConsumer.oppdaterDistribusjonsInfo(
+            journalpostId,
+            settStatusEkspedert,
+            utsendingsKanal
+        )
     }
 
     companion object {

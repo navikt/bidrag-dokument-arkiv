@@ -18,10 +18,10 @@ import no.nav.bidrag.dokument.arkiv.stubs.createOppgaveDataWithSaksnummer
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponseWithReturDetaljer
-import no.nav.bidrag.dokument.dto.EndreDokument
-import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
-import no.nav.bidrag.dokument.dto.EndreReturDetaljer
-import no.nav.bidrag.dokument.dto.JournalpostDto
+import no.nav.bidrag.transport.dokument.EndreDokument
+import no.nav.bidrag.transport.dokument.EndreJournalpostCommand
+import no.nav.bidrag.transport.dokument.EndreReturDetaljer
+import no.nav.bidrag.transport.dokument.JournalpostDto
 import no.nav.bidrag.transport.person.PersonDto
 import org.assertj.core.api.Assertions.assertThat
 import org.json.JSONException
@@ -38,12 +38,13 @@ import java.time.LocalDate
 class EndreJournalpostControllerTest : AbstractControllerTest() {
 
     private fun createEndreJournalpostCommand(): EndreJournalpostCommand {
-        val endreJournalpostCommand = EndreJournalpostCommand()
-        endreJournalpostCommand.avsenderNavn = "Dauden, Svarte"
-        endreJournalpostCommand.gjelder = "06127412345"
-        endreJournalpostCommand.tittel = "So Tired"
-        endreJournalpostCommand.endreDokumenter = listOf(
-            EndreDokument("BLABLA", "1", "1", "In a galazy far far away")
+        val endreJournalpostCommand = EndreJournalpostCommand(
+            avsenderNavn = "Dauden, Svarte",
+            gjelder = "06127412345",
+            tittel = "So Tired",
+            endreDokumenter = listOf(
+                EndreDokument("BLABLA", "1", "1", "In a galazy far far away")
+            )
         )
         return endreJournalpostCommand
     }
@@ -54,9 +55,11 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
         val journalpostId = 201028011L
 
         val endreJournalpostCommand: EndreJournalpostCommand = createEndreJournalpostCommand()
-        endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.tittel = "Ny tittel"
-        endreJournalpostCommand.dokumentDato = LocalDate.now().plusDays(2)
+            .copy(
+                skalJournalfores = false,
+                tittel = "Ny tittel",
+                dokumentDato = LocalDate.now().plusDays(2)
+            )
 
         stubs.mockSafResponseHentJournalpost(
             opprettSafResponse(
@@ -88,10 +91,11 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
         val sak = "200000"
         val journalpostId = 201028011L
 
-        val endreJournalpostCommand: EndreJournalpostCommand = createEndreJournalpostCommand()
-        endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.tittel = "Ny tittel"
-        endreJournalpostCommand.dokumentDato = LocalDate.parse("2022-05-20")
+        val endreJournalpostCommand: EndreJournalpostCommand = createEndreJournalpostCommand().copy(
+            skalJournalfores = false,
+            tittel = "Ny tittel",
+            dokumentDato = LocalDate.parse("2022-05-20")
+        )
 
         stubs.mockSafResponseHentJournalpost(
             opprettSafResponse(
@@ -131,9 +135,11 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
         val journalpostId = 201028011L
 
         val endreJournalpostCommand: EndreJournalpostCommand = createEndreJournalpostCommand()
-        endreJournalpostCommand.skalJournalfores = true
-        endreJournalpostCommand.tittel = "Ny tittel"
-        endreJournalpostCommand.tilknyttSaker = listOf(sak)
+            .copy(
+                skalJournalfores = false,
+                tittel = "Ny tittel",
+                tilknyttSaker = listOf(sak)
+            )
 
         stubs.mockSafResponseHentJournalpost(
             opprettSafResponse(
@@ -203,11 +209,18 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
         val journalpostId = 201028011L
 
         val endreJournalpostCommand = createEndreJournalpostCommand()
-        endreJournalpostCommand.skalJournalfores = true
-        endreJournalpostCommand.gjelder = "12333333333"
-        endreJournalpostCommand.tilknyttSaker = listOf(saksnummer1, saksnummer2)
+            .copy(
+                skalJournalfores = true,
+                gjelder = "12333333333",
+                tilknyttSaker = listOf(saksnummer1, saksnummer2)
+            )
 
-        stubs.mockSokOppgave(OppgaveSokResponse(1, listOf(createOppgaveDataWithSaksnummer(saksnummer3))), HttpStatus.OK)
+        stubs.mockSokOppgave(
+            OppgaveSokResponse(
+                1,
+                listOf(createOppgaveDataWithSaksnummer(saksnummer3))
+            ), HttpStatus.OK
+        )
         stubs.mockSafResponseHentJournalpost(
             opprettSafResponse(
                 journalpostId = journalpostId.toString(),
@@ -275,11 +288,16 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
         val journalpostIdFraJson = 201028011L
 
         val endreJournalpostCommand = createEndreJournalpostCommand()
-        endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.tilknyttSaker = listOf(existingSaksnummer, newSaksnummer)
-        endreJournalpostCommand.dokumentDato = LocalDate.of(2020, 2, 3)
+            .copy(
+                skalJournalfores = false,
+                dokumentDato = LocalDate.of(2020, 2, 3),
+                tilknyttSaker = listOf(existingSaksnummer, newSaksnummer)
+            )
 
-        stubs.mockSafResponseHentJournalpost("journalpostJournalfortSafResponse.json", HttpStatus.OK)
+        stubs.mockSafResponseHentJournalpost(
+            "journalpostJournalfortSafResponse.json",
+            HttpStatus.OK
+        )
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
@@ -318,7 +336,12 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
                     "\"journalfoerendeEnhet\":\"4806\""
                 )
             },
-            { stubs.verifyStub.dokarkivTilknyttSakerIkkeKalt(journalpostIdFraJson, existingSaksnummer) }
+            {
+                stubs.verifyStub.dokarkivTilknyttSakerIkkeKalt(
+                    journalpostIdFraJson,
+                    existingSaksnummer
+                )
+            }
         )
     }
 
@@ -364,12 +387,19 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
         val journalpostIdFraJson = 201028011L
         val headersMedEnhet = HttpHeaders()
         headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
-        val endreJournalpostCommand = no.nav.bidrag.dokument.arkiv.stubs.createEndreJournalpostCommand()
-        endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.endreReturDetaljer = listOf(
-            EndreReturDetaljer(RETUR_DETALJER_DATO_1, null, "Ny beskrivelse 1"),
-            EndreReturDetaljer(RETUR_DETALJER_DATO_2, LocalDate.parse("2021-10-10"), "Ny beskrivelse 2")
-        )
+        val endreJournalpostCommand =
+            no.nav.bidrag.dokument.arkiv.stubs.createEndreJournalpostCommand()
+                .copy(
+                    skalJournalfores = false,
+                    endreReturDetaljer = listOf(
+                        EndreReturDetaljer(RETUR_DETALJER_DATO_1, null, "Ny beskrivelse 1"),
+                        EndreReturDetaljer(
+                            RETUR_DETALJER_DATO_2,
+                            LocalDate.parse("2021-10-10"),
+                            "Ny beskrivelse 2"
+                        )
+                    )
+                )
         val safResponse = opprettUtgaendeSafResponseWithReturDetaljer()
         safResponse.antallRetur = 1
         stubs.mockSafResponseHentJournalpost(safResponse)
@@ -399,9 +429,9 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostIdFraJson,
                     "tilleggsopplysninger\":" +
-                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                        "{\"nokkel\":\"retur0_2021-08-20\",\"verdi\":\"Ny beskrivelse 1\"}," +
-                        "{\"nokkel\":\"retur0_2021-10-10\",\"verdi\":\"Ny beskrivelse 2\"}]"
+                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                            "{\"nokkel\":\"retur0_2021-08-20\",\"verdi\":\"Ny beskrivelse 1\"}," +
+                            "{\"nokkel\":\"retur0_2021-10-10\",\"verdi\":\"Ny beskrivelse 2\"}]"
                 )
             }
         )
@@ -445,9 +475,19 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
         stubs.mockDokarkivFerdigstillRequest(journalpostId)
         stubs.mockDokarkivTilknyttRequest(journalpostId)
 
-        val endreJournalpostCommand = no.nav.bidrag.dokument.arkiv.stubs.createEndreJournalpostCommand()
-        endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.endreReturDetaljer = listOf(EndreReturDetaljer(null, LocalDate.parse("2021-12-15"), "Ny returdetalj"))
+        val endreJournalpostCommand =
+            no.nav.bidrag.dokument.arkiv.stubs.createEndreJournalpostCommand()
+                .copy(
+                    skalJournalfores = false,
+                    endreReturDetaljer =
+                    listOf(
+                        EndreReturDetaljer(
+                            null,
+                            LocalDate.parse("2021-12-15"),
+                            "Ny returdetalj"
+                        )
+                    )
+                )
         // when
         val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
             initUrl() + "/journal/JOARK-" + journalpostId,
@@ -468,10 +508,10 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostId,
                     "\"tilleggsopplysninger\":[" +
-                        "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                        "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
-                        "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
-                        "{\"nokkel\":\"retur0_2021-12-15\",\"verdi\":\"Ny returdetalj\"}]"
+                            "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                            "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
+                            "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
+                            "{\"nokkel\":\"retur0_2021-12-15\",\"verdi\":\"Ny returdetalj\"}]"
                 )
             }
         )
@@ -515,10 +555,19 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
         stubs.mockDokarkivFerdigstillRequest(journalpostId)
         stubs.mockDokarkivTilknyttRequest(journalpostId)
 
-        val endreJournalpostCommand = no.nav.bidrag.dokument.arkiv.stubs.createEndreJournalpostCommand()
-        endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.endreReturDetaljer =
-            listOf(EndreReturDetaljer(LocalDate.parse("2020-10-02"), LocalDate.parse("2021-12-15"), "Oppdatert returdetalj"))
+        val endreJournalpostCommand =
+            no.nav.bidrag.dokument.arkiv.stubs.createEndreJournalpostCommand()
+                .copy(
+                    skalJournalfores = false,
+                    endreReturDetaljer =
+                    listOf(
+                        EndreReturDetaljer(
+                            LocalDate.parse("2020-10-02"),
+                            LocalDate.parse("2021-12-15"),
+                            "Oppdatert returdetalj"
+                        )
+                    )
+                )
         // when
         val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
             initUrl() + "/journal/JOARK-" + journalpostId,

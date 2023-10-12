@@ -77,3 +77,11 @@ fun kanIkkeHenteJournalMedUgyldigFagomrade(ugyldigFagomrade: String): Nothing =
         HttpStatus.BAD_REQUEST,
         "Kan ikke hente journal med tema $ugyldigFagomrade. Gyldige verdier er BID og FAR"
     )
+
+inline fun <R> runCatchingIgnoreException(block: () -> R): R? {
+    return try {
+        block()
+    } catch (e: Exception) {
+        return null
+    }
+}

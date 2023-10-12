@@ -3,7 +3,7 @@ package no.nav.bidrag.dokument.arkiv.dto
 import no.nav.bidrag.dokument.arkiv.model.ViolationException
 import no.nav.bidrag.dokument.arkiv.stubs.createEndreJournalpostCommand
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
-import no.nav.bidrag.dokument.dto.EndreReturDetaljer
+import no.nav.bidrag.transport.dokument.EndreReturDetaljer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
@@ -17,22 +17,50 @@ internal class EndreJournalpostValidationTest {
 
     @Test
     fun `Skal ikke feile hvis returdetaljer er tom`() {
-        val journalpost = opprettUtgaendeSafResponse(relevanteDatoer = listOf(DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")))
+        val journalpost = opprettUtgaendeSafResponse(
+            relevanteDatoer = listOf(
+                DatoType(
+                    "2021-08-18T13:20:33",
+                    "DATO_DOKUMENT"
+                )
+            )
+        )
         journalpost.antallRetur = 1
         val endreJournalpostCommand = createEndreJournalpostCommand()
-        endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.endreReturDetaljer = listOf()
-        Assertions.assertDoesNotThrow { EndreJournalpostCommandIntern(endreJournalpostCommand, "0000").sjekkGyldigEndring(journalpost) }
+            .copy(
+                skalJournalfores = true,
+                endreReturDetaljer = emptyList()
+            )
+        Assertions.assertDoesNotThrow {
+            EndreJournalpostCommandIntern(
+                endreJournalpostCommand,
+                "0000"
+            ).sjekkGyldigEndring(journalpost)
+        }
     }
 
     @Test
     fun `Skal ikke feile hvis returdetaljer er null`() {
-        val journalpost = opprettUtgaendeSafResponse(relevanteDatoer = listOf(DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")))
+        val journalpost = opprettUtgaendeSafResponse(
+            relevanteDatoer = listOf(
+                DatoType(
+                    "2021-08-18T13:20:33",
+                    "DATO_DOKUMENT"
+                )
+            )
+        )
         journalpost.antallRetur = 1
         val endreJournalpostCommand = createEndreJournalpostCommand()
-        endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.endreReturDetaljer = null
-        Assertions.assertDoesNotThrow { EndreJournalpostCommandIntern(endreJournalpostCommand, "0000").sjekkGyldigEndring(journalpost) }
+            .copy(
+                skalJournalfores = false,
+                endreReturDetaljer = emptyList()
+            )
+        Assertions.assertDoesNotThrow {
+            EndreJournalpostCommandIntern(
+                endreJournalpostCommand,
+                "0000"
+            ).sjekkGyldigEndring(journalpost)
+        }
     }
 
     @Test
@@ -51,13 +79,23 @@ internal class EndreJournalpostValidationTest {
                 LocalDate.parse("2023-10-02")
             )
         )
-        val journalpost = opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")))
+        val journalpost = opprettUtgaendeSafResponse(
+            tilleggsopplysninger = tilleggsOpplysninger,
+            relevanteDatoer = listOf(DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT"))
+        )
         journalpost.antallRetur = 1
-        val endreJournalpostCommand = createEndreJournalpostCommand()
-        endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.endreReturDetaljer = listOf(EndreReturDetaljer(null, LocalDate.parse("2022-01-15"), "Ny beskrivelse 1"))
+        val endreJournalpostCommand = createEndreJournalpostCommand().copy(
+            skalJournalfores = false,
+            endreReturDetaljer =
+            listOf(EndreReturDetaljer(null, LocalDate.parse("2022-01-15"), "Ny beskrivelse 1"))
 
-        val throwable = Assertions.assertThrows(ViolationException::class.java) { EndreJournalpostCommandIntern(endreJournalpostCommand, "0000").sjekkGyldigEndring(journalpost) }
+        )
+        val throwable = Assertions.assertThrows(ViolationException::class.java) {
+            EndreJournalpostCommandIntern(
+                endreJournalpostCommand,
+                "0000"
+            ).sjekkGyldigEndring(journalpost)
+        }
         assertThat(throwable.message).isEqualTo("Ugyldige data: Kan ikke opprette ny returdetalj (originalDato=null)")
     }
 
@@ -78,13 +116,30 @@ internal class EndreJournalpostValidationTest {
                 LocalDate.parse("2023-10-02")
             )
         )
-        val journalpost = opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(DatoType("2019-08-18T13:20:33", "DATO_DOKUMENT")))
+        val journalpost = opprettUtgaendeSafResponse(
+            tilleggsopplysninger = tilleggsOpplysninger,
+            relevanteDatoer = listOf(DatoType("2019-08-18T13:20:33", "DATO_DOKUMENT"))
+        )
         journalpost.antallRetur = 1
         val endreJournalpostCommand = createEndreJournalpostCommand()
-        endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.endreReturDetaljer = listOf(EndreReturDetaljer(LocalDate.parse("2020-01-02"), LocalDate.parse("2022-01-15"), "Ny beskrivelse 1"))
+            .copy(
+                skalJournalfores = false,
+                endreReturDetaljer = listOf(
+                    EndreReturDetaljer(
+                        LocalDate.parse("2020-01-02"),
+                        LocalDate.parse("2022-01-15"),
+                        "Ny beskrivelse 1"
+                    )
+                )
 
-        val throwable = Assertions.assertThrows(ViolationException::class.java) { EndreJournalpostCommandIntern(endreJournalpostCommand, "0000").sjekkGyldigEndring(journalpost) }
+            )
+
+        val throwable = Assertions.assertThrows(ViolationException::class.java) {
+            EndreJournalpostCommandIntern(
+                endreJournalpostCommand,
+                "0000"
+            ).sjekkGyldigEndring(journalpost)
+        }
         assertThat(throwable.message).isEqualTo("Ugyldige data: Kan ikke endre låste returdetaljer")
     }
 
@@ -104,13 +159,29 @@ internal class EndreJournalpostValidationTest {
                 LocalDate.parse("2021-09-02")
             )
         )
-        val journalpost = opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")))
+        val journalpost = opprettUtgaendeSafResponse(
+            tilleggsopplysninger = tilleggsOpplysninger,
+            relevanteDatoer = listOf(DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT"))
+        )
         journalpost.antallRetur = 0
         val endreJournalpostCommand = createEndreJournalpostCommand()
-        endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.endreReturDetaljer = listOf(EndreReturDetaljer(LocalDate.parse("2021-09-02"), LocalDate.parse("2022-01-15"), "Ny beskrivelse 1"))
+            .copy(
+                skalJournalfores = false,
+                endreReturDetaljer = listOf(
+                    EndreReturDetaljer(
+                        LocalDate.parse("2021-09-02"),
+                        LocalDate.parse("2022-01-15"),
+                        "Ny beskrivelse 1"
+                    )
+                )
+            )
 
-        val throwable = Assertions.assertThrows(ViolationException::class.java) { EndreJournalpostCommandIntern(endreJournalpostCommand, "0000").sjekkGyldigEndring(journalpost) }
+        val throwable = Assertions.assertThrows(ViolationException::class.java) {
+            EndreJournalpostCommandIntern(
+                endreJournalpostCommand,
+                "0000"
+            ).sjekkGyldigEndring(journalpost)
+        }
         assertThat(throwable.message).isEqualTo("Ugyldige data: Kan ikke endre returdetaljer på journalpost som ikke har kommet i retur")
     }
 
@@ -130,13 +201,29 @@ internal class EndreJournalpostValidationTest {
                 LocalDate.parse("2020-10-02")
             )
         )
-        val journalpost = opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")))
+        val journalpost = opprettUtgaendeSafResponse(
+            tilleggsopplysninger = tilleggsOpplysninger,
+            relevanteDatoer = listOf(DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT"))
+        )
         journalpost.antallRetur = 1
         val endreJournalpostCommand = createEndreJournalpostCommand()
-        endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.endreReturDetaljer = listOf(EndreReturDetaljer(null, LocalDate.parse("2020-11-15"), "Ny beskrivelse 1"))
+            .copy(
+                skalJournalfores = false,
+                endreReturDetaljer = listOf(
+                    EndreReturDetaljer(
+                        null,
+                        LocalDate.parse("2020-11-15"),
+                        "Ny beskrivelse 1"
+                    )
+                )
+            )
 
-        val throwable = Assertions.assertThrows(ViolationException::class.java) { EndreJournalpostCommandIntern(endreJournalpostCommand, "0000").sjekkGyldigEndring(journalpost) }
+        val throwable = Assertions.assertThrows(ViolationException::class.java) {
+            EndreJournalpostCommandIntern(
+                endreJournalpostCommand,
+                "0000"
+            ).sjekkGyldigEndring(journalpost)
+        }
         assertThat(throwable.message).contains("Kan ikke opprette ny returdetalj med returdato før dokumentdato")
     }
 
@@ -158,13 +245,33 @@ internal class EndreJournalpostValidationTest {
                 endreDato
             )
         )
-        val journalpost = opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(DatoType(LocalDateTime.of(dokumentDato, LocalTime.of(0, 0)).toString(), "DATO_DOKUMENT")))
+        val journalpost = opprettUtgaendeSafResponse(
+            tilleggsopplysninger = tilleggsOpplysninger,
+            relevanteDatoer = listOf(
+                DatoType(
+                    LocalDateTime.of(dokumentDato, LocalTime.of(0, 0)).toString(), "DATO_DOKUMENT"
+                )
+            )
+        )
         journalpost.antallRetur = 1
         val endreJournalpostCommand = createEndreJournalpostCommand()
-        endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.endreReturDetaljer = listOf(EndreReturDetaljer(endreDato, LocalDate.now().plusDays(1), "Ny beskrivelse 1"))
+            .copy(
+                skalJournalfores = false,
+                endreReturDetaljer = listOf(
+                    EndreReturDetaljer(
+                        endreDato,
+                        LocalDate.now().plusDays(1),
+                        "Ny beskrivelse 1"
+                    )
+                )
+            )
 
-        val throwable = Assertions.assertThrows(ViolationException::class.java) { EndreJournalpostCommandIntern(endreJournalpostCommand, "0000").sjekkGyldigEndring(journalpost) }
+        val throwable = Assertions.assertThrows(ViolationException::class.java) {
+            EndreJournalpostCommandIntern(
+                endreJournalpostCommand,
+                "0000"
+            ).sjekkGyldigEndring(journalpost)
+        }
         assertThat(throwable.message).isEqualTo("Ugyldige data: Kan ikke oppdatere returdato til etter dagens dato")
     }
 
@@ -186,13 +293,33 @@ internal class EndreJournalpostValidationTest {
                 endreDato
             )
         )
-        val journalpost = opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(DatoType(LocalDateTime.of(dokumentDato, LocalTime.of(0, 0)).toString(), "DATO_DOKUMENT")))
+        val journalpost = opprettUtgaendeSafResponse(
+            tilleggsopplysninger = tilleggsOpplysninger,
+            relevanteDatoer = listOf(
+                DatoType(
+                    LocalDateTime.of(dokumentDato, LocalTime.of(0, 0)).toString(), "DATO_DOKUMENT"
+                )
+            )
+        )
         journalpost.antallRetur = 1
         val endreJournalpostCommand = createEndreJournalpostCommand()
-        endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.endreReturDetaljer = listOf(EndreReturDetaljer(endreDato, LocalDate.parse("2021-02-02"), "Ny beskrivelse 1"))
+            .copy(
+                skalJournalfores = false,
+                endreReturDetaljer = listOf(
+                    EndreReturDetaljer(
+                        endreDato,
+                        LocalDate.parse("2021-02-02"),
+                        "Ny beskrivelse 1"
+                    )
+                )
+            )
 
-        val throwable = Assertions.assertThrows(ViolationException::class.java) { EndreJournalpostCommandIntern(endreJournalpostCommand, "0000").sjekkGyldigEndring(journalpost) }
+        val throwable = Assertions.assertThrows(ViolationException::class.java) {
+            EndreJournalpostCommandIntern(
+                endreJournalpostCommand,
+                "0000"
+            ).sjekkGyldigEndring(journalpost)
+        }
         assertThat(throwable.message).isEqualTo("Ugyldige data: Kan ikke endre returdetaljer opprettet før dokumentdato")
     }
 
@@ -216,13 +343,26 @@ internal class EndreJournalpostValidationTest {
                 true
             )
         )
-        val journalpost = opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(DatoType(LocalDateTime.of(dokumentDato, LocalTime.of(0, 0)).toString(), "DATO_DOKUMENT")))
+        val journalpost = opprettUtgaendeSafResponse(
+            tilleggsopplysninger = tilleggsOpplysninger,
+            relevanteDatoer = listOf(
+                DatoType(
+                    LocalDateTime.of(dokumentDato, LocalTime.of(0, 0)).toString(), "DATO_DOKUMENT"
+                )
+            )
+        )
         journalpost.antallRetur = 1
-        val endreJournalpostCommand = createEndreJournalpostCommand()
-        endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.endreReturDetaljer = listOf(EndreReturDetaljer(null, endreDato, "Ny beskrivelse 1"))
+        val endreJournalpostCommand = createEndreJournalpostCommand().copy(
+            skalJournalfores = false,
+            endreReturDetaljer = listOf(EndreReturDetaljer(null, endreDato, "Ny beskrivelse 1"))
+        )
 
-        val throwable = Assertions.assertThrows(ViolationException::class.java) { EndreJournalpostCommandIntern(endreJournalpostCommand, "0000").sjekkGyldigEndring(journalpost) }
+        val throwable = Assertions.assertThrows(ViolationException::class.java) {
+            EndreJournalpostCommandIntern(
+                endreJournalpostCommand,
+                "0000"
+            ).sjekkGyldigEndring(journalpost)
+        }
         assertThat(throwable.message).isEqualTo("Ugyldige data: Kan ikke endre låste returdetaljer")
     }
 
@@ -243,13 +383,26 @@ internal class EndreJournalpostValidationTest {
                 LocalDate.parse("2020-02-02")
             )
         )
-        val journalpost = opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(DatoType(LocalDateTime.of(dokumentDato, LocalTime.of(0, 0)).toString(), "DATO_DOKUMENT")))
+        val journalpost = opprettUtgaendeSafResponse(
+            tilleggsopplysninger = tilleggsOpplysninger,
+            relevanteDatoer = listOf(
+                DatoType(
+                    LocalDateTime.of(dokumentDato, LocalTime.of(0, 0)).toString(), "DATO_DOKUMENT"
+                )
+            )
+        )
         journalpost.antallRetur = 1
-        val endreJournalpostCommand = createEndreJournalpostCommand()
-        endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.endreReturDetaljer = listOf(EndreReturDetaljer(null, dokumentDato, "Ny beskrivelse 1"))
+        val endreJournalpostCommand = createEndreJournalpostCommand().copy(
+            skalJournalfores = false,
+            endreReturDetaljer = listOf(EndreReturDetaljer(null, dokumentDato, "Ny beskrivelse 1"))
+        )
 
-        Assertions.assertDoesNotThrow { EndreJournalpostCommandIntern(endreJournalpostCommand, "0000").sjekkGyldigEndring(journalpost) }
+        Assertions.assertDoesNotThrow {
+            EndreJournalpostCommandIntern(
+                endreJournalpostCommand,
+                "0000"
+            ).sjekkGyldigEndring(journalpost)
+        }
     }
 
     @Test
@@ -268,13 +421,28 @@ internal class EndreJournalpostValidationTest {
                 LocalDate.parse("2020-10-02")
             )
         )
-        val journalpost = opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")))
+        val journalpost = opprettUtgaendeSafResponse(
+            tilleggsopplysninger = tilleggsOpplysninger,
+            relevanteDatoer = listOf(DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT"))
+        )
         journalpost.antallRetur = 1
-        val endreJournalpostCommand = createEndreJournalpostCommand()
-        endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.endreReturDetaljer = listOf(EndreReturDetaljer(null, LocalDate.parse("2022-01-15"), "Ny beskrivelse 1"))
+        val endreJournalpostCommand = createEndreJournalpostCommand().copy(
+            skalJournalfores = false,
+            endreReturDetaljer = listOf(
+                EndreReturDetaljer(
+                    null,
+                    LocalDate.parse("2022-01-15"),
+                    "Ny beskrivelse 1"
+                )
+            )
+        )
 
-        Assertions.assertDoesNotThrow { EndreJournalpostCommandIntern(endreJournalpostCommand, "0000").sjekkGyldigEndring(journalpost) }
+        Assertions.assertDoesNotThrow {
+            EndreJournalpostCommandIntern(
+                endreJournalpostCommand,
+                "0000"
+            ).sjekkGyldigEndring(journalpost)
+        }
     }
 
     @Test
@@ -293,12 +461,27 @@ internal class EndreJournalpostValidationTest {
                 LocalDate.parse("2021-10-15")
             )
         )
-        val journalpost = opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsOpplysninger, relevanteDatoer = listOf(DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")))
+        val journalpost = opprettUtgaendeSafResponse(
+            tilleggsopplysninger = tilleggsOpplysninger,
+            relevanteDatoer = listOf(DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT"))
+        )
         journalpost.antallRetur = 1
-        val endreJournalpostCommand = createEndreJournalpostCommand()
-        endreJournalpostCommand.skalJournalfores = false
-        endreJournalpostCommand.endreReturDetaljer = listOf(EndreReturDetaljer(LocalDate.parse("2021-10-15"), LocalDate.parse("2021-11-15"), "Ny beskrivelse 1"))
+        val endreJournalpostCommand = createEndreJournalpostCommand().copy(
+            skalJournalfores = false,
+            endreReturDetaljer = listOf(
+                EndreReturDetaljer(
+                    LocalDate.parse("2021-10-15"),
+                    LocalDate.parse("2021-11-15"),
+                    "Ny beskrivelse 1"
+                )
+            )
+        )
 
-        Assertions.assertDoesNotThrow { EndreJournalpostCommandIntern(endreJournalpostCommand, "0000").sjekkGyldigEndring(journalpost) }
+        Assertions.assertDoesNotThrow {
+            EndreJournalpostCommandIntern(
+                endreJournalpostCommand,
+                "0000"
+            ).sjekkGyldigEndring(journalpost)
+        }
     }
 }

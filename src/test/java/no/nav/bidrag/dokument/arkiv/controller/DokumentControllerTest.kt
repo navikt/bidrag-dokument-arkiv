@@ -10,10 +10,10 @@ import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_2_ID
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_FIL
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
-import no.nav.bidrag.dokument.dto.DokumentArkivSystemDto
-import no.nav.bidrag.dokument.dto.DokumentFormatDto
-import no.nav.bidrag.dokument.dto.DokumentMetadata
-import no.nav.bidrag.dokument.dto.DokumentStatusDto
+import no.nav.bidrag.transport.dokument.DokumentArkivSystemDto
+import no.nav.bidrag.transport.dokument.DokumentFormatDto
+import no.nav.bidrag.transport.dokument.DokumentMetadata
+import no.nav.bidrag.transport.dokument.DokumentStatusDto
 import org.junit.jupiter.api.Test
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpMethod
@@ -51,7 +51,15 @@ class DokumentControllerTest : AbstractControllerTest() {
             )
         )
 
-        stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(journalpostId, JournalStatus.FERDIGSTILT, Sak("123"))))
+        stubs.mockSafResponseTilknyttedeJournalposter(
+            listOf(
+                TilknyttetJournalpost(
+                    journalpostId,
+                    JournalStatus.FERDIGSTILT,
+                    Sak("123")
+                )
+            )
+        )
         stubs.mockSafHentDokumentResponse()
         stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
 
@@ -90,7 +98,15 @@ class DokumentControllerTest : AbstractControllerTest() {
             )
         )
 
-        stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(journalpostId, JournalStatus.FERDIGSTILT, Sak("123"))))
+        stubs.mockSafResponseTilknyttedeJournalposter(
+            listOf(
+                TilknyttetJournalpost(
+                    journalpostId,
+                    JournalStatus.FERDIGSTILT,
+                    Sak("123")
+                )
+            )
+        )
         stubs.mockSafHentDokumentResponse()
         stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
 
@@ -129,7 +145,15 @@ class DokumentControllerTest : AbstractControllerTest() {
             )
         )
 
-        stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(journalpostId, JournalStatus.FERDIGSTILT, Sak("123"))))
+        stubs.mockSafResponseTilknyttedeJournalposter(
+            listOf(
+                TilknyttetJournalpost(
+                    journalpostId,
+                    JournalStatus.FERDIGSTILT,
+                    Sak("123")
+                )
+            )
+        )
         stubs.mockSafHentDokumentResponse()
         stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
 

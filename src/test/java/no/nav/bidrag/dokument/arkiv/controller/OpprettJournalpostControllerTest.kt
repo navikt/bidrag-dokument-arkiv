@@ -13,12 +13,12 @@ import no.nav.bidrag.dokument.arkiv.stubs.TITTEL_HOVEDDOKUMENT
 import no.nav.bidrag.dokument.arkiv.stubs.TITTEL_VEDLEGG1
 import no.nav.bidrag.dokument.arkiv.stubs.createOpprettJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
-import no.nav.bidrag.dokument.dto.AvsenderMottakerDto
-import no.nav.bidrag.dokument.dto.AvsenderMottakerDtoIdType
-import no.nav.bidrag.dokument.dto.JournalpostType
-import no.nav.bidrag.dokument.dto.MottakUtsendingKanal
-import no.nav.bidrag.dokument.dto.OpprettDokumentDto
-import no.nav.bidrag.dokument.dto.OpprettJournalpostResponse
+import no.nav.bidrag.transport.dokument.AvsenderMottakerDto
+import no.nav.bidrag.transport.dokument.AvsenderMottakerDtoIdType
+import no.nav.bidrag.transport.dokument.JournalpostType
+import no.nav.bidrag.transport.dokument.MottakUtsendingKanal
+import no.nav.bidrag.transport.dokument.OpprettDokumentDto
+import no.nav.bidrag.transport.dokument.OpprettJournalpostResponse
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpEntity
@@ -489,7 +489,8 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
     inner class Feilhåndtering {
         @Test
         fun `skal feile hvis journalpost opprettet uten journalposttype`() {
-            val request = createOpprettJournalpostRequest().copy(journalposttype = null)
+            val request =
+                createOpprettJournalpostRequest().copy(journalposttype = JournalpostType.INNGÅENDE)
 
             val nyJpId = 123123123L
             stubs.mockDokarkivOpprettRequest(

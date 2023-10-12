@@ -8,7 +8,7 @@ import mu.KotlinLogging
 import no.nav.bidrag.commons.util.KildesystemIdenfikator
 import no.nav.bidrag.commons.web.WebUtil
 import no.nav.bidrag.dokument.arkiv.service.DokumentService
-import no.nav.bidrag.dokument.dto.DokumentMetadata
+import no.nav.bidrag.transport.dokument.DokumentMetadata
 import no.nav.security.token.support.core.api.Protected
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -25,14 +25,26 @@ private val LOGGER = KotlinLogging.logger {}
 @Protected
 class DokumentController(private val dokumentService: DokumentService) {
     @GetMapping(value = ["/dokument/{journalpostId}/{dokumentreferanse}"])
-    @Operation(security = [SecurityRequirement(name = "bearer-key")], summary = "Henter dokument fra Joark for journalpostid og dokumentreferanse. ")
+    @Operation(
+        security = [SecurityRequirement(name = "bearer-key")],
+        summary = "Henter dokument fra Joark for journalpostid og dokumentreferanse. "
+    )
     @ApiResponses(
         value = [
-            ApiResponse(responseCode = "200", description = "OK - dokument returneres i form av base64 encoded string."),
-            ApiResponse(responseCode = "404", description = "Fant ikke journalpost med oppgitt dokumentreferanse")
+            ApiResponse(
+                responseCode = "200",
+                description = "OK - dokument returneres i form av base64 encoded string."
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Fant ikke journalpost med oppgitt dokumentreferanse"
+            )
         ]
     )
-    fun hentDokument(@PathVariable journalpostId: String, @PathVariable dokumentreferanse: String): ResponseEntity<ByteArray> {
+    fun hentDokument(
+        @PathVariable journalpostId: String,
+        @PathVariable dokumentreferanse: String
+    ): ResponseEntity<ByteArray> {
         val kildesystemIdenfikator = KildesystemIdenfikator(journalpostId)
         return if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix()) {
             ResponseEntity(
@@ -43,7 +55,10 @@ class DokumentController(private val dokumentService: DokumentService) {
                 HttpStatus.BAD_REQUEST
             )
         } else {
-            dokumentService.hentDokument(kildesystemIdenfikator.hentJournalpostIdLong()!!, dokumentreferanse)
+            dokumentService.hentDokument(
+                kildesystemIdenfikator.hentJournalpostIdLong()!!,
+                dokumentreferanse
+            )
         }
     }
 
@@ -51,7 +66,10 @@ class DokumentController(private val dokumentService: DokumentService) {
         value = ["/dokument/{journalpostId}/{dokumentreferanse}", "/dokument/{journalpostId}", "/dokumentreferanse/{dokumentreferanse}"],
         method = [RequestMethod.OPTIONS]
     )
-    @Operation(security = [SecurityRequirement(name = "bearer-key")], summary = "Henter dokument for journalpostid og dokumentreferanse. ")
+    @Operation(
+        security = [SecurityRequirement(name = "bearer-key")],
+        summary = "Henter dokument for journalpostid og dokumentreferanse. "
+    )
     fun hentDokumentMetadata(
         @PathVariable(required = false) journalpostId: String?,
         @PathVariable(required = false) dokumentreferanse: String?
@@ -60,7 +78,10 @@ class DokumentController(private val dokumentService: DokumentService) {
         if (journalpostId.isNullOrEmpty() && dokumentreferanse.isNullOrEmpty()) {
             return ResponseEntity
                 .badRequest()
-                .header(HttpHeaders.WARNING, "Kan ikke hente dokument uten journalpostId eller dokumentereferanse")
+                .header(
+                    HttpHeaders.WARNING,
+                    "Kan ikke hente dokument uten journalpostId eller dokumentereferanse"
+                )
                 .build()
         }
         if (journalpostId.isNullOrEmpty()) {
@@ -73,7 +94,12 @@ class DokumentController(private val dokumentService: DokumentService) {
                 .header(HttpHeaders.WARNING, "Ugyldig prefix på journalpostId $journalpostId")
                 .build()
         } else {
-            ResponseEntity.ok(dokumentService.hentDokumentMetadata(kildesystemIdenfikator.hentJournalpostIdLong(), dokumentreferanse))
+            ResponseEntity.ok(
+                dokumentService.hentDokumentMetadata(
+                    kildesystemIdenfikator.hentJournalpostIdLong(),
+                    dokumentreferanse
+                )
+            )
         }
     }
 }

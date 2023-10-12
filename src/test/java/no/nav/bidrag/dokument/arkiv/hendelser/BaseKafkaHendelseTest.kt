@@ -6,7 +6,7 @@ import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.Companion.PROFILE_KAFKA_TEST
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.Companion.PROFILE_TEST
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivTest
-import no.nav.bidrag.dokument.dto.JournalpostHendelse
+import no.nav.bidrag.transport.dokument.JournalpostHendelse
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
 import org.apache.kafka.clients.consumer.Consumer

@@ -23,8 +23,8 @@ import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_ID
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
 import no.nav.bidrag.dokument.arkiv.stubs.Stubs
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
-import no.nav.bidrag.dokument.dto.HendelseType
-import no.nav.bidrag.dokument.dto.JournalpostHendelse
+import no.nav.bidrag.transport.dokument.HendelseType
+import no.nav.bidrag.transport.dokument.JournalpostHendelse
 import no.nav.bidrag.domain.ident.AktørId
 import no.nav.bidrag.domain.ident.PersonIdent
 import no.nav.bidrag.transport.person.PersonDto
@@ -91,23 +91,49 @@ class JoarkHendelseTest {
 
         hendelseListener.listenJournalforingHendelse(record)
         val jsonCaptor = ArgumentCaptor.forClass(String::class.java)
-        verify(kafkaTemplateMock).send(ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(expectedJoarkJournalpostId), jsonCaptor.capture())
-        val journalpostHendelse = objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
+        verify(kafkaTemplateMock).send(
+            ArgumentMatchers.eq(topicJournalpost),
+            ArgumentMatchers.eq(expectedJoarkJournalpostId),
+            jsonCaptor.capture()
+        )
+        val journalpostHendelse =
+            objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
 
         assertAll(
             "JournalpostHendelse",
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId).isEqualTo(expectedJoarkJournalpostId) },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId)
+                    .isEqualTo(expectedJoarkJournalpostId)
+            },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isNull() },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::fnr).isEqualTo(AVSENDER_ID) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::dokumentDato).isEqualTo(no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT.somDato()) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalfortDato).isNull() },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::hendelseType).isEqualTo(HendelseType.ENDRING) },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::fnr)
+                    .isEqualTo(AVSENDER_ID)
+            },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::dokumentDato)
+                    .isEqualTo(no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT.somDato())
+            },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalfortDato)
+                    .isNull()
+            },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::hendelseType)
+                    .isEqualTo(HendelseType.ENDRING)
+            },
             { assertThat(journalpostHendelse.sporing?.brukerident).isNull() },
             { assertThat(journalpostHendelse.sporing?.saksbehandlersNavn).isEqualTo("bidrag-dokument-arkiv") },
             { assertThat(journalpostHendelse.sporing?.enhetsnummer).isEqualTo("9999") },
             { assertThat(journalpostHendelse.sakstilknytninger).isEmpty() },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isEqualTo(BRUKER_AKTOER_ID) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus).isEqualTo("M") },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId)
+                    .isEqualTo(BRUKER_AKTOER_ID)
+            },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus)
+                    .isEqualTo("M")
+            },
             { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() }
         )
     }
@@ -132,12 +158,23 @@ class JoarkHendelseTest {
                 journalforendeEnhet = jfEnhet,
                 bruker = Bruker(BRUKER_AKTOER_ID, BRUKER_TYPE_AKTOERID),
                 sak = Sak(sak1),
-                relevanteDatoer = listOf(no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT, no.nav.bidrag.dokument.arkiv.stubs.DATO_JOURNALFORT),
+                relevanteDatoer = listOf(
+                    no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT,
+                    no.nav.bidrag.dokument.arkiv.stubs.DATO_JOURNALFORT
+                ),
                 tilleggsopplysninger = tilleggsOpplysninger,
                 journalfortAvNavn = journalfortAvNavn
             )
         )
-        stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(tilknyttetJournalpostId, journalstatus = JournalStatus.JOURNALFOERT, sak = Sak(sak2))))
+        stubs.mockSafResponseTilknyttedeJournalposter(
+            listOf(
+                TilknyttetJournalpost(
+                    tilknyttetJournalpostId,
+                    journalstatus = JournalStatus.JOURNALFOERT,
+                    sak = Sak(sak2)
+                )
+            )
+        )
 
         val record = createHendelseRecord(journalpostId)
         record.journalpostStatus = "JOURNALFOERT"
@@ -145,24 +182,57 @@ class JoarkHendelseTest {
 
         hendelseListener.listenJournalforingHendelse(record)
         val jsonCaptor = ArgumentCaptor.forClass(String::class.java)
-        verify(kafkaTemplateMock).send(ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(expectedJoarkJournalpostId), jsonCaptor.capture())
-        val journalpostHendelse = objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
+        verify(kafkaTemplateMock).send(
+            ArgumentMatchers.eq(topicJournalpost),
+            ArgumentMatchers.eq(expectedJoarkJournalpostId),
+            jsonCaptor.capture()
+        )
+        val journalpostHendelse =
+            objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
 
         assertAll(
             "JournalpostHendelse",
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId).isEqualTo(expectedJoarkJournalpostId) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isEqualTo(jfEnhet) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::fnr).isEqualTo(AVSENDER_ID) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::hendelseType).isEqualTo(HendelseType.JOURNALFORING) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::dokumentDato).isEqualTo(no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT.somDato()) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalfortDato).isEqualTo(no.nav.bidrag.dokument.arkiv.stubs.DATO_JOURNALFORT.somDato()) },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId)
+                    .isEqualTo(expectedJoarkJournalpostId)
+            },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet)
+                    .isEqualTo(jfEnhet)
+            },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::fnr)
+                    .isEqualTo(AVSENDER_ID)
+            },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::hendelseType)
+                    .isEqualTo(HendelseType.JOURNALFORING)
+            },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::dokumentDato)
+                    .isEqualTo(no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT.somDato())
+            },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalfortDato)
+                    .isEqualTo(no.nav.bidrag.dokument.arkiv.stubs.DATO_JOURNALFORT.somDato())
+            },
             { assertThat(journalpostHendelse.sporing?.brukerident).isEqualTo(journalfortAvIdent) },
-            { assertThat(journalpostHendelse.sporing?.saksbehandlersNavn).isEqualTo(journalfortAvNavn) },
+            {
+                assertThat(journalpostHendelse.sporing?.saksbehandlersNavn).isEqualTo(
+                    journalfortAvNavn
+                )
+            },
             { assertThat(journalpostHendelse.sporing?.enhetsnummer).isEqualTo(jfEnhet) },
             { assertThat(journalpostHendelse.sakstilknytninger).isNotEmpty() },
             { assertThat(journalpostHendelse.sakstilknytninger).contains(sak1, sak2) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isEqualTo(BRUKER_AKTOER_ID) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus).isEqualTo("J") },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId)
+                    .isEqualTo(BRUKER_AKTOER_ID)
+            },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus)
+                    .isEqualTo("J")
+            },
             { stubs.verifyStub.harEnSafKallEtterTilknyttedeJournalposter() }
         )
     }
@@ -190,16 +260,33 @@ class JoarkHendelseTest {
 
         hendelseListener.listenJournalforingHendelse(record)
         val jsonCaptor = ArgumentCaptor.forClass(String::class.java)
-        verify(kafkaTemplateMock).send(ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(expectedJoarkJournalpostId), jsonCaptor.capture())
-        val journalpostHendelse = objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
+        verify(kafkaTemplateMock).send(
+            ArgumentMatchers.eq(topicJournalpost),
+            ArgumentMatchers.eq(expectedJoarkJournalpostId),
+            jsonCaptor.capture()
+        )
+        val journalpostHendelse =
+            objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
 
         assertAll(
             "JournalpostHendelse",
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId).isEqualTo(expectedJoarkJournalpostId) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isEqualTo(BRUKER_ENHET) },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId)
+                    .isEqualTo(expectedJoarkJournalpostId)
+            },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet)
+                    .isEqualTo(BRUKER_ENHET)
+            },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isNull() },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::fnr).isEqualTo(AVSENDER_ID) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus).isEqualTo("M") }
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::fnr)
+                    .isEqualTo(AVSENDER_ID)
+            },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus)
+                    .isEqualTo("M")
+            }
         )
     }
 
@@ -226,16 +313,33 @@ class JoarkHendelseTest {
 
         hendelseListener.listenJournalforingHendelse(record)
         val jsonCaptor = ArgumentCaptor.forClass(String::class.java)
-        verify(kafkaTemplateMock).send(ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(expectedJoarkJournalpostId), jsonCaptor.capture())
-        val journalpostHendelse = objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
+        verify(kafkaTemplateMock).send(
+            ArgumentMatchers.eq(topicJournalpost),
+            ArgumentMatchers.eq(expectedJoarkJournalpostId),
+            jsonCaptor.capture()
+        )
+        val journalpostHendelse =
+            objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
 
         assertAll(
             "JournalpostHendelse",
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId).isEqualTo(expectedJoarkJournalpostId) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isEqualTo(BRUKER_ENHET) },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId)
+                    .isEqualTo(expectedJoarkJournalpostId)
+            },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet)
+                    .isEqualTo(BRUKER_ENHET)
+            },
             { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isNull() },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::fnr).isEqualTo(BRUKER_FNR) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus).isEqualTo("M") },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::fnr)
+                    .isEqualTo(BRUKER_FNR)
+            },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus)
+                    .isEqualTo("M")
+            },
             { stubs.verifyStub.bidragPersonIkkeKalt() }
         )
     }
@@ -254,21 +358,41 @@ class JoarkHendelseTest {
         )
         stubs.mockSafResponseTilknyttedeJournalposter(listOf())
         stubs.mockBidragOrganisasjonSaksbehandler()
-        stubs.mockPersonResponse(PersonDto(PersonIdent("123"), aktørId = AktørId("12321")), HttpStatus.OK)
+        stubs.mockPersonResponse(
+            PersonDto(PersonIdent("123"), aktørId = AktørId("12321")),
+            HttpStatus.OK
+        )
 
         val record = createHendelseRecord(journalpostId)
 
         hendelseListener.listenJournalforingHendelse(record)
         val jsonCaptor = ArgumentCaptor.forClass(String::class.java)
-        verify(kafkaTemplateMock).send(ArgumentMatchers.eq(topicJournalpost), ArgumentMatchers.eq(expectedJoarkJournalpostId), jsonCaptor.capture())
-        val journalpostHendelse = objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
+        verify(kafkaTemplateMock).send(
+            ArgumentMatchers.eq(topicJournalpost),
+            ArgumentMatchers.eq(expectedJoarkJournalpostId),
+            jsonCaptor.capture()
+        )
+        val journalpostHendelse =
+            objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
 
         assertAll(
             "JournalpostHendelse",
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId).isEqualTo(expectedJoarkJournalpostId) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet).isEqualTo(BRUKER_ENHET) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId).isEqualTo(BRUKER_AKTOER_ID) },
-            { assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus).isEqualTo("M") },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalpostId)
+                    .isEqualTo(expectedJoarkJournalpostId)
+            },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::enhet)
+                    .isEqualTo(BRUKER_ENHET)
+            },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::aktorId)
+                    .isEqualTo(BRUKER_AKTOER_ID)
+            },
+            {
+                assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus)
+                    .isEqualTo("M")
+            },
             { stubs.verifyStub.dokarkivOppdaterIkkeKalt(journalpostId) }
         )
     }
@@ -283,7 +407,11 @@ class JoarkHendelseTest {
 
         hendelseListener.listenJournalforingHendelse(record)
 
-        verify(kafkaTemplateMock, Mockito.never()).send(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        verify(kafkaTemplateMock, Mockito.never()).send(
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any()
+        )
     }
 
     @Test
@@ -295,15 +423,30 @@ class JoarkHendelseTest {
 
         hendelseListener.listenJournalforingHendelse(record)
 
-        verify(kafkaTemplateMock, Mockito.never()).send(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        verify(kafkaTemplateMock, Mockito.never()).send(
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any()
+        )
     }
 
     @Test
     fun `skal ikke behandle hendelse nar journalpost tilhorer NKS`() {
         val journalpostId = 123213L
         stubs.mockSts()
-        stubs.mockPersonResponse(PersonDto(PersonIdent("123"), aktørId = AktørId("12321")), HttpStatus.OK)
-        stubs.mockSafResponseTilknyttedeJournalposter(listOf(TilknyttetJournalpost(123123L, JournalStatus.FERDIGSTILT, Sak("5276661"))))
+        stubs.mockPersonResponse(
+            PersonDto(PersonIdent("123"), aktørId = AktørId("12321")),
+            HttpStatus.OK
+        )
+        stubs.mockSafResponseTilknyttedeJournalposter(
+            listOf(
+                TilknyttetJournalpost(
+                    123123L,
+                    JournalStatus.FERDIGSTILT,
+                    Sak("5276661")
+                )
+            )
+        )
         stubs.mockSafResponseHentJournalpost(
             opprettSafResponse(
                 journalpostId = journalpostId.toString(),
@@ -323,6 +466,10 @@ class JoarkHendelseTest {
 
         hendelseListener.listenJournalforingHendelse(record)
 
-        verify(kafkaTemplateMock, Mockito.never()).send(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())
+        verify(kafkaTemplateMock, Mockito.never()).send(
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any()
+        )
     }
 }

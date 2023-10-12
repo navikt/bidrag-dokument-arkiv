@@ -8,27 +8,29 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.bidrag.dokument.arkiv.model.JournalpostDataException
 import no.nav.bidrag.dokument.arkiv.model.ViolationException
+import no.nav.bidrag.dokument.arkiv.model.runCatchingIgnoreException
 import no.nav.bidrag.dokument.arkiv.utils.DateUtils
 import no.nav.bidrag.dokument.arkiv.utils.JsonMapper.fromJsonString
 import no.nav.bidrag.dokument.arkiv.utils.JsonMapper.toJsonString
-import no.nav.bidrag.dokument.dto.AktorDto
-import no.nav.bidrag.dokument.dto.AvsenderMottakerDto
-import no.nav.bidrag.dokument.dto.AvsenderMottakerDtoIdType
-import no.nav.bidrag.dokument.dto.AvvikType
-import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
-import no.nav.bidrag.dokument.dto.DokumentArkivSystemDto
-import no.nav.bidrag.dokument.dto.DokumentDto
-import no.nav.bidrag.dokument.dto.DokumentStatusDto
-import no.nav.bidrag.dokument.dto.EndreJournalpostCommand
-import no.nav.bidrag.dokument.dto.FARSKAP_UTELUKKET_PREFIKS
-import no.nav.bidrag.dokument.dto.JournalpostDto
-import no.nav.bidrag.dokument.dto.JournalpostResponse
-import no.nav.bidrag.dokument.dto.JournalpostStatus
-import no.nav.bidrag.dokument.dto.Kanal
-import no.nav.bidrag.dokument.dto.KodeDto
-import no.nav.bidrag.dokument.dto.MottakerAdresseTo
-import no.nav.bidrag.dokument.dto.ReturDetaljer
-import no.nav.bidrag.dokument.dto.ReturDetaljerLog
+import no.nav.bidrag.transport.dokument.AktorDto
+import no.nav.bidrag.transport.dokument.AvsenderMottakerDto
+import no.nav.bidrag.transport.dokument.AvsenderMottakerDtoIdType
+import no.nav.bidrag.transport.dokument.AvvikType
+import no.nav.bidrag.transport.dokument.DistribuerTilAdresse
+import no.nav.bidrag.transport.dokument.DokumentArkivSystemDto
+import no.nav.bidrag.transport.dokument.DokumentDto
+import no.nav.bidrag.transport.dokument.DokumentStatusDto
+import no.nav.bidrag.transport.dokument.EndreJournalpostCommand
+import no.nav.bidrag.transport.dokument.FARSKAP_UTELUKKET_PREFIKS
+import no.nav.bidrag.transport.dokument.IdentType
+import no.nav.bidrag.transport.dokument.JournalpostDto
+import no.nav.bidrag.transport.dokument.JournalpostResponse
+import no.nav.bidrag.transport.dokument.JournalpostStatus
+import no.nav.bidrag.transport.dokument.Kanal
+import no.nav.bidrag.transport.dokument.KodeDto
+import no.nav.bidrag.transport.dokument.MottakerAdresseTo
+import no.nav.bidrag.transport.dokument.ReturDetaljer
+import no.nav.bidrag.transport.dokument.ReturDetaljerLog
 import org.apache.logging.log4j.util.Strings
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -205,34 +207,34 @@ data class Journalpost(
         avsenderMottaker?.navn != null || avsenderMottaker?.id != null
 
     fun hentAvsenderMottakerId(): String? = avsenderMottaker?.id
-    fun hentJournalStatus(): String? {
+    fun hentJournalStatus(): JournalpostStatus? {
         return if (isDistribusjonKommetIRetur()) {
-            JournalstatusDto.RETUR
+            JournalpostStatus.RETUR
         } else {
             when (journalstatus) {
-                JournalStatus.MOTTATT -> JournalstatusDto.MOTTAKSREGISTRERT
-                JournalStatus.JOURNALFOERT -> JournalstatusDto.JOURNALFORT
-                JournalStatus.FEILREGISTRERT -> JournalstatusDto.FEILREGISTRERT
-                JournalStatus.EKSPEDERT -> JournalstatusDto.EKSPEDERT
+                JournalStatus.MOTTATT -> JournalpostStatus.MOTTATT
+                JournalStatus.JOURNALFOERT -> JournalpostStatus.JOURNALFØRT
+                JournalStatus.FEILREGISTRERT -> JournalpostStatus.FEILREGISTRERT
+                JournalStatus.EKSPEDERT -> JournalpostStatus.EKSPEDERT
                 JournalStatus.FERDIGSTILT ->
                     if (hentBrevkodeDto()?.kode == "CRM_MELDINGSKJEDE") {
-                        JournalstatusDto.JOURNALFORT
+                        JournalpostStatus.JOURNALFØRT
                     } else if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
                         if (isDistribusjonBestilt()) {
-                            JournalstatusDto.EKSPEDERT
+                            JournalpostStatus.EKSPEDERT
                         } else {
-                            JournalstatusDto.KLAR_TIL_PRINT
+                            JournalpostStatus.KLAR_FOR_DISTRIBUSJON
                         }
                     } else if (isNotat()) {
-                        JournalstatusDto.RESERVERT
+                        JournalpostStatus.RESERVERT
                     } else {
-                        JournalstatusDto.JOURNALFORT
+                        JournalpostStatus.JOURNALFØRT
                     }
 
-                JournalStatus.UNDER_ARBEID, JournalStatus.RESERVERT -> JournalstatusDto.UNDER_PRODUKSJON
-                JournalStatus.UTGAAR -> JournalstatusDto.UTGAR
-                JournalStatus.AVBRUTT -> JournalstatusDto.AVBRUTT
-                else -> journalstatus?.name
+                JournalStatus.UNDER_ARBEID, JournalStatus.RESERVERT -> JournalpostStatus.UNDER_PRODUKSJON
+                JournalStatus.UTGAAR -> JournalpostStatus.UTGÅR
+                JournalStatus.AVBRUTT -> JournalpostStatus.AVBRUTT
+                else -> JournalpostStatus.fraKode(journalstatus?.name)
             }
         }
     }
@@ -419,7 +421,8 @@ data class Journalpost(
             journalforendeEnhet = journalforendeEnhet,
             journalfortAv = hentJournalfortAvNavn(),
             journalpostId = "JOARK-$journalpostId",
-            journalstatus = hentJournalStatus(),
+            journalstatus = hentJournalStatus()?.kode,
+            status = hentJournalStatus(),
             mottattDato = hentDatoRegistrert(),
             returDetaljer = hentReturDetaljer(),
             brevkode = hentBrevkodeDto(),
@@ -814,9 +817,9 @@ data class ReturDetaljerLogDO(
     fun toMap(): List<Map<String, String>> = beskrivelse.chunked(100).mapIndexed { index, it ->
         mapOf(
             "nokkel" to "${if (locked == true) "L" else ""}$RETUR_DETALJER_KEY${index}_${
-            DateUtils.formatDate(
-                dato
-            )
+                DateUtils.formatDate(
+                    dato
+                )
             }",
             "verdi" to it
         )
@@ -851,7 +854,7 @@ data class Bruker(
         return if (id != null) {
             AktorDto(
                 id!!,
-                type ?: BrukerType.FNR.name
+                runCatchingIgnoreException { type?.let { IdentType.valueOf(it) } } ?: IdentType.FNR
             )
         } else {
             throw JournalpostDataException("ingen id i $this")
@@ -944,7 +947,7 @@ data class EndreJournalpostCommandIntern(
     fun hentFagomrade() = endreJournalpostCommand.fagomrade
     fun hentGjelder() = endreJournalpostCommand.gjelder
     fun hentGjelderType() =
-        if (endreJournalpostCommand.gjelderType != null) endreJournalpostCommand.gjelderType!! else "FNR"
+        if (endreJournalpostCommand.gjelderType != null) endreJournalpostCommand.gjelderType!! else IdentType.FNR
 
     fun sjekkGyldigEndring(journalpost: Journalpost) {
         val violations = mutableListOf<String>()
