@@ -320,7 +320,6 @@ fun validerUtgaaendeJournalpostKanDupliseres(journalpost: Journalpost) {
 }
 
 fun validerKanOppretteJournalpost(request: OpprettJournalpostRequest) {
-    Validate.isTrue(request.journalposttype != null, "Journalposttype må settes")
     Validate.isTrue(request.hasGjelder(), "Journalpost må ha satt gjelder ident")
     request.dokumenter.forEachIndexed { index, it ->
         Validate.isTrue(
@@ -337,7 +336,7 @@ fun validerKanOppretteJournalpost(request: OpprettJournalpostRequest) {
 
     if (request.skalFerdigstilles) {
         Validate.isTrue(
-            request.tema == null || request.tema == "BID" || request.tema == "FAR",
+            request.tema == "BID" || request.tema == "FAR",
             "Journalpost som skal ferdigstilles må ha tema BID/FAR"
         )
         Validate.isTrue(

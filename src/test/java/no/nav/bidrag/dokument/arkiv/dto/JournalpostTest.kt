@@ -7,6 +7,7 @@ import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponseWithReturDetaljer
 import no.nav.bidrag.transport.dokument.AvvikType
 import no.nav.bidrag.transport.dokument.FARSKAP_UTELUKKET_PREFIKS
+import no.nav.bidrag.transport.dokument.JournalpostStatus
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -172,7 +173,7 @@ internal class JournalpostTest {
             Executable { assertThat(adresse!!.postnummer).isEqualTo("7950") },
             Executable { assertThat(adresse!!.poststed).isEqualTo("ABELVÆR") },
             Executable { assertThat(adresse!!.land).isEqualTo("NO") },
-            Executable { assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.KLAR_TIL_PRINT) }
+            Executable { assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalpostStatus.KLAR_FOR_DISTRIBUSJON) }
         )
     }
 
@@ -185,7 +186,7 @@ internal class JournalpostTest {
         journalpost.journalposttype = JournalpostType.N
         journalpost.tilleggsopplysninger.setDistribusjonBestillt()
         org.junit.jupiter.api.Assertions.assertAll(
-            Executable { assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.RESERVERT) },
+            Executable { assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalpostStatus.RESERVERT) },
             Executable { assertThat(journalpost.hentJournalpostType()).isEqualTo("X") }
         )
     }
@@ -199,7 +200,7 @@ internal class JournalpostTest {
         journalpost.journalposttype = JournalpostType.U
         journalpost.tilleggsopplysninger.setDistribusjonBestillt()
         org.junit.jupiter.api.Assertions.assertAll(
-            Executable { assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalstatusDto.EKSPEDERT) }
+            Executable { assertThat(journalpost.hentJournalStatus()).isEqualTo(JournalpostStatus.EKSPEDERT) }
         )
     }
 
