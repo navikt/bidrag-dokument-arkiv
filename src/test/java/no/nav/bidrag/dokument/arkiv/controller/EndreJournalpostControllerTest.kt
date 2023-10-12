@@ -136,7 +136,7 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
 
         val endreJournalpostCommand: EndreJournalpostCommand = createEndreJournalpostCommand()
             .copy(
-                skalJournalfores = false,
+                skalJournalfores = true,
                 tittel = "Ny tittel",
                 tilknyttSaker = listOf(sak)
             )
