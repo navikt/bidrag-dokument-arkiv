@@ -13,7 +13,7 @@ fagarkivet.
 
 Denne applikasjonen tilbyr følgende operasjoner mot fagarkivet:
 
-* Hente journalpost metadata fra SAF
+* Hente journalpost metadata fra SAFd
 * Hente dokument bytedata fra SAF
 * Oppdatere journalpost metadata ved å kalle Dokarkiv
 * Bestille distribusjon av utgående journalpost ved å kalle dokdistfordeling
