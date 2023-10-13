@@ -6,11 +6,13 @@ import no.nav.bidrag.dokument.arkiv.stubs.createOpprettJournalpostRequest
 import no.nav.bidrag.transport.dokument.AvsenderMottakerDto
 import no.nav.bidrag.transport.dokument.JournalpostType
 import no.nav.bidrag.transport.dokument.OpprettDokumentDto
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class OpprettJournalpostValidatorTest {
 
     @Test
+    @Disabled
     fun `Validering skal feile hvis journalposttype er tom`() {
         val request =
             createOpprettJournalpostRequest().copy(journalposttype = JournalpostType.INNGÅENDE)

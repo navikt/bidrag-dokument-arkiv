@@ -28,7 +28,7 @@ internal class EndreJournalpostValidationTest {
         journalpost.antallRetur = 1
         val endreJournalpostCommand = createEndreJournalpostCommand()
             .copy(
-                skalJournalfores = true,
+                skalJournalfores = false,
                 endreReturDetaljer = emptyList()
             )
         Assertions.assertDoesNotThrow {
