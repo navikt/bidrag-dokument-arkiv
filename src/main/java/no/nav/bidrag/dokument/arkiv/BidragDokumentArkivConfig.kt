@@ -12,11 +12,9 @@ import no.nav.bidrag.commons.security.service.SecurityTokenService
 import no.nav.bidrag.commons.security.service.StsTokenService
 import no.nav.bidrag.commons.web.CorrelationIdFilter
 import no.nav.bidrag.commons.web.DefaultCorsFilter
-import no.nav.bidrag.commons.web.EnhetFilter
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate
 import no.nav.bidrag.commons.web.MdcFilter
 import no.nav.bidrag.commons.web.UserMdcFilter
-import no.nav.bidrag.dokument.arkiv.aop.AspectExceptionLogger
 import no.nav.bidrag.dokument.arkiv.aop.HttpStatusRestControllerAdvice
 import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer
@@ -289,15 +287,6 @@ class BidragDokumentArkivConfig {
             .interceptors
             .add(securityTokenService.clientCredentialsTokenInterceptor("bidrag-organisasjon"))
         return BidragOrganisasjonConsumer(httpHeaderRestTemplate)
-    }
-
-    @Bean
-    fun exceptionLogger(): ExceptionLogger {
-        return ExceptionLogger(
-            BidragDokumentArkiv::class.java.simpleName,
-            AspectExceptionLogger::class.java,
-            HttpStatusRestControllerAdvice::class.java
-        )
     }
 
     @Bean

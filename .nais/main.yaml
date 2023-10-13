@@ -1,8 +1,6 @@
 name: bidrag-dokument-arkiv
 serviceuser: q
 ingresses:
-  - https://bidrag-dokument-arkiv.nais.preprod.local/
-  - https://bidrag-dokument-arkiv.dev.adeo.no/
   - https://bidrag-dokument-arkiv.dev.intern.nav.no/
 kafka:
   pool: nav-dev

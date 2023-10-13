@@ -9,7 +9,7 @@ import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.model.kanIkkeHenteJournalMedUgyldigFagomrade
-import no.nav.bidrag.dokument.dto.JournalpostDto
+import no.nav.bidrag.transport.dokument.JournalpostDto
 import no.nav.bidrag.transport.person.PersonDto
 import org.slf4j.LoggerFactory
 import java.util.Optional
@@ -18,18 +18,12 @@ class JournalpostService(
     private val safConsumer: SafConsumer,
     private val personConsumer: PersonConsumer
 ) {
-    fun hentJournalpost(journalpostId: Long): Optional<Journalpost> {
-        return hentJournalpost(journalpostId, null)?.let { Optional.ofNullable(it) }
-            ?: Optional.empty()
+    fun hentJournalpost(journalpostId: Long): Journalpost? {
+        return hentJournalpost(journalpostId, null)
     }
 
-    fun hentJournalpostMedTilknyttedeSaker(journalpostId: Long): Optional<Journalpost> {
-        val jpOptional = hentJournalpost(journalpostId)
-        return if (jpOptional.isEmpty) {
-            jpOptional
-        } else {
-            Optional.of(populerMedTilknyttedeSaker(jpOptional.get()))
-        }
+    fun hentJournalpostMedTilknyttedeSaker(journalpostId: Long): Journalpost? {
+        return hentJournalpost(journalpostId)?.let { populerMedTilknyttedeSaker(it) }
     }
 
     fun hentJournalpostMedFnrOgTilknyttedeSaker(

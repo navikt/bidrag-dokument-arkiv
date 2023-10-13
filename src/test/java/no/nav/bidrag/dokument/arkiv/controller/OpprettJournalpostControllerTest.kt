@@ -13,17 +13,20 @@ import no.nav.bidrag.dokument.arkiv.stubs.TITTEL_HOVEDDOKUMENT
 import no.nav.bidrag.dokument.arkiv.stubs.TITTEL_VEDLEGG1
 import no.nav.bidrag.dokument.arkiv.stubs.createOpprettJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
-import no.nav.bidrag.dokument.dto.AvsenderMottakerDto
-import no.nav.bidrag.dokument.dto.AvsenderMottakerDtoIdType
-import no.nav.bidrag.dokument.dto.JournalpostType
-import no.nav.bidrag.dokument.dto.MottakUtsendingKanal
-import no.nav.bidrag.dokument.dto.OpprettDokumentDto
-import no.nav.bidrag.dokument.dto.OpprettJournalpostResponse
+import no.nav.bidrag.transport.dokument.AvsenderMottakerDto
+import no.nav.bidrag.transport.dokument.AvsenderMottakerDtoIdType
+import no.nav.bidrag.transport.dokument.JournalpostType
+import no.nav.bidrag.transport.dokument.MottakUtsendingKanal
+import no.nav.bidrag.transport.dokument.OpprettDokumentDto
+import no.nav.bidrag.transport.dokument.OpprettJournalpostResponse
+import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import java.time.LocalDateTime
 import java.util.*
 
@@ -489,19 +492,55 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
     inner class Feilhåndtering {
         @Test
         fun `skal feile hvis journalpost opprettet uten journalposttype`() {
-            val request = createOpprettJournalpostRequest().copy(journalposttype = null)
+            @Language("json")
+            val request = """
+                {
+                    "skalFerdigstilles": false,
+                    "gjelderIdent": "12345678910",
+                    "avsenderMottaker": {
+                        "navn": null,
+                        "ident": "12345678910",
+                        "type": "FNR",
+                        "adresse": null
+                    },
+                    "dokumenter": [
+                        {
+                            "tittel": "Tittel på hoveddokument",
+                            "fysiskDokument": "SW5uaG9sZCBww6UgZG9rdW1lbnRldA=="
+                        },
+                        {
+                            "tittel": "Tittel på vedlegg",
+                            "fysiskDokument": "SW5uaG9sZCBww6UgZG9rdW1lbnRldCB2ZWRsZWdn"
+                        }
+                    ],
+                    "tilknyttSaker": [],
+                    "behandlingstema": "BEHTEMA",
+                    "datoMottatt": [
+                        2022,
+                        11,
+                        29,
+                        16,
+                        0
+                    ],
+                    "kanal": "DIGITALT",
+                    "tema": "BID",
+                    "referanseId": "REFID"
+                }
+            """.trimIndent()
 
             val nyJpId = 123123123L
             stubs.mockDokarkivOpprettRequest(
                 nyJpId,
                 ferdigstill = false,
-                dokumentList = request.dokumenter.map { DokumentInfo("DOK_ID_${it.tittel}") }
             )
+
+            val header = HttpHeaders()
+            header.contentType = MediaType.APPLICATION_JSON
 
             val response = httpHeaderTestRestTemplate.exchange(
                 initUrl() + "/journalpost",
                 HttpMethod.POST,
-                HttpEntity(request),
+                HttpEntity(request, header),
                 OpprettJournalpostResponse::class.java
             )
 

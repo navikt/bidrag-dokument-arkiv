@@ -3,7 +3,7 @@ package no.nav.bidrag.dokument.arkiv.dto
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
-import no.nav.bidrag.dokument.dto.OpprettJournalpostRequest
+import no.nav.bidrag.transport.dokument.OpprettJournalpostRequest
 import org.apache.commons.lang3.Validate
 
 typealias DokumentId = String
@@ -38,7 +38,11 @@ data class JoarkOpprettJournalpostRequest(
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    data class OpprettJournalpostAvsenderMottaker(val navn: String? = null, val id: String? = null, val idType: AvsenderMottakerIdType? = null)
+    data class OpprettJournalpostAvsenderMottaker(
+        val navn: String? = null,
+        val id: String? = null,
+        val idType: AvsenderMottakerIdType? = null
+    )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -135,7 +139,8 @@ class OpprettJournalpostRequestBuilder {
     }
 
     internal fun build(journalpost: Journalpost): JoarkOpprettJournalpostRequest {
-        val avsenderType = if (journalpost.avsenderMottaker?.type == AvsenderMottakerIdType.NULL) null else journalpost.avsenderMottaker?.type
+        val avsenderType =
+            if (journalpost.avsenderMottaker?.type == AvsenderMottakerIdType.NULL) null else journalpost.avsenderMottaker?.type
         return JoarkOpprettJournalpostRequest(
             sak = if (fjernSak || journalpost.sak?.fagsakId.isNullOrEmpty()) {
                 null
@@ -145,7 +150,8 @@ class OpprettJournalpostRequestBuilder {
                 )
             },
             tema = tema ?: "BID",
-            journalfoerendeEnhet = if (fjernJournalførendeEnhet) null else journalførendeenhet ?: journalpost.journalforendeEnhet,
+            journalfoerendeEnhet = if (fjernJournalførendeEnhet) null else journalførendeenhet
+                ?: journalpost.journalforendeEnhet,
             journalpostType = when (journalpost.journalposttype) {
                 JournalpostType.U -> JoarkJournalpostType.UTGAAENDE
                 JournalpostType.I -> JoarkJournalpostType.INNGAAENDE
@@ -172,7 +178,10 @@ class OpprettJournalpostRequestBuilder {
                 journalpost.avsenderMottaker?.id,
                 avsenderType
             ),
-            bruker = JoarkOpprettJournalpostRequest.OpprettJournalpostBruker(journalpost.bruker?.id, journalpost.bruker?.type),
+            bruker = JoarkOpprettJournalpostRequest.OpprettJournalpostBruker(
+                journalpost.bruker?.id,
+                journalpost.bruker?.type
+            ),
             tilleggsopplysninger = if (fjernDistribusjonMetadata) {
                 val tillegssopplysninger = TilleggsOpplysninger()
                 tillegssopplysninger.addAll(journalpost.tilleggsopplysninger)
@@ -196,13 +205,19 @@ class OpprettJournalpostRequestBuilder {
 }
 
 @OpprettJournalpostRequestBuilderDsl
-fun dupliserJournalpost(journalpost: Journalpost, setup: OpprettJournalpostRequestBuilder.() -> Unit): JoarkOpprettJournalpostRequest {
+fun dupliserJournalpost(
+    journalpost: Journalpost,
+    setup: OpprettJournalpostRequestBuilder.() -> Unit
+): JoarkOpprettJournalpostRequest {
     val opprettJournalpostBuilder = OpprettJournalpostRequestBuilder()
     opprettJournalpostBuilder.setup()
     return opprettJournalpostBuilder.build(journalpost)
 }
 
-fun opprettDokumentVariant(filnavn: String? = null, dokumentByte: ByteArray): JoarkOpprettJournalpostRequest.DokumentVariant {
+fun opprettDokumentVariant(
+    filnavn: String? = null,
+    dokumentByte: ByteArray
+): JoarkOpprettJournalpostRequest.DokumentVariant {
     return JoarkOpprettJournalpostRequest.DokumentVariant(
         variantformat = "ARKIV",
         filtype = "PDFA",
@@ -245,16 +260,25 @@ enum class JoarkMottakUtsendingKanal {
     INGEN_DISTRIBUSJON
 }
 
-fun validerKanOppretteJournalpost(opprettJournalpost: JoarkOpprettJournalpostRequest, skalFerdigstilles: Boolean = false) {
+fun validerKanOppretteJournalpost(
+    opprettJournalpost: JoarkOpprettJournalpostRequest,
+    skalFerdigstilles: Boolean = false
+) {
     Validate.isTrue(opprettJournalpost.journalpostType != null, "Journalposttype må settes")
     Validate.isTrue(opprettJournalpost.bruker?.id != null, "Journalpost må ha satt brukerid")
     opprettJournalpost.dokumenter.forEach {
-        Validate.isTrue(it.dokumentvarianter.isNotEmpty(), "Dokument \"${it.dokumentInfoId ?: it.tittel}\" må minst ha en dokumentvariant")
+        Validate.isTrue(
+            it.dokumentvarianter.isNotEmpty(),
+            "Dokument \"${it.dokumentInfoId ?: it.tittel}\" må minst ha en dokumentvariant"
+        )
         Validate.isTrue(!it.tittel.isNullOrEmpty(), "Alle dokumenter må ha tittel")
     }
 
     if (opprettJournalpost.journalpostType != JoarkJournalpostType.NOTAT) {
-        Validate.isTrue(opprettJournalpost.hasAvsenderMottaker(), "Journalpost må ha satt avsender/mottaker")
+        Validate.isTrue(
+            opprettJournalpost.hasAvsenderMottaker(),
+            "Journalpost må ha satt avsender/mottaker"
+        )
     }
 
     if (opprettJournalpost.journalpostType == JoarkJournalpostType.NOTAT) {
@@ -262,18 +286,33 @@ fun validerKanOppretteJournalpost(opprettJournalpost: JoarkOpprettJournalpostReq
     }
 
     if (opprettJournalpost.journalpostType == JoarkJournalpostType.INNGAAENDE) {
-        Validate.isTrue(opprettJournalpost.kanal != null, "Kanal må settes for inngående journalpost")
+        Validate.isTrue(
+            opprettJournalpost.kanal != null,
+            "Kanal må settes for inngående journalpost"
+        )
     }
 
     if (skalFerdigstilles) {
-        Validate.isTrue(opprettJournalpost.tema == "BID" || opprettJournalpost.tema == "FAR", "Journalpost som skal ferdigstilles må ha tema BID/FAR")
-        Validate.isTrue(!opprettJournalpost.journalfoerendeEnhet.isNullOrEmpty(), "Journalpost som skal ferdigstilles må ha satt journalførendeEnhet")
-        Validate.isTrue(opprettJournalpost.hasSak(), "Journalpost som skal ferdigstilles må ha minst en sak")
+        Validate.isTrue(
+            opprettJournalpost.tema == "BID" || opprettJournalpost.tema == "FAR",
+            "Journalpost som skal ferdigstilles må ha tema BID/FAR"
+        )
+        Validate.isTrue(
+            !opprettJournalpost.journalfoerendeEnhet.isNullOrEmpty(),
+            "Journalpost som skal ferdigstilles må ha satt journalførendeEnhet"
+        )
+        Validate.isTrue(
+            opprettJournalpost.hasSak(),
+            "Journalpost som skal ferdigstilles må ha minst en sak"
+        )
     }
 }
 
 fun validerUtgaaendeJournalpostKanDupliseres(journalpost: Journalpost) {
-    Validate.isTrue(journalpost.tema == "BID" || journalpost.tema == "FAR", "Journalpost må ha tema BID/FAR")
+    Validate.isTrue(
+        journalpost.tema == "BID" || journalpost.tema == "FAR",
+        "Journalpost må ha tema BID/FAR"
+    )
     Validate.isTrue(journalpost.isUtgaaendeDokument(), "Journalpost må være utgående dokument")
     Validate.isTrue(journalpost.hasMottakerId(), "Journalpost må ha satt mottakerId")
     Validate.isTrue(journalpost.hasSak(), "Journalpost må ha sak")
@@ -281,21 +320,29 @@ fun validerUtgaaendeJournalpostKanDupliseres(journalpost: Journalpost) {
 }
 
 fun validerKanOppretteJournalpost(request: OpprettJournalpostRequest) {
-    Validate.isTrue(request.journalposttype != null, "Journalposttype må settes")
     Validate.isTrue(request.hasGjelder(), "Journalpost må ha satt gjelder ident")
     request.dokumenter.forEachIndexed { index, it ->
-        Validate.isTrue(it.tittel.isNotEmpty(), "Dokument ${index + 1} mangler tittel. Alle dokumenter må ha satt tittel")
+        Validate.isTrue(
+            it.tittel.isNotEmpty(),
+            "Dokument ${index + 1} mangler tittel. Alle dokumenter må ha satt tittel"
+        )
     }
-    if (request.journalposttype != no.nav.bidrag.dokument.dto.JournalpostType.NOTAT) {
-        Validate.isTrue(request.hasAvsenderMottaker(), "Journalpost må ha satt avsender/mottaker navn eller ident")
+    if (request.journalposttype != no.nav.bidrag.transport.dokument.JournalpostType.NOTAT) {
+        Validate.isTrue(
+            request.hasAvsenderMottaker(),
+            "Journalpost må ha satt avsender/mottaker navn eller ident"
+        )
     }
 
     if (request.skalFerdigstilles) {
         Validate.isTrue(
-            request.tema == null || request.tema == "BID" || request.tema == "FAR",
+            request.tema == "BID" || request.tema == "FAR",
             "Journalpost som skal ferdigstilles må ha tema BID/FAR"
         )
-        Validate.isTrue(!request.hentJournalførendeEnhet().isNullOrEmpty(), "Journalpost som skal ferdigstilles må ha satt journalførendeEnhet")
+        Validate.isTrue(
+            !request.hentJournalførendeEnhet().isNullOrEmpty(),
+            "Journalpost som skal ferdigstilles må ha satt journalførendeEnhet"
+        )
         Validate.isTrue(request.hasSak(), "Journalpost som skal ferdigstilles må ha minst en sak")
     }
 }

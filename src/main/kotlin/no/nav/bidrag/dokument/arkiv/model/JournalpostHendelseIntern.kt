@@ -6,9 +6,9 @@ import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.JournalstatusDto
 import no.nav.bidrag.dokument.arkiv.dto.Saksbehandler
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerMedEnhet
-import no.nav.bidrag.dokument.dto.HendelseType
-import no.nav.bidrag.dokument.dto.JournalpostHendelse
-import no.nav.bidrag.dokument.dto.Sporingsdata
+import no.nav.bidrag.transport.dokument.HendelseType
+import no.nav.bidrag.transport.dokument.JournalpostHendelse
+import no.nav.bidrag.transport.dokument.Sporingsdata
 import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord
 
 class JournalpostHendelseIntern(
@@ -21,7 +21,7 @@ class JournalpostHendelseIntern(
     init {
         journalpostHendelse = JournalpostHendelse(
             journalpostId = journalpost.hentJournalpostIdMedPrefix(),
-            journalstatus = journalpost.hentJournalStatus(),
+            journalstatus = journalpost.hentJournalStatus()?.kode,
             status = journalpost.hentJournalStatus(),
             enhet = journalpost.journalforendeEnhet,
             fagomrade = journalforingHendelse?.temaNytt ?: journalpost.tema,

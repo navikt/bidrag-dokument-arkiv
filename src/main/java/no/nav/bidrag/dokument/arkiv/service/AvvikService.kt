@@ -35,13 +35,13 @@ import no.nav.bidrag.dokument.arkiv.kafka.HendelserProducer
 import no.nav.bidrag.dokument.arkiv.model.AvvikDetaljException
 import no.nav.bidrag.dokument.arkiv.model.AvvikNotSupportedException
 import no.nav.bidrag.dokument.arkiv.model.Discriminator
+import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
 import no.nav.bidrag.dokument.arkiv.model.UgyldigAvvikException
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager
-import no.nav.bidrag.dokument.dto.AvvikType
-import no.nav.bidrag.dokument.dto.BehandleAvvikshendelseResponse
-import no.nav.bidrag.dokument.dto.DokumentDto
-import no.nav.bidrag.dokument.dto.JournalpostIkkeFunnetException
+import no.nav.bidrag.transport.dokument.AvvikType
+import no.nav.bidrag.transport.dokument.BehandleAvvikshendelseResponse
+import no.nav.bidrag.transport.dokument.DokumentDto
 import org.apache.logging.log4j.util.Strings
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -50,6 +50,7 @@ import java.util.Base64
 import java.util.Optional
 import java.util.function.Consumer
 import java.util.stream.Stream
+import kotlin.jvm.optionals.getOrNull
 
 @Service
 class AvvikService(
@@ -74,16 +75,19 @@ class AvvikService(
     }
 
     fun hentAvvik(jpid: Long): List<AvvikType> {
-        return journalpostService.hentJournalpost(jpid).get().tilAvvik()
+        return journalpostService.hentJournalpost(jpid)?.tilAvvik() ?: emptyList()
     }
 
-    fun behandleAvvik(behandleAvvikRequest: AvvikshendelseIntern): Optional<BehandleAvvikshendelseResponse> {
+    fun behandleAvvik(behandleAvvikRequest: AvvikshendelseIntern): BehandleAvvikshendelseResponse {
         return journalpostService.hentJournalpost(behandleAvvikRequest.journalpostId)
-            .map { jp: Journalpost -> behandleAvvik(jp, behandleAvvikRequest) }
-            .orElseThrow { JournalpostIkkeFunnetException("Fant ikke journalpost med id lik " + behandleAvvikRequest.journalpostId) }
+            ?.let { jp: Journalpost -> behandleAvvik(jp, behandleAvvikRequest) }
+            ?: throw JournalpostIkkeFunnetException("Fant ikke journalpost med id lik " + behandleAvvikRequest.journalpostId)
     }
 
-    fun behandleAvvik(journalpost: Journalpost, avvikshendelseIntern: AvvikshendelseIntern): Optional<BehandleAvvikshendelseResponse> {
+    fun behandleAvvik(
+        journalpost: Journalpost,
+        avvikshendelseIntern: AvvikshendelseIntern
+    ): BehandleAvvikshendelseResponse {
         if (!erGyldigAvviksBehandling(journalpost, avvikshendelseIntern.avvikstype)) {
             throw UgyldigAvvikException(
                 String.format(
@@ -97,14 +101,26 @@ class AvvikService(
             AvvikType.BESTILL_ORIGINAL -> bestillOriginal(journalpost, avvikshendelseIntern)
             AvvikType.BESTILL_SPLITTING -> bestillSplitting(journalpost, avvikshendelseIntern)
             AvvikType.BESTILL_RESKANNING -> bestillReskanning(journalpost, avvikshendelseIntern)
-            AvvikType.KOPIER_FRA_ANNEN_FAGOMRADE -> kopierFraAnnenFagomrade(journalpost, avvikshendelseIntern)
-            AvvikType.OVERFOR_TIL_ANNEN_ENHET -> overforJournalpostTilEnhet(journalpost, avvikshendelseIntern.enhetsnummerNytt)
+            AvvikType.KOPIER_FRA_ANNEN_FAGOMRADE -> kopierFraAnnenFagomrade(
+                journalpost,
+                avvikshendelseIntern
+            )
+
+            AvvikType.OVERFOR_TIL_ANNEN_ENHET -> overforJournalpostTilEnhet(
+                journalpost,
+                avvikshendelseIntern.enhetsnummerNytt
+            )
+
             AvvikType.ENDRE_FAGOMRADE -> endreFagomrade(journalpost, avvikshendelseIntern)
             AvvikType.SEND_TIL_FAGOMRADE -> onlyLogging()
             AvvikType.TREKK_JOURNALPOST -> trekkJournalpost(journalpost, avvikshendelseIntern)
             AvvikType.FEILFORE_SAK -> feilregistrerSakstilknytning(avvikshendelseIntern.journalpostId)
             AvvikType.REGISTRER_RETUR -> registrerRetur(journalpost, avvikshendelseIntern)
-            AvvikType.BESTILL_NY_DISTRIBUSJON -> bestillNyDistribusjon(journalpost, avvikshendelseIntern)
+            AvvikType.BESTILL_NY_DISTRIBUSJON -> bestillNyDistribusjon(
+                journalpost,
+                avvikshendelseIntern
+            )
+
             AvvikType.MANGLER_ADRESSE -> manglerAdresse(journalpost)
             AvvikType.FARSKAP_UTELUKKET -> farskapUtelukket(journalpost, avvikshendelseIntern)
             else -> throw AvvikNotSupportedException("Avvik ${avvikshendelseIntern.avvikstype} ikke støttet")
@@ -119,43 +135,75 @@ class AvvikService(
             avvikshendelseIntern.beskrivelse,
             avvikshendelseIntern
         )
-        return Optional.of(BehandleAvvikshendelseResponse(avvikshendelseIntern.avvikstype))
+        return BehandleAvvikshendelseResponse(avvikshendelseIntern.avvikstype)
     }
 
     private fun publiserHendelse(journalpost: Journalpost, enhet: String?) {
         if (journalpost.isInngaaendeDokument()) {
-            hendelserProducer.publishJournalpostUpdated(journalpost.hentJournalpostIdLong()!!, enhet)
+            hendelserProducer.publishJournalpostUpdated(
+                journalpost.hentJournalpostIdLong()!!,
+                enhet
+            )
         }
     }
 
-    private fun bestillSplitting(journalpost: Journalpost, avvikshendelseIntern: AvvikshendelseIntern) {
+    private fun bestillSplitting(
+        journalpost: Journalpost,
+        avvikshendelseIntern: AvvikshendelseIntern
+    ) {
         if (avvikshendelseIntern.beskrivelse.isNullOrEmpty()) {
             throw UgyldigAvvikException("Avvik bestill splitting må inneholde beskrivelse")
         }
         val saksbehandler = hentSaksbehandler(avvikshendelseIntern.saksbehandlersEnhet!!)
         if (journalpost.isStatusJournalfort()) {
-            oppgaveService.opprettOppgaveTilFagpost(BestillSplittingoppgaveRequest(journalpost, saksbehandler, avvikshendelseIntern.beskrivelse))
+            oppgaveService.opprettOppgaveTilFagpost(
+                BestillSplittingoppgaveRequest(
+                    journalpost,
+                    saksbehandler,
+                    avvikshendelseIntern.beskrivelse
+                )
+            )
             dokarkivConsumer.feilregistrerSakstilknytning(journalpost.hentJournalpostIdLong())
         } else {
             val beskrivelse = bestillSplittingKommentar(avvikshendelseIntern.beskrivelse)
-            oppgaveService.leggTilKommentarPaaJournalforingsoppgave(journalpost, saksbehandler, beskrivelse)
+            oppgaveService.leggTilKommentarPaaJournalforingsoppgave(
+                journalpost,
+                saksbehandler,
+                beskrivelse
+            )
             overforJournalpostTilEnhet(journalpost, OppgaveEnhet.FAGPOST)
         }
     }
 
-    private fun bestillReskanning(journalpost: Journalpost, avvikshendelseIntern: AvvikshendelseIntern) {
+    private fun bestillReskanning(
+        journalpost: Journalpost,
+        avvikshendelseIntern: AvvikshendelseIntern
+    ) {
         val saksbehandler = hentSaksbehandler(avvikshendelseIntern.saksbehandlersEnhet!!)
         if (journalpost.isStatusJournalfort()) {
-            oppgaveService.opprettOppgaveTilFagpost(BestillReskanningOppgaveRequest(journalpost, saksbehandler, avvikshendelseIntern.beskrivelse))
+            oppgaveService.opprettOppgaveTilFagpost(
+                BestillReskanningOppgaveRequest(
+                    journalpost,
+                    saksbehandler,
+                    avvikshendelseIntern.beskrivelse
+                )
+            )
             dokarkivConsumer.feilregistrerSakstilknytning(journalpost.hentJournalpostIdLong())
         } else {
             val beskrivelse = bestillReskanningKommentar(avvikshendelseIntern.beskrivelse)
-            oppgaveService.leggTilKommentarPaaJournalforingsoppgave(journalpost, saksbehandler, beskrivelse)
+            oppgaveService.leggTilKommentarPaaJournalforingsoppgave(
+                journalpost,
+                saksbehandler,
+                beskrivelse
+            )
             overforJournalpostTilEnhet(journalpost, OppgaveEnhet.FAGPOST)
         }
     }
 
-    private fun bestillOriginal(journalpost: Journalpost, avvikshendelseIntern: AvvikshendelseIntern) {
+    private fun bestillOriginal(
+        journalpost: Journalpost,
+        avvikshendelseIntern: AvvikshendelseIntern
+    ) {
         val saksbehandler = hentSaksbehandler(avvikshendelseIntern.saksbehandlersEnhet!!)
         oppgaveService.opprettOppgaveTilFagpost(
             BestillOriginalOppgaveRequest(
@@ -170,7 +218,12 @@ class AvvikService(
 
     private fun overforJournalpostTilEnhet(journalpost: Journalpost, enhet: String) {
         if (journalpost.journalforendeEnhet != enhet) {
-            dokarkivConsumer.endre(OverforEnhetRequest(journalpost.hentJournalpostIdLong()!!, enhet))
+            dokarkivConsumer.endre(
+                OverforEnhetRequest(
+                    journalpost.hentJournalpostIdLong()!!,
+                    enhet
+                )
+            )
         }
     }
 
@@ -180,7 +233,10 @@ class AvvikService(
             .orElseGet { SaksbehandlerMedEnhet(Saksbehandler(), enhet) }
     }
 
-    fun kopierFraAnnenFagomrade(journalpost: Journalpost, avvikshendelseIntern: AvvikshendelseIntern) {
+    fun kopierFraAnnenFagomrade(
+        journalpost: Journalpost,
+        avvikshendelseIntern: AvvikshendelseIntern
+    ) {
         if (journalpost.isUtgaaendeDokument()) {
             throw UgyldigAvvikException("Kan ikke kopiere en utgående dokument fra annen fagområde")
         }
@@ -203,12 +259,17 @@ class AvvikService(
             med tittel "$nyJournalpostTittel (Kopiert fra dokument: ${journalpost.hentTittel()})"
             avvikshendelseIntern.dokumenter!!.forEach(
                 Consumer { (dokumentreferanse, _, _, tittel, dokument, brevkode): DokumentDto ->
-                    val dokumentByte = if (Strings.isNotEmpty(dokument)) Base64.getDecoder().decode(dokument) else null
+                    val dokumentByte = if (Strings.isNotEmpty(dokument)) Base64.getDecoder()
+                        .decode(dokument) else null
                     +JoarkOpprettJournalpostRequest.Dokument(
                         dokumentInfoId = dokumentreferanse,
                         brevkode = brevkode,
                         tittel = tittel,
-                        dokumentvarianter = if (dokumentByte != null) listOf(opprettDokumentVariant(dokumentByte = dokumentByte)) else emptyList()
+                        dokumentvarianter = if (dokumentByte != null) listOf(
+                            opprettDokumentVariant(
+                                dokumentByte = dokumentByte
+                            )
+                        ) else emptyList()
                     )
                 }
             )
@@ -220,24 +281,41 @@ class AvvikService(
             journalpost.hentJournalpostIdLong(),
             skalFerdigstilles = true
         )
-        LOGGER.info("Kopiert journalpost {} til Bidrag, ny journalpostId {}", journalpost.journalpostId, journalpostId)
-        oppgaveService.ferdigstillVurderDokumentOppgaver(journalpost.hentJournalpostIdLong()!!, avvikshendelseIntern.saksbehandlersEnhet!!)
+        LOGGER.info(
+            "Kopiert journalpost {} til Bidrag, ny journalpostId {}",
+            journalpost.journalpostId,
+            journalpostId
+        )
+        oppgaveService.ferdigstillVurderDokumentOppgaver(
+            journalpost.hentJournalpostIdLong()!!,
+            avvikshendelseIntern.saksbehandlersEnhet!!
+        )
     }
 
     fun farskapUtelukket(journalpost: Journalpost, avvikshendelseIntern: AvvikshendelseIntern) {
-        dokarkivConsumer.endre(avvikshendelseIntern.toLeggTiLFarskapUtelukketTilTittelRequest(journalpost))
+        dokarkivConsumer.endre(
+            avvikshendelseIntern.toLeggTiLFarskapUtelukketTilTittelRequest(
+                journalpost
+            )
+        )
     }
 
     fun manglerAdresse(journalpost: Journalpost) {
         oppdaterDistribusjonsInfoIngenDistribusjon(journalpost)
     }
 
-    fun bestillNyDistribusjon(journalpost: Journalpost, avvikshendelseIntern: AvvikshendelseIntern) {
+    fun bestillNyDistribusjon(
+        journalpost: Journalpost,
+        avvikshendelseIntern: AvvikshendelseIntern
+    ) {
         LOGGER.info("Bestiller ny distribusjon for journalpost {}", journalpost.journalpostId)
         if (avvikshendelseIntern.adresse == null) {
             throw UgyldigAvvikException("Adresse må settes ved bestilling av ny distribusjon")
         }
-        distribuerJournalpostService.bestillNyDistribusjon(journalpost, avvikshendelseIntern.adresse)
+        distribuerJournalpostService.bestillNyDistribusjon(
+            journalpost,
+            avvikshendelseIntern.adresse
+        )
     }
 
     /**
@@ -267,16 +345,34 @@ class AvvikService(
         )
     }
 
-    private fun knyttTilSakPaaNyttFagomrade(avvikshendelseIntern: AvvikshendelseIntern, journalpost: Journalpost) {
+    private fun knyttTilSakPaaNyttFagomrade(
+        avvikshendelseIntern: AvvikshendelseIntern,
+        journalpost: Journalpost
+    ) {
         val saksnummer = journalpost.sak!!.fagsakId!!
-        hentFeilregistrerteDupliserteJournalposterMedSakOgTema(saksnummer, avvikshendelseIntern.nyttFagomrade, journalpost)
+        hentFeilregistrerteDupliserteJournalposterMedSakOgTema(
+            saksnummer,
+            avvikshendelseIntern.nyttFagomrade,
+            journalpost
+        )
             .findFirst()
             .ifPresentOrElse(
                 { jp: Journalpost ->
                     opphevFeilregistrerSakstilknytning(jp.journalpostId)
-                    oppdater(OpphevEndreFagomradeJournalfortJournalpostRequest(jp.hentJournalpostIdLong()!!, jp))
+                    oppdater(
+                        OpphevEndreFagomradeJournalfortJournalpostRequest(
+                            jp.hentJournalpostIdLong()!!,
+                            jp
+                        )
+                    )
                 }
-            ) { endreJournalpostService.tilknyttTilSak(saksnummer, avvikshendelseIntern.nyttFagomrade, journalpost) }
+            ) {
+                endreJournalpostService.tilknyttTilSak(
+                    saksnummer,
+                    avvikshendelseIntern.nyttFagomrade,
+                    journalpost
+                )
+            }
     }
 
     private fun hentFeilregistrerteDupliserteJournalposterMedSakOgTema(
@@ -296,7 +392,10 @@ class AvvikService(
         }
     }
 
-    fun endreFagomradeJournalfortJournalpost(journalpost: Journalpost, avvikshendelseIntern: AvvikshendelseIntern) {
+    fun endreFagomradeJournalfortJournalpost(
+        journalpost: Journalpost,
+        avvikshendelseIntern: AvvikshendelseIntern
+    ) {
         if (journalpost.isTemaEqualTo(avvikshendelseIntern.nyttFagomrade)) {
             return
         }
@@ -314,11 +413,17 @@ class AvvikService(
             endreFagomradeJournalfortJournalpost(journalpost, avvikshendelseIntern)
         } else {
             endreFagomradeMottattJournalpost(journalpost, avvikshendelseIntern)
-            oppgaveService.ferdigstillVurderDokumentOppgaver(journalpost.hentJournalpostIdLong()!!, avvikshendelseIntern.saksbehandlersEnhet!!)
+            oppgaveService.ferdigstillVurderDokumentOppgaver(
+                journalpost.hentJournalpostIdLong()!!,
+                avvikshendelseIntern.saksbehandlersEnhet!!
+            )
         }
     }
 
-    private fun endreFagomradeMottattJournalpost(journalpost: Journalpost, avvikshendelseIntern: AvvikshendelseIntern) {
+    private fun endreFagomradeMottattJournalpost(
+        journalpost: Journalpost,
+        avvikshendelseIntern: AvvikshendelseIntern
+    ) {
         if (journalpost.hasSak()) {
             oppdater(avvikshendelseIntern.toEndreFagomradeOgKnyttTilSakRequest(journalpost.bruker!!))
         } else {
@@ -331,20 +436,36 @@ class AvvikService(
         if (journalpost.hasReturDetaljerWithDate(returDato)) {
             throw UgyldigAvvikException("Journalpost har allerede registrert retur med samme dato")
         }
-        val beskrivelse = if (Strings.isNotEmpty(avvikshendelseIntern.beskrivelse)) avvikshendelseIntern.beskrivelse else ""
+        val beskrivelse =
+            if (Strings.isNotEmpty(avvikshendelseIntern.beskrivelse)) avvikshendelseIntern.beskrivelse else ""
         val tilleggsOpplysninger = journalpost.tilleggsopplysninger
         tilleggsOpplysninger.addReturDetaljLog(ReturDetaljerLogDO(beskrivelse!!, returDato, false))
-        oppdater(RegistrerReturRequest(journalpost.hentJournalpostIdLong()!!, returDato, tilleggsOpplysninger))
+        oppdater(
+            RegistrerReturRequest(
+                journalpost.hentJournalpostIdLong()!!,
+                returDato,
+                tilleggsOpplysninger
+            )
+        )
     }
 
     fun trekkJournalpost(journalpost: Journalpost, avvikshendelseIntern: AvvikshendelseIntern) {
         // Journalfør på GENERELL_SAK og feilfør sakstilknytning
-        validateTrue(journalpost.bruker != null, AvvikDetaljException("Kan ikke trekke journalpost uten bruker"))
-        validateTrue(journalpost.tema != null, AvvikDetaljException("Kan ikke trekke journalpost uten tilhørende fagområde"))
+        validateTrue(
+            journalpost.bruker != null,
+            AvvikDetaljException("Kan ikke trekke journalpost uten bruker")
+        )
+        validateTrue(
+            journalpost.tema != null,
+            AvvikDetaljException("Kan ikke trekke journalpost uten tilhørende fagområde")
+        )
         knyttTilGenerellSak(avvikshendelseIntern, journalpost)
         klargjorForFerdigstilling(journalpost)
         dokarkivConsumer.ferdigstill(
-            FerdigstillJournalpostRequest(avvikshendelseIntern.journalpostId, avvikshendelseIntern.saksbehandlersEnhet!!)
+            FerdigstillJournalpostRequest(
+                avvikshendelseIntern.journalpostId,
+                avvikshendelseIntern.saksbehandlersEnhet!!
+            )
         )
         leggTilBegrunnelsePaaTittel(avvikshendelseIntern, journalpost)
         feilregistrerSakstilknytning(avvikshendelseIntern.journalpostId)
@@ -359,18 +480,34 @@ class AvvikService(
             val brukerNavn = personConsumer.hentPerson(journalpost.bruker!!.id)
                 .orElseThrow { UgyldigAvvikException("Fant ikke person") }
                 .navn?.verdi
-            dokarkivConsumer.endre(LagreAvsenderNavnRequest(journalpost.hentJournalpostIdLong()!!, brukerNavn!!))
+            dokarkivConsumer.endre(
+                LagreAvsenderNavnRequest(
+                    journalpost.hentJournalpostIdLong()!!,
+                    brukerNavn!!
+                )
+            )
             journalpost.avsenderMottaker = AvsenderMottaker(brukerNavn, null, null)
         }
     }
 
     fun knyttTilGenerellSak(avvikshendelseIntern: AvvikshendelseIntern, journalpost: Journalpost) {
-        oppdater(avvikshendelseIntern.toKnyttTilGenerellSakRequest(journalpost.tema!!, journalpost.bruker!!))
+        oppdater(
+            avvikshendelseIntern.toKnyttTilGenerellSakRequest(
+                journalpost.tema!!,
+                journalpost.bruker!!
+            )
+        )
     }
 
-    fun leggTilBegrunnelsePaaTittel(avvikshendelseIntern: AvvikshendelseIntern, journalpost: Journalpost?) {
+    fun leggTilBegrunnelsePaaTittel(
+        avvikshendelseIntern: AvvikshendelseIntern,
+        journalpost: Journalpost?
+    ) {
         if (Strings.isNotEmpty(avvikshendelseIntern.beskrivelse)) {
-            validateTrue(avvikshendelseIntern.beskrivelse!!.length < 100, AvvikDetaljException("Beskrivelse kan ikke være lengre enn 100 tegn"))
+            validateTrue(
+                avvikshendelseIntern.beskrivelse!!.length < 100,
+                AvvikDetaljException("Beskrivelse kan ikke være lengre enn 100 tegn")
+            )
             oppdater(avvikshendelseIntern.toLeggTilBegrunnelsePaaTittelRequest(journalpost!!))
         }
     }

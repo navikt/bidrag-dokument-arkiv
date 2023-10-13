@@ -1,7 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.mapper
 
 import no.nav.bidrag.dokument.arkiv.dto.UtsendingsInfo
-import no.nav.bidrag.dokument.dto.UtsendingsInfoVarselTypeDto
+import no.nav.bidrag.transport.dokument.UtsendingsInfoVarselTypeDto
 
 fun UtsendingsInfo.tilVarselTypeDto() = when (sisteVarselSendt?.type) {
     "EPOST" -> UtsendingsInfoVarselTypeDto.EPOST

@@ -29,14 +29,14 @@ import no.nav.bidrag.dokument.arkiv.stubs.JOURNALPOST_ID
 import no.nav.bidrag.dokument.arkiv.stubs.createDistribuerTilAdresse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
-import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest
-import no.nav.bidrag.dokument.dto.DistribuerJournalpostResponse
-import no.nav.bidrag.dokument.dto.DistribuerTilAdresse
-import no.nav.bidrag.dokument.dto.DistribusjonInfoDto
-import no.nav.bidrag.dokument.dto.JournalpostDto
-import no.nav.bidrag.dokument.dto.JournalpostResponse
-import no.nav.bidrag.dokument.dto.JournalpostStatus
-import no.nav.bidrag.dokument.dto.ReturDetaljerLog
+import no.nav.bidrag.transport.dokument.DistribuerJournalpostRequest
+import no.nav.bidrag.transport.dokument.DistribuerJournalpostResponse
+import no.nav.bidrag.transport.dokument.DistribuerTilAdresse
+import no.nav.bidrag.transport.dokument.DistribusjonInfoDto
+import no.nav.bidrag.transport.dokument.JournalpostDto
+import no.nav.bidrag.transport.dokument.JournalpostResponse
+import no.nav.bidrag.transport.dokument.JournalpostStatus
+import no.nav.bidrag.transport.dokument.ReturDetaljerLog
 import no.nav.bidrag.domain.enums.Adressetype
 import no.nav.bidrag.domain.string.Adresselinje1
 import no.nav.bidrag.domain.string.Adresselinje2
@@ -127,8 +127,11 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             )
         )
         val distribuerTilAdresse = createDistribuerTilAdresse()
-        distribuerTilAdresse.adresselinje2 = "Adresselinje2"
-        distribuerTilAdresse.adresselinje3 = "Adresselinje3"
+            .copy(
+                adresselinje2 = "Adresselinje2",
+                adresselinje3 = "Adresselinje3"
+            )
+
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
@@ -314,9 +317,10 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                 )
             )
         )
-        val distribuerTilAdresse = createDistribuerTilAdresse()
-        distribuerTilAdresse.adresselinje2 = "Adresselinje2"
-        distribuerTilAdresse.adresselinje3 = "Adresselinje3"
+        val distribuerTilAdresse = createDistribuerTilAdresse().copy(
+            adresselinje2 = "Adresselinje2",
+            adresselinje3 = "Adresselinje3"
+        )
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
@@ -390,8 +394,10 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             )
         )
         val distribuerTilAdresse = createDistribuerTilAdresse()
-        distribuerTilAdresse.adresselinje2 = "Adresselinje2"
-        distribuerTilAdresse.adresselinje3 = "Adresselinje3"
+            .copy(
+                adresselinje2 = "Adresselinje2",
+                adresselinje3 = "Adresselinje3"
+            )
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
@@ -450,8 +456,10 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             )
         )
         val distribuerTilAdresse = createDistribuerTilAdresse()
-        distribuerTilAdresse.adresselinje2 = "Adresselinje2"
-        distribuerTilAdresse.adresselinje3 = "Adresselinje3"
+            .copy(
+                adresselinje2 = "Adresselinje2",
+                adresselinje3 = "Adresselinje3"
+            )
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
@@ -799,9 +807,11 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost(responseJournalpostJsonWithAdresse, HttpStatus.OK)
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
-        val distribuerTilAdresse = createDistribuerTilAdresse()
-        distribuerTilAdresse.adresselinje2 = "Adresselinje2"
-        distribuerTilAdresse.adresselinje3 = "Adresselinje3"
+        val distribuerTilAdresse = createDistribuerTilAdresse().copy(
+            adresselinje2 = "Adresselinje2",
+            adresselinje3 = "Adresselinje3"
+        )
+
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
@@ -931,8 +941,10 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         val distribuerTilAdresse = createDistribuerTilAdresse()
-        distribuerTilAdresse.adresselinje2 = "Adresselinje2"
-        distribuerTilAdresse.adresselinje3 = "Adresselinje3"
+            .copy(
+                adresselinje2 = "Adresselinje2",
+                adresselinje3 = "Adresselinje3"
+            )
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when

@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.0.6</version>
+    <version>3.1.4</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
@@ -23,13 +23,13 @@
 
     <!-- language -->
     <java.version>17</java.version>
-    <kotlin.version>1.8.21</kotlin.version>
+    <kotlin.version>1.9.10</kotlin.version>
 
     <!-- dependent versions other than from spring-boot -->
     <apache-avro-version>1.11.2</apache-avro-version>
-    <bidrag-commons.version>20230816111838_f404b39</bidrag-commons.version>
+    <bidrag-commons.version>20231013111728_2a4d649</bidrag-commons.version>
     <bidrag-commons-test.version>1.20230503150725_3c2c77b</bidrag-commons-test.version>
-    <bidrag-transport.version>20230426154133_0fd52b3</bidrag-transport.version>
+    <bidrag-transport.version>20231010134706_52d8d27</bidrag-transport.version>
     <bidrag-dokument-dto.version>1.6.41</bidrag-dokument-dto.version>
     <commons-codec.version>1.15</commons-codec.version>
     <graphq-dgs-client.version>6.0.5</graphq-dgs-client.version>

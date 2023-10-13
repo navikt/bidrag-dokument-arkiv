@@ -1,5 +1,8 @@
 package no.nav.bidrag.dokument.arkiv.aop
 
+import com.fasterxml.jackson.databind.exc.MismatchedInputException
+import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
+import no.nav.bidrag.commons.util.hentForespørselValideringsfeil
 import no.nav.bidrag.dokument.arkiv.model.HttpStatusException
 import no.nav.bidrag.dokument.arkiv.model.JournalIkkeFunnetException
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException
@@ -11,16 +14,37 @@ import no.nav.bidrag.dokument.arkiv.model.UgyldigAvvikException
 import no.nav.bidrag.dokument.arkiv.model.ViolationException
 import no.nav.security.token.support.spring.validation.interceptor.JwtTokenUnauthorizedException
 import org.slf4j.LoggerFactory
+import org.springframework.core.convert.ConversionFailedException
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.client.HttpStatusCodeException
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 
 @RestControllerAdvice
 class HttpStatusRestControllerAdvice {
+    @ResponseBody
+    @ExceptionHandler(value = [IllegalArgumentException::class, MethodArgumentTypeMismatchException::class, ConversionFailedException::class, HttpMessageNotReadableException::class])
+    fun handleInvalidValueExceptions(exception: Exception): ResponseEntity<*> {
+        val valideringsFeil = hentForespørselValideringsfeil(exception)
+        LOGGER.warn(
+            "Forespørselen inneholder ugyldig verdi: ${valideringsFeil ?: "ukjent feil"}",
+            exception
+        )
+
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .header(
+                HttpHeaders.WARNING,
+                valideringsFeil ?: exception.message
+            )
+            .build<Any>()
+    }
+
     @ResponseBody
     @ExceptionHandler(PersonException::class)
     fun handleTechnicalException(exception: Exception): ResponseEntity<*> {
@@ -70,17 +94,6 @@ class HttpStatusRestControllerAdvice {
 
     @ResponseBody
     @ExceptionHandler
-    fun handleIllegalArgumentException(
-        illegalArgumentException: IllegalArgumentException
-    ): ResponseEntity<*> {
-        LOGGER.warn(illegalArgumentException.message)
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .header(HttpHeaders.WARNING, illegalArgumentException.message)
-            .build<Any>()
-    }
-
-    @ResponseBody
-    @ExceptionHandler
     fun handleHttpStatusException(httpStatusException: HttpStatusException): ResponseEntity<*> {
         LOGGER.warn(httpStatusException.message)
         return ResponseEntity.status(httpStatusException.status)
@@ -89,7 +102,11 @@ class HttpStatusRestControllerAdvice {
     }
 
     @ResponseBody
-    @ExceptionHandler(KnyttTilSakManglerTemaException::class, OppdaterJournalpostFeiletFunksjoneltException::class, UgyldigAvvikException::class)
+    @ExceptionHandler(
+        KnyttTilSakManglerTemaException::class,
+        OppdaterJournalpostFeiletFunksjoneltException::class,
+        UgyldigAvvikException::class
+    )
     fun ugyldigInput(exception: Exception): ResponseEntity<*> {
         LOGGER.warn(exception.message)
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)

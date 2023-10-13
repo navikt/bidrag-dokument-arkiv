@@ -50,29 +50,27 @@ class BehandleOppgaveHendelseService(
             "Sjekker om det skal legges til returlogg med dagens dato på journalpost ${oppgave.journalpostId}"
         }
         journalpostService
-            .hentJournalpost(oppgave.journalpostId!!.toLong())
-            .ifPresentOrElse(
-                { journalpost: Journalpost ->
-                    if (journalpost.manglerReturDetaljForSisteRetur()) {
-                        dokarkivConsumer.endre(OpprettNyReturLoggRequest(journalpost))
-                        LOGGER.info {
-                            "Lagt til ny returlogg med returdato ${LocalDate.now()} på journalpost ${journalpost.journalpostId} med dokumentdato ${journalpost.hentDatoDokument()}."
-                        }
-                    } else if (!journalpost.isDistribusjonKommetIRetur()) {
-                        LOGGER.warn {
-                            "Journalpost ${oppgave.journalpostId} har ikke kommet i retur. Det kan hende dette skyldes race-condition hvor retur oppgave er opprettet før journalpost er oppdatert. Forsøker på nytt."
-                        }
-                        throw JournalpostHarIkkeKommetIRetur(
-                            "Journalpost ${oppgave.journalpostId} har ikke kommet i retur"
-                        )
-                    } else {
-                        LOGGER.warn {
-                            "Legger ikke til ny returlogg på journalpost ${journalpost.journalpostId}. Journalpost har allerede registrert returlogg for siste retur"
-                        }
+            .hentJournalpost(oppgave.journalpostId!!.toLong())?.let { journalpost: Journalpost ->
+                if (journalpost.manglerReturDetaljForSisteRetur()) {
+                    dokarkivConsumer.endre(OpprettNyReturLoggRequest(journalpost))
+                    LOGGER.info {
+                        "Lagt til ny returlogg med returdato ${LocalDate.now()} på journalpost ${journalpost.journalpostId} med dokumentdato ${journalpost.hentDatoDokument()}."
                     }
-                    oppdaterOppgaveSaksreferanse(journalpost, oppgave)
+                } else if (!journalpost.isDistribusjonKommetIRetur()) {
+                    LOGGER.warn {
+                        "Journalpost ${oppgave.journalpostId} har ikke kommet i retur. Det kan hende dette skyldes race-condition hvor retur oppgave er opprettet før journalpost er oppdatert. Forsøker på nytt."
+                    }
+                    throw JournalpostHarIkkeKommetIRetur(
+                        "Journalpost ${oppgave.journalpostId} har ikke kommet i retur"
+                    )
+                } else {
+                    LOGGER.warn {
+                        "Legger ikke til ny returlogg på journalpost ${journalpost.journalpostId}. Journalpost har allerede registrert returlogg for siste retur"
+                    }
                 }
-            ) {
+                oppdaterOppgaveSaksreferanse(journalpost, oppgave)
+            }
+            ?: run {
                 LOGGER.error {
                     "Fant ingen journalpost med id ${oppgave.journalpostId}"
                 }

@@ -7,7 +7,7 @@ import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.validerAdresse
 import no.nav.bidrag.dokument.arkiv.dto.validerKanDistribueres
 import no.nav.bidrag.dokument.arkiv.stubs.createDistribuerTilAdresse
-import no.nav.bidrag.dokument.dto.DistribuerJournalpostRequest
+import no.nav.bidrag.transport.dokument.DistribuerJournalpostRequest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
@@ -40,7 +40,8 @@ class DistribuerJournalpostServiceTest {
             { validerKanDistribueres(jp) },
             "skal feile hvis journalpost allerede er distribuert"
         )
-        org.assertj.core.api.Assertions.assertThat(exceptionResult.message).contains("Journalpost er allerede distribuert")
+        org.assertj.core.api.Assertions.assertThat(exceptionResult.message)
+            .contains("Journalpost er allerede distribuert")
     }
 
     @Test
@@ -114,7 +115,9 @@ class DistribuerJournalpostServiceTest {
         @DisplayName("skal ikke validere norsk adresse uten postnummer")
         fun skalIkkeValidereNorskAdresseSomManglerPostnummer() {
             val adresse = createDistribuerTilAdresse()
-            adresse.postnummer = null
+                .copy(
+                    postnummer = null
+                )
             Assertions.assertThrows(
                 IllegalArgumentException::class.java,
                 { validerAdresse(adresse) },
@@ -126,7 +129,9 @@ class DistribuerJournalpostServiceTest {
         @DisplayName("skal ikke validere norsk adresse uten poststed")
         fun skalIkkeValidereNorskAdresseSomManglerPoststed() {
             val adresse = createDistribuerTilAdresse()
-            adresse.poststed = null
+                .copy(
+                    poststed = null
+                )
             Assertions.assertThrows(
                 IllegalArgumentException::class.java,
                 { validerAdresse(adresse) },
@@ -138,8 +143,10 @@ class DistribuerJournalpostServiceTest {
         @DisplayName("skal ikke validere utenlandsk adresse uten adresselinje1")
         fun skalIkkeValidereUtenlandskAdresseSomManglerAdresselinje1() {
             val adresse = createDistribuerTilAdresse()
-            adresse.adresselinje1 = null
-            adresse.land = "SE"
+                .copy(
+                    adresselinje1 = null,
+                    land = "SE"
+                )
             Assertions.assertThrows(
                 IllegalArgumentException::class.java,
                 { validerAdresse(adresse) },
@@ -151,8 +158,10 @@ class DistribuerJournalpostServiceTest {
         @DisplayName("skal ikke validere hvis landkode ikke er formatert som alpha-2 kode")
         fun skalIkkeValidereLandSomErFormatertFeil() {
             val adresse = createDistribuerTilAdresse()
-            adresse.adresselinje1 = null
-            adresse.land = "SER"
+                .copy(
+                    adresselinje1 = null,
+                    land = "SER"
+                )
             Assertions.assertThrows(
                 IllegalArgumentException::class.java,
                 { validerAdresse(adresse) },
@@ -169,7 +178,8 @@ class DistribuerJournalpostServiceTest {
         val journalpost = Journalpost()
         journalpost.journalstatus = JournalStatus.FERDIGSTILT
         journalpost.tema = "BID"
-        journalpost.avsenderMottaker = AvsenderMottaker("test", "123213213", AvsenderMottakerIdType.FNR)
+        journalpost.avsenderMottaker =
+            AvsenderMottaker("test", "123213213", AvsenderMottakerIdType.FNR)
         return journalpost
     }
 }
