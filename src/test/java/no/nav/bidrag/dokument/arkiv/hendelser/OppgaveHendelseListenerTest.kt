@@ -12,13 +12,11 @@ import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
 import no.nav.bidrag.dokument.arkiv.kafka.HendelseListener
 import no.nav.bidrag.dokument.arkiv.kafka.dto.OppgaveKafkaHendelse
-import no.nav.bidrag.dokument.arkiv.model.OppgaveHendelse
 import no.nav.bidrag.dokument.arkiv.model.OppgaveStatus
 import no.nav.bidrag.dokument.arkiv.model.Oppgavestatuskategori
 import no.nav.bidrag.dokument.arkiv.stubs.BRUKER_AKTOER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.Stubs
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
-import no.nav.bidrag.dokument.arkiv.stubs.toOppgaveData
 import no.nav.bidrag.dokument.arkiv.utils.DateUtils
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -111,10 +109,10 @@ class OppgaveHendelseListenerTest {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostId,
                     "\"tilleggsopplysninger\":" +
-                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                            "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
-                            "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
-                            "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
+                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                        "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
+                        "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
+                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
                 )
             },
             { stubs.verifyStub.oppgaveOppdaterKalt(1, safResponse.hentSaksnummer()) }
@@ -215,10 +213,10 @@ class OppgaveHendelseListenerTest {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostId,
                     "\"tilleggsopplysninger\":" +
-                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                            "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
-                            "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
-                            "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
+                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                        "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
+                        "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
+                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
                 )
             },
             { stubs.verifyStub.oppgaveOpprettIkkeKalt() }
@@ -264,8 +262,8 @@ class OppgaveHendelseListenerTest {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostId,
                     "\"tilleggsopplysninger\":" +
-                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                            "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
+                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
                 )
             }
         )
@@ -374,9 +372,9 @@ class OppgaveHendelseListenerTest {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostId,
                     "\"tilleggsopplysninger\":" +
-                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                            "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
-                            "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}"
+                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                        "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
+                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}"
                 )
             }
         )

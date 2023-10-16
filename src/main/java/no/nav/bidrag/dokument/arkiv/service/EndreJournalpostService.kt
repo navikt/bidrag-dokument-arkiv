@@ -118,12 +118,14 @@ class EndreJournalpostService(
             endreJournalpostCommand.hentTilknyttetSaker().stream()
                 .filter { sak: String? -> !journalpost.hentTilknyttetSaker().contains(sak) }
                 .collect(Collectors.toSet())
-                .forEach(Consumer { saksnummer: String? ->
-                    tilknyttTilSak(
-                        saksnummer,
-                        journalpost
-                    )
-                })
+                .forEach(
+                    Consumer { saksnummer: String? ->
+                        tilknyttTilSak(
+                            saksnummer,
+                            journalpost
+                        )
+                    }
+                )
         }
     }
 
@@ -178,7 +180,6 @@ class EndreJournalpostService(
         LOGGER.info("Henter jouranlpost $journalpostId")
         return journalpostService.hentJournalpost(journalpostId)
             ?: throw JournalpostIkkeFunnetException("Kunne ikke finne journalpost med id: $journalpostId")
-
     }
 
     fun oppdaterDistribusjonsInfo(

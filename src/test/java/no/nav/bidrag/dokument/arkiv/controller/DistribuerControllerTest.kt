@@ -3,7 +3,6 @@ package no.nav.bidrag.dokument.arkiv.controller
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import no.nav.bidrag.commons.web.EnhetFilter
-import no.nav.bidrag.dokument.arkiv.consumer.BestemKanalRequest
 import no.nav.bidrag.dokument.arkiv.consumer.BestemKanalResponse
 import no.nav.bidrag.dokument.arkiv.consumer.DistribusjonsKanal
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker
@@ -18,7 +17,6 @@ import no.nav.bidrag.dokument.arkiv.dto.EpostVarselSendt
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostType
-import no.nav.bidrag.dokument.arkiv.dto.JournalstatusDto
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
@@ -29,14 +27,6 @@ import no.nav.bidrag.dokument.arkiv.stubs.JOURNALPOST_ID
 import no.nav.bidrag.dokument.arkiv.stubs.createDistribuerTilAdresse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
-import no.nav.bidrag.transport.dokument.DistribuerJournalpostRequest
-import no.nav.bidrag.transport.dokument.DistribuerJournalpostResponse
-import no.nav.bidrag.transport.dokument.DistribuerTilAdresse
-import no.nav.bidrag.transport.dokument.DistribusjonInfoDto
-import no.nav.bidrag.transport.dokument.JournalpostDto
-import no.nav.bidrag.transport.dokument.JournalpostResponse
-import no.nav.bidrag.transport.dokument.JournalpostStatus
-import no.nav.bidrag.transport.dokument.ReturDetaljerLog
 import no.nav.bidrag.domain.enums.Adressetype
 import no.nav.bidrag.domain.string.Adresselinje1
 import no.nav.bidrag.domain.string.Adresselinje2
@@ -44,8 +34,13 @@ import no.nav.bidrag.domain.string.Landkode2
 import no.nav.bidrag.domain.string.Landkode3
 import no.nav.bidrag.domain.string.Postnummer
 import no.nav.bidrag.domain.string.Poststed
+import no.nav.bidrag.transport.dokument.DistribuerJournalpostRequest
+import no.nav.bidrag.transport.dokument.DistribuerJournalpostResponse
+import no.nav.bidrag.transport.dokument.DistribuerTilAdresse
+import no.nav.bidrag.transport.dokument.DistribusjonInfoDto
+import no.nav.bidrag.transport.dokument.JournalpostDto
+import no.nav.bidrag.transport.dokument.JournalpostStatus
 import no.nav.bidrag.transport.person.PersonAdresseDto
-import no.nav.bidrag.transport.person.PersonDto
 import org.assertj.core.api.Assertions
 import org.json.JSONException
 import org.junit.jupiter.api.BeforeEach
@@ -56,7 +51,6 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import java.io.IOException
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 internal class DistribuerControllerTest : AbstractControllerTest() {
@@ -168,11 +162,11 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
                 "{\"tilleggsopplysninger\":[" +
-                        "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
-                        "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
-                        "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
-                        "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
-                        "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
+                    "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
+                    "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
+                    "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
+                    "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
+                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
             )
         }
     }
@@ -264,13 +258,12 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
                 "{\"tilleggsopplysninger\":[" +
-                        "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
-                        "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                        "{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
+                    "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
+                    "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                    "{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
             )
         }
     }
-
 
     @Test
     fun `skal distribuere journalpost og oppdatere dokumentdato`() {
@@ -357,11 +350,11 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
                 "{\"tilleggsopplysninger\":[" +
-                        "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
-                        "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
-                        "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
-                        "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
-                        "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
+                    "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
+                    "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
+                    "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
+                    "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
+                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
             )
         }
     }

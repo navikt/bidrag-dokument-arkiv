@@ -28,12 +28,12 @@ import no.nav.bidrag.dokument.arkiv.stubs.createOppgaveDataWithJournalpostId
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeDistribuertSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
+import no.nav.bidrag.domain.string.FulltNavn
 import no.nav.bidrag.transport.dokument.AvvikType
 import no.nav.bidrag.transport.dokument.Avvikshendelse
 import no.nav.bidrag.transport.dokument.BehandleAvvikshendelseResponse
 import no.nav.bidrag.transport.dokument.DistribuerTilAdresse
 import no.nav.bidrag.transport.dokument.DokumentDto
-import no.nav.bidrag.domain.string.FulltNavn
 import no.nav.bidrag.transport.person.PersonDto
 import org.assertj.core.api.Assertions
 import org.json.JSONException
@@ -473,15 +473,15 @@ class AvvikControllerTest : AbstractControllerTest() {
                 stubs.verifyStub.dokarkivOpprettKalt(
                     false,
                     "" +
-                            "{\"tittel\":\"Tittel på dokument 1\"," +
-                            "\"journalpostType\":\"INNGAAENDE\"," +
-                            "\"tilleggsopplysninger\":[]," +
-                            "\"tema\":\"AAP\"," +
-                            "\"kanal\":\"NAV_NO\"," +
-                            "\"datoMottatt\":\"2021-04-20\"," +
-                            "\"bruker\":{\"id\":\"123213213213\",\"idType\":\"AKTOERID\"}," +
-                            "\"dokumenter\":[{\"tittel\":\"Tittel på dokument 1\",\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SlZCRVJpMHhMamNnUW1GelpUWTBJR1Z1WTI5a1pYUWdabmx6YVhOcklHUnZhM1Z0Wlc1MA==\"}]}]," +
-                            "\"avsenderMottaker\":{\"navn\":\"Avsender Avsendersen\",\"id\":\"112312385076492416\",\"idType\":\"FNR\"}}"
+                        "{\"tittel\":\"Tittel på dokument 1\"," +
+                        "\"journalpostType\":\"INNGAAENDE\"," +
+                        "\"tilleggsopplysninger\":[]," +
+                        "\"tema\":\"AAP\"," +
+                        "\"kanal\":\"NAV_NO\"," +
+                        "\"datoMottatt\":\"2021-04-20\"," +
+                        "\"bruker\":{\"id\":\"123213213213\",\"idType\":\"AKTOERID\"}," +
+                        "\"dokumenter\":[{\"tittel\":\"Tittel på dokument 1\",\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SlZCRVJpMHhMamNnUW1GelpUWTBJR1Z1WTI5a1pYUWdabmx6YVhOcklHUnZhM1Z0Wlc1MA==\"}]}]," +
+                        "\"avsenderMottaker\":{\"navn\":\"Avsender Avsendersen\",\"id\":\"112312385076492416\",\"idType\":\"FNR\"}}"
                 )
             },
             { stubs.verifyStub.oppgaveOpprettIkkeKalt() },
@@ -826,20 +826,20 @@ class AvvikControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivOpprettKalt(
                 true,
                 "{" +
-                        "\"sak\":{\"fagsakId\":\"$sakId\",\"fagsaksystem\":\"BISYS\",\"sakstype\":\"FAGSAK\"}," +
-                        "\"tittel\":\"Tittel på dokument 1\"," +
-                        "\"journalfoerendeEnhet\":\"4833\"," +
-                        "\"journalpostType\":\"UTGAAENDE\"," +
-                        "\"eksternReferanseId\":\"BID_duplikat_201028011\"," +
-                        "\"tilleggsopplysninger\":[{\"nokkel\":\"Lretur0_2021-08-18\",\"verdi\":\"Returpost\"}]," +
-                        "\"tema\":\"BID\",\"bruker\":{\"id\":\"123213213213\",\"idType\":\"AKTOERID\"}," +
-                        "\"dokumenter\":[" +
-                        "{\"tittel\":\"Tittel på dokument 1\"," +
-                        "\"dokumentvarianter\":[" +
-                        "{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"${
-                            Base64.getEncoder().encodeToString(DOKUMENT_FIL.encodeToByteArray())
-                        }\"}]}]," +
-                        "\"avsenderMottaker\":{\"navn\":\"Avsender Avsendersen\",\"id\":\"112312385076492416\",\"idType\":\"FNR\"}}"
+                    "\"sak\":{\"fagsakId\":\"$sakId\",\"fagsaksystem\":\"BISYS\",\"sakstype\":\"FAGSAK\"}," +
+                    "\"tittel\":\"Tittel på dokument 1\"," +
+                    "\"journalfoerendeEnhet\":\"4833\"," +
+                    "\"journalpostType\":\"UTGAAENDE\"," +
+                    "\"eksternReferanseId\":\"BID_duplikat_201028011\"," +
+                    "\"tilleggsopplysninger\":[{\"nokkel\":\"Lretur0_2021-08-18\",\"verdi\":\"Returpost\"}]," +
+                    "\"tema\":\"BID\",\"bruker\":{\"id\":\"123213213213\",\"idType\":\"AKTOERID\"}," +
+                    "\"dokumenter\":[" +
+                    "{\"tittel\":\"Tittel på dokument 1\"," +
+                    "\"dokumentvarianter\":[" +
+                    "{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"${
+                    Base64.getEncoder().encodeToString(DOKUMENT_FIL.encodeToByteArray())
+                    }\"}]}]," +
+                    "\"avsenderMottaker\":{\"navn\":\"Avsender Avsendersen\",\"id\":\"112312385076492416\",\"idType\":\"FNR\"}}"
             )
 
             stubs.verifyStub.safHentDokumentKalt(journalpostId, DOKUMENT_1_ID.toLong())
@@ -895,10 +895,10 @@ class AvvikControllerTest : AbstractControllerTest() {
                 stubs.verifyStub.oppgaveOppdaterKalt(
                     1,
                     "Bestill reskanning: " +
-                            "\\nVi ber om reskanning av dokument." +
-                            "\\nBeskrivelse fra saksbehandler: " +
-                            "\\nInnholdet er uleselig" +
-                            "\\r\\n\\r\\nBeskrivelse som var der fra før\""
+                        "\\nVi ber om reskanning av dokument." +
+                        "\\nBeskrivelse fra saksbehandler: " +
+                        "\\nInnholdet er uleselig" +
+                        "\\r\\n\\r\\nBeskrivelse som var der fra før\""
                 )
             },
             {
@@ -967,9 +967,9 @@ class AvvikControllerTest : AbstractControllerTest() {
                 stubs.verifyStub.oppgaveOppdaterKalt(
                     1,
                     "Bestill splitting av dokument:" +
-                            " \\nSaksbehandler ønsker splitting av dokument:" +
-                            "\\nJeg ønsker å splitte etter side 5" +
-                            "\\r\\n\\r\\nBeskrivelse som var der fra før\""
+                        " \\nSaksbehandler ønsker splitting av dokument:" +
+                        "\\nJeg ønsker å splitte etter side 5" +
+                        "\\r\\n\\r\\nBeskrivelse som var der fra før\""
                 )
             },
             {
@@ -1010,7 +1010,7 @@ class AvvikControllerTest : AbstractControllerTest() {
 
         val jfrOppgave = createOppgaveDataWithJournalpostId(journalpostId.toString()).copy(
             tildeltEnhetsnr = OppgaveEnhet.FAGPOST,
-            beskrivelse = "Beskrivelse som var der fra før",
+            beskrivelse = "Beskrivelse som var der fra før"
         )
         stubs.mockSokOppgave(OppgaveSokResponse(1, listOf(jfrOppgave)), HttpStatus.OK)
         val overforEnhetResponse = sendAvvikRequest(xEnhet, journalpostId, avvikHendelse)
@@ -1152,8 +1152,8 @@ class AvvikControllerTest : AbstractControllerTest() {
             {
                 stubs.verifyStub.oppgaveOpprettKalt(
                     "Bestill splitting av dokument: " +
-                            "\\nSaksbehandler ønsker splitting av dokument:" +
-                            "\\nJeg ønsker å splitte etter side 5"
+                        "\\nSaksbehandler ønsker splitting av dokument:" +
+                        "\\nJeg ønsker å splitte etter side 5"
                 )
             },
             {
@@ -1211,7 +1211,7 @@ class AvvikControllerTest : AbstractControllerTest() {
             {
                 stubs.verifyStub.oppgaveOpprettKalt(
                     "Originalbestilling: Vi ber om å få tilsendt papiroriginalen av vedlagte dokumenter. " +
-                            "\\n    \\nDokumentet skal sendes til 1234, og merkes med aud-localhost - navn\""
+                        "\\n    \\nDokumentet skal sendes til 1234, og merkes med aud-localhost - navn\""
                 )
             },
             {
@@ -1320,21 +1320,21 @@ class AvvikControllerTest : AbstractControllerTest() {
                 stubs.verifyStub.dokarkivOpprettKalt(
                     true,
                     "{" +
-                            "\"sak\":{\"fagsakId\":\"$sak1\",\"fagsaksystem\":\"BISYS\",\"sakstype\":\"FAGSAK\"}," +
-                            "\"tittel\":\"$tittelDokument1 (Kopiert fra dokument: $tittelOriginalDokument)\"," +
-                            "\"journalfoerendeEnhet\":\"$xEnhet\"," +
-                            "\"journalpostType\":\"INNGAAENDE\"," +
-                            "\"tilleggsopplysninger\":[]," +
-                            "\"tema\":\"BID\"," +
-                            "\"kanal\":\"NAV_NO\"," +
-                            "\"datoMottatt\":\"2021-08-18\"",
+                        "\"sak\":{\"fagsakId\":\"$sak1\",\"fagsaksystem\":\"BISYS\",\"sakstype\":\"FAGSAK\"}," +
+                        "\"tittel\":\"$tittelDokument1 (Kopiert fra dokument: $tittelOriginalDokument)\"," +
+                        "\"journalfoerendeEnhet\":\"$xEnhet\"," +
+                        "\"journalpostType\":\"INNGAAENDE\"," +
+                        "\"tilleggsopplysninger\":[]," +
+                        "\"tema\":\"BID\"," +
+                        "\"kanal\":\"NAV_NO\"," +
+                        "\"datoMottatt\":\"2021-08-18\"",
                     "\"bruker\":{\"id\":\"123213213213\",\"idType\":\"AKTOERID\"}," +
-                            "\"dokumenter\":[" +
-                            "{\"tittel\":\"$tittelDokument1 (Kopiert fra dokument: $tittelOriginalDokument)\"," +
-                            "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SlZCRVJpMHhMamNnUW1GelpUWTBJR1Z1WTI5a1pYUWdabmx6YVhOcklHUnZhM1Z0Wlc1MA==\"}]}," +
-                            "{\"tittel\":\"$tittelDokument2\"," +
-                            "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"$dokumentData2=\"}]}]," +
-                            "\"avsenderMottaker\":{\"navn\":\"Avsender Avsendersen\",\"id\":\"112312385076492416\",\"idType\":\"FNR\"}}"
+                        "\"dokumenter\":[" +
+                        "{\"tittel\":\"$tittelDokument1 (Kopiert fra dokument: $tittelOriginalDokument)\"," +
+                        "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SlZCRVJpMHhMamNnUW1GelpUWTBJR1Z1WTI5a1pYUWdabmx6YVhOcklHUnZhM1Z0Wlc1MA==\"}]}," +
+                        "{\"tittel\":\"$tittelDokument2\"," +
+                        "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"$dokumentData2=\"}]}]," +
+                        "\"avsenderMottaker\":{\"navn\":\"Avsender Avsendersen\",\"id\":\"112312385076492416\",\"idType\":\"FNR\"}}"
                 )
             },
             { stubs.verifyStub.dokarkivTilknyttSakerKalt(newJournalpostId, sak2) },
