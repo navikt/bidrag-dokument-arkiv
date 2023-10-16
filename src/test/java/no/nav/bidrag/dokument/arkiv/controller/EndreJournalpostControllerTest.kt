@@ -219,7 +219,8 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
             OppgaveSokResponse(
                 1,
                 listOf(createOppgaveDataWithSaksnummer(saksnummer3))
-            ), HttpStatus.OK
+            ),
+            HttpStatus.OK
         )
         stubs.mockSafResponseHentJournalpost(
             opprettSafResponse(
@@ -429,9 +430,9 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostIdFraJson,
                     "tilleggsopplysninger\":" +
-                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                            "{\"nokkel\":\"retur0_2021-08-20\",\"verdi\":\"Ny beskrivelse 1\"}," +
-                            "{\"nokkel\":\"retur0_2021-10-10\",\"verdi\":\"Ny beskrivelse 2\"}]"
+                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                        "{\"nokkel\":\"retur0_2021-08-20\",\"verdi\":\"Ny beskrivelse 1\"}," +
+                        "{\"nokkel\":\"retur0_2021-10-10\",\"verdi\":\"Ny beskrivelse 2\"}]"
                 )
             }
         )
@@ -508,10 +509,10 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostId,
                     "\"tilleggsopplysninger\":[" +
-                            "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                            "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
-                            "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
-                            "{\"nokkel\":\"retur0_2021-12-15\",\"verdi\":\"Ny returdetalj\"}]"
+                        "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                        "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
+                        "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
+                        "{\"nokkel\":\"retur0_2021-12-15\",\"verdi\":\"Ny returdetalj\"}]"
                 )
             }
         )

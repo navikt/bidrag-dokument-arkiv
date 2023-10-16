@@ -159,8 +159,10 @@ data class EndreTittelRequest(
 
     init {
         val hoveddokument = journalpost.hentHoveddokument()
-        if (hoveddokument != null) dokumenter =
-            listOf(Dokument(hoveddokument.dokumentInfoId, _tittel, null))
+        if (hoveddokument != null) {
+            dokumenter =
+                listOf(Dokument(hoveddokument.dokumentInfoId, _tittel, null))
+        }
         if (!journalpost.isUtgaaendeDokument()) tittel = _tittel
     }
 }

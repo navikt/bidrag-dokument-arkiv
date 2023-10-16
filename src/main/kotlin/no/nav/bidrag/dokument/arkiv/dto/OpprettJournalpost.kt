@@ -150,8 +150,12 @@ class OpprettJournalpostRequestBuilder {
                 )
             },
             tema = tema ?: "BID",
-            journalfoerendeEnhet = if (fjernJournalførendeEnhet) null else journalførendeenhet
-                ?: journalpost.journalforendeEnhet,
+            journalfoerendeEnhet = if (fjernJournalførendeEnhet) {
+                null
+            } else {
+                journalførendeenhet
+                    ?: journalpost.journalforendeEnhet
+            },
             journalpostType = when (journalpost.journalposttype) {
                 JournalpostType.U -> JoarkJournalpostType.UTGAAENDE
                 JournalpostType.I -> JoarkJournalpostType.INNGAAENDE

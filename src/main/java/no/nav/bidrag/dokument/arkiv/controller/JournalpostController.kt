@@ -83,7 +83,8 @@ class JournalpostController(
         return journalpostService.hentJournalpostMedFnrOgTilknyttedeSaker(
             java.lang.Long.valueOf(
                 journalpostId.toLong()
-            ), saksnummer
+            ),
+            saksnummer
         )
             .map { journalpost: Journalpost -> ResponseEntity.ok(journalpost.tilJournalpostResponse()) }
             .orElse(

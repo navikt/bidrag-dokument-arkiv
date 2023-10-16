@@ -2,63 +2,28 @@ package no.nav.bidrag.dokument.arkiv.controller
 
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
-import no.nav.bidrag.commons.web.EnhetFilter
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker
-import no.nav.bidrag.dokument.arkiv.dto.DOKDIST_BESTILLING_ID
-import no.nav.bidrag.dokument.arkiv.dto.DatoType
-import no.nav.bidrag.dokument.arkiv.dto.DigitalpostSendt
-import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsInfo
-import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsTidspunkt
-import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsType
-import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest
-import no.nav.bidrag.dokument.arkiv.dto.EpostVarselSendt
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
-import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
-import no.nav.bidrag.dokument.arkiv.dto.JournalpostType
 import no.nav.bidrag.dokument.arkiv.dto.JournalstatusDto
 import no.nav.bidrag.dokument.arkiv.dto.Sak
-import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
-import no.nav.bidrag.dokument.arkiv.dto.UtsendingsInfo
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.AVSENDER_NAVN
-import no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT
-import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_ID
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
-import no.nav.bidrag.dokument.arkiv.stubs.JOURNALPOST_ID
-import no.nav.bidrag.dokument.arkiv.stubs.createDistribuerTilAdresse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
-import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
 import no.nav.bidrag.transport.dokument.AvsenderMottakerDto
 import no.nav.bidrag.transport.dokument.AvsenderMottakerDtoIdType
-import no.nav.bidrag.transport.dokument.DistribuerJournalpostRequest
-import no.nav.bidrag.transport.dokument.DistribuerJournalpostResponse
-import no.nav.bidrag.transport.dokument.DistribuerTilAdresse
-import no.nav.bidrag.transport.dokument.DistribusjonInfoDto
 import no.nav.bidrag.transport.dokument.JournalpostDto
 import no.nav.bidrag.transport.dokument.JournalpostResponse
-import no.nav.bidrag.transport.dokument.JournalpostStatus
 import no.nav.bidrag.transport.dokument.ReturDetaljerLog
-import no.nav.bidrag.domain.enums.Adressetype
-import no.nav.bidrag.domain.string.Adresselinje1
-import no.nav.bidrag.domain.string.Adresselinje2
-import no.nav.bidrag.domain.string.Landkode2
-import no.nav.bidrag.domain.string.Landkode3
-import no.nav.bidrag.domain.string.Postnummer
-import no.nav.bidrag.domain.string.Poststed
-import no.nav.bidrag.transport.person.PersonAdresseDto
 import no.nav.bidrag.transport.person.PersonDto
 import org.assertj.core.api.Assertions
-import org.json.JSONException
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import java.io.IOException
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 internal class JournalpostControllerTest : AbstractControllerTest() {
     @Test
@@ -180,7 +145,6 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             Assertions.assertThat(journalpost).isNotNull.extracting { it.journalpostId }
                 .isEqualTo("JOARK-$journalpostIdFraJson")
 
-
             Assertions.assertThat(journalpost).isNotNull.extracting { it.journalstatus }
                 .isEqualTo(JournalstatusDto.EKSPEDERT)
 
@@ -202,7 +166,6 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter()
             stubs.verifyStub.bidragPersonKalt()
         }
-
     }
 
     @Test

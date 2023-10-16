@@ -114,7 +114,8 @@ internal class JsonMapperTest {
                 Assertions.assertThat(
                     jsonMap["tittel"]
                 ).`as`("tittel").isEqualTo("Tittelen på journalposten")
-            })
+            }
+        )
     }
 
     @Test
@@ -202,7 +203,8 @@ internal class JsonMapperTest {
                 Assertions.assertThat(
                     jsonMap["tittel"]
                 ).`as`("tittel").isEqualTo("Tittelen på journalposten")
-            })
+            }
+        )
     }
 
     @Test
@@ -221,7 +223,8 @@ internal class JsonMapperTest {
                     .`as`("Variables")
                     .containsEntry("fagsakId", "666")
                     .containsEntry("tema", listOf("BID"))
-            })
+            }
+        )
     }
 
     @Test
@@ -238,7 +241,8 @@ internal class JsonMapperTest {
                 Assertions.assertThat(safQuery.getVariables())
                     .`as`("Variables")
                     .containsEntry("journalpostId", "1235")
-            })
+            }
+        )
     }
 
     private class JsonObjects(private val jsonMap: Map<String, Any>) {

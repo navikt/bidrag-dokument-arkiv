@@ -8,11 +8,9 @@ import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.MatchResult
 import com.github.tomakehurst.wiremock.matching.StringValuePattern
 import com.github.tomakehurst.wiremock.stubbing.Scenario
-import no.nav.bidrag.dokument.arkiv.consumer.BestemKanalRequest
 import no.nav.bidrag.dokument.arkiv.consumer.BestemKanalResponse
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivKnyttTilSakConsumer
-import no.nav.bidrag.dokument.arkiv.dto.BestemDistribusjonKanalRequest
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsInfo
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostResponse
 import no.nav.bidrag.dokument.arkiv.dto.DokumentInfo
@@ -335,9 +333,9 @@ class Stubs {
                             .withStatus(HttpStatus.OK.value())
                             .withBody(
                                 "{\"data\":{\"journalpost\": ${
-                                    objectMapper.writeValueAsString(
-                                        distribusjonsInfo
-                                    )
+                                objectMapper.writeValueAsString(
+                                    distribusjonsInfo
+                                )
                                 } }}"
                             )
                     )
@@ -359,9 +357,9 @@ class Stubs {
                             .withStatus(HttpStatus.OK.value())
                             .withBody(
                                 "{\"data\":{\"journalpost\": ${
-                                    objectMapper.writeValueAsString(
-                                        journalpost
-                                    )
+                                objectMapper.writeValueAsString(
+                                    journalpost
+                                )
                                 } }}"
                             )
                     )
@@ -434,9 +432,9 @@ class Stubs {
                             .withStatus(HttpStatus.OK.value())
                             .withBody(
                                 "{\"data\":{\"tilknyttedeJournalposter\": ${
-                                    objectMapper.writeValueAsString(
-                                        tilknyttetJournalposts
-                                    )
+                                objectMapper.writeValueAsString(
+                                    tilknyttetJournalposts
+                                )
                                 }}}"
                             )
                     )
@@ -858,8 +856,8 @@ class Stubs {
                 WireMock.patchRequestedFor(
                     WireMock.urlMatching(
                         "/dokarkiv" +
-                                DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" +
-                                journalpostId + "/oppdaterDistribusjonsinfo"
+                            DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" +
+                            journalpostId + "/oppdaterDistribusjonsinfo"
                     )
                 ).withRequestBody(ContainsPattern(kanal.name))
             )

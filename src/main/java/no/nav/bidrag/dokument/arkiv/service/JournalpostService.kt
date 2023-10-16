@@ -45,9 +45,11 @@ class JournalpostService(
         saksnummer: String,
         fagomrade: List<String> = emptyList()
     ): List<JournalpostDto> {
-        if (!fagomrade.inneholderBidragFagomrader()) kanIkkeHenteJournalMedUgyldigFagomrade(
-            fagomrade.hentIkkeBidragFagomrader().joinToString(",")
-        )
+        if (!fagomrade.inneholderBidragFagomrader()) {
+            kanIkkeHenteJournalMedUgyldigFagomrade(
+                fagomrade.hentIkkeBidragFagomrader().joinToString(",")
+            )
+        }
         return finnJournalposterForSaksnummer(saksnummer, fagomrade)
             .map { konverterAktoerIdTilFnr(it) }
             .filter { !(it.tilleggsopplysninger.isEndretTema() || it.tilleggsopplysninger.isNyDistribusjonBestilt()) }

@@ -1,7 +1,5 @@
 package no.nav.bidrag.dokument.arkiv.aop
 
-import com.fasterxml.jackson.databind.exc.MismatchedInputException
-import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import no.nav.bidrag.commons.util.hentForespørselValideringsfeil
 import no.nav.bidrag.dokument.arkiv.model.HttpStatusException
 import no.nav.bidrag.dokument.arkiv.model.JournalIkkeFunnetException
