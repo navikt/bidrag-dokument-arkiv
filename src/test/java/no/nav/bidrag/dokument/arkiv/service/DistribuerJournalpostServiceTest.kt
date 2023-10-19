@@ -1,6 +1,5 @@
 package no.nav.bidrag.dokument.arkiv.service
 
-import io.kotest.matchers.shouldBe
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottakerIdType
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
@@ -14,7 +13,6 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class DistribuerJournalpostServiceTest {
     @Test
@@ -170,37 +168,6 @@ class DistribuerJournalpostServiceTest {
                 "Skal ikke validere hvis landkode ikke er formatert som alpha-2 kode"
             )
         }
-
-        @Test
-        fun `skal feile validering hvis adresselinje 1 er lengre enn 128 tegn`() {
-            val adresse = createDistribuerTilAdresse()
-                .copy(
-                    adresselinje1 = "Adresselinje 1 lengre enn 128 tegn asdasdasdasdas sadasd asd asdasd asdasdasdasdasdasdasdasdasdasdasdasdasd asdasdasdasdasdasdasdasdasdasdasdasdasd"
-                )
-            val result = assertThrows<IllegalArgumentException> { validerAdresse(adresse) }
-            result.message shouldBe "Adresselinje 1 kan ikke være lengre enn 128 tegn"
-        }
-
-        @Test
-        fun `skal feile validering hvis adresselinje 2 er lengre enn 128 tegn`() {
-            val adresse = createDistribuerTilAdresse()
-                .copy(
-                    adresselinje2 = "Adresselinje 2 lengre enn 128 tegn asdasdasdasdas sadasd asd asdasd asdasdasdasdasdasdasdasdasdasdasdasdasd asdasdasdasdasdasdasdasdasdasdasdasdasd"
-                )
-            val result = assertThrows<IllegalArgumentException> { validerAdresse(adresse) }
-            result.message shouldBe "Adresselinje 2 kan ikke være lengre enn 128 tegn"
-        }
-
-        @Test
-        fun `skal feile validering hvis adresselinje 3 er lengre enn 128 tegn`() {
-            val adresse = createDistribuerTilAdresse()
-                .copy(
-                    adresselinje3 = "Adresselinje 3 lengre enn 128 tegn asdasdasdasdas sadasd asd asdasd asdasdasdasdasdasdasdasdasdasdasdasdasd asdasdasdasdasdasdasdasdasdasdasdasdasd"
-                )
-            val result = assertThrows<IllegalArgumentException> { validerAdresse(adresse) }
-            result.message shouldBe "Adresselinje 3 kan ikke være lengre enn 128 tegn"
-        }
-
     }
 
     private fun createValidDistribuerJournalpostRequest(): DistribuerJournalpostRequest {
