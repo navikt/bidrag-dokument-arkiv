@@ -26,7 +26,7 @@
     <kotlin.version>1.9.10</kotlin.version>
 
     <!-- dependent versions other than from spring-boot -->
-    <apache-avro-version>1.11.2</apache-avro-version>
+    <apache-avro-version>1.11.3</apache-avro-version>
     <bidrag-commons.version>20231013111728_2a4d649</bidrag-commons.version>
     <bidrag-commons-test.version>1.20230503150725_3c2c77b</bidrag-commons-test.version>
     <bidrag-transport.version>20231010134706_52d8d27</bidrag-transport.version>
