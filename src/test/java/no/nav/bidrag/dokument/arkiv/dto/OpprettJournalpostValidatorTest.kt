@@ -1,5 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
+import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import no.nav.bidrag.dokument.arkiv.stubs.createOpprettJournalpostRequest
@@ -96,5 +97,22 @@ class OpprettJournalpostValidatorTest {
             shouldThrow<IllegalArgumentException> { validerKanOppretteJournalpost(request) }
 
         result.message shouldBe "Journalpost som skal ferdigstilles må ha minst en sak"
+    }
+
+    @Test
+    fun `Validering skal feile hvis avsendernavn er lengre enn 128 tegn`() {
+        val requestValid = createOpprettJournalpostRequest().copy(
+            avsenderMottaker = AvsenderMottakerDto("Navn mindre enn 128 tegn")
+        )
+
+        shouldNotThrow<IllegalArgumentException> { validerKanOppretteJournalpost(requestValid) }
+
+        val request = createOpprettJournalpostRequest().copy(
+            avsenderMottaker = AvsenderMottakerDto("Navn lengre enn 128 tegn asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd")
+        )
+        val result =
+            shouldThrow<IllegalArgumentException> { validerKanOppretteJournalpost(request) }
+
+        result.message shouldBe "Navn på mottaker kan ikke være lengre enn 128 tegn"
     }
 }
