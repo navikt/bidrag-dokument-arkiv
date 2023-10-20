@@ -208,7 +208,7 @@ data class Journalpost(
 
     fun hentAvsenderMottakerId(): String? = avsenderMottaker?.id
     fun hentJournalStatus(): JournalpostStatus? {
-        return if (isDistribusjonKommetIRetur()) {
+        return if (isDistribusjonKommetIRetur() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
             JournalpostStatus.RETUR
         } else {
             when (journalstatus) {
