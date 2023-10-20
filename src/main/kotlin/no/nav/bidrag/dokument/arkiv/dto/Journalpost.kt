@@ -460,11 +460,14 @@ data class Journalpost(
                 AvvikType.BESTILL_NY_DISTRIBUSJON
             )
         }
-        if (isUtgaaendeDokument() && isStatusFerdigsstilt() && (!isDistribusjonBestilt() || isDistribusjonKommetIRetur()) && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
-            avvikTypeList.add(
-                AvvikType.MANGLER_ADRESSE
-            )
+        if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
+            if (isStatusEkspedert() && isDistribusjonKommetIRetur() || isStatusFerdigsstilt() && !isDistribusjonBestilt()) {
+                avvikTypeList.add(
+                    AvvikType.MANGLER_ADRESSE
+                )
+            }
         }
+
         if (isFarskap() && !isFarskapUtelukket() && !isStatusMottatt()) avvikTypeList.add(AvvikType.FARSKAP_UTELUKKET)
         return avvikTypeList
     }
