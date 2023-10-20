@@ -460,7 +460,7 @@ data class Journalpost(
                 AvvikType.BESTILL_NY_DISTRIBUSJON
             )
         }
-        if (isUtgaaendeDokument() && isStatusFerdigsstilt() && !isDistribusjonBestilt() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
+        if (isUtgaaendeDokument() && isStatusFerdigsstilt() && (!isDistribusjonBestilt() || isDistribusjonKommetIRetur()) && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
             avvikTypeList.add(
                 AvvikType.MANGLER_ADRESSE
             )
@@ -817,9 +817,9 @@ data class ReturDetaljerLogDO(
     fun toMap(): List<Map<String, String>> = beskrivelse.chunked(100).mapIndexed { index, it ->
         mapOf(
             "nokkel" to "${if (locked == true) "L" else ""}$RETUR_DETALJER_KEY${index}_${
-            DateUtils.formatDate(
-                dato
-            )
+                DateUtils.formatDate(
+                    dato
+                )
             }",
             "verdi" to it
         )
@@ -983,7 +983,7 @@ data class EndreJournalpostCommandIntern(
     fun sjekkGyldigEndringAvReturDato(journalpost: Journalpost, violations: MutableList<String>) {
         val endreReturDetaljer =
             endreJournalpostCommand.endreReturDetaljer?.filter { Strings.isNotEmpty(it.beskrivelse) }
-        if (endreReturDetaljer != null && endreReturDetaljer.isNotEmpty()) {
+        if (!endreReturDetaljer.isNullOrEmpty()) {
             val kanEndreReturDetaljer = journalpost.isDistribusjonKommetIRetur()
             if (!kanEndreReturDetaljer) {
                 violations.add("Kan ikke endre returdetaljer på journalpost som ikke har kommet i retur")
