@@ -5,6 +5,7 @@ import mu.KotlinLogging
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.OppgaveConsumer
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
+import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
 import no.nav.bidrag.dokument.arkiv.dto.OppdaterSakRequest
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveData
 import no.nav.bidrag.dokument.arkiv.dto.OpprettNyReturLoggRequest
@@ -56,7 +57,7 @@ class BehandleOppgaveHendelseService(
                     LOGGER.info {
                         "Lagt til ny returlogg med returdato ${LocalDate.now()} på journalpost ${journalpost.journalpostId} med dokumentdato ${journalpost.hentDatoDokument()}."
                     }
-                } else if (!journalpost.isDistribusjonKommetIRetur()) {
+                } else if (journalpost.kanal == JournalpostKanal.SENTRAL_UTSKRIFT && !journalpost.isDistribusjonKommetIRetur()) {
                     LOGGER.warn {
                         "Journalpost ${oppgave.journalpostId} har ikke kommet i retur. Det kan hende dette skyldes race-condition hvor retur oppgave er opprettet før journalpost er oppdatert. Forsøker på nytt."
                     }
