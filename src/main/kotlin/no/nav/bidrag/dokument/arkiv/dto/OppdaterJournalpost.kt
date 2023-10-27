@@ -174,7 +174,9 @@ data class LagreJournalpostRequest(
     private var journalpost: Journalpost
 ) : OppdaterJournalpostRequest(journalpostId) {
     init {
-        tittel = endreJournalpostCommand.endreJournalpostCommand.tittel
+        if (journalpost.isStatusMottatt()) {
+            tittel = endreJournalpostCommand.endreJournalpostCommand.tittel
+        }
 
         if (journalpost.isNotat()) {
             datoDokument = endreJournalpostCommand.endreJournalpostCommand.dokumentDato?.let {
