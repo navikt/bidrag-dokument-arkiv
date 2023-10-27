@@ -381,7 +381,7 @@ data class Journalpost(
         if (hentBrevkode() != null) KodeDto(kode = hentBrevkode()) else null
 
     fun hentHoveddokument(): Dokument? = if (dokumenter.isNotEmpty()) dokumenter[0] else null
-    fun hentTittel(): String? = tittel ?: hentHoveddokument()?.tittel
+    fun hentTittel(): String? = hentHoveddokument()?.tittel ?: tittel
     fun tilJournalpostDto(): JournalpostDto {
         val erSamhandlerId = tilleggsopplysninger.hentSamhandlerId() != null
         @Suppress("UNCHECKED_CAST")
