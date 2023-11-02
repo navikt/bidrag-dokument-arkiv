@@ -150,8 +150,12 @@ class OpprettJournalpostRequestBuilder {
                 )
             },
             tema = tema ?: "BID",
-            journalfoerendeEnhet = if (fjernJournalførendeEnhet) null else journalførendeenhet
-                ?: journalpost.journalforendeEnhet,
+            journalfoerendeEnhet = if (fjernJournalførendeEnhet) {
+                null
+            } else {
+                journalførendeenhet
+                    ?: journalpost.journalforendeEnhet
+            },
             journalpostType = when (journalpost.journalposttype) {
                 JournalpostType.U -> JoarkJournalpostType.UTGAAENDE
                 JournalpostType.I -> JoarkJournalpostType.INNGAAENDE
@@ -332,6 +336,11 @@ fun validerKanOppretteJournalpost(request: OpprettJournalpostRequest) {
             request.hasAvsenderMottaker(),
             "Journalpost må ha satt avsender/mottaker navn eller ident"
         )
+        validateMaxLength(
+            request.avsenderMottaker?.navn,
+            128,
+            "Navn på mottaker kan ikke være lengre enn 128 tegn"
+        )
     }
 
     if (request.skalFerdigstilles) {
@@ -345,4 +354,6 @@ fun validerKanOppretteJournalpost(request: OpprettJournalpostRequest) {
         )
         Validate.isTrue(request.hasSak(), "Journalpost som skal ferdigstilles må ha minst en sak")
     }
+
+
 }

@@ -208,7 +208,7 @@ data class Journalpost(
 
     fun hentAvsenderMottakerId(): String? = avsenderMottaker?.id
     fun hentJournalStatus(): JournalpostStatus? {
-        return if (isDistribusjonKommetIRetur()) {
+        return if (isDistribusjonKommetIRetur() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
             JournalpostStatus.RETUR
         } else {
             when (journalstatus) {
@@ -381,7 +381,7 @@ data class Journalpost(
         if (hentBrevkode() != null) KodeDto(kode = hentBrevkode()) else null
 
     fun hentHoveddokument(): Dokument? = if (dokumenter.isNotEmpty()) dokumenter[0] else null
-    fun hentTittel(): String? = tittel ?: hentHoveddokument()?.tittel
+    fun hentTittel(): String? = hentHoveddokument()?.tittel ?: tittel
     fun tilJournalpostDto(): JournalpostDto {
         val erSamhandlerId = tilleggsopplysninger.hentSamhandlerId() != null
         @Suppress("UNCHECKED_CAST")
@@ -460,11 +460,14 @@ data class Journalpost(
                 AvvikType.BESTILL_NY_DISTRIBUSJON
             )
         }
-        if (isUtgaaendeDokument() && isStatusFerdigsstilt() && !isDistribusjonBestilt() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
-            avvikTypeList.add(
-                AvvikType.MANGLER_ADRESSE
-            )
+        if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
+            if (isStatusEkspedert() && isDistribusjonKommetIRetur() || isStatusFerdigsstilt() && !isDistribusjonBestilt()) {
+                avvikTypeList.add(
+                    AvvikType.MANGLER_ADRESSE
+                )
+            }
         }
+
         if (isFarskap() && !isFarskapUtelukket() && !isStatusMottatt()) avvikTypeList.add(AvvikType.FARSKAP_UTELUKKET)
         return avvikTypeList
     }
@@ -983,7 +986,7 @@ data class EndreJournalpostCommandIntern(
     fun sjekkGyldigEndringAvReturDato(journalpost: Journalpost, violations: MutableList<String>) {
         val endreReturDetaljer =
             endreJournalpostCommand.endreReturDetaljer?.filter { Strings.isNotEmpty(it.beskrivelse) }
-        if (endreReturDetaljer != null && endreReturDetaljer.isNotEmpty()) {
+        if (!endreReturDetaljer.isNullOrEmpty()) {
             val kanEndreReturDetaljer = journalpost.isDistribusjonKommetIRetur()
             if (!kanEndreReturDetaljer) {
                 violations.add("Kan ikke endre returdetaljer på journalpost som ikke har kommet i retur")

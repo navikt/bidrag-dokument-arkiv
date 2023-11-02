@@ -47,10 +47,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.Base64
-import java.util.Optional
 import java.util.function.Consumer
 import java.util.stream.Stream
-import kotlin.jvm.optionals.getOrNull
 
 @Service
 class AvvikService(
@@ -259,17 +257,25 @@ class AvvikService(
             med tittel "$nyJournalpostTittel (Kopiert fra dokument: ${journalpost.hentTittel()})"
             avvikshendelseIntern.dokumenter!!.forEach(
                 Consumer { (dokumentreferanse, _, _, tittel, dokument, brevkode): DokumentDto ->
-                    val dokumentByte = if (Strings.isNotEmpty(dokument)) Base64.getDecoder()
-                        .decode(dokument) else null
+                    val dokumentByte = if (Strings.isNotEmpty(dokument)) {
+                        Base64.getDecoder()
+                            .decode(dokument)
+                    } else {
+                        null
+                    }
                     +JoarkOpprettJournalpostRequest.Dokument(
                         dokumentInfoId = dokumentreferanse,
                         brevkode = brevkode,
                         tittel = tittel,
-                        dokumentvarianter = if (dokumentByte != null) listOf(
-                            opprettDokumentVariant(
-                                dokumentByte = dokumentByte
+                        dokumentvarianter = if (dokumentByte != null) {
+                            listOf(
+                                opprettDokumentVariant(
+                                    dokumentByte = dokumentByte
+                                )
                             )
-                        ) else emptyList()
+                        } else {
+                            emptyList()
+                        }
                     )
                 }
             )

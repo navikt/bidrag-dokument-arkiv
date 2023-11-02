@@ -219,7 +219,8 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
             OppgaveSokResponse(
                 1,
                 listOf(createOppgaveDataWithSaksnummer(saksnummer3))
-            ), HttpStatus.OK
+            ),
+            HttpStatus.OK
         )
         stubs.mockSafResponseHentJournalpost(
             opprettSafResponse(
@@ -323,7 +324,6 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
             {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostIdFraJson,
-                    "\"tittel\":\"So Tired\"",
                     "\"avsenderMottaker\":{\"navn\":\"Dauden, Svarte\"}",
                     "\"datoMottatt\":\"2020-02-03\"",
                     "\"dokumenter\":[{\"dokumentInfoId\":\"1\",\"tittel\":\"In a galazy far far away\",\"brevkode\":\"BLABLA\"}]"

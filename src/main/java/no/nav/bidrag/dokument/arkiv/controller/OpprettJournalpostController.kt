@@ -26,10 +26,12 @@ class OpprettJournalpostController(private val opprettJournalpostService: Oppret
         description = "Opprett journalpost i Joark"
     )
     @ApiResponses(
-        value = [ApiResponse(
-            responseCode = "400",
-            description = "Opprett journalpost kalt med ugyldig data"
-        )]
+        value = [
+            ApiResponse(
+                responseCode = "400",
+                description = "Opprett journalpost kalt med ugyldig data"
+            )
+        ]
     )
     fun opprettJournalpost(@RequestBody opprettJournalpostRequest: OpprettJournalpostRequest): ResponseEntity<OpprettJournalpostResponse> {
         SECURE_LOGGER.info("Oppretter journalpost {}", opprettJournalpostRequest)

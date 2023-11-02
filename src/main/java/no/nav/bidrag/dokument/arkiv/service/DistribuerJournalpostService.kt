@@ -26,7 +26,6 @@ import no.nav.bidrag.dokument.arkiv.dto.validerAdresse
 import no.nav.bidrag.dokument.arkiv.dto.validerKanDistribueres
 import no.nav.bidrag.dokument.arkiv.dto.validerKanDistribueresUtenAdresse
 import no.nav.bidrag.dokument.arkiv.dto.validerUtgaaendeJournalpostKanDupliseres
-import no.nav.bidrag.dokument.arkiv.kafka.BehandleJournalforingHendelseService
 import no.nav.bidrag.dokument.arkiv.mapper.tilVarselTypeDto
 import no.nav.bidrag.dokument.arkiv.model.Discriminator
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException
@@ -83,7 +82,7 @@ class DistribuerJournalpostService(
             request.forsendelseStoerrelse
         )
         SECURE_LOGGER.info("Hentet kanal ${kanal.distribusjonskanal} for forespørsel $request")
-        return kanal;
+        return kanal
     }
 
     fun hentDistribusjonKanal(journalpost: Journalpost): BestemKanalResponse {
@@ -208,11 +207,14 @@ class DistribuerJournalpostService(
         val distribusjonKanal = hentDistribusjonKanal(journalpost)
 
         val adresse =
-            if (distribusjonKanal.distribusjonskanal == DistribusjonsKanal.PRINT) hentOgValiderAdresse(
-                distribuerJournalpostRequest,
-                journalpost
-            ) else null
-
+            if (distribusjonKanal.distribusjonskanal == DistribusjonsKanal.PRINT) {
+                hentOgValiderAdresse(
+                    distribuerJournalpostRequest,
+                    journalpost
+                )
+            } else {
+                null
+            }
 
         // TODO: Lagre bestillingsid når bd-arkiv er koblet mot database
         val distribuerResponse =
@@ -326,7 +328,6 @@ class DistribuerJournalpostService(
         distribuerJournalpostRequestInternal: DistribuerJournalpostRequestInternal,
         journalpost: Journalpost
     ): DistribuerTilAdresse? {
-
         if (distribuerJournalpostRequestInternal.hasAdresse()) {
             return distribuerJournalpostRequestInternal.getAdresse()
         }
@@ -410,7 +411,7 @@ class DistribuerJournalpostService(
                 if (Strings.isNullOrEmpty(batchId)) "NONE" else batchId,
                 "enhet", journalpost.journalforendeEnhet,
                 "tema", journalpost.tema,
-                "kanal", kanal,
+                "kanal", kanal
             ).increment()
 
             distributionAntallDokumenter.record(journalpost.dokumenter.size.toDouble())

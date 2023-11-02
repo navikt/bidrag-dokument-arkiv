@@ -46,27 +46,33 @@ internal class LagreJournalpostTest {
             journalpostId = 213
         )
         assertThat(lagreJournalpost.tilleggsopplysninger?.size).isEqualTo(4)
-        assertThat(lagreJournalpost.tilleggsopplysninger?.any {
-            it.values.any { value ->
-                value.contains(
-                    "2022-11-15"
-                )
+        assertThat(
+            lagreJournalpost.tilleggsopplysninger?.any {
+                it.values.any { value ->
+                    value.contains(
+                        "2022-11-15"
+                    )
+                }
             }
-        }).isTrue
-        assertThat(lagreJournalpost.tilleggsopplysninger?.any {
-            it.values.any { value ->
-                value.contains(
-                    "2020-01-02"
-                )
+        ).isTrue
+        assertThat(
+            lagreJournalpost.tilleggsopplysninger?.any {
+                it.values.any { value ->
+                    value.contains(
+                        "2020-01-02"
+                    )
+                }
             }
-        }).isTrue
-        assertThat(lagreJournalpost.tilleggsopplysninger?.any {
-            it.values.any { value ->
-                value.contains(
-                    "2020-10-02"
-                )
+        ).isTrue
+        assertThat(
+            lagreJournalpost.tilleggsopplysninger?.any {
+                it.values.any { value ->
+                    value.contains(
+                        "2020-10-02"
+                    )
+                }
             }
-        }).isTrue
+        ).isTrue
     }
 
     @Test
@@ -101,27 +107,33 @@ internal class LagreJournalpostTest {
             journalpostId = 213
         )
         assertThat(lagreJournalpost.tilleggsopplysninger?.size).isEqualTo(2)
-        assertThat(lagreJournalpost.tilleggsopplysninger?.any {
-            it.values.any { value ->
-                value.contains(
-                    "2022-11-15"
-                )
+        assertThat(
+            lagreJournalpost.tilleggsopplysninger?.any {
+                it.values.any { value ->
+                    value.contains(
+                        "2022-11-15"
+                    )
+                }
             }
-        }).isFalse
-        assertThat(lagreJournalpost.tilleggsopplysninger?.any {
-            it.values.any { value ->
-                value.contains(
-                    "2020-01-02"
-                )
+        ).isFalse
+        assertThat(
+            lagreJournalpost.tilleggsopplysninger?.any {
+                it.values.any { value ->
+                    value.contains(
+                        "2020-01-02"
+                    )
+                }
             }
-        }).isTrue
-        assertThat(lagreJournalpost.tilleggsopplysninger?.any {
-            it.values.any { value ->
-                value.contains(
-                    "2020-10-02"
-                )
+        ).isTrue
+        assertThat(
+            lagreJournalpost.tilleggsopplysninger?.any {
+                it.values.any { value ->
+                    value.contains(
+                        "2020-10-02"
+                    )
+                }
             }
-        }).isTrue
+        ).isTrue
     }
 
     @Test
@@ -163,33 +175,41 @@ internal class LagreJournalpostTest {
             journalpostId = 213
         )
         assertThat(lagreJournalpost.tilleggsopplysninger?.size).isEqualTo(3)
-        assertThat(lagreJournalpost.tilleggsopplysninger?.any {
-            it.values.any { value ->
-                value.contains(
-                    "2022-11-15"
-                )
+        assertThat(
+            lagreJournalpost.tilleggsopplysninger?.any {
+                it.values.any { value ->
+                    value.contains(
+                        "2022-11-15"
+                    )
+                }
             }
-        }).isTrue
-        assertThat(lagreJournalpost.tilleggsopplysninger?.any {
-            it.values.any { value ->
-                value.contains(
-                    datoSomSkalEndres.toString()
-                )
+        ).isTrue
+        assertThat(
+            lagreJournalpost.tilleggsopplysninger?.any {
+                it.values.any { value ->
+                    value.contains(
+                        datoSomSkalEndres.toString()
+                    )
+                }
             }
-        }).isFalse
-        assertThat(lagreJournalpost.tilleggsopplysninger?.filter {
-            it.values.any { value ->
-                value.contains(
-                    "2022-11-15"
-                )
+        ).isFalse
+        assertThat(
+            lagreJournalpost.tilleggsopplysninger?.filter {
+                it.values.any { value ->
+                    value.contains(
+                        "2022-11-15"
+                    )
+                }
+            }?.joinToString()
+        ).contains("Ny beskrivelse 1")
+        assertThat(
+            lagreJournalpost.tilleggsopplysninger?.any {
+                it.values.any { value ->
+                    value.contains(
+                        "2020-01-02"
+                    )
+                }
             }
-        }?.joinToString()).contains("Ny beskrivelse 1")
-        assertThat(lagreJournalpost.tilleggsopplysninger?.any {
-            it.values.any { value ->
-                value.contains(
-                    "2020-01-02"
-                )
-            }
-        }).isTrue
+        ).isTrue
     }
 }

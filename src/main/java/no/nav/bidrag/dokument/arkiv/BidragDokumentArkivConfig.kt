@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeType
 import io.swagger.v3.oas.annotations.info.Info
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.security.SecurityScheme
-import no.nav.bidrag.commons.ExceptionLogger
 import no.nav.bidrag.commons.security.api.EnableSecurityConfiguration
 import no.nav.bidrag.commons.security.service.SecurityTokenService
 import no.nav.bidrag.commons.security.service.StsTokenService
@@ -15,7 +14,6 @@ import no.nav.bidrag.commons.web.DefaultCorsFilter
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate
 import no.nav.bidrag.commons.web.MdcFilter
 import no.nav.bidrag.commons.web.UserMdcFilter
-import no.nav.bidrag.dokument.arkiv.aop.HttpStatusRestControllerAdvice
 import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivKnyttTilSakConsumer
@@ -331,30 +329,32 @@ class BidragDokumentArkivConfig {
         val bidragOrganisasjonUrl: String
     ) {
         override fun toString(): String {
-            return ("dokarkivUrl='"
-                    + dokarkivUrl
-                    + '\''
-                    + ", safUrl='"
-                    + safUrl
-                    + '\''
-                    + ", bidragPersonUrl='"
-                    + bidragPersonUrl
-                    + '\''
-                    + ", dokarkivKnyttTilSakUrl='"
-                    + dokarkivKnyttTilSakUrl
-                    + '\''
-                    + ", securityTokenUrl='"
-                    + securityTokenUrl
-                    + '\''
-                    + ", bidragOrganisasjonUrl='"
-                    + bidragOrganisasjonUrl
-                    + '\''
-                    + ", naisAppName='"
-                    + naisAppName
-                    + '\''
-                    + ", secretForServiceUser '"
-                    + notActualValue()
-                    + "'.")
+            return (
+                "dokarkivUrl='" +
+                    dokarkivUrl +
+                    '\'' +
+                    ", safUrl='" +
+                    safUrl +
+                    '\'' +
+                    ", bidragPersonUrl='" +
+                    bidragPersonUrl +
+                    '\'' +
+                    ", dokarkivKnyttTilSakUrl='" +
+                    dokarkivKnyttTilSakUrl +
+                    '\'' +
+                    ", securityTokenUrl='" +
+                    securityTokenUrl +
+                    '\'' +
+                    ", bidragOrganisasjonUrl='" +
+                    bidragOrganisasjonUrl +
+                    '\'' +
+                    ", naisAppName='" +
+                    naisAppName +
+                    '\'' +
+                    ", secretForServiceUser '" +
+                    notActualValue() +
+                    "'."
+                )
         }
 
         private fun notActualValue(): String {

@@ -75,9 +75,8 @@ open class OppgaveRequest(
     val tema: String? = null,
     val behandlingstema: String? = null,
     val oppgavetype: String? = null,
-    val status: OppgaveStatus? = null,
+    val status: OppgaveStatus? = null
 )
-
 
 data class OppdaterSakRequest(
     private var oppgaveHendelse: OppgaveData,
@@ -95,8 +94,8 @@ data class LeggTilKommentarPaaOppgave(
         versjon = oppgaveData.versjon,
         endretAvEnhetsnr = _endretAvEnhetsnr,
         beskrivelse = beskrivelseHeader(saksbehandlersInfo) +
-                "$kommentar\r\n\r\n" +
-                "${oppgaveData.beskrivelse}"
+            "$kommentar\r\n\r\n" +
+            "${oppgaveData.beskrivelse}"
     )
 
 data class FerdigstillOppgaveRequest(
@@ -151,7 +150,7 @@ data class BestillSplittingoppgaveRequest(
     ) {
     init {
         beskrivelse = "${beskrivelseHeader(saksbehandlerMedEnhet.hentSaksbehandlerInfo())}\n${
-            bestillSplittingKommentar(beskrivSplitting)
+        bestillSplittingKommentar(beskrivSplitting)
         }"
     }
 }
@@ -173,7 +172,7 @@ data class BestillReskanningOppgaveRequest(
     ) {
     init {
         beskrivelse = "${beskrivelseHeader(saksbehandlerMedEnhet.hentSaksbehandlerInfo())}\n${
-            bestillReskanningKommentar(kommentar)
+        bestillReskanningKommentar(kommentar)
         }"
     }
 }
@@ -295,7 +294,7 @@ internal fun lagVurderDokumentOppgaveBeskrivelse(
     regDato: LocalDate
 ): String {
     var description = "--- ${
-        LocalDate.now().format(NORSK_DATO_FORMAT)
+    LocalDate.now().format(NORSK_DATO_FORMAT)
     } ${saksbehandlerMedEnhet.hentSaksbehandlerInfo()} ---\n $brevKode $dokumentTittel"
     if (kommentar != null) {
         description += "\n\n $kommentar"

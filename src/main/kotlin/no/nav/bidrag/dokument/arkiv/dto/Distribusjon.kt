@@ -155,6 +155,21 @@ fun validerAdresse(adresse: DistribuerTilAdresse?) {
         adresse?.land?.length == 2,
         "Land må være formatert som Alpha-2 to-bokstavers landkode "
     )
+    validateMaxLength(
+        adresse?.adresselinje1,
+        128,
+        "Adresselinje 1 kan ikke være lengre enn 128 tegn"
+    )
+    validateMaxLength(
+        adresse?.adresselinje2,
+        128,
+        "Adresselinje 2 kan ikke være lengre enn 128 tegn"
+    )
+    validateMaxLength(
+        adresse?.adresselinje3,
+        128,
+        "Adresselinje 3 kan ikke være lengre enn 128 tegn"
+    )
     if (ALPHA2_NORGE == adresse?.land) {
         validateNotNullOrEmpty(adresse.postnummer, "Postnummer er påkrevd på norsk adresse")
         validateNotNullOrEmpty(adresse.poststed, "Poststed er påkrevd på norsk adresse")

@@ -249,7 +249,8 @@ internal class EndreJournalpostValidationTest {
             tilleggsopplysninger = tilleggsOpplysninger,
             relevanteDatoer = listOf(
                 DatoType(
-                    LocalDateTime.of(dokumentDato, LocalTime.of(0, 0)).toString(), "DATO_DOKUMENT"
+                    LocalDateTime.of(dokumentDato, LocalTime.of(0, 0)).toString(),
+                    "DATO_DOKUMENT"
                 )
             )
         )
@@ -297,7 +298,8 @@ internal class EndreJournalpostValidationTest {
             tilleggsopplysninger = tilleggsOpplysninger,
             relevanteDatoer = listOf(
                 DatoType(
-                    LocalDateTime.of(dokumentDato, LocalTime.of(0, 0)).toString(), "DATO_DOKUMENT"
+                    LocalDateTime.of(dokumentDato, LocalTime.of(0, 0)).toString(),
+                    "DATO_DOKUMENT"
                 )
             )
         )
@@ -347,7 +349,8 @@ internal class EndreJournalpostValidationTest {
             tilleggsopplysninger = tilleggsOpplysninger,
             relevanteDatoer = listOf(
                 DatoType(
-                    LocalDateTime.of(dokumentDato, LocalTime.of(0, 0)).toString(), "DATO_DOKUMENT"
+                    LocalDateTime.of(dokumentDato, LocalTime.of(0, 0)).toString(),
+                    "DATO_DOKUMENT"
                 )
             )
         )
@@ -387,7 +390,8 @@ internal class EndreJournalpostValidationTest {
             tilleggsopplysninger = tilleggsOpplysninger,
             relevanteDatoer = listOf(
                 DatoType(
-                    LocalDateTime.of(dokumentDato, LocalTime.of(0, 0)).toString(), "DATO_DOKUMENT"
+                    LocalDateTime.of(dokumentDato, LocalTime.of(0, 0)).toString(),
+                    "DATO_DOKUMENT"
                 )
             )
         )
