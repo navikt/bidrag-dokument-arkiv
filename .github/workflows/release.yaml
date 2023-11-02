@@ -3,9 +3,6 @@ on:
   push:
     branches:
       - 'main'
-env:
-  GITHUB_USERNAME: x-access-token
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   build-deploy:
@@ -13,7 +10,7 @@ jobs:
     permissions:
       contents: "write"
       id-token: "write"
-    uses: navikt/bidrag-workflow/.github/workflows/release.yaml@main
+    uses: navikt/bidrag-workflow/.github/workflows/deploy_prod.yaml@main
     with:
-      cluster: fss
+      nais_cluster: fss
     secrets: inherit
