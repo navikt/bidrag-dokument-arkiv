@@ -10,7 +10,7 @@ fun validateNotNullOrEmpty(value: String?, message: String) {
 }
 
 fun validateMaxLength(value: String?, maxLength: Int, message: String) {
-    if (value.isNullOrEmpty()) return;
+    if (value.isNullOrEmpty()) return
     Validate.isTrue(value.length < maxLength, message)
 }
 

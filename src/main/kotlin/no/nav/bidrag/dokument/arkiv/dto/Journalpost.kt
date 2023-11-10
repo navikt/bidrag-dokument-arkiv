@@ -194,7 +194,7 @@ data class Journalpost(
     var eksternReferanseId: String? = null,
     var tilknyttedeSaker: List<String> = emptyList(),
     var tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger(),
-    val utsendingsinfo: UtsendingsInfo? = null,
+    val utsendingsinfo: UtsendingsInfo? = null
 ) {
 
     fun distribuertTilAdresse(): DistribuerTilAdresse? {
@@ -869,9 +869,9 @@ data class ReturDetaljerLogDO(
     fun toMap(): List<Map<String, String>> = beskrivelse.chunked(100).mapIndexed { index, it ->
         mapOf(
             "nokkel" to "${if (locked == true) "L" else ""}$RETUR_DETALJER_KEY${index}_${
-                DateUtils.formatDate(
-                    dato
-                )
+            DateUtils.formatDate(
+                dato
+            )
             }",
             "verdi" to it
         )
