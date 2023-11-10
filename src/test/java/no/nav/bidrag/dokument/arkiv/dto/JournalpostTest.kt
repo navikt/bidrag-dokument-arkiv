@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.dto
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.kotest.matchers.shouldBe
 import no.nav.bidrag.dokument.arkiv.stubs.RETUR_DETALJER_DATO_1
 import no.nav.bidrag.dokument.arkiv.stubs.RETUR_DETALJER_DATO_2
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
@@ -8,7 +9,6 @@ import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponseWithReturDet
 import no.nav.bidrag.transport.dokument.AvvikType
 import no.nav.bidrag.transport.dokument.FARSKAP_UTELUKKET_PREFIKS
 import no.nav.bidrag.transport.dokument.JournalpostStatus
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -587,6 +587,55 @@ internal class JournalpostTest {
         assertThat(returDetaljerLog[1].locked).isTrue
         assertThat(returDetaljerLog[0].dato).isEqualTo(RETUR_DETALJER_DATO_1)
         assertThat(returDetaljerLog[1].dato).isEqualTo(RETUR_DETALJER_DATO_2)
+    }
+
+    @Test
+    fun `skal hent fysisk postadresse `() {
+        val journalpost = opprettUtgaendeSafResponse()
+            .copy(
+                utsendingsinfo = UtsendingsInfo(
+                    fysiskpostSendt = FysiskpostSendt("Adresselinje1\n3022 Drammen\nNO")
+                )
+            )
+        val distribuertTilAdresse = journalpost.distribuertTilAdresse()
+        distribuertTilAdresse?.adresselinje1 shouldBe "Adresselinje1"
+        distribuertTilAdresse?.postnummer shouldBe "3022"
+        distribuertTilAdresse?.poststed shouldBe "Drammen"
+        distribuertTilAdresse?.land shouldBe "NO"
+    }
+
+    @Test
+    fun `skal hent fysisk postadresse med flere adreselinjer`() {
+        val journalpost = opprettUtgaendeSafResponse()
+            .copy(
+                utsendingsinfo = UtsendingsInfo(
+                    fysiskpostSendt = FysiskpostSendt("Adresselinje1\nAdresselinje2\nAdresselinje3\n3022 Drammen\nNO")
+                )
+            )
+        val distribuertTilAdresse = journalpost.distribuertTilAdresse()
+        distribuertTilAdresse?.adresselinje1 shouldBe "Adresselinje1"
+        distribuertTilAdresse?.adresselinje2 shouldBe "Adresselinje2"
+        distribuertTilAdresse?.adresselinje3 shouldBe "Adresselinje3"
+        distribuertTilAdresse?.postnummer shouldBe "3022"
+        distribuertTilAdresse?.poststed shouldBe "Drammen"
+        distribuertTilAdresse?.land shouldBe "NO"
+    }
+
+    @Test
+    fun `skal hent fysisk postadresse uten postnummer`() {
+        val journalpost = opprettUtgaendeSafResponse()
+            .copy(
+                utsendingsinfo = UtsendingsInfo(
+                    fysiskpostSendt = FysiskpostSendt("Adresselinje1\nAdresselinje2\nAdresselinje3\nCalifornia\nUSA")
+                )
+            )
+        val distribuertTilAdresse = journalpost.distribuertTilAdresse()
+        distribuertTilAdresse?.adresselinje1 shouldBe "Adresselinje1"
+        distribuertTilAdresse?.adresselinje2 shouldBe "Adresselinje2"
+        distribuertTilAdresse?.adresselinje3 shouldBe "Adresselinje3"
+        distribuertTilAdresse?.postnummer shouldBe null
+        distribuertTilAdresse?.poststed shouldBe "California"
+        distribuertTilAdresse?.land shouldBe "USA"
     }
 
     private fun getReturDetaljerDOByDate(
