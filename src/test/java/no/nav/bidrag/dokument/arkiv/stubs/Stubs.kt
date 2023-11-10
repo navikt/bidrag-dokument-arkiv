@@ -333,9 +333,9 @@ class Stubs {
                             .withStatus(HttpStatus.OK.value())
                             .withBody(
                                 "{\"data\":{\"journalpost\": ${
-                                objectMapper.writeValueAsString(
-                                    distribusjonsInfo
-                                )
+                                    objectMapper.writeValueAsString(
+                                        distribusjonsInfo
+                                    )
                                 } }}"
                             )
                     )
@@ -350,16 +350,16 @@ class Stubs {
             WireMock.stubFor(
                 WireMock.post(WireMock.urlEqualTo("/saf/graphql"))
                     .withRequestBody(ContainsPattern("query journalpost"))
-                    .withRequestBody(ContainsPattern(String.format("\"variables\":{\"journalpostId\":\"${journalpostId}\"}")))
+                    .withRequestBody(ContainsPattern(String.format("$journalpostId")))
                     .willReturn(
                         aClosedJsonResponse()
                             .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                             .withStatus(HttpStatus.OK.value())
                             .withBody(
                                 "{\"data\":{\"journalpost\": ${
-                                objectMapper.writeValueAsString(
-                                    journalpost
-                                )
+                                    objectMapper.writeValueAsString(
+                                        journalpost
+                                    )
                                 } }}"
                             )
                     )
@@ -432,9 +432,9 @@ class Stubs {
                             .withStatus(HttpStatus.OK.value())
                             .withBody(
                                 "{\"data\":{\"tilknyttedeJournalposter\": ${
-                                objectMapper.writeValueAsString(
-                                    tilknyttetJournalposts
-                                )
+                                    objectMapper.writeValueAsString(
+                                        tilknyttetJournalposts
+                                    )
                                 }}}"
                             )
                     )
@@ -856,8 +856,8 @@ class Stubs {
                 WireMock.patchRequestedFor(
                     WireMock.urlMatching(
                         "/dokarkiv" +
-                            DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" +
-                            journalpostId + "/oppdaterDistribusjonsinfo"
+                                DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" +
+                                journalpostId + "/oppdaterDistribusjonsinfo"
                     )
                 ).withRequestBody(ContainsPattern(kanal.name))
             )
