@@ -203,7 +203,7 @@ data class Journalpost(
 ) {
 
     fun distribuertTilAdresse(): DistribuerTilAdresse? {
-        return tilleggsopplysninger.hentAdresseDo()?.toDistribuerTilAdresse() ?: parseFysiskPostadrese()
+        return parseFysiskPostadrese() ?: tilleggsopplysninger.hentAdresseDo()?.toDistribuerTilAdresse()
     }
 
     fun mottakerAdresse(): MottakerAdresseTo? {
@@ -254,7 +254,11 @@ data class Journalpost(
                     postnummer = postnummer,
                     land = landkode2
                 )
-                SECURE_LOGGER.info { "Lest og mappet postadresse fra SAF $it til $adresse" }
+                SECURE_LOGGER.info {
+                    "Lest og mappet postadresse fra SAF ${
+                    it.split("\n").joinToString("\\n")
+                    } til $adresse"
+                }
                 return adresse
             }
         } catch (e: Exception) {
