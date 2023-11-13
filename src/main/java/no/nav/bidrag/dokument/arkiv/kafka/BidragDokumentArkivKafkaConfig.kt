@@ -1,8 +1,8 @@
 package no.nav.bidrag.dokument.arkiv.kafka
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig
+import no.nav.bidrag.dokument.arkiv.SECURE_LOGGER
 import no.nav.bidrag.dokument.arkiv.model.Discriminator
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHarIkkeKommetIRetur
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
@@ -31,7 +31,6 @@ import org.springframework.kafka.support.ExponentialBackOffWithMaxRetries
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
 import org.springframework.util.backoff.ExponentialBackOff
 import java.time.Duration
-import java.util.*
 
 @Configuration
 class BidragDokumentArkivKafkaConfig {
@@ -72,7 +71,7 @@ class BidragDokumentArkivKafkaConfig {
                 val offset = rec.offset()
                 val topic = rec.topic()
                 val partition = rec.topic()
-                BidragDokumentArkiv.SECURE_LOGGER.error(
+                SECURE_LOGGER.error(
                     "Kafka melding med nøkkel {}, partition {} og topic {} feilet på offset {}. Melding som feilet: {}",
                     key,
                     partition,

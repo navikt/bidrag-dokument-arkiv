@@ -2,7 +2,7 @@ package no.nav.bidrag.dokument.arkiv.kafka
 
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
-import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv
+import no.nav.bidrag.dokument.arkiv.SECURE_LOGGER
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.Saksbehandler
 import no.nav.bidrag.dokument.arkiv.model.JournalpostHendelseException
@@ -74,7 +74,7 @@ open class HendelserProducer(
     private fun publish(journalpostHendelse: JournalpostHendelse) {
         try {
             val message = objectMapper.writeValueAsString(journalpostHendelse)
-            BidragDokumentArkiv.SECURE_LOGGER.info("Publiserer hendelse {}", message)
+            SECURE_LOGGER.info("Publiserer hendelse {}", message)
             LOGGER.info(
                 "Publiserer hendelse med journalpostId={}",
                 journalpostHendelse.journalpostId
