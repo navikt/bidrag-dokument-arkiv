@@ -203,7 +203,7 @@ data class Journalpost(
 ) {
 
     fun distribuertTilAdresse(): DistribuerTilAdresse? {
-        return tilleggsopplysninger.hentAdresseDo()?.toDistribuerTilAdresse() ?: parseFysiskPostadrese()
+        return parseFysiskPostadrese() ?: tilleggsopplysninger.hentAdresseDo()?.toDistribuerTilAdresse()
     }
 
     fun mottakerAdresse(): MottakerAdresseTo? {
@@ -254,7 +254,11 @@ data class Journalpost(
                     postnummer = postnummer,
                     land = landkode2
                 )
-                SECURE_LOGGER.info { "Lest og mappet postadresse fra SAF $it til $adresse" }
+                SECURE_LOGGER.info {
+                    "Lest og mappet postadresse fra SAF ${
+                        it.split("\n").joinToString("\\n")
+                    } til $adresse"
+                }
                 return adresse
             }
         } catch (e: Exception) {
@@ -897,9 +901,9 @@ data class ReturDetaljerLogDO(
     fun toMap(): List<Map<String, String>> = beskrivelse.chunked(100).mapIndexed { index, it ->
         mapOf(
             "nokkel" to "${if (locked == true) "L" else ""}$RETUR_DETALJER_KEY${index}_${
-            DateUtils.formatDate(
-                dato
-            )
+                DateUtils.formatDate(
+                    dato
+                )
             }",
             "verdi" to it
         )
