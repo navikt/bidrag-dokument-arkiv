@@ -224,7 +224,7 @@ class DistribuerJournalpostService(
         )
 
         // Distribusjonsløpet oppdaterer journalpost og overskriver alt av tilleggsopplysninger. Hent journalpost på nytt for å unngå overskrive noe som distribusjon har lagret
-        oppdaterTilleggsopplysninger(journalpostId, journalpost, adresse)
+        oppdaterTilleggsopplysninger(journalpostId, journalpost, adresse, bestemKanalResponse = distribusjonKanal)
         oppdaterDokumentdatoTilIdag(journalpostId, journalpost)
         measureDistribution(journalpost, batchId)
         return distribuerResponse
@@ -267,12 +267,15 @@ class DistribuerJournalpostService(
         journalpostId: Long,
         journalpostFør: Journalpost,
         adresse: DistribuerTilAdresse? = null,
-        erLokalUtskrift: Boolean = false
+        erLokalUtskrift: Boolean = false,
+        bestemKanalResponse: BestemKanalResponse? = null
     ) {
         val journalpostEtter = hentJournalpost(journalpostId)
         leggTilEksisterendeTilleggsopplysninger(journalpostEtter, journalpostFør)
         erLokalUtskrift.ifFalse { adresse?.run { lagreAdresse(adresse, journalpostEtter) } }
         erLokalUtskrift.ifFalse { journalpostEtter.tilleggsopplysninger.setDistribusjonBestillt() }
+        bestemKanalResponse?.distribusjonskanal?.takeIf { it == DistribusjonsKanal.DITT_NAV || it == DistribusjonsKanal.SDP }
+            ?.let { journalpostEtter.tilleggsopplysninger.setOriginalDistribuertDigitalt() }
         val saksbehandlerId = saksbehandlerInfoManager.hentSaksbehandlerBrukerId()
         saksbehandlerId?.run {
             journalpostEtter.tilleggsopplysninger.setDistribuertAvIdent(

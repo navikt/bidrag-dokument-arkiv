@@ -109,10 +109,10 @@ class OppgaveHendelseListenerTest {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostId,
                     "\"tilleggsopplysninger\":" +
-                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                        "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
-                        "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
-                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
+                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                            "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
+                            "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
+                            "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
                 )
             },
             { stubs.verifyStub.oppgaveOppdaterKalt(1, safResponse.hentSaksnummer()) }
@@ -213,10 +213,10 @@ class OppgaveHendelseListenerTest {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostId,
                     "\"tilleggsopplysninger\":" +
-                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                        "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
-                        "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
-                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
+                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                            "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
+                            "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
+                            "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
                 )
             },
             { stubs.verifyStub.oppgaveOpprettIkkeKalt() }
@@ -262,8 +262,8 @@ class OppgaveHendelseListenerTest {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostId,
                     "\"tilleggsopplysninger\":" +
-                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
+                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                            "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
                 )
             }
         )
@@ -323,6 +323,52 @@ class OppgaveHendelseListenerTest {
     }
 
     @Test
+    fun `skal oppdatere oppgave og returlogg med kommentar hvis retur kommer fra navno`() {
+        stubs.mockSts()
+        stubs.mockBidragOrganisasjonSaksbehandler()
+        stubs.mockOppdaterOppgave(HttpStatus.CONFLICT, null, "correct")
+        stubs.mockOppdaterOppgave(HttpStatus.OK, "correct", null)
+        val journalpostId = 201028011L
+        val tilleggsopplysninger = TilleggsOpplysninger()
+        tilleggsopplysninger.setDistribusjonBestillt()
+        val safResponse = opprettUtgaendeSafResponse(
+            journalpostId = journalpostId.toString(),
+            tilleggsopplysninger = tilleggsopplysninger,
+            relevanteDatoer = listOf(
+                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
+            )
+        )
+        safResponse.antallRetur = 1
+
+        stubs.mockSafResponseHentJournalpost(safResponse)
+        stubs.mockDokarkivOppdaterRequest(journalpostId)
+
+        val oppgaveData = createOppgaveData(versjon = 20, journalpostId = journalpostId.toString())
+        stubs.mockHentOppgave(oppgaveData.id, oppgaveData, null, "fetch1")
+        stubs.mockHentOppgave(oppgaveData.id, oppgaveData.copy(versjon = 22), "fetch1", null)
+
+        val consumerRecord =
+            ConsumerRecord(
+                "test",
+                0,
+                0L,
+                "key",
+                objectMapper.writeValueAsString(oppgaveData.toHendelse())
+            )
+        hendelseListener.lesOppgaveOpprettetHendelse(consumerRecord)
+
+        assertSoftly {
+            stubs.verifyStub.oppgaveOppdaterKalt(2, safResponse.hentSaksnummer())
+            stubs.verifyStub.oppgaveOppdaterKalt(
+                1,
+                safResponse.hentSaksnummer(),
+                "\"versjon\":22",
+                "Mottaker har ikke åpnet forsendelsen via www.nav.no innen 40 timer. Ingen postadresse er registrert. Vurder om mottaker har adresse forsendelsen kan sendes til"
+            )
+        }
+    }
+
+    @Test
     fun shouldUnlockReturLogWhenSameDateExists() {
         stubs.mockSts()
         stubs.mockBidragOrganisasjonSaksbehandler()
@@ -372,9 +418,9 @@ class OppgaveHendelseListenerTest {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostId,
                     "\"tilleggsopplysninger\":" +
-                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                        "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
-                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}"
+                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                            "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
+                            "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}"
                 )
             }
         )

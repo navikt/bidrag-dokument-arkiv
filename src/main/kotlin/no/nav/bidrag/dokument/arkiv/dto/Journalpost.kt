@@ -47,6 +47,7 @@ const val DISTRIBUERT_AV_IDENT_KEY = "distribuertAvIdent"
 const val DOKDIST_BESTILLING_ID = "dokdistBestillingsId"
 const val SAMHANDLER_ID_KEY = "samhandlerId"
 const val DISTRIBUSJON_BESTILT_KEY = "distribusjonBestilt"
+const val ORIGINALT_DISTRIBUERT_DIGITALT_KEY = "origDistDigitalt"
 const val AVVIK_ENDRET_TEMA_KEY = "avvikEndretTema"
 const val ORIGINAL_BESTILT_KEY = "originalBestilt"
 const val AVVIK_NY_DISTRIBUSJON_BESTILT_KEY = "avvikNyDistribusjon"
@@ -737,6 +738,15 @@ class TilleggsOpplysninger : MutableList<Map<String, String>> by mutableListOf()
         this.removeAll { it["nokkel"]?.contains(DISTRIBUSJON_BESTILT_KEY) ?: false }
         this.removeAll { it["nokkel"]?.contains(DISTRIBUERT_ADRESSE_KEY) ?: false }
         this.removeAll { it["nokkel"]?.contains(DOKDIST_BESTILLING_ID) ?: false }
+    }
+
+    fun setOriginalDistribuertDigitalt() {
+        this.removeAll { it["nokkel"]?.contains(ORIGINALT_DISTRIBUERT_DIGITALT_KEY) ?: false }
+        this.add(mapOf("nokkel" to ORIGINALT_DISTRIBUERT_DIGITALT_KEY, "verdi" to "true"))
+    }
+
+    fun isOriginalDistribuertDigitalt(): Boolean {
+        return this.any { it["nokkel"]?.contains(ORIGINALT_DISTRIBUERT_DIGITALT_KEY) ?: false }
     }
 
     fun setDistribusjonBestillt() {
