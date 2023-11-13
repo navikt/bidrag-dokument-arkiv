@@ -85,7 +85,7 @@ data class OppdaterSakRequest(
 ) : OppgaveRequest(
     id = oppgaveHendelse.id,
     versjon = oppgaveHendelse.versjon,
-    beskrivelse = if (kommentar != null) "${oppgaveHendelse.beskrivelse}\r\n\r\n$kommentar" else null
+    beskrivelse = if (kommentar != null) kommentar else null
 )
 
 data class LeggTilKommentarPaaOppgave(
