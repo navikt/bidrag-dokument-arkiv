@@ -738,6 +738,7 @@ class TilleggsOpplysninger : MutableList<Map<String, String>> by mutableListOf()
         this.removeAll { it["nokkel"]?.contains(DISTRIBUSJON_BESTILT_KEY) ?: false }
         this.removeAll { it["nokkel"]?.contains(DISTRIBUERT_ADRESSE_KEY) ?: false }
         this.removeAll { it["nokkel"]?.contains(DOKDIST_BESTILLING_ID) ?: false }
+        this.removeAll { it["nokkel"]?.contains(ORIGINALT_DISTRIBUERT_DIGITALT_KEY) ?: false }
     }
 
     fun setOriginalDistribuertDigitalt() {
