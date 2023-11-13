@@ -4,7 +4,7 @@ import com.google.common.base.Strings
 import io.micrometer.core.instrument.DistributionSummary
 import io.micrometer.core.instrument.MeterRegistry
 import mu.KotlinLogging
-import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER
+import no.nav.bidrag.dokument.arkiv.SECURE_LOGGER
 import no.nav.bidrag.dokument.arkiv.consumer.BestemKanalResponse
 import no.nav.bidrag.dokument.arkiv.consumer.DistribusjonsKanal
 import no.nav.bidrag.dokument.arkiv.consumer.DokdistFordelingConsumer
@@ -39,7 +39,7 @@ import no.nav.bidrag.transport.dokument.DistribusjonInfoDto
 import no.nav.bidrag.transport.dokument.UtsendingsInfoDto
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.util.*
+import java.util.Objects
 
 private val LOGGER = KotlinLogging.logger {}
 

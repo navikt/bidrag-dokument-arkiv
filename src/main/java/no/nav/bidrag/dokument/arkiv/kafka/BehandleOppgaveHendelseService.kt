@@ -2,6 +2,7 @@ package no.nav.bidrag.dokument.arkiv.kafka
 
 import io.micrometer.core.instrument.MeterRegistry
 import mu.KotlinLogging
+import no.nav.bidrag.dokument.arkiv.SECURE_LOGGER
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.OppgaveConsumer
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
@@ -106,12 +107,21 @@ class BehandleOppgaveHendelseService(
         oppgave: OppgaveData
     ) {
         try {
+            val kommentar = opprettEkstraKommentarSomLeggesTilOppgave(journalpost)
             if (oppgave.saksreferanse != journalpost.hentSaksnummer()) {
                 oppgaveConsumer.patchOppgaveWithVersionRetry(
-                    OppdaterSakRequest(oppgave, journalpost.hentSaksnummer())
+                    OppdaterSakRequest(
+                        oppgave,
+                        journalpost.hentSaksnummer(),
+                        kommentar
+                    )
                 )
                 LOGGER.info {
-                    "Oppdatert retur oppgave ${oppgave.id} saksreferanse til ${journalpost.hentSaksnummer()}. JournalpostId=${journalpost.journalpostId}"
+                    "Oppdatert returoppgave ${oppgave.id} saksreferanse til ${journalpost.hentSaksnummer()} og lagt til kommentar $kommentar. JournalpostId=${journalpost.journalpostId}"
+                }
+            } else {
+                LOGGER.info {
+                    "Returoppgave ${oppgave.id} har allerede saksreferanse ${journalpost.hentSaksnummer()}. Gjør ingen endringer. JournalpostId=${journalpost.journalpostId}"
                 }
             }
         } catch (e: Exception) {
@@ -119,5 +129,12 @@ class BehandleOppgaveHendelseService(
                 "Det skjedde en feil ved oppdatering av saksreferanse på oppgave ${oppgave.id}"
             }
         }
+    }
+
+    private fun opprettEkstraKommentarSomLeggesTilOppgave(journalpost: Journalpost): String? {
+        SECURE_LOGGER.info("Journalpost kommet retur med følgende detaljer ${journalpost.journalpostId} ${journalpost.journalstatus} ${journalpost.distribuertTilAdresse()} ${
+            journalpost.relevanteDatoer.joinToString(",") { "${it.datotype}:${it.dato}" }
+        }")
+        return if (journalpost.distribuertTilAdresse() == null) "Mottaker har ikke åpnet forsendelsen via www.nav.no innen 40 timer. Ingen postadresse er registrert. Vurder om mottaker har adresse forsendelsen kan sendes til." else null
     }
 }

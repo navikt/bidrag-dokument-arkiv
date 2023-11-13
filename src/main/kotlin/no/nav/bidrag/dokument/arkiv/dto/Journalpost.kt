@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import mu.KotlinLogging
+import no.nav.bidrag.dokument.arkiv.SECURE_LOGGER
 import no.nav.bidrag.dokument.arkiv.model.JournalpostDataException
 import no.nav.bidrag.dokument.arkiv.model.ViolationException
 import no.nav.bidrag.dokument.arkiv.model.runCatchingIgnoreException
@@ -35,6 +37,8 @@ import org.apache.logging.log4j.util.Strings
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.stream.Collectors.toList
+
+private val LOGGER = KotlinLogging.logger {}
 
 // Max key length is 20
 const val RETUR_DETALJER_KEY = "retur"
@@ -193,8 +197,66 @@ data class Journalpost(
     var opprettetAvNavn: String? = null,
     var eksternReferanseId: String? = null,
     var tilknyttedeSaker: List<String> = emptyList(),
-    var tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger()
+    var tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger(),
+    val utsendingsinfo: UtsendingsInfo? = null
 ) {
+
+    fun distribuertTilAdresse(): DistribuerTilAdresse? {
+        return tilleggsopplysninger.hentAdresseDo()?.toDistribuerTilAdresse() ?: parseFysiskPostadrese()
+    }
+
+    fun mottakerAdresse(): MottakerAdresseTo? {
+        return distribuertTilAdresse()?.let {
+            MottakerAdresseTo(
+                adresselinje1 = it.adresselinje1 ?: "",
+                adresselinje2 = it.adresselinje2,
+                adresselinje3 = it.adresselinje3,
+                postnummer = it.postnummer,
+                poststed = it.poststed,
+                landkode = it.land
+            )
+        }
+    }
+
+    private fun parseFysiskPostadrese(): DistribuerTilAdresse? {
+        return try {
+            utsendingsinfo?.fysiskpostSendt?.adressetekstKonvolutt?.let {
+                val postadresseSplit = it.split("\n").reversed()
+                val landkode2 = postadresseSplit.getOrNull(0)
+                val postnummerPoststed = postadresseSplit.getOrNull(1)?.split(" ") ?: emptyList()
+                val postnummer = if (postnummerPoststed.size == 2) postnummerPoststed.getOrNull(0) else null
+                val poststed =
+                    if (postnummerPoststed.size == 1) postnummerPoststed.getOrNull(0) else postnummerPoststed.getOrNull(
+                        1
+                    )
+                val adresselinje1 = when (postadresseSplit.size) {
+                    3 -> postadresseSplit.getOrNull(2)
+                    4 -> postadresseSplit.getOrNull(3)
+                    5 -> postadresseSplit.getOrNull(4)
+                    else -> null
+                }
+                val adresselinje2 = when (postadresseSplit.size) {
+                    4 -> postadresseSplit.getOrNull(2)
+                    5 -> postadresseSplit.getOrNull(3)
+                    else -> null
+                }
+                val adresselinje3 = if (postadresseSplit.size == 5) postadresseSplit.getOrNull(2) else null
+                val adresse = DistribuerTilAdresse(
+                    adresselinje1 = adresselinje1,
+                    adresselinje2 = adresselinje2,
+                    adresselinje3 = adresselinje3,
+                    poststed = poststed,
+                    postnummer = postnummer,
+                    land = landkode2
+                )
+                SECURE_LOGGER.info { "Lest og mappet postadresse fra SAF $it til $adresse" }
+                return adresse
+            }
+        } catch (e: Exception) {
+            SECURE_LOGGER.error(e) { "Det skjedde en feil ved mapping av adresse fra SAF ${utsendingsinfo?.fysiskpostSendt?.adressetekstKonvolutt}" }
+            return null
+        }
+    }
 
     fun isBidragTema(): Boolean = tema == "BID" || tema == "FAR"
     fun isFarskap(): Boolean = tema == "FAR"
@@ -400,7 +462,7 @@ data class Journalpost(
                             else -> AvsenderMottakerDtoIdType.UKJENT
                         }
                     },
-                    adresse = tilleggsopplysninger.hentAdresseDo()?.toMottakerAdresse()
+                    adresse = mottakerAdresse()
                 )
             } else {
                 null
@@ -426,7 +488,7 @@ data class Journalpost(
             mottattDato = hentDatoRegistrert(),
             returDetaljer = hentReturDetaljer(),
             brevkode = hentBrevkodeDto(),
-            distribuertTilAdresse = tilleggsopplysninger.hentAdresseDo()?.toDistribuerTilAdresse()
+            distribuertTilAdresse = distribuertTilAdresse()
         )
     }
 

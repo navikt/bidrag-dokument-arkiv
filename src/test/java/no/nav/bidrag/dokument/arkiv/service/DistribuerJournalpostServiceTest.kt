@@ -200,7 +200,6 @@ class DistribuerJournalpostServiceTest {
             val result = assertThrows<IllegalArgumentException> { validerAdresse(adresse) }
             result.message shouldBe "Adresselinje 3 kan ikke være lengre enn 128 tegn"
         }
-
     }
 
     private fun createValidDistribuerJournalpostRequest(): DistribuerJournalpostRequest {
