@@ -10,7 +10,7 @@ import java.util.Optional
 @Service
 class SaksbehandlerInfoManager(
     private val bidragOrganisasjonConsumer: BidragOrganisasjonConsumer,
-    private val oidcTokenManager: OidcTokenManager
+    private val oidcTokenManager: OidcTokenManager,
 ) {
     fun hentSaksbehandlerBrukerId(): String? {
         return try {

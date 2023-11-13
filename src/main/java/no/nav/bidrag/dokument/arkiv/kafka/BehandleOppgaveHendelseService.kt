@@ -26,7 +26,7 @@ class BehandleOppgaveHendelseService(
     dokarkivConsumers: ResourceByDiscriminator<DokarkivConsumer?>,
     oppgaveConsumers: ResourceByDiscriminator<OppgaveConsumer?>,
     journalpostServices: ResourceByDiscriminator<JournalpostService?>,
-    private val meterRegistry: MeterRegistry
+    private val meterRegistry: MeterRegistry,
 ) {
     private val dokarkivConsumer: DokarkivConsumer
     private val oppgaveConsumer: OppgaveConsumer
@@ -43,7 +43,7 @@ class BehandleOppgaveHendelseService(
     @Retryable(
         value = [JournalpostHarIkkeKommetIRetur::class],
         maxAttempts = 5,
-        backoff = Backoff(delay = 1000, maxDelay = 12000, multiplier = 2.0)
+        backoff = Backoff(delay = 1000, maxDelay = 12000, multiplier = 2.0),
     )
     fun behandleReturOppgaveOpprettetHendelse(oppgaveHendelse: OppgaveKafkaHendelse) {
         val oppgave = validerOgHentOppgave(oppgaveHendelse) ?: return
@@ -56,8 +56,8 @@ class BehandleOppgaveHendelseService(
                     dokarkivConsumer.endre(
                         OpprettNyReturLoggRequest(
                             journalpost,
-                            opprettKommentarSomLeggesTilReturlogg(journalpost)
-                        )
+                            opprettKommentarSomLeggesTilReturlogg(journalpost),
+                        ),
                     )
                     LOGGER.info {
                         "Lagt til ny returlogg med returdato ${LocalDate.now()} på journalpost ${journalpost.journalpostId} med dokumentdato ${journalpost.hentDatoDokument()}."
@@ -67,7 +67,7 @@ class BehandleOppgaveHendelseService(
                         "Journalpost ${oppgave.journalpostId} har ikke kommet i retur. Det kan hende dette skyldes race-condition hvor retur oppgave er opprettet før journalpost er oppdatert. Forsøker på nytt."
                     }
                     throw JournalpostHarIkkeKommetIRetur(
-                        "Journalpost ${oppgave.journalpostId} har ikke kommet i retur"
+                        "Journalpost ${oppgave.journalpostId} har ikke kommet i retur",
                     )
                 } else {
                     LOGGER.warn {
@@ -92,14 +92,14 @@ class BehandleOppgaveHendelseService(
         val oppgave = oppgaveConsumer.hentOppgave(oppgaveHendelse.oppgaveId)
         if (oppgave == null) {
             LOGGER.warn(
-                "Fant ingen oppgave med id ${oppgaveHendelse.oppgaveId}"
+                "Fant ingen oppgave med id ${oppgaveHendelse.oppgaveId}",
             )
             return null
         }
 
         if (oppgave.journalpostId.isNullOrEmpty()) {
             LOGGER.warn(
-                "Returoppgave ${oppgave.id} har ingen journalpostid. Avslutter behandling"
+                "Returoppgave ${oppgave.id} har ingen journalpostid. Avslutter behandling",
             )
             return null
         }
@@ -107,10 +107,7 @@ class BehandleOppgaveHendelseService(
         return oppgave
     }
 
-    private fun oppdaterOppgaveSaksreferanse(
-        journalpost: Journalpost,
-        oppgave: OppgaveData
-    ) {
+    private fun oppdaterOppgaveSaksreferanse(journalpost: Journalpost, oppgave: OppgaveData) {
         try {
             val kommentar = opprettKommentarSomLeggesTilOppgave(journalpost)
             if (oppgave.saksreferanse != journalpost.hentSaksnummer()) {
@@ -118,8 +115,8 @@ class BehandleOppgaveHendelseService(
                     OppdaterSakRequest(
                         oppgave,
                         journalpost.hentSaksnummer(),
-                        kommentar
-                    )
+                        kommentar,
+                    ),
                 )
                 LOGGER.info {
                     "Oppdatert returoppgave ${oppgave.id} saksreferanse til ${journalpost.hentSaksnummer()} og lagt til kommentar $kommentar. JournalpostId=${journalpost.journalpostId}"
@@ -136,12 +133,12 @@ class BehandleOppgaveHendelseService(
         }
     }
 
-    private fun Journalpost.harReturKommetFraNavNo() =
-        distribuertTilAdresse() == null && tilleggsopplysninger.isOriginalDistribuertDigitalt()
+    private fun Journalpost.harReturKommetFraNavNo() = distribuertTilAdresse() == null && tilleggsopplysninger.isOriginalDistribuertDigitalt()
 
     private fun opprettKommentarSomLeggesTilOppgave(journalpost: Journalpost): String? {
         SECURE_LOGGER.info(
-            "Journalpost kommet retur med følgende detaljer origDistDigitalt=${journalpost.tilleggsopplysninger.isOriginalDistribuertDigitalt()} jpId=${journalpost.journalpostId} status=${journalpost.journalstatus} adresse=${journalpost.distribuertTilAdresse()}"
+            "Journalpost kommet retur med følgende detaljer origDistDigitalt=${journalpost.tilleggsopplysninger.isOriginalDistribuertDigitalt()} " +
+                "jpId=${journalpost.journalpostId} status=${journalpost.journalstatus} adresse=${journalpost.distribuertTilAdresse()}",
         )
         return if (journalpost.harReturKommetFraNavNo()) "Mottaker har ikke åpnet forsendelsen via www.nav.no innen 40 timer. Ingen postadresse er registrert. Vurder om mottaker har adresse forsendelsen kan sendes til." else null
     }

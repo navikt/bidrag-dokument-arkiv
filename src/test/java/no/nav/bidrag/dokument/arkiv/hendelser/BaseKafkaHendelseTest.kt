@@ -39,7 +39,7 @@ import java.time.Duration
 @EmbeddedKafka(
     partitions = 1,
     brokerProperties = ["listeners=PLAINTEXT://localhost:9092", "port=9092"],
-    topics = ["topic_joark", "topic_journalpost", "oppgave-hendelse"]
+    topics = ["topic_joark", "topic_journalpost", "oppgave-hendelse"],
 )
 abstract class BaseKafkaHendelseTest {
     private val LOGGER = LoggerFactory.getLogger(BaseKafkaHendelseTest::class.java)

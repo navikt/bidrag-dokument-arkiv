@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service
 @Service
 class DokumentService(
     safConsumers: ResourceByDiscriminator<SafConsumer>,
-    journalpostServices: ResourceByDiscriminator<JournalpostService>
+    journalpostServices: ResourceByDiscriminator<JournalpostService>,
 ) {
     private val safConsumer: SafConsumer
     private val journalpostService: JournalpostService
@@ -30,12 +30,7 @@ class DokumentService(
         return safConsumer.hentDokument(journalpostId, java.lang.Long.valueOf(dokumentReferanse))
     }
 
-    fun tilDokumentMetadata(
-        journalStatus: JournalStatus?,
-        dokumentReferanse: String?,
-        journalpostId: Long?,
-        tittel: String?
-    ) = DokumentMetadata(
+    fun tilDokumentMetadata(journalStatus: JournalStatus?, dokumentReferanse: String?, journalpostId: Long?, tittel: String?) = DokumentMetadata(
         arkivsystem = DokumentArkivSystemDto.JOARK,
         dokumentreferanse = dokumentReferanse,
         journalpostId = "JOARK-$journalpostId",
@@ -45,13 +40,10 @@ class DokumentService(
             JournalStatus.AVBRUTT, JournalStatus.FEILREGISTRERT, JournalStatus.UTGAAR -> DokumentStatusDto.AVBRUTT
             else -> DokumentStatusDto.FERDIGSTILT
         },
-        tittel = tittel
+        tittel = tittel,
     )
 
-    fun hentDokumentMetadata(
-        journalpostId: Long? = null,
-        dokumentReferanse: String?
-    ): List<DokumentMetadata> {
+    fun hentDokumentMetadata(journalpostId: Long? = null, dokumentReferanse: String?): List<DokumentMetadata> {
         if (journalpostId == null && dokumentReferanse != null) {
             return listOf(
                 journalpostService.finnTilknyttedeJournalposter(dokumentReferanse)
@@ -60,9 +52,9 @@ class DokumentService(
                             it.journalstatus,
                             dokumentReferanse,
                             it.journalpostId,
-                            it.tittel
+                            it.tittel,
                         )
-                    }.first()
+                    }.first(),
             )
         }
 
@@ -72,7 +64,7 @@ class DokumentService(
                 journalpost.journalstatus,
                 it.dokumentInfoId,
                 journalpostId,
-                it.tittel
+                it.tittel,
             )
         }?.filter { dokumentReferanse.isNullOrEmpty() || it.dokumentreferanse == dokumentReferanse }
             ?: emptyList()

@@ -55,7 +55,7 @@ class JournalpostHarIkkeKommetIRetur(message: String) : RuntimeException(message
 class KunneIkkeJournalforeOpprettetJournalpost(message: String) : RuntimeException(message)
 class LagreSaksbehandlerIdentForJournalfortJournalpostFeilet(
     message: String,
-    throwable: Throwable
+    throwable: Throwable,
 ) : RuntimeException(message, throwable)
 
 class KunneIkkeKnytteSakTilJournalpost(message: String, throwable: Throwable) :
@@ -66,17 +66,15 @@ class JournalfortJournalpostManglerJournalfortAvIdent(message: String) : Runtime
 class HentJournalpostFeilet(message: String, throwable: Throwable) :
     RuntimeException(message, throwable)
 
-fun fantIkkeDokument(forsendelseId: String, dokumentreferanse: String?): Nothing =
-    throw HttpClientErrorException(
-        HttpStatus.BAD_REQUEST,
-        "Finnes ingen dokument $dokumentreferanse i forsendelse $forsendelseId"
-    )
+fun fantIkkeDokument(forsendelseId: String, dokumentreferanse: String?): Nothing = throw HttpClientErrorException(
+    HttpStatus.BAD_REQUEST,
+    "Finnes ingen dokument $dokumentreferanse i forsendelse $forsendelseId",
+)
 
-fun kanIkkeHenteJournalMedUgyldigFagomrade(ugyldigFagomrade: String): Nothing =
-    throw HttpClientErrorException(
-        HttpStatus.BAD_REQUEST,
-        "Kan ikke hente journal med tema $ugyldigFagomrade. Gyldige verdier er BID og FAR"
-    )
+fun kanIkkeHenteJournalMedUgyldigFagomrade(ugyldigFagomrade: String): Nothing = throw HttpClientErrorException(
+    HttpStatus.BAD_REQUEST,
+    "Kan ikke hente journal med tema $ugyldigFagomrade. Gyldige verdier er BID og FAR",
+)
 
 inline fun <R> runCatchingIgnoreException(block: () -> R): R? {
     return try {

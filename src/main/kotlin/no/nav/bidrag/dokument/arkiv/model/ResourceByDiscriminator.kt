@@ -14,7 +14,8 @@ class ResourceByDiscriminator<T>(private val resources: Map<Discriminator, T>) {
 }
 
 enum class Discriminator {
-    REGULAR_USER, SERVICE_USER;
+    REGULAR_USER,
+    SERVICE_USER,
 }
 
 inline fun Boolean?.ifFalse(block: Boolean?.() -> Unit): Boolean? {

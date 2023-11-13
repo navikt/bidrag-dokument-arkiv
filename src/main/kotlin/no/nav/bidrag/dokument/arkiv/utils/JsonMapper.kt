@@ -11,7 +11,12 @@ object JsonMapper {
         return try {
             StaticContextAccessor.getBean(ObjectMapper::class.java).readValue(jsonString)
         } catch (e: Exception) {
-            LoggerFactory.getLogger(JsonMapper::class.java).error("Det skjedde en feil ved deserialisering json string ved bruk av ObjectMapper fra spring context. Bruker egendefinert ObjectMapper", e)
+            LoggerFactory.getLogger(
+                JsonMapper::class.java,
+            ).error(
+                "Det skjedde en feil ved deserialisering json string ved bruk av ObjectMapper fra spring context. Bruker egendefinert ObjectMapper",
+                e,
+            )
             ObjectMapper().registerModule(kotlinModule()).readValue(jsonString)
         }
     }
@@ -20,7 +25,12 @@ object JsonMapper {
         return try {
             StaticContextAccessor.getBean(ObjectMapper::class.java).writeValueAsString(dataObject)
         } catch (e: Exception) {
-            LoggerFactory.getLogger(JsonMapper::class.java).error("Det skjedde en feil ved serialisering av json objekt ved bruk av ObjectMapper fra Spring context. Bruker egendefinert ObjectMapper", e)
+            LoggerFactory.getLogger(
+                JsonMapper::class.java,
+            ).error(
+                "Det skjedde en feil ved serialisering av json objekt ved bruk av ObjectMapper fra Spring context. Bruker egendefinert ObjectMapper",
+                e,
+            )
             ObjectMapper().registerModule(kotlinModule()).writeValueAsString(dataObject)
         }
     }

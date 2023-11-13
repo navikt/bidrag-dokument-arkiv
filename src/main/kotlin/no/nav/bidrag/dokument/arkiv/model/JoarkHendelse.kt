@@ -9,7 +9,8 @@ enum class JoarkHendelseType(val hendelsesType: String) {
     TEMA_ENDRET("TemaEndret"),
     ENDELIG_JOURNALFORT("EndeligJournalført"),
     JOURNALPOST_UTGATT("JournalpostUtgått"),
-    UKJENT("Ukjent");
+    UKJENT("Ukjent"),
+    ;
 
     private fun erAv(hendelsesType: CharSequence?): Boolean {
         return hendelsesType != null && hendelsesType.toString().compareTo(this.hendelsesType, ignoreCase = true) == 0

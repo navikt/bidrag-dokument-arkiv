@@ -29,7 +29,9 @@ class JoarkOpprettJournalpostValidatorTest {
         val request = createJoarkOpprettJournalpostRequest().copy(avsenderMottaker = null)
         val result = shouldThrow<IllegalArgumentException> { validerKanOppretteJournalpost(request) }
 
-        val request2 = createJoarkOpprettJournalpostRequest().copy(avsenderMottaker = JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker())
+        val request2 = createJoarkOpprettJournalpostRequest().copy(
+            avsenderMottaker = JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(),
+        )
         val result2 = shouldThrow<IllegalArgumentException> { validerKanOppretteJournalpost(request2) }
 
         result.message shouldBe "Journalpost må ha satt avsender/mottaker"
@@ -52,11 +54,11 @@ class JoarkOpprettJournalpostValidatorTest {
                     tittel = "",
                     dokumentvarianter = listOf(
                         JoarkOpprettJournalpostRequest.DokumentVariant(
-                            fysiskDokument = "Innhold på dokumentet".toByteArray()
-                        )
-                    )
-                )
-            )
+                            fysiskDokument = "Innhold på dokumentet".toByteArray(),
+                        ),
+                    ),
+                ),
+            ),
         )
         val result = shouldThrow<IllegalArgumentException> { validerKanOppretteJournalpost(request) }
 
@@ -65,7 +67,9 @@ class JoarkOpprettJournalpostValidatorTest {
 
     @Test
     fun `Validering skal feile hvis fysiskDokument ikke er satt på dokument`() {
-        val request = createJoarkOpprettJournalpostRequest().copy(dokumenter = listOf(JoarkOpprettJournalpostRequest.Dokument(tittel = TITTEL_HOVEDDOKUMENT)))
+        val request = createJoarkOpprettJournalpostRequest().copy(
+            dokumenter = listOf(JoarkOpprettJournalpostRequest.Dokument(tittel = TITTEL_HOVEDDOKUMENT)),
+        )
         val result = shouldThrow<IllegalArgumentException> { validerKanOppretteJournalpost(request) }
 
         result.message shouldBe "Dokument \"Tittel på hoveddokument\" må minst ha en dokumentvariant"

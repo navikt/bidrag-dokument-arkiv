@@ -43,85 +43,85 @@ internal class JsonMapperTest {
             gjelder = "1234",
             tittel = "Tittelen på journalposten",
             gjelderType = IdentType.FNR,
-            tilknyttSaker = listOf("sakIdent")
+            tilknyttSaker = listOf("sakIdent"),
         )
         val endreJournalpostIntern = EndreJournalpostCommandIntern(endreJournalpostCommand, "4805")
         val oppdaterJp = LagreJournalpostRequest(12345, endreJournalpostIntern, journalpost)
         val jsonMap = objectMapper.convertValue(
             oppdaterJp,
-            MutableMap::class.java
+            MutableMap::class.java,
         ) as Map<String, Any>
         val jsonObjects = JsonObjects(jsonMap)
         org.junit.jupiter.api.Assertions.assertAll(
             Executable {
                 Assertions.assertThat(
-                    jsonObjects.objekt("avsenderMottaker")!!["navn"]
+                    jsonObjects.objekt("avsenderMottaker")!!["navn"],
                 )
                     .`as`("avsenderMottaker")
                     .isEqualTo("AvsenderNavn")
             },
             Executable {
                 Assertions.assertThat(
-                    jsonObjects.objekt("bruker")!!["id"]
+                    jsonObjects.objekt("bruker")!!["id"],
                 ).`as`("id").isEqualTo("1234")
             },
             Executable {
                 Assertions.assertThat(
-                    jsonObjects.objekt("bruker")!!["idType"]
+                    jsonObjects.objekt("bruker")!!["idType"],
                 ).`as`("idType").isEqualTo("FNR")
             },
             Executable {
                 Assertions.assertThat(
-                    jsonObjects.objekt("sak")!!["fagsakId"]
+                    jsonObjects.objekt("sak")!!["fagsakId"],
                 )
                     .`as`("fagsakId")
                     .isEqualTo("sakIdent")
             },
             Executable {
                 Assertions.assertThat(
-                    jsonObjects.objekt("sak")!!["fagsaksystem"]
+                    jsonObjects.objekt("sak")!!["fagsaksystem"],
                 )
                     .`as`("fagsaksystem")
                     .isEqualTo("BISYS")
             },
             Executable {
                 Assertions.assertThat(
-                    jsonObjects.objekt("sak")!!["sakstype"]
+                    jsonObjects.objekt("sak")!!["sakstype"],
                 )
                     .`as`("fagsaksystem")
                     .isEqualTo("FAGSAK")
             },
             Executable {
                 Assertions.assertThat(
-                    jsonObjects.listeMedObjekter("dokumenter")!![0]["dokumentInfoId"]
+                    jsonObjects.listeMedObjekter("dokumenter")!![0]["dokumentInfoId"],
                 )
                     .`as`("dokumentInfoId")
                     .isEqualTo("55555")
             },
             Executable {
                 Assertions.assertThat(
-                    jsonObjects.listeMedObjekter("dokumenter")!![0]["tittel"]
+                    jsonObjects.listeMedObjekter("dokumenter")!![0]["tittel"],
                 )
                     .`as`("tittel")
                     .isEqualTo("Tittelen på dokument")
             },
             Executable {
                 Assertions.assertThat(
-                    jsonMap["tema"]
+                    jsonMap["tema"],
                 ).`as`("tema").isEqualTo("BID")
             },
             Executable {
                 Assertions.assertThat(
-                    jsonMap["tittel"]
+                    jsonMap["tittel"],
                 ).`as`("tittel").isEqualTo("Tittelen på journalposten")
-            }
+            },
         )
     }
 
     @Test
     @DisplayName("skal mappe json streng til java.util.Map")
     @Throws(
-        JsonProcessingException::class
+        JsonProcessingException::class,
     )
     fun skalMappeJsonRequest() {
         val opprettJournalpostRequestAsJson = java.lang.String.join(
@@ -138,72 +138,72 @@ internal class JsonMapperTest {
             "\"sak\": { \"arkivsaksnummer\": \"1900001\", \"arkivsaksystem\": \"GSAK\" },",
             "\"tema\": \"BID\",",
             "\"tittel\": \"Tittelen på journalposten\"",
-            "}"
+            "}",
         )
         val jsonMap: Map<*, *> = objectMapper.readValue(
             opprettJournalpostRequestAsJson,
-            MutableMap::class.java
+            MutableMap::class.java,
         )
         org.junit.jupiter.api.Assertions.assertAll(
             Executable {
                 Assertions.assertThat(
-                    jsonMap["avsenderMottaker"]
+                    jsonMap["avsenderMottaker"],
                 ).`as`("avsenderMottaker").isNotNull()
             },
             Executable {
                 Assertions.assertThat(
-                    jsonMap["behandlingstema"]
+                    jsonMap["behandlingstema"],
                 ).`as`("behandlingstema").isEqualTo("BI01")
             },
             Executable {
                 Assertions.assertThat(
-                    jsonMap["bruker"]
+                    jsonMap["bruker"],
                 ).`as`("bruker").isNotNull()
             },
             Executable {
                 Assertions.assertThat(
-                    jsonMap["dokumenter"]
+                    jsonMap["dokumenter"],
                 ).`as`("dokumenter").isNotNull()
             },
             Executable {
                 Assertions.assertThat(
-                    jsonMap["eksternReferanseId"]
+                    jsonMap["eksternReferanseId"],
                 )
                     .`as`("eksternReferanseId")
                     .isEqualTo("dokreferanse")
             },
             Executable {
                 Assertions.assertThat(
-                    jsonMap["journalfoerendeEnhet"]
+                    jsonMap["journalfoerendeEnhet"],
                 )
                     .`as`("journalfoerendeEnhet")
                     .isEqualTo("666")
             },
             Executable {
                 Assertions.assertThat(
-                    jsonMap["journalpostType"]
+                    jsonMap["journalpostType"],
                 ).`as`("journalpostType").isEqualTo("N")
             },
             Executable {
                 Assertions.assertThat(
-                    jsonMap["kanal"]
+                    jsonMap["kanal"],
                 ).`as`("kanal").isEqualTo("nav.no")
             },
             Executable {
                 Assertions.assertThat(
-                    jsonMap["sak"]
+                    jsonMap["sak"],
                 ).`as`("sak").isNotNull()
             },
             Executable {
                 Assertions.assertThat(
-                    jsonMap["tema"]
+                    jsonMap["tema"],
                 ).`as`("tema").isEqualTo("BID")
             },
             Executable {
                 Assertions.assertThat(
-                    jsonMap["tittel"]
+                    jsonMap["tittel"],
                 ).`as`("tittel").isEqualTo("Tittelen på journalposten")
-            }
+            },
         )
     }
 
@@ -223,7 +223,7 @@ internal class JsonMapperTest {
                     .`as`("Variables")
                     .containsEntry("fagsakId", "666")
                     .containsEntry("tema", listOf("BID"))
-            }
+            },
         )
     }
 
@@ -241,7 +241,7 @@ internal class JsonMapperTest {
                 Assertions.assertThat(safQuery.getVariables())
                     .`as`("Variables")
                     .containsEntry("journalpostId", 1235L)
-            }
+            },
         )
     }
 

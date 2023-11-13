@@ -31,7 +31,7 @@ open class SafConsumer(private val restTemplate: RestTemplate) {
             String.format("/rest/hentdokument/%s/%s/ARKIV", journalpostId, dokumentReferanse),
             HttpMethod.GET,
             HttpEntity.EMPTY,
-            ByteArray::class.java
+            ByteArray::class.java,
         )
     }
 
@@ -89,9 +89,9 @@ open class SafConsumer(private val restTemplate: RestTemplate) {
                     "Query %s med variabler (%s) feilet med feilmelding: %s",
                     query.javaClass.simpleName,
                     query.getVariables(),
-                    message
+                    message,
                 ),
-                reasonToHttpStatus.status
+                reasonToHttpStatus.status,
             )
         }
         return response

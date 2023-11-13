@@ -71,7 +71,7 @@ fun OppgaveHendelse.toOppgaveData(_versjon: Int? = null) = OppgaveData(
     oppgavetype = oppgavetype,
     status = status,
     tema = tema,
-    saksreferanse = saksreferanse
+    saksreferanse = saksreferanse,
 
 )
 
@@ -82,13 +82,11 @@ fun createDistribuerTilAdresse(): DistribuerTilAdresse {
         adresselinje3 = null,
         land = "NO",
         postnummer = "3000",
-        poststed = "Ingen"
+        poststed = "Ingen",
     )
 }
 
-fun opprettUtgaendeDistribuertSafResponse(
-    journalpostId: String = JOURNALPOST_ID.toString()
-): Journalpost {
+fun opprettUtgaendeDistribuertSafResponse(journalpostId: String = JOURNALPOST_ID.toString()): Journalpost {
     val tilleggsopplysninger = TilleggsOpplysninger()
     tilleggsopplysninger.setDistribusjonBestillt()
     return opprettSafResponse(
@@ -96,19 +94,17 @@ fun opprettUtgaendeDistribuertSafResponse(
         tilleggsopplysninger = tilleggsopplysninger,
         journalpostType = JournalpostType.U,
         journalstatus = JournalStatus.FERDIGSTILT,
-        relevanteDatoer = listOf(DATO_DOKUMENT, DATO_RETUR)
+        relevanteDatoer = listOf(DATO_DOKUMENT, DATO_RETUR),
     )
 }
 
-fun opprettUtgaendeSafResponseWithReturDetaljer(
-    journalpostId: String = JOURNALPOST_ID.toString()
-): Journalpost {
+fun opprettUtgaendeSafResponseWithReturDetaljer(journalpostId: String = JOURNALPOST_ID.toString()): Journalpost {
     return opprettSafResponse(
         journalpostId = journalpostId,
         tilleggsopplysninger = createTillegsopplysningerWithReturDetaljer(),
         journalpostType = JournalpostType.U,
         journalstatus = JournalStatus.FERDIGSTILT,
-        relevanteDatoer = listOf(DATO_DOKUMENT, DATO_RETUR)
+        relevanteDatoer = listOf(DATO_DOKUMENT, DATO_RETUR),
     )
 }
 
@@ -119,10 +115,10 @@ fun opprettUtgaendeSafResponse(
         Dokument(
             dokumentInfoId = DOKUMENT_1_ID,
             tittel = DOKUMENT_1_TITTEL,
-            brevkode = "BI01A01"
-        )
+            brevkode = "BI01A01",
+        ),
     ),
-    tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger()
+    tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger(),
 ): Journalpost {
     return opprettSafResponse(
         journalpostId = journalpostId,
@@ -130,7 +126,7 @@ fun opprettUtgaendeSafResponse(
         relevanteDatoer = relevanteDatoer,
         tilleggsopplysninger = tilleggsopplysninger,
         journalpostType = JournalpostType.U,
-        journalstatus = JournalStatus.FERDIGSTILT
+        journalstatus = JournalStatus.FERDIGSTILT,
     )
 }
 
@@ -139,14 +135,14 @@ fun opprettSafResponse(
     avsenderMottaker: AvsenderMottaker = AvsenderMottaker(
         AVSENDER_NAVN,
         AVSENDER_ID,
-        AvsenderMottakerIdType.FNR
+        AvsenderMottakerIdType.FNR,
     ),
     bruker: Bruker? = Bruker(BRUKER_AKTOER_ID, BRUKER_TYPE_AKTOERID),
     dokumenter: List<Dokument> = listOf(
         Dokument(
             dokumentInfoId = DOKUMENT_1_ID,
-            tittel = DOKUMENT_1_TITTEL
-        )
+            tittel = DOKUMENT_1_TITTEL,
+        ),
     ),
     tittel: String = DOKUMENT_1_TITTEL,
     journalforendeEnhet: String? = JOURNALFORENDE_ENHET,
@@ -156,7 +152,7 @@ fun opprettSafResponse(
     tema: String = "BID",
     sak: Sak? = Sak("5276661"),
     tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger(),
-    journalfortAvNavn: String? = null
+    journalfortAvNavn: String? = null,
 ): Journalpost {
     return Journalpost(
         kanal = JournalpostKanal.NAV_NO,
@@ -172,7 +168,7 @@ fun opprettSafResponse(
         tittel = tittel,
         sak = sak,
         tilleggsopplysninger = tilleggsopplysninger,
-        journalfortAvNavn = journalfortAvNavn
+        journalfortAvNavn = journalfortAvNavn,
     )
 }
 
@@ -188,22 +184,22 @@ fun opprettDokumentOversiktfagsakResponse(): List<Journalpost> {
             dokumenter = listOf(
                 Dokument(
                     tittel = DOKUMENT_1_TITTEL,
-                    dokumentInfoId = DOKUMENT_1_ID
-                )
+                    dokumentInfoId = DOKUMENT_1_ID,
+                ),
             ),
             journalstatus = JournalStatus.JOURNALFOERT,
-            tema = "BID"
+            tema = "BID",
         ),
         opprettSafResponse(
             journalpostId = JOURNALPOST_ID_2.toString(),
             dokumenter = listOf(
                 Dokument(
                     tittel = DOKUMENT_2_TITTEL,
-                    dokumentInfoId = DOKUMENT_2_ID
-                )
+                    dokumentInfoId = DOKUMENT_2_ID,
+                ),
             ),
             journalstatus = JournalStatus.JOURNALFOERT,
-            tema = "BID"
+            tema = "BID",
 
         ),
         opprettSafResponse(
@@ -211,30 +207,30 @@ fun opprettDokumentOversiktfagsakResponse(): List<Journalpost> {
             dokumenter = listOf(
                 Dokument(
                     tittel = DOKUMENT_3_TITTEL,
-                    dokumentInfoId = DOKUMENT_3_ID
-                )
+                    dokumentInfoId = DOKUMENT_3_ID,
+                ),
             ),
             tema = "FAR",
-            journalstatus = JournalStatus.MOTTATT
+            journalstatus = JournalStatus.MOTTATT,
         ),
         opprettSafResponse(
             journalpostId = JOURNALPOST_ID_4.toString(),
             dokumenter = listOf(
                 Dokument(
                     tittel = DOKUMENT_4_TITTEL,
-                    dokumentInfoId = DOKUMENT_4_ID
-                )
+                    dokumentInfoId = DOKUMENT_4_ID,
+                ),
             ),
             journalstatus = JournalStatus.FEILREGISTRERT,
             tema = "BID",
-            tilleggsopplysninger = tilleggsopplysningerEndretFagomrade
+            tilleggsopplysninger = tilleggsopplysningerEndretFagomrade,
 
         ),
         opprettUtgaendeSafResponse(
             journalpostId = JOURNALPOST_ID_5.toString(),
-            tilleggsopplysninger = tilleggsopplysningerBestiltNyDistribusjon
+            tilleggsopplysninger = tilleggsopplysningerBestiltNyDistribusjon,
 
-        )
+        ),
 
     )
 }
@@ -252,14 +248,14 @@ fun createTillegsopplysningerWithReturDetaljer(): TilleggsOpplysninger {
     tilleggsopplysninger.addReturDetaljLog(
         ReturDetaljerLogDO(
             "1 - Beskrivelse av retur med litt lengre test for å teste lengre verdier",
-            RETUR_DETALJER_DATO_1
-        )
+            RETUR_DETALJER_DATO_1,
+        ),
     )
     tilleggsopplysninger.addReturDetaljLog(
         ReturDetaljerLogDO(
             "2 - Beskrivelse av retur med litt lengre test for å teste lengre verdier",
-            RETUR_DETALJER_DATO_2
-        )
+            RETUR_DETALJER_DATO_2,
+        ),
     )
     tilleggsopplysninger.setDistribusjonBestillt()
     return tilleggsopplysninger
@@ -272,8 +268,8 @@ fun createEndreJournalpostCommand(): EndreJournalpostCommand {
             gjelder = "06127412345",
             tittel = "So Tired",
             endreDokumenter = java.util.List.of(
-                EndreDokument("BLABLA", "1", "In a galazy far far away")
-            )
+                EndreDokument("BLABLA", "1", "In a galazy far far away"),
+            ),
         )
     return endreJournalpostCommand
 }
@@ -293,28 +289,28 @@ fun createJoarkOpprettJournalpostRequest(): JoarkOpprettJournalpostRequest {
                 tittel = TITTEL_HOVEDDOKUMENT,
                 dokumentvarianter = listOf(
                     JoarkOpprettJournalpostRequest.DokumentVariant(
-                        fysiskDokument = "Innhold på dokumentet".toByteArray()
-                    )
-                )
+                        fysiskDokument = "Innhold på dokumentet".toByteArray(),
+                    ),
+                ),
             ),
             JoarkOpprettJournalpostRequest.Dokument(
                 tittel = TITTEL_VEDLEGG1,
                 dokumentvarianter = listOf(
                     JoarkOpprettJournalpostRequest.DokumentVariant(
-                        fysiskDokument = "Innhold på dokumentet vedlegg".toByteArray()
-                    )
-                )
-            )
+                        fysiskDokument = "Innhold på dokumentet vedlegg".toByteArray(),
+                    ),
+                ),
+            ),
         ),
         journalpostType = JoarkJournalpostType.INNGAAENDE,
         bruker = JoarkOpprettJournalpostRequest.OpprettJournalpostBruker(GJELDER_ID, idType = null),
         avsenderMottaker = JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
-            GJELDER_ID
+            GJELDER_ID,
         ),
         behandlingstema = BEHANDLINGSTEMA,
         kanal = Kanal.NAV_NO.name,
         tema = "BID",
-        eksternReferanseId = REFID
+        eksternReferanseId = REFID,
     )
 }
 
@@ -325,18 +321,18 @@ fun createOpprettJournalpostRequest(): OpprettJournalpostRequest {
         dokumenter = listOf(
             OpprettDokumentDto(
                 tittel = TITTEL_HOVEDDOKUMENT,
-                fysiskDokument = "Innhold på dokumentet".toByteArray()
+                fysiskDokument = "Innhold på dokumentet".toByteArray(),
             ),
             OpprettDokumentDto(
                 tittel = TITTEL_VEDLEGG1,
-                fysiskDokument = "Innhold på dokumentet vedlegg".toByteArray()
-            )
+                fysiskDokument = "Innhold på dokumentet vedlegg".toByteArray(),
+            ),
         ),
         journalposttype = no.nav.bidrag.transport.dokument.JournalpostType.INNGÅENDE,
         gjelderIdent = GJELDER_ID,
         avsenderMottaker = AvsenderMottakerDto(ident = GJELDER_ID),
         behandlingstema = BEHANDLINGSTEMA,
         kanal = MottakUtsendingKanal.DIGITALT,
-        referanseId = REFID
+        referanseId = REFID,
     )
 }

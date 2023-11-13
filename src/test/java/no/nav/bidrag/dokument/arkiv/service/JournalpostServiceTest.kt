@@ -73,8 +73,8 @@ internal class JournalpostServiceTest {
             PersonDto(
                 ident = PersonIdent("123123"),
                 navn = FulltNavn(""),
-                aktørId = AktørId("555555")
-            )
+                aktørId = AktørId("555555"),
+            ),
         )
         val muligJournalpost =
             journalpostService!!.get(Discriminator.REGULAR_USER).hentJournalpostMedFnrOgTilknyttedeSaker(journalpostIdFraJson, null)

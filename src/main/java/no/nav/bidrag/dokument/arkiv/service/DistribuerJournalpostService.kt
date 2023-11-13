@@ -52,7 +52,7 @@ class DistribuerJournalpostService(
     val dokdistFordelingConsumer: DokdistFordelingConsumer,
     val saksbehandlerInfoManager: SaksbehandlerInfoManager,
     val dokdistKanalConsumer: DokdistKanalConsumer,
-    final val meterRegistry: MeterRegistry
+    final val meterRegistry: MeterRegistry,
 ) {
     private final val journalpostService: JournalpostService
     private final val personConsumer: PersonConsumer
@@ -79,7 +79,7 @@ class DistribuerJournalpostService(
             request.gjelderId,
             request.mottakerId,
             request.tema,
-            request.forsendelseStoerrelse
+            request.forsendelseStoerrelse,
         )
         SECURE_LOGGER.info("Hentet kanal ${kanal.distribusjonskanal} for forespørsel $request")
         return kanal
@@ -90,8 +90,8 @@ class DistribuerJournalpostService(
             BestemDistribusjonKanalRequest(
                 journalpost.hentAvsenderMottakerId(),
                 journalpost.hentGjelderId()!!,
-                journalpost.tema ?: "BID"
-            )
+                journalpost.tema ?: "BID",
+            ),
         )
     }
 
@@ -115,25 +115,22 @@ class DistribuerJournalpostService(
                             ?: utsendingsinfo?.smsVarselSendt?.varslingstekst
                             ?: utsendingsinfo?.epostVarselSendt?.varslingstekst,
                         tittel = utsendingsinfo?.sisteVarselSendt?.tittel
-                            ?: utsendingsinfo?.epostVarselSendt?.tittel
+                            ?: utsendingsinfo?.epostVarselSendt?.tittel,
                     ),
                     distribuertAvIdent = it.hentDistribuertAvIdent(),
                     distribuertDato = it.hentDatoEkspedert() ?: it.hentDatoDokument(),
-                    bestillingId = it.hentBestillingId()
+                    bestillingId = it.hentBestillingId(),
                 )
             }
     }
 
-    fun bestillNyDistribusjon(
-        journalpost: Journalpost,
-        distribuerTilAdresse: DistribuerTilAdresse?
-    ) {
+    fun bestillNyDistribusjon(journalpost: Journalpost, distribuerTilAdresse: DistribuerTilAdresse?) {
         if (journalpost.tilleggsopplysninger.isNyDistribusjonBestilt()) {
             throw UgyldigDistribusjonException(
                 String.format(
                     "Ny distribusjon er allerede bestilt for journalpost %s",
-                    journalpost.journalpostId
-                )
+                    journalpost.journalpostId,
+                ),
             )
         }
         validerAdresse(distribuerTilAdresse)
@@ -148,19 +145,19 @@ class DistribuerJournalpostService(
         val (journalpostId) = opprettJournalpostService.opprettJournalpost(
             request,
             originalJournalpostId = journalpost.hentJournalpostIdLong(),
-            skalFerdigstilles = true
+            skalFerdigstilles = true,
         )
         distribuerJournalpost(
             journalpostId!!.toLong(),
             null,
-            DistribuerJournalpostRequestInternal(distribuerTilAdresse)
+            DistribuerJournalpostRequestInternal(distribuerTilAdresse),
         )
         val journalpostEtter = hentJournalpost(journalpost.hentJournalpostIdLong()!!)
         endreJournalpostService.lagreJournalpost(
             OppdaterFlaggNyDistribusjonBestiltRequest(
                 journalpost.hentJournalpostIdLong()!!,
-                journalpostEtter
-            )
+                journalpostEtter,
+            ),
         )
     }
 
@@ -171,8 +168,8 @@ class DistribuerJournalpostService(
             }
             endreJournalpostService.lagreJournalpost(
                 LagreReturDetaljForSisteReturRequest(
-                    journalpost
-                )
+                    journalpost,
+                ),
             )
         }
     }
@@ -180,7 +177,7 @@ class DistribuerJournalpostService(
     fun distribuerJournalpost(
         journalpostId: Long,
         batchId: String?,
-        distribuerJournalpostRequest: DistribuerJournalpostRequestInternal
+        distribuerJournalpostRequest: DistribuerJournalpostRequestInternal,
     ): DistribuerJournalpostResponse {
         val journalpost = hentJournalpost(journalpostId)
         journalpostService.populerMedTilknyttedeSaker(journalpost)
@@ -188,7 +185,7 @@ class DistribuerJournalpostService(
             LOGGER.warn(
                 "Distribusjon er allerede bestillt for journalpostid {}{}. Stopper videre behandling",
                 journalpostId,
-                if (batchId != null) String.format(" med batchId %s", batchId) else ""
+                if (batchId != null) String.format(" med batchId %s", batchId) else "",
             )
             return DistribuerJournalpostResponse("JOARK-$journalpostId", null)
         }
@@ -210,7 +207,7 @@ class DistribuerJournalpostService(
             if (distribusjonKanal.distribusjonskanal == DistribusjonsKanal.PRINT) {
                 hentOgValiderAdresse(
                     distribuerJournalpostRequest,
-                    journalpost
+                    journalpost,
                 )
             } else {
                 null
@@ -220,7 +217,8 @@ class DistribuerJournalpostService(
         val distribuerResponse =
             dokdistFordelingConsumer.distribuerJournalpost(journalpost, batchId, adresse)
         LOGGER.info(
-            "Bestillte distribusjon av journalpost $journalpostId med bestillingsId ${distribuerResponse.bestillingsId}, antall dokumenter ${journalpost.dokumenter.size} og kanal ${distribusjonKanal.distribusjonskanal}(${distribusjonKanal.regel}-${distribusjonKanal.regelBegrunnelse})."
+            "Bestillte distribusjon av journalpost $journalpostId med bestillingsId ${distribuerResponse.bestillingsId}, " +
+                "antall dokumenter ${journalpost.dokumenter.size} og kanal ${distribusjonKanal.distribusjonskanal}(${distribusjonKanal.regel}-${distribusjonKanal.regelBegrunnelse}).",
         )
 
         // Distribusjonsløpet oppdaterer journalpost og overskriver alt av tilleggsopplysninger. Hent journalpost på nytt for å unngå overskrive noe som distribusjon har lagret
@@ -235,11 +233,11 @@ class DistribuerJournalpostService(
             val journalpostEtter = hentJournalpost(journalpostId)
             val datoDokument = journalpostFør.hentDatoDokument()?.toString()
             LOGGER.info(
-                "Dokumentdato ($datoDokument) til journalpost $journalpostId er ikke samme som dato distribusjon ble bestilt. Oppdaterer dokumentdato til i dag"
+                "Dokumentdato ($datoDokument) til journalpost $journalpostId er ikke samme som dato distribusjon ble bestilt. Oppdaterer dokumentdato til i dag",
             )
             endreJournalpostService.oppdaterDokumentdatoTilIdag(
                 journalpostEtter.hentJournalpostIdLong()!!,
-                journalpostEtter
+                journalpostEtter,
             )
         }
     }
@@ -257,8 +255,8 @@ class DistribuerJournalpostService(
                 LeggTilBeskjedPåTittel(
                     journalpostEtter.hentJournalpostIdLong()!!,
                     journalpostEtter,
-                    "dokumentet er sendt per post med vedlegg"
-                )
+                    "dokumentet er sendt per post med vedlegg",
+                ),
             )
         }
     }
@@ -268,7 +266,7 @@ class DistribuerJournalpostService(
         journalpostFør: Journalpost,
         adresse: DistribuerTilAdresse? = null,
         erLokalUtskrift: Boolean = false,
-        bestemKanalResponse: BestemKanalResponse? = null
+        bestemKanalResponse: BestemKanalResponse? = null,
     ) {
         val journalpostEtter = hentJournalpost(journalpostId)
         leggTilEksisterendeTilleggsopplysninger(journalpostEtter, journalpostFør)
@@ -279,26 +277,23 @@ class DistribuerJournalpostService(
         val saksbehandlerId = saksbehandlerInfoManager.hentSaksbehandlerBrukerId()
         saksbehandlerId?.run {
             journalpostEtter.tilleggsopplysninger.setDistribuertAvIdent(
-                saksbehandlerId
+                saksbehandlerId,
             )
         }
         endreJournalpostService.oppdaterJournalpostTilleggsopplysninger(
             journalpostId,
-            journalpostEtter
+            journalpostEtter,
         )
     }
 
-    private fun leggTilEksisterendeTilleggsopplysninger(
-        journalpostEtter: Journalpost,
-        journalpostFør: Journalpost
-    ) {
+    private fun leggTilEksisterendeTilleggsopplysninger(journalpostEtter: Journalpost, journalpostFør: Journalpost) {
         journalpostEtter.tilleggsopplysninger
             .addAll(
                 journalpostFør.tilleggsopplysninger.filter {
                     !journalpostEtter.tilleggsopplysninger.contains(
-                        it
+                        it,
                     )
-                }
+                },
             )
     }
 
@@ -308,15 +303,15 @@ class DistribuerJournalpostService(
                 throw JournalpostIkkeFunnetException(
                     String.format(
                         "Fant ingen journalpost med id %s",
-                        journalpostId
-                    )
+                        journalpostId,
+                    ),
                 )
             }
     }
 
     private fun hentOgValiderAdresse(
         distribuerJournalpostRequestInternal: DistribuerJournalpostRequestInternal,
-        journalpost: Journalpost
+        journalpost: Journalpost,
     ): DistribuerTilAdresse? {
         val adresse = hentAdresse(distribuerJournalpostRequestInternal, journalpost)
         if (adresse != null) {
@@ -329,14 +324,14 @@ class DistribuerJournalpostService(
 
     private fun hentAdresse(
         distribuerJournalpostRequestInternal: DistribuerJournalpostRequestInternal,
-        journalpost: Journalpost
+        journalpost: Journalpost,
     ): DistribuerTilAdresse? {
         if (distribuerJournalpostRequestInternal.hasAdresse()) {
             return distribuerJournalpostRequestInternal.getAdresse()
         }
         LOGGER.info(
             "Distribusjon av journalpost bestilt uten adresse. Henter adresse for mottaker. JournalpostId {}",
-            journalpost.journalpostId
+            journalpost.journalpostId,
         )
         val adresseResponse = personConsumer.hentAdresse(journalpost.hentAvsenderMottakerId())
         if (Objects.isNull(adresseResponse)) {
@@ -349,7 +344,7 @@ class DistribuerJournalpostService(
             adresseResponse.adresselinje3?.verdi,
             adresseResponse.land.verdi,
             adresseResponse.postnummer?.verdi,
-            adresseResponse.poststed?.verdi
+            adresseResponse.poststed?.verdi,
         )
     }
 
@@ -357,7 +352,7 @@ class DistribuerJournalpostService(
         endreJournalpostService.oppdaterDistribusjonsInfo(
             journalpostId,
             true,
-            JournalpostUtsendingKanal.L
+            JournalpostUtsendingKanal.L,
         )
     }
 
@@ -367,16 +362,13 @@ class DistribuerJournalpostService(
             ?: throw JournalpostIkkeFunnetException(
                 String.format(
                     "Fant ingen journalpost med id %s",
-                    journalpostId
-                )
+                    journalpostId,
+                ),
             )
         validerKanDistribueres(journalpost)
     }
 
-    private fun lagreAdresse(
-        distribuerTilAdresse: DistribuerTilAdresse?,
-        journalpost: Journalpost
-    ) {
+    private fun lagreAdresse(distribuerTilAdresse: DistribuerTilAdresse?, journalpost: Journalpost) {
         if (distribuerTilAdresse != null) {
             val mottakerAdresseDO = mapToAdresseDO(distribuerTilAdresse)
             if (journalpost.isUtgaaendeDokument() && mottakerAdresseDO != null) {
@@ -393,18 +385,14 @@ class DistribuerJournalpostService(
                 adresselinje3 = adresse.adresselinje3,
                 land = adresse.land!!,
                 poststed = adresse.poststed,
-                postnummer = adresse.postnummer
+                postnummer = adresse.postnummer,
             )
         } else {
             null
         }
     }
 
-    private fun measureDistribution(
-        journalpost: Journalpost,
-        batchId: String?,
-        lokalUtskrift: Boolean = false
-    ) {
+    private fun measureDistribution(journalpost: Journalpost, batchId: String?, lokalUtskrift: Boolean = false) {
         try {
             val kanal =
                 if (lokalUtskrift) "LOKAL_UTSKRIFT" else hentDistribusjonKanal(journalpost).distribusjonskanal.name
@@ -414,7 +402,7 @@ class DistribuerJournalpostService(
                 if (Strings.isNullOrEmpty(batchId)) "NONE" else batchId,
                 "enhet", journalpost.journalforendeEnhet,
                 "tema", journalpost.tema,
-                "kanal", kanal
+                "kanal", kanal,
             ).increment()
 
             distributionAntallDokumenter.record(journalpost.dokumenter.size.toDouble())

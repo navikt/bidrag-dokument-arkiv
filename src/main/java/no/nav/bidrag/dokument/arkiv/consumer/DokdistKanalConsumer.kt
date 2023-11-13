@@ -18,7 +18,7 @@ private val LOGGER = KotlinLogging.logger {}
 @Service
 class DokdistKanalConsumer(
     @Value("\${DOKDISTKANAL_URL}") val url: URI,
-    @Qualifier("azure") private val restTemplate: RestOperations
+    @Qualifier("azure") private val restTemplate: RestOperations,
 ) : AbstractRestClient(restTemplate, "dokdistkanal") {
 
     private val dokdistkanalUrl
@@ -32,15 +32,15 @@ class DokdistKanalConsumer(
         gjelderId: String,
         mottakerId: String? = null,
         tema: String = "BID",
-        forsendelseStoerrelse: Int? = null
+        forsendelseStoerrelse: Int? = null,
     ): BestemKanalResponse = postForNonNullEntity(
         dokdistkanalUrl.build().toUri(),
         BestemKanalRequest(
             brukerId = gjelderId,
             mottakerId = mottakerId ?: "11111111111",
             tema = tema,
-            forsendelseStoerrelse = forsendelseStoerrelse
-        )
+            forsendelseStoerrelse = forsendelseStoerrelse,
+        ),
     )
 }
 
@@ -49,13 +49,13 @@ data class BestemKanalRequest(
     val mottakerId: String,
     val erArkivert: Boolean = true,
     val tema: String = "BID",
-    val forsendelseStoerrelse: Int? = null
+    val forsendelseStoerrelse: Int? = null,
 )
 
 data class BestemKanalResponse(
     val regel: String,
     val regelBegrunnelse: String,
-    val distribusjonskanal: DistribusjonsKanal
+    val distribusjonskanal: DistribusjonsKanal,
 )
 
 enum class DistribusjonsKanal {
@@ -65,5 +65,5 @@ enum class DistribusjonsKanal {
     LOKAL_PRINT,
     INGEN_DISTRIBUSJON,
     TRYGDERETTEN,
-    DPVT
+    DPVT,
 }

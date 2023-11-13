@@ -30,7 +30,7 @@ import org.springframework.test.context.ActiveProfiles
 @DisplayName("JournalpostController")
 @SpringBootTest(
     classes = [BidragDokumentArkivTest::class],
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 )
 @AutoConfigureWireMock(port = 0)
 @EnableMockOAuth2Server

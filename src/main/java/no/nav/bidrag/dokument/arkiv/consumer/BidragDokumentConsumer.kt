@@ -16,7 +16,7 @@ private val LOGGER = KotlinLogging.logger {}
 @Service
 class BidragDokumentConsumer(
     @Value("\${BIDRAG_DOKUMENT_URL}") val url: URI,
-    @Qualifier("azure") private val restTemplate: RestOperations
+    @Qualifier("azure") private val restTemplate: RestOperations,
 ) : AbstractRestClient(restTemplate, "bidrag_dokument") {
 
     private val dokumentUrl
@@ -24,13 +24,11 @@ class BidragDokumentConsumer(
             UriComponentsBuilder.fromUri(url)
 
     @Retryable(backoff = Backoff(delay = 500, maxDelay = 2000, multiplier = 2.0))
-    fun hentDokument(
-        dokumentId: String
-    ): ByteArray {
+    fun hentDokument(dokumentId: String): ByteArray {
         LOGGER.info { "Henter dokument bytedata for dokumentreferanse $dokumentId" }
         return getForNonNullEntity(
             dokumentUrl.pathSegment("dokumentreferanse").pathSegment(dokumentId)
-                .build().toUri()
+                .build().toUri(),
         )
     }
 }

@@ -45,32 +45,32 @@ import org.springframework.retry.annotation.EnableRetry
 @EnableRetry
 @OpenAPIDefinition(
     info = Info(title = "bidrag-dokument-arkiv", version = "v1"),
-    security = [SecurityRequirement(name = "bearer-key")]
+    security = [SecurityRequirement(name = "bearer-key")],
 )
 @SecurityScheme(
     bearerFormat = "JWT",
     name = "bearer-key",
     scheme = "bearer",
-    type = SecuritySchemeType.HTTP
+    type = SecuritySchemeType.HTTP,
 )
 @Import(
     CorrelationIdFilter::class,
     DefaultCorsFilter::class,
     UserMdcFilter::class,
     StsTokenService::class,
-    MdcFilter::class
+    MdcFilter::class,
 )
 class BidragDokumentArkivConfig {
     @Bean
     @Scope("prototype")
     fun baseSafConsumer(
         @Qualifier("base") httpHeaderRestTemplate: HttpHeaderRestTemplate,
-        environmentProperties: EnvironmentProperties
+        environmentProperties: EnvironmentProperties,
     ): SafConsumer {
         httpHeaderRestTemplate.uriTemplateHandler =
             RootUriTemplateHandler(environmentProperties.safUrl)
         httpHeaderRestTemplate.addHeaderGenerator(
-            HttpHeaders.CONTENT_TYPE
+            HttpHeaders.CONTENT_TYPE,
         ) { MediaType.APPLICATION_JSON_VALUE }
         return SafConsumer(httpHeaderRestTemplate)
     }
@@ -79,12 +79,12 @@ class BidragDokumentArkivConfig {
     @Scope("prototype")
     fun baseOppgaveConsumer(
         @Qualifier("base") httpHeaderRestTemplate: HttpHeaderRestTemplate,
-        environmentProperties: EnvironmentProperties
+        environmentProperties: EnvironmentProperties,
     ): OppgaveConsumer {
         httpHeaderRestTemplate.uriTemplateHandler =
             RootUriTemplateHandler(environmentProperties.oppgaveUrl)
         httpHeaderRestTemplate.addHeaderGenerator(
-            HttpHeaders.CONTENT_TYPE
+            HttpHeaders.CONTENT_TYPE,
         ) { MediaType.APPLICATION_JSON_VALUE }
         return OppgaveConsumer(httpHeaderRestTemplate)
     }
@@ -94,12 +94,12 @@ class BidragDokumentArkivConfig {
     fun baseDokarkivConsumer(
         @Qualifier("base") httpHeaderRestTemplate: HttpHeaderRestTemplate,
         environmentProperties: EnvironmentProperties,
-        objectMapper: ObjectMapper?
+        objectMapper: ObjectMapper?,
     ): DokarkivConsumer {
         httpHeaderRestTemplate.uriTemplateHandler =
             RootUriTemplateHandler(environmentProperties.dokarkivUrl)
         httpHeaderRestTemplate.addHeaderGenerator(
-            HttpHeaders.CONTENT_TYPE
+            HttpHeaders.CONTENT_TYPE,
         ) { MediaType.APPLICATION_JSON_VALUE }
         return DokarkivConsumer(httpHeaderRestTemplate, objectMapper)
     }
@@ -110,17 +110,17 @@ class BidragDokumentArkivConfig {
         @Qualifier("base") httpHeaderRestTemplate: HttpHeaderRestTemplate,
         environmentProperties: EnvironmentProperties,
         objectMapper: ObjectMapper?,
-        securityTokenService: SecurityTokenService
+        securityTokenService: SecurityTokenService,
     ): DokdistFordelingConsumer {
         httpHeaderRestTemplate.uriTemplateHandler =
             RootUriTemplateHandler(environmentProperties.dokdistFordelingUrl)
         httpHeaderRestTemplate.addHeaderGenerator(
-            HttpHeaders.CONTENT_TYPE
+            HttpHeaders.CONTENT_TYPE,
         ) { MediaType.APPLICATION_JSON_VALUE }
         val dokdistFordelingConsumer =
             DokdistFordelingConsumer(httpHeaderRestTemplate, objectMapper)
         dokdistFordelingConsumer.leggTilInterceptor(
-            securityTokenService.clientCredentialsTokenInterceptor(null)
+            securityTokenService.clientCredentialsTokenInterceptor(null),
         )
         return dokdistFordelingConsumer
     }
@@ -129,7 +129,7 @@ class BidragDokumentArkivConfig {
     @Scope("prototype")
     fun basePersonConsumer(
         @Qualifier("base") httpHeaderRestTemplate: HttpHeaderRestTemplate,
-        environmentProperties: EnvironmentProperties
+        environmentProperties: EnvironmentProperties,
     ): PersonConsumer {
         httpHeaderRestTemplate.uriTemplateHandler =
             RootUriTemplateHandler(environmentProperties.bidragPersonUrl + "/bidrag-person")
@@ -140,7 +140,7 @@ class BidragDokumentArkivConfig {
     fun oppgaveService(
         personConsumers: ResourceByDiscriminator<PersonConsumer>,
         oppgaveConsumers: ResourceByDiscriminator<OppgaveConsumer>,
-        saksbehandlerInfoManager: SaksbehandlerInfoManager
+        saksbehandlerInfoManager: SaksbehandlerInfoManager,
     ): OppgaveService {
         return OppgaveService(personConsumers, oppgaveConsumers, saksbehandlerInfoManager)
     }
@@ -151,29 +151,29 @@ class BidragDokumentArkivConfig {
         dokarkivConsumers: ResourceByDiscriminator<DokarkivConsumer>,
         dokarkivKnyttTilSakConsumer: DokarkivKnyttTilSakConsumer,
         hendelserProducer: HendelserProducer,
-        saksbehandlerInfoManager: SaksbehandlerInfoManager
+        saksbehandlerInfoManager: SaksbehandlerInfoManager,
     ): EndreJournalpostService {
         return EndreJournalpostService(
             journalpostServices.get(Discriminator.REGULAR_USER),
             dokarkivConsumers.get(Discriminator.REGULAR_USER),
             dokarkivKnyttTilSakConsumer,
             hendelserProducer,
-            saksbehandlerInfoManager
+            saksbehandlerInfoManager,
         )
     }
 
     @Bean
     fun journalpostServices(
         safConsumers: ResourceByDiscriminator<SafConsumer>,
-        personConsumers: ResourceByDiscriminator<PersonConsumer>
+        personConsumers: ResourceByDiscriminator<PersonConsumer>,
     ): ResourceByDiscriminator<JournalpostService> {
         val journalpostServiceRegularUser = JournalpostService(
             safConsumers.get(Discriminator.REGULAR_USER),
-            personConsumers.get(Discriminator.SERVICE_USER)
+            personConsumers.get(Discriminator.SERVICE_USER),
         )
         val journalpostServiceServiceUser = JournalpostService(
             safConsumers.get(Discriminator.SERVICE_USER),
-            personConsumers.get(Discriminator.SERVICE_USER)
+            personConsumers.get(Discriminator.SERVICE_USER),
         )
         val journalpostServices = HashMap<Discriminator, JournalpostService>()
         journalpostServices[Discriminator.REGULAR_USER] =
@@ -186,11 +186,11 @@ class BidragDokumentArkivConfig {
     fun safConsumers(
         safConsumerRegularUser: SafConsumer,
         safConsumerServiceUser: SafConsumer,
-        securityTokenService: SecurityTokenService
+        securityTokenService: SecurityTokenService,
     ): ResourceByDiscriminator<SafConsumer> {
         safConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor("saf"))
         safConsumerServiceUser.leggTilInterceptor(
-            securityTokenService.clientCredentialsTokenInterceptor("saf")
+            securityTokenService.clientCredentialsTokenInterceptor("saf"),
         )
         val safConsumers = HashMap<Discriminator, SafConsumer>()
         safConsumers[Discriminator.REGULAR_USER] =
@@ -203,13 +203,13 @@ class BidragDokumentArkivConfig {
     fun oppgaveConsumers(
         oppgaveConsumerRegularUser: OppgaveConsumer,
         oppgaveConsumerServiceUser: OppgaveConsumer,
-        securityTokenService: SecurityTokenService
+        securityTokenService: SecurityTokenService,
     ): ResourceByDiscriminator<OppgaveConsumer> {
         oppgaveConsumerRegularUser.leggTilInterceptor(
-            securityTokenService.authTokenInterceptor("oppgave")
+            securityTokenService.authTokenInterceptor("oppgave"),
         )
         oppgaveConsumerServiceUser.leggTilInterceptor(
-            securityTokenService.clientCredentialsTokenInterceptor("oppgave")
+            securityTokenService.clientCredentialsTokenInterceptor("oppgave"),
         )
         val safConsumers = HashMap<Discriminator, OppgaveConsumer>()
         safConsumers[Discriminator.REGULAR_USER] = oppgaveConsumerRegularUser
@@ -221,13 +221,13 @@ class BidragDokumentArkivConfig {
     fun personConsumers(
         personConsumerRegularUser: PersonConsumer,
         personConsumerServiceUser: PersonConsumer,
-        securityTokenService: SecurityTokenService
+        securityTokenService: SecurityTokenService,
     ): ResourceByDiscriminator<PersonConsumer> {
         personConsumerRegularUser.leggTilInterceptor(
-            securityTokenService.authTokenInterceptor("bidrag-person")
+            securityTokenService.authTokenInterceptor("bidrag-person"),
         )
         personConsumerServiceUser.leggTilInterceptor(
-            securityTokenService.clientCredentialsTokenInterceptor("bidrag-person")
+            securityTokenService.clientCredentialsTokenInterceptor("bidrag-person"),
         )
         val personConsumers = HashMap<Discriminator, PersonConsumer>()
         personConsumers[Discriminator.REGULAR_USER] = personConsumerRegularUser
@@ -240,16 +240,16 @@ class BidragDokumentArkivConfig {
     fun dokarkivKnyttTilSakConsumer(
         @Qualifier("base") httpHeaderRestTemplate: HttpHeaderRestTemplate,
         environmentProperties: EnvironmentProperties,
-        securityTokenService: SecurityTokenService
+        securityTokenService: SecurityTokenService,
     ): DokarkivKnyttTilSakConsumer {
         httpHeaderRestTemplate.uriTemplateHandler =
             RootUriTemplateHandler(environmentProperties.dokarkivKnyttTilSakUrl)
         httpHeaderRestTemplate.addHeaderGenerator(
-            HttpHeaders.CONTENT_TYPE
+            HttpHeaders.CONTENT_TYPE,
         ) { MediaType.APPLICATION_JSON_VALUE }
         val dokarkivKnyttTilSakConsumer = DokarkivKnyttTilSakConsumer(httpHeaderRestTemplate)
         dokarkivKnyttTilSakConsumer.leggTilInterceptor(
-            securityTokenService.authTokenInterceptor("dokarkiv")
+            securityTokenService.authTokenInterceptor("dokarkiv"),
         )
         return dokarkivKnyttTilSakConsumer
     }
@@ -258,13 +258,13 @@ class BidragDokumentArkivConfig {
     fun dokarkivConsumers(
         dokarkivConsumerRegularUser: DokarkivConsumer,
         dokarkivConsumerServiceUser: DokarkivConsumer,
-        securityTokenService: SecurityTokenService
+        securityTokenService: SecurityTokenService,
     ): ResourceByDiscriminator<DokarkivConsumer> {
         dokarkivConsumerRegularUser.leggTilInterceptor(
-            securityTokenService.authTokenInterceptor("dokarkiv")
+            securityTokenService.authTokenInterceptor("dokarkiv"),
         )
         dokarkivConsumerServiceUser.leggTilInterceptor(
-            securityTokenService.clientCredentialsTokenInterceptor("dokarkiv")
+            securityTokenService.clientCredentialsTokenInterceptor("dokarkiv"),
         )
         val dokarkivConsumers = HashMap<Discriminator, DokarkivConsumer>()
         dokarkivConsumers[Discriminator.REGULAR_USER] = dokarkivConsumerRegularUser
@@ -276,10 +276,10 @@ class BidragDokumentArkivConfig {
     fun bidragOrganisasjonConsumer(
         httpHeaderRestTemplate: HttpHeaderRestTemplate,
         securityTokenService: SecurityTokenService,
-        environmentProperties: EnvironmentProperties
+        environmentProperties: EnvironmentProperties,
     ): BidragOrganisasjonConsumer {
         httpHeaderRestTemplate.uriTemplateHandler = RootUriTemplateHandler(
-            environmentProperties.bidragOrganisasjonUrl + "/bidrag-organisasjon"
+            environmentProperties.bidragOrganisasjonUrl + "/bidrag-organisasjon",
         )
         httpHeaderRestTemplate
             .interceptors
@@ -298,7 +298,7 @@ class BidragDokumentArkivConfig {
         @Value("\${SRV_BD_ARKIV_AUTH}") secretForServiceUser: String,
         @Value("\${ACCESS_TOKEN_URL}") securityTokenUrl: String,
         @Value("\${BIDRAG_ORGANISASJON_URL}") bidragOrganisasjonUrl: String,
-        @Value("\${NAIS_APP_NAME}") naisAppName: String
+        @Value("\${NAIS_APP_NAME}") naisAppName: String,
     ): EnvironmentProperties {
         val environmentProperties = EnvironmentProperties(
             dokdistFordelingUrl,
@@ -310,7 +310,7 @@ class BidragDokumentArkivConfig {
             securityTokenUrl,
             naisAppName,
             bidragPersonUrl,
-            bidragOrganisasjonUrl
+            bidragOrganisasjonUrl,
         )
         LOGGER.info(String.format("> Environment: %s", environmentProperties))
         return environmentProperties
@@ -326,7 +326,7 @@ class BidragDokumentArkivConfig {
         val securityTokenUrl: String,
         val naisAppName: String,
         val bidragPersonUrl: String,
-        val bidragOrganisasjonUrl: String
+        val bidragOrganisasjonUrl: String,
     ) {
         override fun toString(): String {
             return (
@@ -364,7 +364,7 @@ class BidragDokumentArkivConfig {
 
     companion object {
         private val LOGGER = LoggerFactory.getLogger(
-            BidragDokumentArkivConfig::class.java
+            BidragDokumentArkivConfig::class.java,
         )
         const val PROFILE_LIVE = "live"
         const val PROFILE_KAFKA_TEST = "kafka_test"

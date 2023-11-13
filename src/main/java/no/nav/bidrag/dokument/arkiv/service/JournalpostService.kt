@@ -16,7 +16,7 @@ import java.util.Optional
 
 class JournalpostService(
     private val safConsumer: SafConsumer,
-    private val personConsumer: PersonConsumer
+    private val personConsumer: PersonConsumer,
 ) {
     fun hentJournalpost(journalpostId: Long): Journalpost? {
         return hentJournalpost(journalpostId, null)
@@ -26,28 +26,21 @@ class JournalpostService(
         return hentJournalpost(journalpostId)?.let { populerMedTilknyttedeSaker(it) }
     }
 
-    fun hentJournalpostMedFnrOgTilknyttedeSaker(
-        journalpostId: Long,
-        saksnummer: String?
-    ): Optional<Journalpost> {
+    fun hentJournalpostMedFnrOgTilknyttedeSaker(journalpostId: Long, saksnummer: String?): Optional<Journalpost> {
         return hentJournalpostMedFnr(journalpostId, saksnummer)?.let {
             Optional.ofNullable(
-                populerMedTilknyttedeSaker(it)
+                populerMedTilknyttedeSaker(it),
             )
         } ?: Optional.empty()
     }
 
-    fun List<String>.inneholderBidragFagomrader() =
-        this.isEmpty() || this.hentIkkeBidragFagomrader().isEmpty()
+    fun List<String>.inneholderBidragFagomrader() = this.isEmpty() || this.hentIkkeBidragFagomrader().isEmpty()
 
     fun List<String>.hentIkkeBidragFagomrader() = this.filter { it != "BID" && it != "FAR" }
-    fun finnJournalposter(
-        saksnummer: String,
-        fagomrade: List<String> = emptyList()
-    ): List<JournalpostDto> {
+    fun finnJournalposter(saksnummer: String, fagomrade: List<String> = emptyList()): List<JournalpostDto> {
         if (!fagomrade.inneholderBidragFagomrader()) {
             kanIkkeHenteJournalMedUgyldigFagomrade(
-                fagomrade.hentIkkeBidragFagomrader().joinToString(",")
+                fagomrade.hentIkkeBidragFagomrader().joinToString(","),
             )
         }
         return finnJournalposterForSaksnummer(saksnummer, fagomrade)
@@ -95,10 +88,7 @@ class JournalpostService(
         return hentJournalpost(journalpostId, saksummer)?.let { konverterAktoerIdTilFnr(it) }
     }
 
-    fun finnJournalposterForSaksnummer(
-        saksnummer: String,
-        fagomrade: List<String> = emptyList()
-    ): List<Journalpost> {
+    fun finnJournalposterForSaksnummer(saksnummer: String, fagomrade: List<String> = emptyList()): List<Journalpost> {
         return safConsumer.finnJournalposter(saksnummer, fagomrade)
     }
 

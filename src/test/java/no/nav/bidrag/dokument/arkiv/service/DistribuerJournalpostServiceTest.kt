@@ -40,7 +40,7 @@ class DistribuerJournalpostServiceTest {
         val exceptionResult = Assertions.assertThrows(
             IllegalArgumentException::class.java,
             { validerKanDistribueres(jp) },
-            "skal feile hvis journalpost allerede er distribuert"
+            "skal feile hvis journalpost allerede er distribuert",
         )
         org.assertj.core.api.Assertions.assertThat(exceptionResult.message)
             .contains("Journalpost er allerede distribuert")
@@ -54,7 +54,7 @@ class DistribuerJournalpostServiceTest {
         val exceptionResult = Assertions.assertThrows(
             IllegalArgumentException::class.java,
             { validerKanDistribueres(jp) },
-            "skal feile hvis status ikke er FERDIGSTILT"
+            "skal feile hvis status ikke er FERDIGSTILT",
         )
         org.assertj.core.api.Assertions.assertThat(exceptionResult.message).contains("FERDIGSTILT")
     }
@@ -74,7 +74,7 @@ class DistribuerJournalpostServiceTest {
         val exceptionResult = Assertions.assertThrows(
             IllegalArgumentException::class.java,
             { validerKanDistribueres(jp) },
-            "Skal feile hvis mottakerid ikke er satt"
+            "Skal feile hvis mottakerid ikke er satt",
         )
         org.assertj.core.api.Assertions.assertThat(exceptionResult.message).contains("mottakerId")
     }
@@ -88,7 +88,7 @@ class DistribuerJournalpostServiceTest {
         val exceptionResult = Assertions.assertThrows(
             IllegalArgumentException::class.java,
             { validerKanDistribueres(jp) },
-            "Skal feile hvis mottakerid er samhandlerId"
+            "Skal feile hvis mottakerid er samhandlerId",
         )
         org.assertj.core.api.Assertions.assertThat(exceptionResult.message).contains("samhandlerId")
     }
@@ -102,7 +102,7 @@ class DistribuerJournalpostServiceTest {
             Assertions.assertThrows(
                 IllegalArgumentException::class.java,
                 { validerAdresse(null) },
-                "Skal validere adresse"
+                "Skal validere adresse",
             )
         }
 
@@ -118,12 +118,12 @@ class DistribuerJournalpostServiceTest {
         fun skalIkkeValidereNorskAdresseSomManglerPostnummer() {
             val adresse = createDistribuerTilAdresse()
                 .copy(
-                    postnummer = null
+                    postnummer = null,
                 )
             Assertions.assertThrows(
                 IllegalArgumentException::class.java,
                 { validerAdresse(adresse) },
-                "Skal ikke validere norsk adresse uten postnummer"
+                "Skal ikke validere norsk adresse uten postnummer",
             )
         }
 
@@ -132,12 +132,12 @@ class DistribuerJournalpostServiceTest {
         fun skalIkkeValidereNorskAdresseSomManglerPoststed() {
             val adresse = createDistribuerTilAdresse()
                 .copy(
-                    poststed = null
+                    poststed = null,
                 )
             Assertions.assertThrows(
                 IllegalArgumentException::class.java,
                 { validerAdresse(adresse) },
-                "Skal ikke validere norsk adresse uten poststed"
+                "Skal ikke validere norsk adresse uten poststed",
             )
         }
 
@@ -147,12 +147,12 @@ class DistribuerJournalpostServiceTest {
             val adresse = createDistribuerTilAdresse()
                 .copy(
                     adresselinje1 = null,
-                    land = "SE"
+                    land = "SE",
                 )
             Assertions.assertThrows(
                 IllegalArgumentException::class.java,
                 { validerAdresse(adresse) },
-                "Skal ikke validere utenlandsk adresse uten adresselinje1"
+                "Skal ikke validere utenlandsk adresse uten adresselinje1",
             )
         }
 
@@ -162,12 +162,12 @@ class DistribuerJournalpostServiceTest {
             val adresse = createDistribuerTilAdresse()
                 .copy(
                     adresselinje1 = null,
-                    land = "SER"
+                    land = "SER",
                 )
             Assertions.assertThrows(
                 IllegalArgumentException::class.java,
                 { validerAdresse(adresse) },
-                "Skal ikke validere hvis landkode ikke er formatert som alpha-2 kode"
+                "Skal ikke validere hvis landkode ikke er formatert som alpha-2 kode",
             )
         }
 
@@ -175,7 +175,7 @@ class DistribuerJournalpostServiceTest {
         fun `skal feile validering hvis adresselinje 1 er lengre enn 128 tegn`() {
             val adresse = createDistribuerTilAdresse()
                 .copy(
-                    adresselinje1 = "Adresselinje 1 lengre enn 128 tegn asdasdasdasdas sadasd asd asdasd asdasdasdasdasdasdasdasdasdasdasdasdasd asdasdasdasdasdasdasdasdasdasdasdasdasd"
+                    adresselinje1 = "Adresselinje 1 lengre enn 128 tegn asdasdasdasdas sadasd asd asdasd asdasdasdasdasdasdasdasdasdasdasdasdasd asdasdasdasdasdasdasdasdasdasdasdasdasd",
                 )
             val result = assertThrows<IllegalArgumentException> { validerAdresse(adresse) }
             result.message shouldBe "Adresselinje 1 kan ikke være lengre enn 128 tegn"
@@ -185,7 +185,7 @@ class DistribuerJournalpostServiceTest {
         fun `skal feile validering hvis adresselinje 2 er lengre enn 128 tegn`() {
             val adresse = createDistribuerTilAdresse()
                 .copy(
-                    adresselinje2 = "Adresselinje 2 lengre enn 128 tegn asdasdasdasdas sadasd asd asdasd asdasdasdasdasdasdasdasdasdasdasdasdasd asdasdasdasdasdasdasdasdasdasdasdasdasd"
+                    adresselinje2 = "Adresselinje 2 lengre enn 128 tegn asdasdasdasdas sadasd asd asdasd asdasdasdasdasdasdasdasdasdasdasdasdasd asdasdasdasdasdasdasdasdasdasdasdasdasd",
                 )
             val result = assertThrows<IllegalArgumentException> { validerAdresse(adresse) }
             result.message shouldBe "Adresselinje 2 kan ikke være lengre enn 128 tegn"
@@ -195,7 +195,7 @@ class DistribuerJournalpostServiceTest {
         fun `skal feile validering hvis adresselinje 3 er lengre enn 128 tegn`() {
             val adresse = createDistribuerTilAdresse()
                 .copy(
-                    adresselinje3 = "Adresselinje 3 lengre enn 128 tegn asdasdasdasdas sadasd asd asdasd asdasdasdasdasdasdasdasdasdasdasdasdasd asdasdasdasdasdasdasdasdasdasdasdasdasd"
+                    adresselinje3 = "Adresselinje 3 lengre enn 128 tegn asdasdasdasdas sadasd asd asdasd asdasdasdasdasdasdasdasdasdasdasdasdasd asdasdasdasdasdasdasdasdasdasdasdasdasd",
                 )
             val result = assertThrows<IllegalArgumentException> { validerAdresse(adresse) }
             result.message shouldBe "Adresselinje 3 kan ikke være lengre enn 128 tegn"

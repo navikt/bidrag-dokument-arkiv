@@ -63,9 +63,9 @@ class OpprettJournalpostValidatorTest {
             dokumenter = listOf(
                 OpprettDokumentDto(
                     tittel = "",
-                    fysiskDokument = "Innhold på dokumentet vedlegg".toByteArray()
-                )
-            )
+                    fysiskDokument = "Innhold på dokumentet vedlegg".toByteArray(),
+                ),
+            ),
         )
         val result =
             shouldThrow<IllegalArgumentException> { validerKanOppretteJournalpost(request) }
@@ -78,7 +78,7 @@ class OpprettJournalpostValidatorTest {
         val request = createOpprettJournalpostRequest().copy(
             skalFerdigstilles = true,
             tilknyttSaker = listOf(""),
-            tema = "BID"
+            tema = "BID",
         )
         val result =
             shouldThrow<IllegalArgumentException> { validerKanOppretteJournalpost(request) }
@@ -91,7 +91,7 @@ class OpprettJournalpostValidatorTest {
         val request = createOpprettJournalpostRequest().copy(
             skalFerdigstilles = true,
             journalførendeEnhet = "4214",
-            tema = "BID"
+            tema = "BID",
         )
         val result =
             shouldThrow<IllegalArgumentException> { validerKanOppretteJournalpost(request) }
@@ -102,13 +102,16 @@ class OpprettJournalpostValidatorTest {
     @Test
     fun `Validering skal feile hvis avsendernavn er lengre enn 128 tegn`() {
         val requestValid = createOpprettJournalpostRequest().copy(
-            avsenderMottaker = AvsenderMottakerDto("Navn mindre enn 128 tegn")
+            avsenderMottaker = AvsenderMottakerDto("Navn mindre enn 128 tegn"),
         )
 
         shouldNotThrow<IllegalArgumentException> { validerKanOppretteJournalpost(requestValid) }
 
         val request = createOpprettJournalpostRequest().copy(
-            avsenderMottaker = AvsenderMottakerDto("Navn lengre enn 128 tegn asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd")
+            avsenderMottaker = AvsenderMottakerDto(
+                "Navn lengre enn 128 tegn " +
+                    "asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd",
+            ),
         )
         val result =
             shouldThrow<IllegalArgumentException> { validerKanOppretteJournalpost(request) }

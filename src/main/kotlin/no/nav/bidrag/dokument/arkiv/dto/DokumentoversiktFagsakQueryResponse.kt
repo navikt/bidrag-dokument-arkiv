@@ -3,7 +3,7 @@ package no.nav.bidrag.dokument.arkiv.dto
 import no.nav.bidrag.dokument.arkiv.model.JournalpostIkkeFunnetException
 
 data class DokumentoversiktFagsakQueryResponse(
-    var data: DokumentoversiktFagsak? = null
+    var data: DokumentoversiktFagsak? = null,
 ) {
     fun hentJournalpost(journalpostId: Long): Journalpost {
         return data?.dokumentoversiktFagsak?.journalposter?.find { it.journalpostId == journalpostId.toString() }
@@ -12,9 +12,9 @@ data class DokumentoversiktFagsakQueryResponse(
 }
 
 data class DokumentoversiktFagsak(
-    var dokumentoversiktFagsak: DokumentoversiktFagsakListe? = null
+    var dokumentoversiktFagsak: DokumentoversiktFagsakListe? = null,
 )
 
 data class DokumentoversiktFagsakListe(
-    var journalposter: List<Journalpost> = emptyList()
+    var journalposter: List<Journalpost> = emptyList(),
 )

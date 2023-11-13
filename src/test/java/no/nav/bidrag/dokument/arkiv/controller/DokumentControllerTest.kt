@@ -42,13 +42,13 @@ class DokumentControllerTest : AbstractControllerTest() {
             dokumenter = listOf(
                 Dokument(
                     dokumentInfoId = DOKUMENT_1_ID,
-                    tittel = DOKUMENT_1_TITTEL
+                    tittel = DOKUMENT_1_TITTEL,
                 ),
                 Dokument(
                     dokumentInfoId = DOKUMENT_2_ID,
-                    tittel = DOKUMENT_1_TITTEL
-                )
-            )
+                    tittel = DOKUMENT_1_TITTEL,
+                ),
+            ),
         )
 
         stubs.mockSafResponseTilknyttedeJournalposter(
@@ -56,9 +56,9 @@ class DokumentControllerTest : AbstractControllerTest() {
                 TilknyttetJournalpost(
                     journalpostId,
                     JournalStatus.FERDIGSTILT,
-                    Sak("123")
-                )
-            )
+                    Sak("123"),
+                ),
+            ),
         )
         stubs.mockSafHentDokumentResponse()
         stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
@@ -67,7 +67,7 @@ class DokumentControllerTest : AbstractControllerTest() {
             initUrl() + "/dokument/JOARK-$journalpostId/$DOKUMENT_1_ID",
             HttpMethod.OPTIONS,
             null,
-            object : ParameterizedTypeReference<List<DokumentMetadata>>() {}
+            object : ParameterizedTypeReference<List<DokumentMetadata>>() {},
         )
 
         response.statusCode shouldBe HttpStatus.OK
@@ -89,13 +89,13 @@ class DokumentControllerTest : AbstractControllerTest() {
             dokumenter = listOf(
                 Dokument(
                     dokumentInfoId = DOKUMENT_1_ID,
-                    tittel = DOKUMENT_1_TITTEL
+                    tittel = DOKUMENT_1_TITTEL,
                 ),
                 Dokument(
                     dokumentInfoId = DOKUMENT_2_ID,
-                    tittel = DOKUMENT_1_TITTEL
-                )
-            )
+                    tittel = DOKUMENT_1_TITTEL,
+                ),
+            ),
         )
 
         stubs.mockSafResponseTilknyttedeJournalposter(
@@ -103,9 +103,9 @@ class DokumentControllerTest : AbstractControllerTest() {
                 TilknyttetJournalpost(
                     journalpostId,
                     JournalStatus.FERDIGSTILT,
-                    Sak("123")
-                )
-            )
+                    Sak("123"),
+                ),
+            ),
         )
         stubs.mockSafHentDokumentResponse()
         stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
@@ -114,7 +114,7 @@ class DokumentControllerTest : AbstractControllerTest() {
             initUrl() + "/dokumentreferanse/$DOKUMENT_1_ID",
             HttpMethod.OPTIONS,
             null,
-            object : ParameterizedTypeReference<List<DokumentMetadata>>() {}
+            object : ParameterizedTypeReference<List<DokumentMetadata>>() {},
         )
 
         response.statusCode shouldBe HttpStatus.OK
@@ -136,13 +136,13 @@ class DokumentControllerTest : AbstractControllerTest() {
             dokumenter = listOf(
                 Dokument(
                     dokumentInfoId = DOKUMENT_1_ID,
-                    tittel = DOKUMENT_1_TITTEL
+                    tittel = DOKUMENT_1_TITTEL,
                 ),
                 Dokument(
                     dokumentInfoId = DOKUMENT_2_ID,
-                    tittel = DOKUMENT_1_TITTEL
-                )
-            )
+                    tittel = DOKUMENT_1_TITTEL,
+                ),
+            ),
         )
 
         stubs.mockSafResponseTilknyttedeJournalposter(
@@ -150,9 +150,9 @@ class DokumentControllerTest : AbstractControllerTest() {
                 TilknyttetJournalpost(
                     journalpostId,
                     JournalStatus.FERDIGSTILT,
-                    Sak("123")
-                )
-            )
+                    Sak("123"),
+                ),
+            ),
         )
         stubs.mockSafHentDokumentResponse()
         stubs.mockSafResponseHentJournalpost(safResponse, journalpostId)
@@ -161,7 +161,7 @@ class DokumentControllerTest : AbstractControllerTest() {
             initUrl() + "/dokument/JOARK-$journalpostId",
             HttpMethod.OPTIONS,
             null,
-            object : ParameterizedTypeReference<List<DokumentMetadata>>() {}
+            object : ParameterizedTypeReference<List<DokumentMetadata>>() {},
         )
 
         response.statusCode shouldBe HttpStatus.OK

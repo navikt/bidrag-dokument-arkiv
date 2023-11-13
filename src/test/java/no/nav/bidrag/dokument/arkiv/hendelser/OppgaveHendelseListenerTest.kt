@@ -36,7 +36,9 @@ import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-@ActiveProfiles(value = [BidragDokumentArkivConfig.PROFILE_KAFKA_TEST, BidragDokumentArkivConfig.PROFILE_TEST, BidragDokumentArkivTest.PROFILE_INTEGRATION])
+@ActiveProfiles(
+    value = [BidragDokumentArkivConfig.PROFILE_KAFKA_TEST, BidragDokumentArkivConfig.PROFILE_TEST, BidragDokumentArkivTest.PROFILE_INTEGRATION],
+)
 @SpringBootTest(classes = [BidragDokumentArkivTest::class])
 @AutoConfigureWireMock(port = 0)
 @EnableMockOAuth2Server
@@ -71,22 +73,22 @@ class OppgaveHendelseListenerTest {
             ReturDetaljerLogDO(
                 "En god begrunnelse for hvorfor dokument kom i retur",
                 LocalDate.parse("2020-01-02"),
-                true
-            )
+                true,
+            ),
         )
         tilleggsOpplysninger.addReturDetaljLog(
             ReturDetaljerLogDO(
                 "En annen god begrunnelse for hvorfor dokument kom i retur",
                 LocalDate.parse("2020-10-02"),
-                true
-            )
+                true,
+            ),
         )
         val safResponse = opprettUtgaendeSafResponse(
             journalpostId = journalpostId.toString(),
             tilleggsopplysninger = tilleggsOpplysninger,
             relevanteDatoer = listOf(
-                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
-            )
+                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT"),
+            ),
         ).copy(utsendingsinfo = UtsendingsInfo(fysiskpostSendt = FysiskpostSendt("Adresselinje1\n3033 Drammen\nNO")))
         safResponse.antallRetur = 1
 
@@ -102,7 +104,7 @@ class OppgaveHendelseListenerTest {
                 0,
                 0L,
                 "key",
-                objectMapper.writeValueAsString(oppgaveData.toHendelse())
+                objectMapper.writeValueAsString(oppgaveData.toHendelse()),
             )
         hendelseListener.lesOppgaveOpprettetHendelse(consumerRecord)
 
@@ -114,10 +116,10 @@ class OppgaveHendelseListenerTest {
                         "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
                         "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
                         "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
-                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
+                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]",
                 )
             },
-            { stubs.verifyStub.oppgaveOppdaterKalt(1, safResponse.hentSaksnummer()) }
+            { stubs.verifyStub.oppgaveOppdaterKalt(1, safResponse.hentSaksnummer()) },
         )
     }
 
@@ -134,8 +136,8 @@ class OppgaveHendelseListenerTest {
             journalpostId = journalpostId.toString(),
             tilleggsopplysninger = tilleggsopplysninger,
             relevanteDatoer = listOf(
-                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
-            )
+                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT"),
+            ),
         )
         safResponse.antallRetur = 1
 
@@ -152,7 +154,7 @@ class OppgaveHendelseListenerTest {
                 0,
                 0L,
                 "key",
-                objectMapper.writeValueAsString(oppgaveData.toHendelse())
+                objectMapper.writeValueAsString(oppgaveData.toHendelse()),
             )
         hendelseListener.lesOppgaveOpprettetHendelse(consumerRecord)
 
@@ -174,22 +176,22 @@ class OppgaveHendelseListenerTest {
             ReturDetaljerLogDO(
                 "En god begrunnelse for hvorfor dokument kom i retur",
                 LocalDate.parse("2020-01-02"),
-                true
-            )
+                true,
+            ),
         )
         tilleggsOpplysninger.addReturDetaljLog(
             ReturDetaljerLogDO(
                 "En annen god begrunnelse for hvorfor dokument kom i retur",
                 LocalDate.parse("2020-10-02"),
-                true
-            )
+                true,
+            ),
         )
         val safResponse = opprettUtgaendeSafResponse(
             journalpostId = journalpostId.toString(),
             tilleggsopplysninger = tilleggsOpplysninger,
             relevanteDatoer = listOf(
-                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
-            )
+                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT"),
+            ),
         ).copy(utsendingsinfo = UtsendingsInfo(fysiskpostSendt = FysiskpostSendt("Adresselinje1\n3033 Drammen\nNO")))
 
         safResponse.antallRetur = 1
@@ -207,7 +209,7 @@ class OppgaveHendelseListenerTest {
                 0,
                 0L,
                 "key",
-                objectMapper.writeValueAsString(oppgaveData.toHendelse())
+                objectMapper.writeValueAsString(oppgaveData.toHendelse()),
             )
         hendelseListener.lesOppgaveOpprettetHendelse(consumerRecord)
 
@@ -219,10 +221,10 @@ class OppgaveHendelseListenerTest {
                         "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
                         "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
                         "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
-                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
+                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]",
                 )
             },
-            { stubs.verifyStub.oppgaveOpprettIkkeKalt() }
+            { stubs.verifyStub.oppgaveOpprettIkkeKalt() },
         )
     }
 
@@ -237,8 +239,8 @@ class OppgaveHendelseListenerTest {
             journalpostId = journalpostId.toString(),
             tilleggsopplysninger = tilleggsOpplysninger,
             relevanteDatoer = listOf(
-                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
-            )
+                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT"),
+            ),
         ).copy(utsendingsinfo = UtsendingsInfo(fysiskpostSendt = FysiskpostSendt("Adresselinje1\n3033 Drammen\nNO")))
 
         safResponse.antallRetur = 1
@@ -256,7 +258,7 @@ class OppgaveHendelseListenerTest {
                 0,
                 0L,
                 "key",
-                objectMapper.writeValueAsString(oppgaveData.toHendelse())
+                objectMapper.writeValueAsString(oppgaveData.toHendelse()),
             )
         hendelseListener.lesOppgaveOpprettetHendelse(consumerRecord)
 
@@ -267,9 +269,9 @@ class OppgaveHendelseListenerTest {
                     journalpostId,
                     "\"tilleggsopplysninger\":" +
                         "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
+                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]",
                 )
-            }
+            },
         )
     }
 
@@ -284,22 +286,22 @@ class OppgaveHendelseListenerTest {
             ReturDetaljerLogDO(
                 "En god begrunnelse for hvorfor dokument kom i retur",
                 LocalDate.parse("2020-01-02"),
-                true
-            )
+                true,
+            ),
         )
         tilleggsOpplysninger.addReturDetaljLog(
             ReturDetaljerLogDO(
                 "En annen god begrunnelse for hvorfor dokument kom i retur",
                 LocalDate.parse("2021-08-20"),
-                false
-            )
+                false,
+            ),
         )
         val safResponse = opprettUtgaendeSafResponse(
             journalpostId = journalpostId.toString(),
             tilleggsopplysninger = tilleggsOpplysninger,
             relevanteDatoer = listOf(
-                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
-            )
+                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT"),
+            ),
         )
         safResponse.antallRetur = 1
 
@@ -315,14 +317,14 @@ class OppgaveHendelseListenerTest {
                 0,
                 0L,
                 "key",
-                objectMapper.writeValueAsString(oppgaveData.toHendelse())
+                objectMapper.writeValueAsString(oppgaveData.toHendelse()),
             )
         hendelseListener.lesOppgaveOpprettetHendelse(consumerRecord)
 
         Assertions.assertAll(
             {
                 stubs.verifyStub.dokarkivOppdaterIkkeKalt(journalpostId)
-            }
+            },
         )
     }
 
@@ -340,8 +342,8 @@ class OppgaveHendelseListenerTest {
             journalpostId = journalpostId.toString(),
             tilleggsopplysninger = tilleggsopplysninger,
             relevanteDatoer = listOf(
-                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
-            )
+                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT"),
+            ),
         )
         safResponse.antallRetur = 1
 
@@ -358,7 +360,7 @@ class OppgaveHendelseListenerTest {
                 0,
                 0L,
                 "key",
-                objectMapper.writeValueAsString(oppgaveData.toHendelse())
+                objectMapper.writeValueAsString(oppgaveData.toHendelse()),
             )
         hendelseListener.lesOppgaveOpprettetHendelse(consumerRecord)
 
@@ -368,13 +370,13 @@ class OppgaveHendelseListenerTest {
                 1,
                 safResponse.hentSaksnummer(),
                 "\"versjon\":22",
-                "Mottaker har ikke åpnet forsendelsen via www.nav.no innen 40 timer. Ingen postadresse er registrert. Vurder om mottaker har adresse forsendelsen kan sendes til"
+                "Mottaker har ikke åpnet forsendelsen via www.nav.no innen 40 timer. Ingen postadresse er registrert. Vurder om mottaker har adresse forsendelsen kan sendes til",
             )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 journalpostId,
                 "\"tilleggsopplysninger\":" +
                     "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"origDistDigitalt\",\"verdi\":\"true\"}," +
-                    "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Distribusjon feilet, mottaker mangler postadresse\"}]"
+                    "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Distribusjon feilet, mottaker mangler postadresse\"}]",
             )
         }
     }
@@ -390,22 +392,22 @@ class OppgaveHendelseListenerTest {
             ReturDetaljerLogDO(
                 "En god begrunnelse for hvorfor dokument kom i retur",
                 LocalDate.parse("2020-01-02"),
-                true
-            )
+                true,
+            ),
         )
         tilleggsOpplysninger.addReturDetaljLog(
             ReturDetaljerLogDO(
                 "En annen god begrunnelse for hvorfor dokument kom i retur",
                 LocalDate.now(),
-                true
-            )
+                true,
+            ),
         )
         val safResponse = opprettUtgaendeSafResponse(
             journalpostId = journalpostId.toString(),
             tilleggsopplysninger = tilleggsOpplysninger,
             relevanteDatoer = listOf(
-                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
-            )
+                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT"),
+            ),
         )
         safResponse.antallRetur = 1
 
@@ -420,7 +422,7 @@ class OppgaveHendelseListenerTest {
                 0,
                 0L,
                 "key",
-                objectMapper.writeValueAsString(oppgaveData.toHendelse())
+                objectMapper.writeValueAsString(oppgaveData.toHendelse()),
             )
         hendelseListener.lesOppgaveOpprettetHendelse(consumerRecord)
 
@@ -431,9 +433,9 @@ class OppgaveHendelseListenerTest {
                     "\"tilleggsopplysninger\":" +
                         "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
                         "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
-                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}"
+                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}",
                 )
-            }
+            },
         )
     }
 
@@ -449,7 +451,7 @@ class OppgaveHendelseListenerTest {
         aktoerId: String = BRUKER_AKTOER_ID,
         beskrivelse: String? = null,
         tilordnetRessurs: String? = null,
-        saksref: String = "123213123"
+        saksref: String = "123213123",
     ) = OppgaveData(
         id = id,
         versjon = versjon,
@@ -464,12 +466,10 @@ class OppgaveHendelseListenerTest {
         tilordnetRessurs = tilordnetRessurs,
         beskrivelse = beskrivelse,
         aktoerId = aktoerId,
-        saksreferanse = saksref
+        saksreferanse = saksref,
     )
 
-    fun OppgaveData.toHendelse(
-        type: OppgaveKafkaHendelse.Hendelse.Hendelsestype? = null
-    ) = OppgaveKafkaHendelse(
+    fun OppgaveData.toHendelse(type: OppgaveKafkaHendelse.Hendelse.Hendelsestype? = null) = OppgaveKafkaHendelse(
         hendelse = OppgaveKafkaHendelse.Hendelse(
             type ?: when (status) {
                 OppgaveStatus.FERDIGSTILT -> OppgaveKafkaHendelse.Hendelse.Hendelsestype.OPPGAVE_FERDIGSTILT
@@ -478,7 +478,7 @@ class OppgaveHendelseListenerTest {
                 OppgaveStatus.FEILREGISTRERT -> OppgaveKafkaHendelse.Hendelse.Hendelsestype.OPPGAVE_FEILREGISTRERT
                 else -> OppgaveKafkaHendelse.Hendelse.Hendelsestype.OPPGAVE_ENDRET
             },
-            LocalDateTime.now()
+            LocalDateTime.now(),
         ),
         utfortAv = OppgaveKafkaHendelse.UtfortAv(tilordnetRessurs, tildeltEnhetsnr),
         oppgave = OppgaveKafkaHendelse.Oppgave(
@@ -486,12 +486,12 @@ class OppgaveHendelseListenerTest {
             1,
             kategorisering = OppgaveKafkaHendelse.Kategorisering(
                 tema ?: "BID",
-                oppgavetype = oppgavetype ?: "JFR"
+                oppgavetype = oppgavetype ?: "JFR",
             ),
             bruker = OppgaveKafkaHendelse.Bruker(
                 aktoerId,
-                OppgaveKafkaHendelse.Bruker.IdentType.FOLKEREGISTERIDENT
-            )
-        )
+                OppgaveKafkaHendelse.Bruker.IdentType.FOLKEREGISTERIDENT,
+            ),
+        ),
     )
 }

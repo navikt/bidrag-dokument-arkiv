@@ -14,7 +14,7 @@ import no.nav.joarkjournalfoeringhendelser.JournalfoeringHendelseRecord
 class JournalpostHendelseIntern(
     var journalpost: Journalpost,
     var saksbehandler: SaksbehandlerMedEnhet?,
-    var journalforingHendelse: JournalfoeringHendelseRecord?
+    var journalforingHendelse: JournalfoeringHendelseRecord?,
 ) {
     val journalpostHendelse: JournalpostHendelse
 
@@ -35,7 +35,7 @@ class JournalpostHendelseIntern(
             journalfortDato = journalpost.hentDatoJournalfort(),
             hendelseType = if (journalforingHendelse?.hendelsesType == JoarkHendelseType.ENDELIG_JOURNALFORT.hendelsesType) HendelseType.JOURNALFORING else HendelseType.ENDRING,
             journalposttype = journalpost.journalposttype?.name,
-            behandlingstema = journalpost.behandlingstema
+            behandlingstema = journalpost.behandlingstema,
         )
     }
 
@@ -60,7 +60,7 @@ class JournalpostHendelseIntern(
         CorrelationId.fetchCorrelationIdForThread(),
         saksbehandler?.saksbehandler?.ident,
         saksbehandler?.saksbehandler?.navn,
-        saksbehandler?.enhetsnummer
+        saksbehandler?.enhetsnummer,
     )
 
     fun hentJournalpostHendelse() = journalpostHendelse
@@ -74,7 +74,7 @@ class JournalforingHendelseIntern(var journalforingHendelse: JournalfoeringHende
             return JournalpostHendelseIntern(
                 journalpost,
                 hentSaksbehandler(journalpost),
-                journalforingHendelse
+                journalforingHendelse,
             ).hentJournalpostHendelse()
         }
 
@@ -85,7 +85,7 @@ class JournalforingHendelseIntern(var journalforingHendelse: JournalfoeringHende
         if (journalpost.isStatusJournalfort()) {
             return Saksbehandler(
                 journalpost.hentJournalfortAvIdent(),
-                journalpost.journalfortAvNavn
+                journalpost.journalfortAvNavn,
             ).tilEnhet(journalpost.journalforendeEnhet)
         }
 
@@ -103,7 +103,7 @@ class JournalforingHendelseIntern(var journalforingHendelse: JournalfoeringHende
                 else -> null
             },
             enhet = null,
-            fagomrade = journalforingHendelse.temaNytt ?: journalforingHendelse.temaGammelt
+            fagomrade = journalforingHendelse.temaNytt ?: journalforingHendelse.temaGammelt,
         )
     }
 
@@ -111,6 +111,6 @@ class JournalforingHendelseIntern(var journalforingHendelse: JournalfoeringHende
         CorrelationId.fetchCorrelationIdForThread(),
         saksbehandler.saksbehandler.ident,
         saksbehandler.saksbehandler.navn,
-        saksbehandler.enhetsnummer
+        saksbehandler.enhetsnummer,
     )
 }

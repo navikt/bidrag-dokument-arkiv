@@ -23,23 +23,23 @@ class OpprettJournalpostController(private val opprettJournalpostService: Oppret
     @PostMapping("/journalpost")
     @Operation(
         security = [SecurityRequirement(name = "bearer-key")],
-        description = "Opprett journalpost i Joark"
+        description = "Opprett journalpost i Joark",
     )
     @ApiResponses(
         value = [
             ApiResponse(
                 responseCode = "400",
-                description = "Opprett journalpost kalt med ugyldig data"
-            )
-        ]
+                description = "Opprett journalpost kalt med ugyldig data",
+            ),
+        ],
     )
     fun opprettJournalpost(@RequestBody opprettJournalpostRequest: OpprettJournalpostRequest): ResponseEntity<OpprettJournalpostResponse> {
         SECURE_LOGGER.info("Oppretter journalpost {}", opprettJournalpostRequest)
         validerKanOppretteJournalpost(opprettJournalpostRequest)
         return ResponseEntity.ok(
             opprettJournalpostService.opprettJournalpost(
-                opprettJournalpostRequest
-            )
+                opprettJournalpostRequest,
+            ),
         )
     }
 }
