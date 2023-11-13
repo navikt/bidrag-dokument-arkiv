@@ -111,10 +111,10 @@ class OppgaveHendelseListenerTest {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostId,
                     "\"tilleggsopplysninger\":" +
-                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                            "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
-                            "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
-                            "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
+                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                        "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
+                        "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
+                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
                 )
             },
             { stubs.verifyStub.oppgaveOppdaterKalt(1, safResponse.hentSaksnummer()) }
@@ -216,10 +216,10 @@ class OppgaveHendelseListenerTest {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostId,
                     "\"tilleggsopplysninger\":" +
-                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                            "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
-                            "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
-                            "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
+                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                        "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
+                        "{\"nokkel\":\"Lretur0_2020-10-02\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}," +
+                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
                 )
             },
             { stubs.verifyStub.oppgaveOpprettIkkeKalt() }
@@ -266,8 +266,8 @@ class OppgaveHendelseListenerTest {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostId,
                     "\"tilleggsopplysninger\":" +
-                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                            "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
+                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Returpost\"}]"
                 )
             }
         )
@@ -335,6 +335,7 @@ class OppgaveHendelseListenerTest {
         val journalpostId = 201028011L
         val tilleggsopplysninger = TilleggsOpplysninger()
         tilleggsopplysninger.setDistribusjonBestillt()
+        tilleggsopplysninger.setOriginalDistribuertDigitalt()
         val safResponse = opprettUtgaendeSafResponse(
             journalpostId = journalpostId.toString(),
             tilleggsopplysninger = tilleggsopplysninger,
@@ -372,8 +373,8 @@ class OppgaveHendelseListenerTest {
             stubs.verifyStub.dokarkivOppdaterKalt(
                 journalpostId,
                 "\"tilleggsopplysninger\":" +
-                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Distribusjon feilet, mottaker mangler postadresse\"}]"
+                    "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"origDistDigitalt\",\"verdi\":\"true\"}," +
+                    "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Distribusjon feilet, mottaker mangler postadresse\"}]"
             )
         }
     }
@@ -428,9 +429,9 @@ class OppgaveHendelseListenerTest {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostId,
                     "\"tilleggsopplysninger\":" +
-                            "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                            "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
-                            "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}"
+                        "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                        "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
+                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}"
                 )
             }
         )
