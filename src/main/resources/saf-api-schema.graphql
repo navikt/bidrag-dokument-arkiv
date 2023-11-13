@@ -4,6 +4,9 @@ schema {
     query: Query
 }
 
+"Indicates an Input Object is a OneOf Input Object."
+directive @oneOf on INPUT_OBJECT
+
 " En person, organisasjon eller annen samhandler som er mottaker eller avsender av dokumentene på en journalpost."
 type AvsenderMottaker {
     """
@@ -91,6 +94,8 @@ En variant av et dokumentet, som er beregnet på et spesielt formål, for eksemp
 type Dokumentvariant {
     " Navnet på filen i arkivet. Navnet vil i de fleste tilfeller være autogenerert ved arkivering."
     filnavn: String
+    " Dokumentets filstørrelse i bytes."
+    filstoerrelse: Int @deprecated(reason: "Feltet er deprekert og er kun til internt bruk. Feltet skal kun brukes etter avtale med Team Dokument.")
     """
 
     Dokumentets filtype, f.eks. PDFA, XML eller JPG. Gyldige verdier finnes på siden Fagarkiv - Filtype.
@@ -400,10 +405,16 @@ type Query {
     journalpost(
         """
 
-        ID til Journalposten man ønsker å hente detaljer for.
-        * Hvis argumentet ikke er angitt så returneres en feil.
+        Brukes for sporing og feilsøking på tvers av systemer.
+        * Hvis eksternReferanseId eller journalpostId argumenter ikke er angitt så returneres en feil.
         """
-        journalpostId: String!
+        eksternReferanseId: String,
+        """
+
+        ID til Journalposten man ønsker å hente detaljer for.
+        * Hvis både journalpostId og eksternReferanseId er angitt så returneres det basert på journalpostId.
+        """
+        journalpostId: String
     ): Journalpost
     " * Query returnerer alle saker for bruker med angitt fnr / aktoerID."
     saker(
@@ -916,11 +927,11 @@ enum Tema {
     AAP
     " Aa-registeret"
     AAR
-    " Ajourhold - Grunnopplysninger"
+    " Ajourhold – grunnopplysninger"
     AGR
-    " Arbeidsrådgivning psykologtester"
+    " Arbeidsrådgivning – psykologtester"
     ARP
-    " Arbeidsrådgivning skjermet"
+    " Arbeidsrådgivning – skjermet"
     ARS
     " Barnetrygd"
     BAR
@@ -930,7 +941,7 @@ enum Tema {
     BIL
     " Dagpenger"
     DAG
-    " Enslig forsørger"
+    " Enslig mor eller far"
     ENF
     " Erstatning"
     ERS
@@ -938,7 +949,7 @@ enum Tema {
     EYB
     "Omstillingsstønad"
     EYO
-    " Farskap"
+    " Foreldreskap"
     FAR
     " Feilutbetaling"
     FEI
@@ -966,11 +977,11 @@ enum Tema {
     IAR
     " Tiltakspenger"
     IND
-    " Klage lønnsgaranti"
+    " Klage – lønnsgaranti"
     KLL
     " Kontantstøtte"
     KON
-    " Kontroll anmeldelse"
+    " Kontroll – anmeldelse"
     KTA
     " Kontroll"
     KTR
@@ -980,7 +991,7 @@ enum Tema {
     MOB
     " Omsorgspenger, pleiepenger og opplæringspenger"
     OMS
-    " Oppfølging - Arbeidsgiver"
+    " Oppfølging – arbeidsgiver"
     OPA
     " Oppfølging"
     OPP
@@ -988,9 +999,9 @@ enum Tema {
     PEN
     " Permittering og masseoppsigelser"
     PER
-    " Rehabilitering"
+    " Rehabiliteringspenger"
     REH
-    " Rekruttering og stilling"
+    " Rekruttering"
     REK
     " Retting av personopplysninger"
     RPO
@@ -998,14 +1009,12 @@ enum Tema {
     RVE
     " Sanksjon - Arbeidsgiver"
     SAA
-    " Saksomkostninger"
+    " Sakskostnader"
     SAK
-    " Sanksjon - Person"
+    " Sanksjon – person"
     SAP
     " Serviceklager"
     SER
-    " Sikkerhetstiltak"
-    SIK
     " Regnskap/utbetaling"
     STO
     " Supplerende stønad"
@@ -1022,7 +1031,7 @@ enum Tema {
     TRY
     " Tilleggsstønad"
     TSO
-    " Tilleggsstønad arbeidssøkere"
+    " Tilleggsstønad – arbeidssøkere"
     TSR
     " Unntak fra medlemskap"
     UFM
@@ -1034,7 +1043,7 @@ enum Tema {
     VEN
     " Yrkesrettet attføring"
     YRA
-    " Yrkesskade / Menerstatning"
+    " Yrkesskade og menerstatning"
     YRK
 }
 

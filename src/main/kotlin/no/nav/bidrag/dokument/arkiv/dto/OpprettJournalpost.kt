@@ -354,6 +354,4 @@ fun validerKanOppretteJournalpost(request: OpprettJournalpostRequest) {
         )
         Validate.isTrue(request.hasSak(), "Journalpost som skal ferdigstilles må ha minst en sak")
     }
-
-
 }

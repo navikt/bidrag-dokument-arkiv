@@ -80,8 +80,13 @@ open class OppgaveRequest(
 
 data class OppdaterSakRequest(
     private var oppgaveHendelse: OppgaveData,
-    override var saksreferanse: String?
-) : OppgaveRequest(id = oppgaveHendelse.id, versjon = oppgaveHendelse.versjon)
+    override var saksreferanse: String?,
+    private val kommentar: String? = null
+) : OppgaveRequest(
+    id = oppgaveHendelse.id,
+    versjon = oppgaveHendelse.versjon,
+    beskrivelse = if (kommentar != null) "${oppgaveHendelse.beskrivelse}\r\n\r\n$kommentar" else null
+)
 
 data class LeggTilKommentarPaaOppgave(
     private var oppgaveData: OppgaveData,

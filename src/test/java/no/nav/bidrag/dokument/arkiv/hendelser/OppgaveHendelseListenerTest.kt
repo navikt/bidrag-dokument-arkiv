@@ -6,10 +6,12 @@ import io.kotest.assertions.assertSoftly
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivTest
 import no.nav.bidrag.dokument.arkiv.dto.DatoType
+import no.nav.bidrag.dokument.arkiv.dto.FysiskpostSendt
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveData
 import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
+import no.nav.bidrag.dokument.arkiv.dto.UtsendingsInfo
 import no.nav.bidrag.dokument.arkiv.kafka.HendelseListener
 import no.nav.bidrag.dokument.arkiv.kafka.dto.OppgaveKafkaHendelse
 import no.nav.bidrag.dokument.arkiv.model.OppgaveStatus
@@ -85,7 +87,7 @@ class OppgaveHendelseListenerTest {
             relevanteDatoer = listOf(
                 DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
             )
-        )
+        ).copy(utsendingsinfo = UtsendingsInfo(fysiskpostSendt = FysiskpostSendt("Adresselinje1\n3033 Drammen\nNO")))
         safResponse.antallRetur = 1
 
         stubs.mockSafResponseHentJournalpost(safResponse)
@@ -188,7 +190,8 @@ class OppgaveHendelseListenerTest {
             relevanteDatoer = listOf(
                 DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
             )
-        )
+        ).copy(utsendingsinfo = UtsendingsInfo(fysiskpostSendt = FysiskpostSendt("Adresselinje1\n3033 Drammen\nNO")))
+
         safResponse.antallRetur = 1
         safResponse.sak = Sak("5276661")
 
@@ -236,7 +239,8 @@ class OppgaveHendelseListenerTest {
             relevanteDatoer = listOf(
                 DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
             )
-        )
+        ).copy(utsendingsinfo = UtsendingsInfo(fysiskpostSendt = FysiskpostSendt("Adresselinje1\n3033 Drammen\nNO")))
+
         safResponse.antallRetur = 1
 
         stubs.mockSafResponseHentJournalpost(opprettUtgaendeSafResponse(), null, "NO_RETUR")
@@ -320,6 +324,59 @@ class OppgaveHendelseListenerTest {
                 stubs.verifyStub.dokarkivOppdaterIkkeKalt(journalpostId)
             }
         )
+    }
+
+    @Test
+    fun `skal oppdatere oppgave og returlogg med kommentar hvis retur kommer fra navno`() {
+        stubs.mockSts()
+        stubs.mockBidragOrganisasjonSaksbehandler()
+        stubs.mockOppdaterOppgave(HttpStatus.CONFLICT, null, "correct")
+        stubs.mockOppdaterOppgave(HttpStatus.OK, "correct", null)
+        val journalpostId = 201028011L
+        val tilleggsopplysninger = TilleggsOpplysninger()
+        tilleggsopplysninger.setDistribusjonBestillt()
+        tilleggsopplysninger.setOriginalDistribuertDigitalt()
+        val safResponse = opprettUtgaendeSafResponse(
+            journalpostId = journalpostId.toString(),
+            tilleggsopplysninger = tilleggsopplysninger,
+            relevanteDatoer = listOf(
+                DatoType("2021-08-18T13:20:33", "DATO_DOKUMENT")
+            )
+        )
+        safResponse.antallRetur = 1
+
+        stubs.mockSafResponseHentJournalpost(safResponse)
+        stubs.mockDokarkivOppdaterRequest(journalpostId)
+
+        val oppgaveData = createOppgaveData(versjon = 20, journalpostId = journalpostId.toString())
+        stubs.mockHentOppgave(oppgaveData.id, oppgaveData, null, "fetch1")
+        stubs.mockHentOppgave(oppgaveData.id, oppgaveData.copy(versjon = 22), "fetch1", null)
+
+        val consumerRecord =
+            ConsumerRecord(
+                "test",
+                0,
+                0L,
+                "key",
+                objectMapper.writeValueAsString(oppgaveData.toHendelse())
+            )
+        hendelseListener.lesOppgaveOpprettetHendelse(consumerRecord)
+
+        assertSoftly {
+            stubs.verifyStub.oppgaveOppdaterKalt(2, safResponse.hentSaksnummer())
+            stubs.verifyStub.oppgaveOppdaterKalt(
+                1,
+                safResponse.hentSaksnummer(),
+                "\"versjon\":22",
+                "Mottaker har ikke åpnet forsendelsen via www.nav.no innen 40 timer. Ingen postadresse er registrert. Vurder om mottaker har adresse forsendelsen kan sendes til"
+            )
+            stubs.verifyStub.dokarkivOppdaterKalt(
+                journalpostId,
+                "\"tilleggsopplysninger\":" +
+                    "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"origDistDigitalt\",\"verdi\":\"true\"}," +
+                    "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Distribusjon feilet, mottaker mangler postadresse\"}]"
+            )
+        }
     }
 
     @Test

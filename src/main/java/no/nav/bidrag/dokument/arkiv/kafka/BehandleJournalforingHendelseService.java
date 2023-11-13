@@ -1,9 +1,12 @@
 package no.nav.bidrag.dokument.arkiv.kafka;
 
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivKt.SECURE_LOGGER;
+
 import com.google.common.base.Strings;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import no.nav.bidrag.dokument.arkiv.dto.Dokument;
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost;
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal;
@@ -16,10 +19,6 @@ import org.springframework.retry.backoff.FixedBackOffPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Service;
-
-import java.util.stream.Collectors;
-
-import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
 
 @Service
 public class BehandleJournalforingHendelseService {

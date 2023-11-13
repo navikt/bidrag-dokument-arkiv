@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import no.nav.bidrag.commons.util.KildesystemIdenfikator
-import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER
+import no.nav.bidrag.dokument.arkiv.SECURE_LOGGER
 import no.nav.bidrag.dokument.arkiv.consumer.BestemKanalResponse
 import no.nav.bidrag.dokument.arkiv.dto.BestemDistribusjonKanalRequest
 import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal

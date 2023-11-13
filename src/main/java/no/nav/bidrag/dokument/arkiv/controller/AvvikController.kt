@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import mu.KotlinLogging
 import no.nav.bidrag.commons.util.KildesystemIdenfikator
 import no.nav.bidrag.commons.web.EnhetFilter
-import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv
+import no.nav.bidrag.dokument.arkiv.SECURE_LOGGER
 import no.nav.bidrag.dokument.arkiv.dto.AvvikshendelseIntern
 import no.nav.bidrag.dokument.arkiv.service.AvvikService
 import no.nav.bidrag.transport.dokument.AvvikType
@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.util.*
+import java.util.Optional
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -129,7 +129,7 @@ class AvvikController(private val avvikService: AvvikService) : BaseController()
             avvikshendelse.avvikType,
             journalpostId
         )
-        BidragDokumentArkiv.SECURE_LOGGER.info(
+        SECURE_LOGGER.info(
             "Behandle avvik {} for journalpost {}: {}",
             avvikshendelse.avvikType,
             journalpostId,

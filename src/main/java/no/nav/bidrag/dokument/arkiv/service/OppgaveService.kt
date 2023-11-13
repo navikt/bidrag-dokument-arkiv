@@ -1,6 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.service
 
-import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER
+import no.nav.bidrag.dokument.arkiv.SECURE_LOGGER
 import no.nav.bidrag.dokument.arkiv.consumer.OppgaveConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer
 import no.nav.bidrag.dokument.arkiv.dto.FerdigstillOppgaveRequest

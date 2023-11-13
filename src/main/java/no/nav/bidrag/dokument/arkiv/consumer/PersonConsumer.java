@@ -1,6 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.consumer;
 
-import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv.SECURE_LOGGER;
+import static no.nav.bidrag.dokument.arkiv.BidragDokumentArkivKt.SECURE_LOGGER;
 import static no.nav.bidrag.dokument.arkiv.CacheConfig.PERSON_ADRESSE_CACHE;
 import static no.nav.bidrag.dokument.arkiv.CacheConfig.PERSON_CACHE;
 

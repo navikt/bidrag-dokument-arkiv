@@ -350,7 +350,7 @@ class Stubs {
             WireMock.stubFor(
                 WireMock.post(WireMock.urlEqualTo("/saf/graphql"))
                     .withRequestBody(ContainsPattern("query journalpost"))
-                    .withRequestBody(ContainsPattern(String.format("\"variables\":{\"journalpostId\":\"${journalpostId}\"}")))
+                    .withRequestBody(ContainsPattern(String.format("$journalpostId")))
                     .willReturn(
                         aClosedJsonResponse()
                             .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")

@@ -260,6 +260,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                 "{\"tilleggsopplysninger\":[" +
                     "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
                     "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                    "{\"nokkel\":\"origDistDigitalt\",\"verdi\":\"true\"}," +
                     "{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
             )
         }

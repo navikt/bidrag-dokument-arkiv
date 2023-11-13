@@ -1,6 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.service
 
-import no.nav.bidrag.dokument.arkiv.BidragDokumentArkiv
+import no.nav.bidrag.dokument.arkiv.SECURE_LOGGER
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker
@@ -124,7 +124,7 @@ class AvvikService(
             else -> throw AvvikNotSupportedException("Avvik ${avvikshendelseIntern.avvikstype} ikke støttet")
         }
         publiserHendelse(journalpost, avvikshendelseIntern.saksbehandlersEnhet)
-        BidragDokumentArkiv.SECURE_LOGGER.info(
+        SECURE_LOGGER.info(
             "Avvik {} ble utført på journalpost {} av bruker {} og enhet {} med beskrivelse {} - avvik {}",
             avvikshendelseIntern.avvikstype,
             avvikshendelseIntern.journalpostId,
