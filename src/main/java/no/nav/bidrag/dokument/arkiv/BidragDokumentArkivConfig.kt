@@ -327,27 +327,27 @@ class BidragDokumentArkivConfig {
     ) {
         override fun toString(): String {
             return (
-                    "dokarkivUrl='" +
-                            dokarkivUrl +
-                            '\'' +
-                            ", safUrl='" +
-                            safUrl +
-                            '\'' +
-                            ", bidragPersonUrl='" +
-                            bidragPersonUrl +
-                            '\'' +
-                            ", dokarkivKnyttTilSakUrl='" +
-                            dokarkivKnyttTilSakUrl +
-                            '\'' +
-                            ", securityTokenUrl='" +
-                            securityTokenUrl +
-                            '\'' +
-                            ", bidragOrganisasjonUrl='" +
-                            bidragOrganisasjonUrl +
-                            '\'' +
-                            ", naisAppName='" +
-                            naisAppName
-                    )
+                "dokarkivUrl='" +
+                    dokarkivUrl +
+                    '\'' +
+                    ", safUrl='" +
+                    safUrl +
+                    '\'' +
+                    ", bidragPersonUrl='" +
+                    bidragPersonUrl +
+                    '\'' +
+                    ", dokarkivKnyttTilSakUrl='" +
+                    dokarkivKnyttTilSakUrl +
+                    '\'' +
+                    ", securityTokenUrl='" +
+                    securityTokenUrl +
+                    '\'' +
+                    ", bidragOrganisasjonUrl='" +
+                    bidragOrganisasjonUrl +
+                    '\'' +
+                    ", naisAppName='" +
+                    naisAppName
+                )
         }
     }
 
