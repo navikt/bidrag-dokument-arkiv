@@ -138,9 +138,11 @@ class BehandleOppgaveHendelseService(
 
     private fun Journalpost.harReturKommetFraNavNo() = distribuertTilAdresse() == null
     private fun opprettKommentarSomLeggesTilOppgave(journalpost: Journalpost): String? {
-        SECURE_LOGGER.info("Journalpost kommet retur med følgende detaljer ${journalpost.journalpostId} ${journalpost.journalstatus} ${journalpost.distribuertTilAdresse()} ${
+        SECURE_LOGGER.info(
+            "Journalpost kommet retur med følgende detaljer ${journalpost.journalpostId} ${journalpost.journalstatus} ${journalpost.distribuertTilAdresse()} ${
             journalpost.relevanteDatoer.joinToString(",") { "${it.datotype}:${it.dato}" }
-        }")
+            }"
+        )
         return if (journalpost.harReturKommetFraNavNo()) "Mottaker har ikke åpnet forsendelsen via www.nav.no innen 40 timer. Ingen postadresse er registrert. Vurder om mottaker har adresse forsendelsen kan sendes til." else null
     }
 

@@ -38,8 +38,8 @@ class AvvikController(private val avvikService: AvvikService) : BaseController()
     @Operation(
         security = [SecurityRequirement(name = "bearer-key")],
         summary = "Henter mulige avvik for en journalpost, id på formatet '" +
-                KildesystemIdenfikator.PREFIX_JOARK +
-                "<journalpostId>'"
+            KildesystemIdenfikator.PREFIX_JOARK +
+            "<journalpostId>'"
     )
     @ApiResponses(
         value = [
@@ -93,8 +93,8 @@ class AvvikController(private val avvikService: AvvikService) : BaseController()
     @Operation(
         security = [SecurityRequirement(name = "bearer-key")],
         summary = "Behandler et avvik for en journalpost, id på formatet '" +
-                KildesystemIdenfikator.PREFIX_JOARK_COMPLETE +
-                "<journalpostId>'"
+            KildesystemIdenfikator.PREFIX_JOARK_COMPLETE +
+            "<journalpostId>'"
     )
     @Transactional
     @ApiResponses(

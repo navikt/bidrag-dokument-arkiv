@@ -227,9 +227,13 @@ data class Journalpost(
                 val postnummerPoststed = postadresseSplit.getOrNull(1)?.split(" ") ?: emptyList()
                 val postnummer = if (postnummerPoststed.size == 2) postnummerPoststed.getOrNull(0) else null
                 val poststed =
-                    if (postnummerPoststed.size == 1) postnummerPoststed.getOrNull(0) else postnummerPoststed.getOrNull(
-                        1
-                    )
+                    if (postnummerPoststed.size == 1) {
+                        postnummerPoststed.getOrNull(0)
+                    } else {
+                        postnummerPoststed.getOrNull(
+                            1
+                        )
+                    }
                 val adresselinje1 = when (postadresseSplit.size) {
                     3 -> postadresseSplit.getOrNull(2)
                     4 -> postadresseSplit.getOrNull(3)
@@ -893,9 +897,9 @@ data class ReturDetaljerLogDO(
     fun toMap(): List<Map<String, String>> = beskrivelse.chunked(100).mapIndexed { index, it ->
         mapOf(
             "nokkel" to "${if (locked == true) "L" else ""}$RETUR_DETALJER_KEY${index}_${
-                DateUtils.formatDate(
-                    dato
-                )
+            DateUtils.formatDate(
+                dato
+            )
             }",
             "verdi" to it
         )
