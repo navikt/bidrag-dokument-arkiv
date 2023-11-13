@@ -15,9 +15,9 @@ import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostType
 import no.nav.bidrag.dokument.arkiv.model.Discriminator
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
-import no.nav.bidrag.domain.ident.AktørId
-import no.nav.bidrag.domain.ident.PersonIdent
-import no.nav.bidrag.domain.string.FulltNavn
+import no.nav.bidrag.domene.ident.AktørId
+import no.nav.bidrag.domene.ident.Personident
+import no.nav.bidrag.domene.streng.FulltNavn
 import no.nav.bidrag.transport.person.PersonDto
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
 import org.junit.jupiter.api.Disabled
@@ -71,7 +71,7 @@ internal class JournalpostServiceTest {
         every { safConsumerMock.hentJournalpost(journalpostIdFraJson) } returns journalpostDokOversikt
         every { personConsumerMock.hentPerson(journalpostDokOversikt.bruker!!.id) } returns Optional.of(
             PersonDto(
-                ident = PersonIdent("123123"),
+                ident = Personident("123123"),
                 navn = FulltNavn(""),
                 aktørId = AktørId("555555"),
             ),

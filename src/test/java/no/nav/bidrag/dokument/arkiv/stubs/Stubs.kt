@@ -24,13 +24,13 @@ import no.nav.bidrag.dokument.arkiv.dto.OppgaveData
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerInfoResponse
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
-import no.nav.bidrag.domain.enums.Adressetype
-import no.nav.bidrag.domain.string.Adresselinje1
-import no.nav.bidrag.domain.string.Adresselinje2
-import no.nav.bidrag.domain.string.Landkode2
-import no.nav.bidrag.domain.string.Landkode3
-import no.nav.bidrag.domain.string.Postnummer
-import no.nav.bidrag.domain.string.Poststed
+import no.nav.bidrag.domene.enums.Adressetype
+import no.nav.bidrag.domene.streng.Adresselinje1
+import no.nav.bidrag.domene.streng.Adresselinje2
+import no.nav.bidrag.domene.streng.Landkode2
+import no.nav.bidrag.domene.streng.Landkode3
+import no.nav.bidrag.domene.streng.Postnummer
+import no.nav.bidrag.domene.streng.Poststed
 import no.nav.bidrag.transport.person.PersonAdresseDto
 import no.nav.bidrag.transport.person.PersonDto
 import org.junit.Assert
@@ -841,8 +841,8 @@ class Stubs {
                 WireMock.patchRequestedFor(
                     WireMock.urlMatching(
                         "/dokarkiv" +
-                            DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" +
-                            journalpostId + "/oppdaterDistribusjonsinfo",
+                                DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" +
+                                journalpostId + "/oppdaterDistribusjonsinfo",
                     ),
                 ).withRequestBody(ContainsPattern(kanal.name)),
             )

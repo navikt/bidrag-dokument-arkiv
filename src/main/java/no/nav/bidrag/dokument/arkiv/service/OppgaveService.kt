@@ -17,8 +17,8 @@ import no.nav.bidrag.dokument.arkiv.model.Discriminator
 import no.nav.bidrag.dokument.arkiv.model.OppgaveSokParametre
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager
-import no.nav.bidrag.domain.ident.AktørId
-import no.nav.bidrag.domain.ident.PersonIdent
+import no.nav.bidrag.domene.ident.AktørId
+import no.nav.bidrag.domene.ident.Personident
 import no.nav.bidrag.transport.person.PersonDto
 import org.slf4j.LoggerFactory
 import java.util.function.Consumer
@@ -101,7 +101,7 @@ class OppgaveService(
         return personConsumers.get(Discriminator.SERVICE_USER).hentPerson(gjelder)
             .orElseGet {
                 PersonDto(
-                    ident = PersonIdent(gjelder),
+                    ident = Personident(gjelder),
                     aktørId = AktørId(gjelder),
                 )
             }.aktørId?.verdi
