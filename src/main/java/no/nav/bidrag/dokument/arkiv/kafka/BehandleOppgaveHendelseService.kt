@@ -56,7 +56,7 @@ class BehandleOppgaveHendelseService(
                     dokarkivConsumer.endre(
                         OpprettNyReturLoggRequest(
                             journalpost,
-                            opprettKommentarSomLeggesTilOppgave(journalpost, oppgave)
+                            opprettKommentarSomLeggesTilReturlogg(journalpost)
                         )
                     )
                     LOGGER.info {
@@ -112,7 +112,7 @@ class BehandleOppgaveHendelseService(
         oppgave: OppgaveData
     ) {
         try {
-            val kommentar = opprettKommentarSomLeggesTilOppgave(journalpost, oppgave)
+            val kommentar = opprettKommentarSomLeggesTilOppgave(journalpost)
             if (oppgave.saksreferanse != journalpost.hentSaksnummer()) {
                 oppgaveConsumer.patchOppgaveWithVersionRetry(
                     OppdaterSakRequest(
@@ -136,10 +136,15 @@ class BehandleOppgaveHendelseService(
         }
     }
 
-    private fun opprettKommentarSomLeggesTilOppgave(journalpost: Journalpost, oppgave: OppgaveData): String? {
+    private fun Journalpost.harReturKommetFraNavNo() = distribuertTilAdresse() == null
+    private fun opprettKommentarSomLeggesTilOppgave(journalpost: Journalpost): String? {
         SECURE_LOGGER.info("Journalpost kommet retur med følgende detaljer ${journalpost.journalpostId} ${journalpost.journalstatus} ${journalpost.distribuertTilAdresse()} ${
             journalpost.relevanteDatoer.joinToString(",") { "${it.datotype}:${it.dato}" }
         }")
-        return if (journalpost.distribuertTilAdresse() == null) "${oppgave.beskrivelse}\r\n\r\nMottaker har ikke åpnet forsendelsen via www.nav.no innen 40 timer. Ingen postadresse er registrert. Vurder om mottaker har adresse forsendelsen kan sendes til." else null
+        return if (journalpost.harReturKommetFraNavNo()) "Mottaker har ikke åpnet forsendelsen via www.nav.no innen 40 timer. Ingen postadresse er registrert. Vurder om mottaker har adresse forsendelsen kan sendes til." else null
+    }
+
+    private fun opprettKommentarSomLeggesTilReturlogg(journalpost: Journalpost): String {
+        return if (journalpost.harReturKommetFraNavNo()) "Distribusjon feilet, mottaker mangler postadresse" else "Returpost"
     }
 }
