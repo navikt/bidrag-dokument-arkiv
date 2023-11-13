@@ -80,7 +80,7 @@ data class DistribusjonsInfo(
     val kanal: JournalpostKanal? = null,
     val utsendingsinfo: UtsendingsInfo? = null,
     val tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger(),
-    val relevanteDatoer: List<DatoType> = emptyList()
+    val relevanteDatoer: List<DatoType> = emptyList(),
 ) {
     fun hentDatoDokument(): LocalDateTime? {
         val registrert = relevanteDatoer
@@ -106,8 +106,7 @@ data class DistribusjonsInfo(
 
     fun isStatusEkspedert(): Boolean = journalstatus == JournalStatus.EKSPEDERT.name
     fun isUtgaaendeDokument(): Boolean = journalposttype == JournalpostType.U.name
-    fun isDistribusjonBestilt(): Boolean =
-        tilleggsopplysninger.isDistribusjonBestilt() || isStatusEkspedert()
+    fun isDistribusjonBestilt(): Boolean = tilleggsopplysninger.isDistribusjonBestilt() || isStatusEkspedert()
 
     fun hentJournalStatus(): JournalpostStatus {
         return when (journalstatus) {
@@ -140,7 +139,7 @@ data class UtsendingsInfo(
     val epostVarselSendt: EpostVarselSendt? = null,
     val fysiskpostSendt: FysiskpostSendt? = null,
     val smsVarselSendt: SmsVarselSendt? = null,
-    val varselSendt: List<VarselSendt> = emptyList()
+    val varselSendt: List<VarselSendt> = emptyList(),
 ) {
     val sisteVarselSendt get() = if (varselSendt.isNotEmpty()) varselSendt[0] else null
     val varselType get() = if (varselSendt.isNotEmpty()) varselSendt[0] else null
@@ -150,17 +149,17 @@ data class UtsendingsInfo(
 data class EpostVarselSendt(
     val adresse: String,
     val tittel: String,
-    val varslingstekst: String
+    val varslingstekst: String,
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class DigitalpostSendt(
-    val adresse: String
+    val adresse: String,
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class FysiskpostSendt(
-    val adressetekstKonvolutt: String
+    val adressetekstKonvolutt: String,
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -169,13 +168,13 @@ data class VarselSendt(
     val varslingstekst: String,
     val adresse: String,
     val tittel: String?,
-    val type: String
+    val type: String,
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class SmsVarselSendt(
     val varslingstekst: String,
-    val adresse: String
+    val adresse: String,
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -199,7 +198,7 @@ data class Journalpost(
     var eksternReferanseId: String? = null,
     var tilknyttedeSaker: List<String> = emptyList(),
     var tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger(),
-    val utsendingsinfo: UtsendingsInfo? = null
+    val utsendingsinfo: UtsendingsInfo? = null,
 ) {
 
     fun distribuertTilAdresse(): DistribuerTilAdresse? {
@@ -214,7 +213,7 @@ data class Journalpost(
                 adresselinje3 = it.adresselinje3,
                 postnummer = it.postnummer,
                 poststed = it.poststed,
-                landkode = it.land
+                landkode = it.land,
             )
         }
     }
@@ -231,7 +230,7 @@ data class Journalpost(
                         postnummerPoststed.getOrNull(0)
                     } else {
                         postnummerPoststed.getOrNull(
-                            1
+                            1,
                         )
                     }
                 val adresselinje1 = when (postadresseSplit.size) {
@@ -252,11 +251,11 @@ data class Journalpost(
                     adresselinje3 = adresselinje3,
                     poststed = poststed,
                     postnummer = postnummer,
-                    land = landkode2
+                    land = landkode2,
                 )
                 SECURE_LOGGER.info {
                     "Lest og mappet postadresse fra SAF ${
-                    it.split("\n").joinToString("\\n")
+                        it.split("\n").joinToString("\\n")
                     } til $adresse"
                 }
                 return adresse
@@ -269,13 +268,11 @@ data class Journalpost(
 
     fun isBidragTema(): Boolean = tema == "BID" || tema == "FAR"
     fun isFarskap(): Boolean = tema == "FAR"
-    fun isFarskapUtelukket(): Boolean =
-        hentTittel()?.startsWith(FARSKAP_UTELUKKET_PREFIKS, ignoreCase = true) == true
+    fun isFarskapUtelukket(): Boolean = hentTittel()?.startsWith(FARSKAP_UTELUKKET_PREFIKS, ignoreCase = true) == true
 
     fun hentGjelderId(): String? = bruker?.id
 
-    fun harAvsenderMottaker(): Boolean =
-        avsenderMottaker?.navn != null || avsenderMottaker?.id != null
+    fun harAvsenderMottaker(): Boolean = avsenderMottaker?.navn != null || avsenderMottaker?.id != null
 
     fun hentAvsenderMottakerId(): String? = avsenderMottaker?.id
     fun hentJournalStatus(): JournalpostStatus? {
@@ -310,13 +307,11 @@ data class Journalpost(
         }
     }
 
-    fun isDistribusjonKommetIRetur() =
-        (isDistribusjonBestilt()) && antallRetur != null && antallRetur!! > 0
+    fun isDistribusjonKommetIRetur() = (isDistribusjonBestilt()) && antallRetur != null && antallRetur!! > 0
 
     fun hentBrevkode(): String? = hentHoveddokument()?.brevkode
 
-    fun isDistribusjonBestilt(): Boolean =
-        tilleggsopplysninger.isDistribusjonBestilt() || isStatusEkspedert() || hasEkspedertDate()
+    fun isDistribusjonBestilt(): Boolean = tilleggsopplysninger.isDistribusjonBestilt() || isStatusEkspedert() || hasEkspedertDate()
 
     fun isFeilregistrert() = journalstatus == JournalStatus.FEILREGISTRERT
 
@@ -340,8 +335,7 @@ data class Journalpost(
     fun isTemaEqualTo(likTema: String) = tema == likTema
     fun hentJournalpostIdLong() = journalpostId?.toLong()
     fun hentJournalpostIdMedPrefix() = "JOARK-$journalpostId"
-    fun hentJournalpostType() =
-        if (journalposttype == JournalpostType.N) "X" else journalposttype?.name
+    fun hentJournalpostType() = if (journalposttype == JournalpostType.N) "X" else journalposttype?.name
 
     fun hentDatoJournalfort(): LocalDate? {
         val journalfort = relevanteDatoer
@@ -350,13 +344,11 @@ data class Journalpost(
         return journalfort?.somDato()
     }
 
-    fun hasReturDetaljerWithDate(date: LocalDate) =
-        !tilleggsopplysninger.hentReturDetaljerLogDO().stream().filter { it.dato == date }
-            .findAny().isEmpty
+    fun hasReturDetaljerWithDate(date: LocalDate) = !tilleggsopplysninger.hentReturDetaljerLogDO().stream().filter { it.dato == date }
+        .findAny().isEmpty
 
-    fun hasLockedReturDetaljerWithDate(date: LocalDate) =
-        !tilleggsopplysninger.hentReturDetaljerLogDO().stream()
-            .filter { it.dato == date && it.locked == true }.findAny().isEmpty
+    fun hasLockedReturDetaljerWithDate(date: LocalDate) = !tilleggsopplysninger.hentReturDetaljerLogDO().stream()
+        .filter { it.dato == date && it.locked == true }.findAny().isEmpty
 
     fun hentJournalfortAvNavn(): String? {
         return tilleggsopplysninger.hentJournalfortAv() ?: journalfortAvNavn
@@ -373,7 +365,7 @@ data class Journalpost(
                 .filter { it.dato != null && it.locked != true }
                 .filter {
                     !isDistribusjonKommetIRetur() || it.dato!!.isEqual(hentDatoDokument()) || it.dato!!.isAfter(
-                        hentDatoDokument()
+                        hentDatoDokument(),
                     )
                 }
                 .maxOfOrNull { it.dato!! }
@@ -384,7 +376,7 @@ data class Journalpost(
                     null
                 },
                 logg = returDetaljerLog,
-                antall = returDetaljerLog.size
+                antall = returDetaljerLog.size,
             )
         }
 
@@ -406,7 +398,7 @@ data class Journalpost(
             ReturDetaljerLog(
                 dato = it.dato,
                 beskrivelse = it.beskrivelse,
-                locked = it.locked == true
+                locked = it.locked == true,
             )
         }.toMutableList()
 
@@ -448,8 +440,7 @@ data class Journalpost(
         tilknyttedeSaker = tilknyttedeSaker + listOf(tilknyttetSak)
     }
 
-    fun hentBrevkodeDto(): KodeDto? =
-        if (hentBrevkode() != null) KodeDto(kode = hentBrevkode()) else null
+    fun hentBrevkodeDto(): KodeDto? = if (hentBrevkode() != null) KodeDto(kode = hentBrevkode()) else null
 
     fun hentHoveddokument(): Dokument? = if (dokumenter.isNotEmpty()) dokumenter[0] else null
     fun hentTittel(): String? = hentHoveddokument()?.tittel ?: tittel
@@ -471,7 +462,7 @@ data class Journalpost(
                             else -> AvsenderMottakerDtoIdType.UKJENT
                         }
                     },
-                    adresse = mottakerAdresse()
+                    adresse = mottakerAdresse(),
                 )
             } else {
                 null
@@ -497,7 +488,7 @@ data class Journalpost(
             mottattDato = hentDatoRegistrert(),
             returDetaljer = hentReturDetaljer(),
             brevkode = hentBrevkodeDto(),
-            distribuertTilAdresse = distribuertTilAdresse()
+            distribuertTilAdresse = distribuertTilAdresse(),
         )
     }
 
@@ -528,13 +519,13 @@ data class Journalpost(
         }
         if (isUtgaaendeDokument() && !isLokalUtksrift() && isDistribusjonKommetIRetur() && !tilleggsopplysninger.isNyDistribusjonBestilt()) {
             avvikTypeList.add(
-                AvvikType.BESTILL_NY_DISTRIBUSJON
+                AvvikType.BESTILL_NY_DISTRIBUSJON,
             )
         }
         if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
             if (isStatusEkspedert() && isDistribusjonKommetIRetur() || isStatusFerdigsstilt() && !isDistribusjonBestilt()) {
                 avvikTypeList.add(
-                    AvvikType.MANGLER_ADRESSE
+                    AvvikType.MANGLER_ADRESSE,
                 )
             }
         }
@@ -544,8 +535,7 @@ data class Journalpost(
     }
 
     fun hasMottakerId(): Boolean = avsenderMottaker?.id != null
-    fun isMottakerIdSamhandlerId(): Boolean =
-        avsenderMottaker?.id?.startsWith("8") ?: avsenderMottaker?.id?.startsWith("9") ?: false
+    fun isMottakerIdSamhandlerId(): Boolean = avsenderMottaker?.id?.startsWith("8") ?: avsenderMottaker?.id?.startsWith("9") ?: false
 
     fun hasSak(): Boolean = sak != null
     fun isStatusFeilregistrert(): Boolean = journalstatus == JournalStatus.FEILREGISTRERT
@@ -590,8 +580,7 @@ data class Journalpost(
 
     private fun erTilknyttetSak(saksnummer: String?) = sak?.fagsakId == saksnummer
     fun hentAvsenderNavn() = avsenderMottaker?.navn
-    fun erIkkeTilknyttetSakNarOppgitt(saksnummer: String?) =
-        if (saksnummer == null) false else !erTilknyttetSak(saksnummer)
+    fun erIkkeTilknyttetSakNarOppgitt(saksnummer: String?) = if (saksnummer == null) false else !erTilknyttetSak(saksnummer)
 
     fun kanJournalfores(journalpost: Journalpost): Boolean {
         return journalpost.isStatusMottatt() && journalpost.hasSak()
@@ -620,7 +609,7 @@ enum class JournalpostKanal(val beskrivelse: String) {
 
     SKAN_NETS("Skanning Nets"),
     SKAN_PEN("Skanning Pensjon"),
-    SKAN_IM("Skanning Iron Mountain")
+    SKAN_IM("Skanning Iron Mountain"),
 }
 
 fun JournalpostKanal.tilKanalDto() = when (this) {
@@ -646,7 +635,7 @@ enum class JournalpostUtsendingKanal {
     EIA,
     EESSI,
     TRYGDERETTEN,
-    HELSENETTET
+    HELSENETTET,
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -657,16 +646,15 @@ data class DistribuertTilAdresseDo(
     var adresselinje3: String?,
     var land: String,
     var postnummer: String?,
-    var poststed: String?
+    var poststed: String?,
 ) {
     private fun asJsonString(): String = toJsonString(this)
-    fun toMap(): List<Map<String, String>> =
-        asJsonString().chunked(100).mapIndexed { index, it ->
-            mapOf(
-                "nokkel" to "$DISTRIBUERT_ADRESSE_KEY$index",
-                "verdi" to it
-            )
-        }
+    fun toMap(): List<Map<String, String>> = asJsonString().chunked(100).mapIndexed { index, it ->
+        mapOf(
+            "nokkel" to "$DISTRIBUERT_ADRESSE_KEY$index",
+            "verdi" to it,
+        )
+    }
 
     fun toDistribuerTilAdresse(): DistribuerTilAdresse {
         return DistribuerTilAdresse(
@@ -675,7 +663,7 @@ data class DistribuertTilAdresseDo(
             adresselinje3 = adresselinje3,
             land = land,
             postnummer = postnummer,
-            poststed = poststed
+            poststed = poststed,
         )
     }
 
@@ -686,7 +674,7 @@ data class DistribuertTilAdresseDo(
             adresselinje3 = adresselinje3,
             landkode = land,
             postnummer = postnummer,
-            poststed = poststed
+            poststed = poststed,
         )
     }
 }
@@ -896,16 +884,16 @@ data class ReturDetaljerLogDO(
     var beskrivelse: String,
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     var dato: LocalDate,
-    var locked: Boolean? = false
+    var locked: Boolean? = false,
 ) {
     fun toMap(): List<Map<String, String>> = beskrivelse.chunked(100).mapIndexed { index, it ->
         mapOf(
             "nokkel" to "${if (locked == true) "L" else ""}$RETUR_DETALJER_KEY${index}_${
-            DateUtils.formatDate(
-                dato
-            )
+                DateUtils.formatDate(
+                    dato,
+                )
             }",
-            "verdi" to it
+            "verdi" to it,
         )
     }
 }
@@ -913,7 +901,7 @@ data class ReturDetaljerLogDO(
 data class AvsenderMottaker(
     var navn: String? = null,
     var id: String? = null,
-    var type: AvsenderMottakerIdType? = null
+    var type: AvsenderMottakerIdType? = null,
 )
 
 enum class AvsenderMottakerIdType {
@@ -922,23 +910,23 @@ enum class AvsenderMottakerIdType {
     ORGNR,
     HPRNR,
     UTL_ORG,
-    NULL
+    NULL,
 }
 
 enum class BrukerType {
     AKTOERID,
-    FNR
+    FNR,
 }
 
 data class Bruker(
     var id: String? = null,
-    var type: String? = null
+    var type: String? = null,
 ) {
     fun tilAktorDto(): AktorDto {
         return if (id != null) {
             AktorDto(
                 id!!,
-                runCatchingIgnoreException { type?.let { IdentType.valueOf(it) } } ?: IdentType.FNR
+                runCatchingIgnoreException { type?.let { IdentType.valueOf(it) } } ?: IdentType.FNR,
             )
         } else {
             throw JournalpostDataException("ingen id i $this")
@@ -954,7 +942,7 @@ data class Bruker(
 data class Dokument(
     var tittel: String? = null,
     var dokumentInfoId: String? = null,
-    var brevkode: String? = null
+    var brevkode: String? = null,
 ) {
     fun tilDokumentDto(journalposttype: String?): DokumentDto = DokumentDto(
         arkivSystem = DokumentArkivSystemDto.JOARK,
@@ -962,13 +950,13 @@ data class Dokument(
         dokumentreferanse = this.dokumentInfoId,
         dokumentType = journalposttype,
         status = DokumentStatusDto.FERDIGSTILT,
-        tittel = this.tittel
+        tittel = this.tittel,
     )
 }
 
 data class DatoType(
     var dato: String? = null,
-    var datotype: String? = null
+    var datotype: String? = null,
 ) {
     fun somDato(): LocalDate {
         val datoStreng = dato?.substring(0, 10)
@@ -977,7 +965,7 @@ data class DatoType(
             LocalDate.parse(datoStreng)
         } else {
             throw JournalpostDataException(
-                "Kunne ikke trekke ut dato fra: $dato"
+                "Kunne ikke trekke ut dato fra: $dato",
             )
         }
     }
@@ -989,7 +977,7 @@ data class Sak(
     var fagsakId: String? = null,
     var fagsakSystem: String? = null,
     var sakstype: String? = null,
-    var tema: String? = null
+    var tema: String? = null,
 ) {
     constructor(fagsakId: String?) : this(fagsakId, null, null, null)
 }
@@ -1006,23 +994,22 @@ enum class JournalStatus {
     UKJENT_BRUKER,
     RESERVERT,
     OPPLASTING_DOKUMENT,
-    UKJENT
+    UKJENT,
 }
 
 data class EndreJournalpostCommandIntern(
     val endreJournalpostCommand: EndreJournalpostCommand,
     val enhet: String?,
-    val endreAdresse: DistribuertTilAdresseDo?
+    val endreAdresse: DistribuertTilAdresseDo?,
 ) {
     constructor(endreJournalpostCommand: EndreJournalpostCommand, enhet: String) : this(
         endreJournalpostCommand,
         enhet,
-        null
+        null,
     )
 
     fun skalJournalfores() = endreJournalpostCommand.skalJournalfores
-    fun hentAvsenderNavn(journalpost: Journalpost) =
-        endreJournalpostCommand.avsenderNavn ?: journalpost.hentAvsenderNavn()
+    fun hentAvsenderNavn(journalpost: Journalpost) = endreJournalpostCommand.avsenderNavn ?: journalpost.hentAvsenderNavn()
 
     fun harEnTilknyttetSak(): Boolean = endreJournalpostCommand.tilknyttSaker.isNotEmpty()
     fun harGjelder(): Boolean = endreJournalpostCommand.gjelder != null
@@ -1030,8 +1017,7 @@ data class EndreJournalpostCommandIntern(
     fun hentTilknyttetSaker() = endreJournalpostCommand.tilknyttSaker
     fun hentFagomrade() = endreJournalpostCommand.fagomrade
     fun hentGjelder() = endreJournalpostCommand.gjelder
-    fun hentGjelderType() =
-        if (endreJournalpostCommand.gjelderType != null) endreJournalpostCommand.gjelderType!! else IdentType.FNR
+    fun hentGjelderType() = if (endreJournalpostCommand.gjelderType != null) endreJournalpostCommand.gjelderType!! else IdentType.FNR
 
     fun sjekkGyldigEndring(journalpost: Journalpost) {
         val violations = mutableListOf<String>()
@@ -1090,13 +1076,13 @@ data class EndreJournalpostCommandIntern(
             val endringAvLaastReturDetalj =
                 endreReturDetaljer.any {
                     it.originalDato != null && journalpost.hasLockedReturDetaljerWithDate(
-                        it.originalDato!!
+                        it.originalDato!!,
                     )
                 }
             val opprettelseAvEksisterendeReturDato =
                 endreReturDetaljer.any {
                     it.originalDato == null && journalpost.hasLockedReturDetaljerWithDate(
-                        it.nyDato!!
+                        it.nyDato!!,
                     )
                 }
             if (endringAvLaastReturDetalj || opprettelseAvEksisterendeReturDato) {
@@ -1124,11 +1110,11 @@ data class TilknyttetJournalpost(
     var journalpostId: Long,
     var journalstatus: JournalStatus,
     var sak: Sak?,
-    var dokumenter: List<TilknyttetDokument> = emptyList()
+    var dokumenter: List<TilknyttetDokument> = emptyList(),
 ) {
     fun isNotFeilregistrert() = journalstatus != JournalStatus.FEILREGISTRERT
     data class TilknyttetDokument(
-        val tittel: String? = null
+        val tittel: String? = null,
     )
 
     val tittel get() = dokumenter.firstOrNull()?.tittel
@@ -1138,12 +1124,12 @@ fun returDetaljerDOListDoToMap(returDetaljerLog: List<ReturDetaljerLogDO>): Map<
     return mapOf(
         "nokkel" to RETUR_DETALJER_KEY,
         "verdi" to jacksonObjectMapper().registerModule(JavaTimeModule())
-            .writeValueAsString(returDetaljerLog)
+            .writeValueAsString(returDetaljerLog),
     )
 }
 
 enum class JournalpostType(var dekode: String) {
     N("Notat"),
     I("Inngående dokument"),
-    U("Utgående dokument")
+    U("Utgående dokument"),
 }

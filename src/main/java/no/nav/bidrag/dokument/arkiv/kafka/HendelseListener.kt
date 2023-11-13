@@ -16,12 +16,12 @@ import org.springframework.stereotype.Service
 class HendelseListener(
     private val behandleJournalforingHendelseService: BehandleJournalforingHendelseService,
     private val behandleOppgaveHendelseService: BehandleOppgaveHendelseService,
-    private val jsonMapperService: JsonMapperService
+    private val jsonMapperService: JsonMapperService,
 ) {
     @KafkaListener(
         containerFactory = "oppgaveKafkaListenerContainerFactory",
         groupId = "\${NAIS_APP_NAME}",
-        topics = ["\${TOPIC_OPPGAVE_HENDELSE}"]
+        topics = ["\${TOPIC_OPPGAVE_HENDELSE}"],
     )
     fun lesOppgaveOpprettetHendelse(consumerRecord: ConsumerRecord<String?, String?>) {
         val oppgaveOpprettetHendelse =
@@ -32,7 +32,7 @@ class HendelseListener(
         ) {
             LOGGER.info("Mottatt retur oppgave opprettet hendelse {}", oppgaveOpprettetHendelse)
             behandleOppgaveHendelseService.behandleReturOppgaveOpprettetHendelse(
-                oppgaveOpprettetHendelse
+                oppgaveOpprettetHendelse,
             )
         }
     }
@@ -50,7 +50,7 @@ class HendelseListener(
         }
         LOGGER.info("Mottok journalføringshendelse {}", journalfoeringHendelseRecord)
         behandleJournalforingHendelseService.behandleJournalforingHendelse(
-            journalfoeringHendelseRecord
+            journalfoeringHendelseRecord,
         )
     }
 

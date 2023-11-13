@@ -26,19 +26,21 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @RestControllerAdvice
 class HttpStatusRestControllerAdvice {
     @ResponseBody
-    @ExceptionHandler(value = [IllegalArgumentException::class, MethodArgumentTypeMismatchException::class, ConversionFailedException::class, HttpMessageNotReadableException::class])
+    @ExceptionHandler(
+        value = [IllegalArgumentException::class, MethodArgumentTypeMismatchException::class, ConversionFailedException::class, HttpMessageNotReadableException::class],
+    )
     fun handleInvalidValueExceptions(exception: Exception): ResponseEntity<*> {
         val valideringsFeil = hentForespørselValideringsfeil(exception)
         LOGGER.warn(
             "Forespørselen inneholder ugyldig verdi: ${valideringsFeil ?: "ukjent feil"}",
-            exception
+            exception,
         )
 
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .header(
                 HttpHeaders.WARNING,
-                valideringsFeil ?: exception.message
+                valideringsFeil ?: exception.message,
             )
             .build<Any>()
     }
@@ -63,7 +65,7 @@ class HttpStatusRestControllerAdvice {
 
     @ResponseBody
     @ExceptionHandler(
-        KunneIkkeJournalforeOpprettetJournalpost::class
+        KunneIkkeJournalforeOpprettetJournalpost::class,
     )
     fun handleBadRequest(exception: Exception): ResponseEntity<*> {
         LOGGER.warn(exception.message)
@@ -103,7 +105,7 @@ class HttpStatusRestControllerAdvice {
     @ExceptionHandler(
         KnyttTilSakManglerTemaException::class,
         OppdaterJournalpostFeiletFunksjoneltException::class,
-        UgyldigAvvikException::class
+        UgyldigAvvikException::class,
     )
     fun ugyldigInput(exception: Exception): ResponseEntity<*> {
         LOGGER.warn(exception.message)

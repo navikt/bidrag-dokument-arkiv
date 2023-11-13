@@ -20,13 +20,13 @@ class RestTemplateConfiguration {
     @Scope("prototype")
     fun restTemplate(
         environmentProperties: EnvironmentProperties,
-        observationRestTemplateCustomizer: ObservationRestTemplateCustomizer
+        observationRestTemplateCustomizer: ObservationRestTemplateCustomizer,
     ): HttpHeaderRestTemplate {
         val httpHeaderRestTemplate = HttpHeaderRestTemplate()
         httpHeaderRestTemplate.requestFactory = HttpComponentsClientHttpRequestFactory()
         httpHeaderRestTemplate.withDefaultHeaders()
         httpHeaderRestTemplate.addHeaderGenerator(
-            "Nav-Callid"
+            "Nav-Callid",
         ) { CorrelationId.fetchCorrelationIdForThread() }
         httpHeaderRestTemplate.addHeaderGenerator("Nav-Consumer-Id") { environmentProperties.naisAppName }
         observationRestTemplateCustomizer.customize(httpHeaderRestTemplate)

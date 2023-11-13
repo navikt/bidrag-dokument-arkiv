@@ -31,14 +31,14 @@ data class OppgaveHendelse(
     val aktivDato: LocalDate? = null,
     val opprettetTidspunkt: ZonedDateTime? = null,
     val ferdigstiltTidspunkt: ZonedDateTime? = null,
-    val endretTidspunkt: ZonedDateTime? = null
+    val endretTidspunkt: ZonedDateTime? = null,
 ) {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class Ident(
         var identType: OppgaveIdentType? = null,
         val verdi: String? = null,
-        val folkeregisterident: String? = null
+        val folkeregisterident: String? = null,
     )
 
     fun erTemaBIDEllerFAR(): Boolean = tema == "BID" || tema == "FAR"
@@ -48,27 +48,29 @@ data class OppgaveHendelse(
 
     fun erJoarkJournalpost(): Boolean = journalpostId != null && !journalpostId.contains("BID")
 
-    override fun toString(): String = "{id=$id,journalpostId=$journalpostId,tema=$tema,opprettetAv=$opprettetAv,tildeltEnhetsnr=$tildeltEnhetsnr,fristFerdigstillelse=$fristFerdigstillelse,status=$status,statuskategori=$statuskategori,saksreferanse=$saksreferanse}"
+    override fun toString(): String =
+        "{id=$id,journalpostId=$journalpostId,tema=$tema,opprettetAv=$opprettetAv,tildeltEnhetsnr=$tildeltEnhetsnr,fristFerdigstillelse=$fristFerdigstillelse,status=$status,statuskategori=$statuskategori,saksreferanse=$saksreferanse}"
 }
 
 enum class Prioritet {
-    HOY // , NORM, LAV
+    HOY, // , NORM, LAV
 }
 
 enum class OppgaveIdentType {
     AKTOERID,
     ORGNR,
     SAMHANDLERNR,
-    BNR
+    BNR,
 }
 enum class OppgaveStatus {
     FERDIGSTILT,
     AAPNET,
     OPPRETTET,
     FEILREGISTRERT,
-    UNDER_BEHANDLING
+    UNDER_BEHANDLING,
 }
 
 enum class Oppgavestatuskategori {
-    AAPEN, AVSLUTTET
+    AAPEN,
+    AVSLUTTET,
 }

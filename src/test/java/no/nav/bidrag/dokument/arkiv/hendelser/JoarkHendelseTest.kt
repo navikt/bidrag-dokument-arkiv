@@ -23,8 +23,8 @@ import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_ID
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
 import no.nav.bidrag.dokument.arkiv.stubs.Stubs
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
-import no.nav.bidrag.domain.ident.AktørId
-import no.nav.bidrag.domain.ident.PersonIdent
+import no.nav.bidrag.domene.ident.AktørId
+import no.nav.bidrag.domene.ident.Personident
 import no.nav.bidrag.transport.dokument.HendelseType
 import no.nav.bidrag.transport.dokument.JournalpostHendelse
 import no.nav.bidrag.transport.person.PersonDto
@@ -46,7 +46,9 @@ import org.springframework.http.HttpStatus
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.test.context.ActiveProfiles
 
-@ActiveProfiles(value = [BidragDokumentArkivConfig.PROFILE_KAFKA_TEST, BidragDokumentArkivConfig.PROFILE_TEST, BidragDokumentArkivTest.PROFILE_INTEGRATION])
+@ActiveProfiles(
+    value = [BidragDokumentArkivConfig.PROFILE_KAFKA_TEST, BidragDokumentArkivConfig.PROFILE_TEST, BidragDokumentArkivTest.PROFILE_INTEGRATION],
+)
 @SpringBootTest(classes = [BidragDokumentArkivTest::class])
 @AutoConfigureWireMock(port = 0)
 @EnableMockOAuth2Server
@@ -83,8 +85,8 @@ class JoarkHendelseTest {
                 journalstatus = JournalStatus.MOTTATT,
                 journalforendeEnhet = null,
                 bruker = Bruker(BRUKER_AKTOER_ID, BRUKER_TYPE_AKTOERID),
-                sak = null
-            )
+                sak = null,
+            ),
         )
 
         val record = createHendelseRecord(journalpostId)
@@ -94,7 +96,7 @@ class JoarkHendelseTest {
         verify(kafkaTemplateMock).send(
             ArgumentMatchers.eq(topicJournalpost),
             ArgumentMatchers.eq(expectedJoarkJournalpostId),
-            jsonCaptor.capture()
+            jsonCaptor.capture(),
         )
         val journalpostHendelse =
             objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
@@ -134,7 +136,7 @@ class JoarkHendelseTest {
                 assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus)
                     .isEqualTo("M")
             },
-            { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() }
+            { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() },
         )
     }
 
@@ -160,20 +162,20 @@ class JoarkHendelseTest {
                 sak = Sak(sak1),
                 relevanteDatoer = listOf(
                     no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT,
-                    no.nav.bidrag.dokument.arkiv.stubs.DATO_JOURNALFORT
+                    no.nav.bidrag.dokument.arkiv.stubs.DATO_JOURNALFORT,
                 ),
                 tilleggsopplysninger = tilleggsOpplysninger,
-                journalfortAvNavn = journalfortAvNavn
-            )
+                journalfortAvNavn = journalfortAvNavn,
+            ),
         )
         stubs.mockSafResponseTilknyttedeJournalposter(
             listOf(
                 TilknyttetJournalpost(
                     tilknyttetJournalpostId,
                     journalstatus = JournalStatus.JOURNALFOERT,
-                    sak = Sak(sak2)
-                )
-            )
+                    sak = Sak(sak2),
+                ),
+            ),
         )
 
         val record = createHendelseRecord(journalpostId)
@@ -185,7 +187,7 @@ class JoarkHendelseTest {
         verify(kafkaTemplateMock).send(
             ArgumentMatchers.eq(topicJournalpost),
             ArgumentMatchers.eq(expectedJoarkJournalpostId),
-            jsonCaptor.capture()
+            jsonCaptor.capture(),
         )
         val journalpostHendelse =
             objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
@@ -219,7 +221,7 @@ class JoarkHendelseTest {
             { assertThat(journalpostHendelse.sporing?.brukerident).isEqualTo(journalfortAvIdent) },
             {
                 assertThat(journalpostHendelse.sporing?.saksbehandlersNavn).isEqualTo(
-                    journalfortAvNavn
+                    journalfortAvNavn,
                 )
             },
             { assertThat(journalpostHendelse.sporing?.enhetsnummer).isEqualTo(jfEnhet) },
@@ -233,7 +235,7 @@ class JoarkHendelseTest {
                 assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus)
                     .isEqualTo("J")
             },
-            { stubs.verifyStub.harEnSafKallEtterTilknyttedeJournalposter() }
+            { stubs.verifyStub.harEnSafKallEtterTilknyttedeJournalposter() },
         )
     }
 
@@ -248,8 +250,8 @@ class JoarkHendelseTest {
                 journalpostId = journalpostId.toString(),
                 bruker = null,
                 journalstatus = JournalStatus.MOTTATT,
-                journalforendeEnhet = BRUKER_ENHET
-            )
+                journalforendeEnhet = BRUKER_ENHET,
+            ),
         )
         stubs.mockSafResponseTilknyttedeJournalposter(listOf())
         stubs.mockDokarkivOppdaterRequest(journalpostId)
@@ -263,7 +265,7 @@ class JoarkHendelseTest {
         verify(kafkaTemplateMock).send(
             ArgumentMatchers.eq(topicJournalpost),
             ArgumentMatchers.eq(expectedJoarkJournalpostId),
-            jsonCaptor.capture()
+            jsonCaptor.capture(),
         )
         val journalpostHendelse =
             objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
@@ -286,7 +288,7 @@ class JoarkHendelseTest {
             {
                 assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus)
                     .isEqualTo("M")
-            }
+            },
         )
     }
 
@@ -301,8 +303,8 @@ class JoarkHendelseTest {
                 journalpostId = journalpostId.toString(),
                 bruker = Bruker(BRUKER_FNR, BrukerType.FNR.name),
                 journalstatus = JournalStatus.MOTTATT,
-                journalforendeEnhet = BRUKER_ENHET
-            )
+                journalforendeEnhet = BRUKER_ENHET,
+            ),
         )
         stubs.mockSafResponseTilknyttedeJournalposter(listOf())
         stubs.mockDokarkivOppdaterRequest(journalpostId)
@@ -316,7 +318,7 @@ class JoarkHendelseTest {
         verify(kafkaTemplateMock).send(
             ArgumentMatchers.eq(topicJournalpost),
             ArgumentMatchers.eq(expectedJoarkJournalpostId),
-            jsonCaptor.capture()
+            jsonCaptor.capture(),
         )
         val journalpostHendelse =
             objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
@@ -340,7 +342,7 @@ class JoarkHendelseTest {
                 assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus)
                     .isEqualTo("M")
             },
-            { stubs.verifyStub.bidragPersonIkkeKalt() }
+            { stubs.verifyStub.bidragPersonIkkeKalt() },
         )
     }
 
@@ -353,14 +355,14 @@ class JoarkHendelseTest {
             opprettSafResponse(
                 journalpostId = journalpostId.toString(),
                 journalstatus = JournalStatus.MOTTATT,
-                journalforendeEnhet = BRUKER_ENHET
-            )
+                journalforendeEnhet = BRUKER_ENHET,
+            ),
         )
         stubs.mockSafResponseTilknyttedeJournalposter(listOf())
         stubs.mockBidragOrganisasjonSaksbehandler()
         stubs.mockPersonResponse(
-            PersonDto(PersonIdent("123"), aktørId = AktørId("12321")),
-            HttpStatus.OK
+            PersonDto(Personident("123"), aktørId = AktørId("12321")),
+            HttpStatus.OK,
         )
 
         val record = createHendelseRecord(journalpostId)
@@ -370,7 +372,7 @@ class JoarkHendelseTest {
         verify(kafkaTemplateMock).send(
             ArgumentMatchers.eq(topicJournalpost),
             ArgumentMatchers.eq(expectedJoarkJournalpostId),
-            jsonCaptor.capture()
+            jsonCaptor.capture(),
         )
         val journalpostHendelse =
             objectMapper.readValue(jsonCaptor.value, JournalpostHendelse::class.java)
@@ -393,7 +395,7 @@ class JoarkHendelseTest {
                 assertThat(journalpostHendelse).extracting(JournalpostHendelse::journalstatus)
                     .isEqualTo("M")
             },
-            { stubs.verifyStub.dokarkivOppdaterIkkeKalt(journalpostId) }
+            { stubs.verifyStub.dokarkivOppdaterIkkeKalt(journalpostId) },
         )
     }
 
@@ -410,7 +412,7 @@ class JoarkHendelseTest {
         verify(kafkaTemplateMock, Mockito.never()).send(
             ArgumentMatchers.any(),
             ArgumentMatchers.any(),
-            ArgumentMatchers.any()
+            ArgumentMatchers.any(),
         )
     }
 
@@ -426,7 +428,7 @@ class JoarkHendelseTest {
         verify(kafkaTemplateMock, Mockito.never()).send(
             ArgumentMatchers.any(),
             ArgumentMatchers.any(),
-            ArgumentMatchers.any()
+            ArgumentMatchers.any(),
         )
     }
 
@@ -435,17 +437,17 @@ class JoarkHendelseTest {
         val journalpostId = 123213L
         stubs.mockSts()
         stubs.mockPersonResponse(
-            PersonDto(PersonIdent("123"), aktørId = AktørId("12321")),
-            HttpStatus.OK
+            PersonDto(Personident("123"), aktørId = AktørId("12321")),
+            HttpStatus.OK,
         )
         stubs.mockSafResponseTilknyttedeJournalposter(
             listOf(
                 TilknyttetJournalpost(
                     123123L,
                     JournalStatus.FERDIGSTILT,
-                    Sak("5276661")
-                )
-            )
+                    Sak("5276661"),
+                ),
+            ),
         )
         stubs.mockSafResponseHentJournalpost(
             opprettSafResponse(
@@ -456,10 +458,10 @@ class JoarkHendelseTest {
                     Dokument(
                         dokumentInfoId = DOKUMENT_1_ID,
                         brevkode = "CRM_MELDINGSKJEDE",
-                        tittel = DOKUMENT_1_TITTEL
-                    )
-                )
-            )
+                        tittel = DOKUMENT_1_TITTEL,
+                    ),
+                ),
+            ),
         )
 
         val record = createHendelseRecord(journalpostId)
@@ -469,7 +471,7 @@ class JoarkHendelseTest {
         verify(kafkaTemplateMock, Mockito.never()).send(
             ArgumentMatchers.any(),
             ArgumentMatchers.any(),
-            ArgumentMatchers.any()
+            ArgumentMatchers.any(),
         )
     }
 }

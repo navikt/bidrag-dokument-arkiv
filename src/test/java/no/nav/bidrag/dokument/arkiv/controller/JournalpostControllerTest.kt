@@ -57,7 +57,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost(journalpostSafNotFoundResponse, HttpStatus.OK)
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
         val journalpostResponseEntity = httpHeaderTestRestTemplate.getForEntity<String>(
-            initUrl() + "/journal/JOARK-1?saksnummer=007"
+            initUrl() + "/journal/JOARK-1?saksnummer=007",
         )
         Assertions.assertThat(journalpostResponseEntity).satisfies(
             {
@@ -72,9 +72,9 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                         Assertions.assertThat(it.statusCode).`as`("status")
                             .isEqualTo(HttpStatus.NOT_FOUND)
                     },
-                    { stubs.verifyStub.harEnSafKallEtterHentJournalpost() }
+                    { stubs.verifyStub.harEnSafKallEtterHentJournalpost() },
                 )
-            }
+            },
         )
     }
 
@@ -92,9 +92,9 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                 org.junit.jupiter.api.Assertions.assertAll(
                     { Assertions.assertThat(it.statusCode).isEqualTo(HttpStatus.NOT_FOUND) },
                     { Assertions.assertThat(it.body).isNull() },
-                    { stubs.verifyStub.harEnSafKallEtterHentJournalpost() }
+                    { stubs.verifyStub.harEnSafKallEtterHentJournalpost() },
                 )
-            }
+            },
         )
     }
 
@@ -107,7 +107,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockPersonResponse(
             PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT),
-            HttpStatus.BAD_REQUEST
+            HttpStatus.BAD_REQUEST,
         )
         val responseEntity =
             httpHeaderTestRestTemplate.getForEntity<JournalpostResponse>(initUrl() + "/journal/JOARK-" + journalpostIdFraJson)
@@ -120,9 +120,9 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                     },
                     { Assertions.assertThat(it.body).isNull() },
                     { stubs.verifyStub.harEnSafKallEtterHentJournalpost() },
-                    { stubs.verifyStub.bidragPersonKalt() }
+                    { stubs.verifyStub.bidragPersonKalt() },
                 )
-            }
+            },
         )
     }
 
@@ -176,8 +176,8 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost(
             opprettSafResponse(
                 journalpostId = journalpostIdFraJson.toString(),
-                sak = null
-            )
+                sak = null,
+            ),
         )
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
@@ -200,8 +200,8 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                             AvsenderMottakerDto(
                                 AVSENDER_NAVN,
                                 AVSENDER_ID,
-                                AvsenderMottakerDtoIdType.FNR
-                            )
+                                AvsenderMottakerDtoIdType.FNR,
+                            ),
                         )
                 },
                 {
@@ -219,7 +219,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                 { Assertions.assertThat(saker).isNotNull.hasSize(0) },
                 { stubs.verifyStub.harEnSafKallEtterHentJournalpost() },
                 { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() },
-                { stubs.verifyStub.bidragPersonKalt() }
+                { stubs.verifyStub.bidragPersonKalt() },
             )
         })
     }
@@ -231,7 +231,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val journalpostIdFraJson = 201028011
         stubs.mockSafResponseHentJournalpost(
             responseJournalpostJsonWithReturDetaljer,
-            HttpStatus.OK
+            HttpStatus.OK,
         )
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
@@ -256,9 +256,9 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                             ReturDetaljerLog(
                                 LocalDate.parse("2020-11-15"),
                                 "Beskrivelse av retur",
-                                false
-                            )
-                        )
+                                false,
+                            ),
+                        ),
                     ).isTrue()
                 },
                 {
@@ -267,9 +267,9 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                             ReturDetaljerLog(
                                 LocalDate.parse("2020-12-14"),
                                 "Beskrivelse av retur mer tekst for å teste lengre verdier",
-                                false
-                            )
-                        )
+                                false,
+                            ),
+                        ),
                     ).isTrue()
                 },
                 {
@@ -278,9 +278,9 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                             ReturDetaljerLog(
                                 LocalDate.parse("2022-12-15"),
                                 "Beskrivelse av retur 2 mer tekst for å teste lengre verdier",
-                                false
-                            )
-                        )
+                                false,
+                            ),
+                        ),
                     ).isTrue()
                 },
                 { Assertions.assertThat(returDetaljer!!.antall).isEqualTo(3) },
@@ -290,7 +290,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                 },
                 { stubs.verifyStub.harEnSafKallEtterHentJournalpost() },
                 { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() },
-                { stubs.verifyStub.bidragPersonKalt() }
+                { stubs.verifyStub.bidragPersonKalt() },
             )
         })
     }
@@ -302,7 +302,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
         val journalpostIdFraJson = 201028011
         stubs.mockSafResponseHentJournalpost(
             "journalpostSafLockedReturDetaljerResponse.json",
-            HttpStatus.OK
+            HttpStatus.OK,
         )
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
@@ -327,9 +327,9 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                             ReturDetaljerLog(
                                 LocalDate.parse("2020-11-15"),
                                 "Beskrivelse av retur",
-                                true
-                            )
-                        )
+                                true,
+                            ),
+                        ),
                     ).isTrue()
                 },
                 {
@@ -338,9 +338,9 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                             ReturDetaljerLog(
                                 LocalDate.parse("2020-12-14"),
                                 "Beskrivelse av retur mer tekst for å teste lengre verdier",
-                                true
-                            )
-                        )
+                                true,
+                            ),
+                        ),
                     ).isTrue()
                 },
                 {
@@ -349,9 +349,9 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                             ReturDetaljerLog(
                                 LocalDate.parse("2022-12-15"),
                                 "Beskrivelse av retur 2 mer tekst for å teste lengre verdier",
-                                true
-                            )
-                        )
+                                true,
+                            ),
+                        ),
                     ).isTrue()
                 },
                 {
@@ -360,9 +360,9 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                             ReturDetaljerLog(
                                 LocalDate.parse("2022-12-20"),
                                 "Beskrivelse av retur uten lås",
-                                false
-                            )
-                        )
+                                false,
+                            ),
+                        ),
                     ).isTrue()
                 },
                 { Assertions.assertThat(returDetaljer!!.antall).isEqualTo(4) },
@@ -372,7 +372,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                 },
                 { stubs.verifyStub.harEnSafKallEtterHentJournalpost() },
                 { stubs.verifyStub.harIkkeEnSafKallEtterTilknyttedeJournalposter() },
-                { stubs.verifyStub.bidragPersonKalt() }
+                { stubs.verifyStub.bidragPersonKalt() },
             )
         })
     }
@@ -417,7 +417,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                 },
                 { stubs.verifyStub.harEnSafKallEtterHentJournalpost() },
                 { stubs.verifyStub.harEnSafKallEtterTilknyttedeJournalposter() },
-                { stubs.verifyStub.bidragPersonKalt() }
+                { stubs.verifyStub.bidragPersonKalt() },
             )
         })
     }
@@ -436,8 +436,8 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
                 journalstatus = JournalStatus.JOURNALFOERT,
                 tilleggsopplysninger = tilleggsOpplysninger,
                 sak = Sak("5276661"),
-                avsenderMottaker = AvsenderMottaker(navn = "Samhandler navn")
-            )
+                avsenderMottaker = AvsenderMottaker(navn = "Samhandler navn"),
+            ),
         )
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
         stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
@@ -466,7 +466,7 @@ internal class JournalpostControllerTest : AbstractControllerTest() {
             },
             { Assertions.assertThat(jouralposterResponseEntity.body).hasSize(3) },
             { stubs.verifyStub.bidragPersonKalt() },
-            { stubs.verifyStub.harSafEnKallEtterDokumentOversiktFagsak() }
+            { stubs.verifyStub.harSafEnKallEtterDokumentOversiktFagsak() },
         )
     }
 }

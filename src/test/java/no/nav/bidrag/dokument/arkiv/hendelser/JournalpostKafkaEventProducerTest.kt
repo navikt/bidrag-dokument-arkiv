@@ -32,8 +32,8 @@ internal class JournalpostKafkaEventProducerTest : BaseKafkaHendelseTest() {
             opprettSafResponse(
                 journalpostId = journalpostId.toString(),
                 journalstatus = JournalStatus.MOTTATT,
-                journalforendeEnhet = BRUKER_ENHET
-            )
+                journalforendeEnhet = BRUKER_ENHET,
+            ),
         )
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockBidragOrganisasjonSaksbehandler()
@@ -74,9 +74,9 @@ internal class JournalpostKafkaEventProducerTest : BaseKafkaHendelseTest() {
                 sak = Sak(sak1),
                 relevanteDatoer = listOf(DATO_DOKUMENT, DATO_JOURNALFORT),
                 tilleggsopplysninger = tilleggsOpplysninger,
-                journalfortAvNavn = journalfortAvNavn
+                journalfortAvNavn = journalfortAvNavn,
 
-            )
+            ),
         )
         stubs.mockDokarkivOppdaterRequest(journalpostId)
         stubs.mockBidragOrganisasjonSaksbehandler()

@@ -6,15 +6,14 @@ import java.time.LocalDateTime
 data class OppgaveKafkaHendelse(
     val hendelse: Hendelse,
     val utfortAv: UtfortAv?,
-    val oppgave: Oppgave
+    val oppgave: Oppgave,
 ) {
 
     val erOppgaveOpprettetHendelse get() = hendelse.hendelsestype == Hendelse.Hendelsestype.OPPGAVE_OPPRETTET
     val erOppgaveEndretHendelse get() = hendelse.hendelsestype != Hendelse.Hendelsestype.OPPGAVE_OPPRETTET
 
     fun erReturOppgave() = oppgave.kategorisering?.oppgavetype == "RETUR"
-    fun erTemaBIDEllerFAR(): Boolean =
-        oppgave.kategorisering?.tema == "BID" || oppgave.kategorisering?.tema == "FAR"
+    fun erTemaBIDEllerFAR(): Boolean = oppgave.kategorisering?.tema == "BID" || oppgave.kategorisering?.tema == "FAR"
 
     val oppgaveId get() = oppgave.oppgaveId
     val tema get() = oppgave.kategorisering?.tema
@@ -24,7 +23,7 @@ data class OppgaveKafkaHendelse(
             OPPGAVE_OPPRETTET,
             OPPGAVE_ENDRET,
             OPPGAVE_FERDIGSTILT,
-            OPPGAVE_FEILREGISTRERT
+            OPPGAVE_FEILREGISTRERT,
         }
     }
 
@@ -36,13 +35,13 @@ data class OppgaveKafkaHendelse(
         val tilordning: Tilordning? = null,
         val kategorisering: Kategorisering? = null,
         val behandlingsperiode: Behandlingsperiode? = null,
-        val bruker: Bruker? = null
+        val bruker: Bruker? = null,
     )
 
     data class Tilordning(
         val enhetsnr: String?,
         val enhetsmappeId: Long?,
-        val navIdent: String?
+        val navIdent: String?,
     )
 
     data class Kategorisering(
@@ -50,18 +49,18 @@ data class OppgaveKafkaHendelse(
         val oppgavetype: String,
         val behandlingstema: String? = null,
         val behandlingstype: String? = null,
-        val prioritet: Prioritet? = null
+        val prioritet: Prioritet? = null,
     ) {
         enum class Prioritet {
             HOY,
             NORMAL,
-            LAV
+            LAV,
         }
     }
 
     data class Behandlingsperiode(
         val aktiv: LocalDate?,
-        val frist: LocalDate?
+        val frist: LocalDate?,
     )
 
     data class Bruker(val ident: String?, val identType: IdentType?) {
@@ -69,7 +68,7 @@ data class OppgaveKafkaHendelse(
             FOLKEREGISTERIDENT,
             NPID,
             ORGNR,
-            SAMHANDLERNR
+            SAMHANDLERNR,
         }
     }
 }

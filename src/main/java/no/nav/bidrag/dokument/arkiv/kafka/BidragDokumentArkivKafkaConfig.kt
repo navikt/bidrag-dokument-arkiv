@@ -41,14 +41,14 @@ class BidragDokumentArkivKafkaConfig {
         objectMapper: ObjectMapper,
         saksbehandlerInfoManager: SaksbehandlerInfoManager,
         @Value("\${TOPIC_JOURNALPOST}") topic: String,
-        journalpostServices: ResourceByDiscriminator<JournalpostService>
+        journalpostServices: ResourceByDiscriminator<JournalpostService>,
     ): HendelserProducer {
         return HendelserProducer(
             journalpostServices.get(Discriminator.SERVICE_USER),
             kafkaTemplate,
             objectMapper,
             topic,
-            saksbehandlerInfoManager
+            saksbehandlerInfoManager,
         )
     }
 
@@ -62,7 +62,7 @@ class BidragDokumentArkivKafkaConfig {
         LOGGER.info(
             "Initializing Kafka errorhandler with backoffpolicy {}, maxRetry={}",
             backoffPolicy,
-            maxRetry
+            maxRetry,
         )
         val errorHandler = DefaultErrorHandler(
             { rec: ConsumerRecord<*, *>, e: Exception? ->
@@ -78,10 +78,10 @@ class BidragDokumentArkivKafkaConfig {
                     topic,
                     offset,
                     value,
-                    e
+                    e,
                 )
             },
-            backoffPolicy
+            backoffPolicy,
         )
         errorHandler.addNotRetryableExceptions(JournalpostHarIkkeKommetIRetur::class.java)
         return errorHandler
@@ -90,7 +90,7 @@ class BidragDokumentArkivKafkaConfig {
     @Bean
     fun oppgaveKafkaListenerContainerFactory(
         oppgaveConsumerFactory: ConsumerFactory<Long, String>,
-        defaultErrorHandler: DefaultErrorHandler
+        defaultErrorHandler: DefaultErrorHandler,
     ): ConcurrentKafkaListenerContainerFactory<Long, String> {
         val factory = ConcurrentKafkaListenerContainerFactory<Long, String>()
         factory.consumerFactory = oppgaveConsumerFactory
@@ -109,7 +109,7 @@ class BidragDokumentArkivKafkaConfig {
         @Value("\${KAFKA_KEYSTORE_PATH}") keystorePath: String,
         @Value("\${KAFKA_TRUSTSTORE_PATH}") trustStorePath: String,
         @Value("\${KAFKA_CREDSTORE_PASSWORD}") credstorePassword: String,
-        environment: Environment
+        environment: Environment,
     ): ConsumerFactory<Long, String> {
         val props = mutableMapOf<String, Any>()
         props[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = boostrapServer

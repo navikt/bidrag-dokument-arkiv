@@ -20,14 +20,16 @@ class OppgaveConsumer(restTemplate: RestTemplate?) : AbstractConsumer(restTempla
             pathMedParametre,
             HttpMethod.GET,
             null,
-            OppgaveSokResponse::class.java
+            OppgaveSokResponse::class.java,
         ).body
     }
 
     fun opprett(opprettOppgaveRequest: OpprettOppgaveRequest): Long? {
         val oppgaveResponse =
             restTemplate.postForEntity("/", opprettOppgaveRequest, OppgaveResponse::class.java)
-        LOGGER.info("Opprettet oppgave ${opprettOppgaveRequest.javaClass.simpleName} med id=${oppgaveResponse.body?.id} med type ${opprettOppgaveRequest.oppgavetype} og journalpostid ${opprettOppgaveRequest.journalpostId}")
+        LOGGER.info(
+            "Opprettet oppgave ${opprettOppgaveRequest.javaClass.simpleName} med id=${oppgaveResponse.body?.id} med type ${opprettOppgaveRequest.oppgavetype} og journalpostid ${opprettOppgaveRequest.journalpostId}",
+        )
         return oppgaveResponse.body?.id
     }
 
@@ -36,7 +38,7 @@ class OppgaveConsumer(restTemplate: RestTemplate?) : AbstractConsumer(restTempla
         return restTemplate.patchForObject(
             "/${oppgavePatch.id}",
             oppgavePatch,
-            OppgaveData::class.java
+            OppgaveData::class.java,
         )
     }
 
@@ -59,7 +61,7 @@ class OppgaveConsumer(restTemplate: RestTemplate?) : AbstractConsumer(restTempla
             "/$oppgaveId",
             HttpMethod.GET,
             null,
-            OppgaveData::class.java
+            OppgaveData::class.java,
         ).body
     }
 

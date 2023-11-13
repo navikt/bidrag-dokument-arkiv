@@ -28,11 +28,11 @@ data class AvvikshendelseIntern(
     var saksnummer: String? = null,
     var dokumenter: List<no.nav.bidrag.transport.dokument.DokumentDto>? = emptyList(),
     var adresse: DistribuerTilAdresse? = null,
-    private val detaljer: Map<String, String?> = HashMap()
+    private val detaljer: Map<String, String?> = HashMap(),
 ) {
     val returDato: String
         get() = detaljer[AvvikDetaljer.RETUR_DATO] ?: throw AvvikDetaljException(
-            AvvikDetaljer.RETUR_DATO
+            AvvikDetaljer.RETUR_DATO,
         )
     val enhetsnummer: String
         get() = detaljer[AvvikDetaljer.ENHETSNUMMER]
@@ -42,7 +42,7 @@ data class AvvikshendelseIntern(
             ?: throw AvvikDetaljException(AvvikDetaljer.ENHETSNUMMER_GAMMELT)
     val enhetsnummerNytt: String
         get() = detaljer[AvvikDetaljer.ENHETSNUMMER_NYTT] ?: throw AvvikDetaljException(
-            AvvikDetaljer.ENHETSNUMMER_NYTT
+            AvvikDetaljer.ENHETSNUMMER_NYTT,
         )
     val nyttFagomrade: String
         get() = detaljer[AvvikDetaljer.FAGOMRADE]
@@ -52,14 +52,14 @@ data class AvvikshendelseIntern(
             ?: throw AvvikDetaljException(AvvikDetaljer.UTSENDINGSKANAL)
     val knyttTilSaker: List<String>
         get() = detaljer[AvvikDetaljer.KNYTT_TIL_SAKER]?.split(",") ?: throw AvvikDetaljException(
-            AvvikDetaljer.KNYTT_TIL_SAKER
+            AvvikDetaljer.KNYTT_TIL_SAKER,
         )
     val isBidragFagomrade: Boolean get() = nyttFagomrade == Fagomrade.BID.name || nyttFagomrade == Fagomrade.FAR.name
 
     constructor(
         avvikshendelse: Avvikshendelse,
         opprettetAvEnhetsnummer: String,
-        journalpostId: Long
+        journalpostId: Long,
     ) : this(
         avvikstype = AvvikType.valueOf(avvikshendelse.avvikType),
         beskrivelse = avvikshendelse.beskrivelse,
@@ -68,45 +68,41 @@ data class AvvikshendelseIntern(
         dokumenter = avvikshendelse.dokumenter,
         saksnummer = avvikshendelse.saksnummer,
         detaljer = avvikshendelse.detaljer,
-        adresse = avvikshendelse.adresse
+        adresse = avvikshendelse.adresse,
     )
 
-    fun toLeggTiLFarskapUtelukketTilTittelRequest(journalpost: Journalpost) =
-        EndreTittelRequest(
-            journalpostId,
-            "$FARSKAP_UTELUKKET_PREFIKS: ${journalpost.hentHoveddokument()?.tittel ?: journalpost.tittel}",
-            journalpost
-        )
+    fun toLeggTiLFarskapUtelukketTilTittelRequest(journalpost: Journalpost) = EndreTittelRequest(
+        journalpostId,
+        "$FARSKAP_UTELUKKET_PREFIKS: ${journalpost.hentHoveddokument()?.tittel ?: journalpost.tittel}",
+        journalpost,
+    )
 
     fun toEndreFagomradeRequest() = EndreFagomradeRequest(journalpostId, nyttFagomrade)
-    fun toEndreFagomradeOgKnyttTilSakRequest(bruker: Bruker) =
-        EndreFagomradeOgKnyttTilSakRequest(
-            journalpostId,
-            nyttFagomrade,
-            OppdaterJournalpostRequest.Bruker(bruker.id, bruker.type)
-        )
+    fun toEndreFagomradeOgKnyttTilSakRequest(bruker: Bruker) = EndreFagomradeOgKnyttTilSakRequest(
+        journalpostId,
+        nyttFagomrade,
+        OppdaterJournalpostRequest.Bruker(bruker.id, bruker.type),
+    )
 
     fun toEndreFagomradeJournalfortJournalpostRequest(journalpost: Journalpost) =
         EndreFagomradeJournalfortJournalpostRequest(journalpostId, journalpost)
 
-    fun toKnyttTilGenerellSakRequest(fagomrade: String, bruker: Bruker) =
-        EndreKnyttTilGenerellSakRequest(
-            journalpostId,
-            OppdaterJournalpostRequest.Bruker(bruker.id, bruker.type),
-            fagomrade
-        )
+    fun toKnyttTilGenerellSakRequest(fagomrade: String, bruker: Bruker) = EndreKnyttTilGenerellSakRequest(
+        journalpostId,
+        OppdaterJournalpostRequest.Bruker(bruker.id, bruker.type),
+        fagomrade,
+    )
 
-    fun toLeggTilBegrunnelsePaaTittelRequest(journalpost: Journalpost) =
-        EndreTittelRequest(
-            journalpostId,
-            "${journalpost.hentHoveddokument()?.tittel ?: journalpost.tittel} ($beskrivelse)",
-            journalpost
-        )
+    fun toLeggTilBegrunnelsePaaTittelRequest(journalpost: Journalpost) = EndreTittelRequest(
+        journalpostId,
+        "${journalpost.hentHoveddokument()?.tittel ?: journalpost.tittel} ($beskrivelse)",
+        journalpost,
+    )
 }
 
 data class OverforEnhetRequest(
     private var journalpostId: Long,
-    override var journalfoerendeEnhet: String?
+    override var journalfoerendeEnhet: String?,
 ) :
     OppdaterJournalpostRequest(journalpostId)
 
@@ -117,12 +113,12 @@ data class EndreFagomradeOgKnyttTilSakRequest(
     private var journalpostId: Long,
     override var tema: String?,
     override var bruker: Bruker?,
-    override var sak: Sak? = GenerellSak()
+    override var sak: Sak? = GenerellSak(),
 ) : OppdaterJournalpostRequest(journalpostId)
 
 data class EndreFagomradeJournalfortJournalpostRequest(
     private var journalpostId: Long,
-    private var journalpost: Journalpost
+    private var journalpost: Journalpost,
 ) :
     OppdaterJournalpostRequest(journalpostId) {
     init {
@@ -141,7 +137,7 @@ data class OppdaterOriginalBestiltFlagg(private var journalpost: Journalpost) :
 
 data class OpphevEndreFagomradeJournalfortJournalpostRequest(
     private var journalpostId: Long,
-    private var journalpost: Journalpost
+    private var journalpost: Journalpost,
 ) :
     OppdaterJournalpostRequest(journalpostId) {
     init {
@@ -153,7 +149,7 @@ data class OpphevEndreFagomradeJournalfortJournalpostRequest(
 data class EndreTittelRequest(
     private var journalpostId: Long,
     private var _tittel: String?,
-    private var journalpost: Journalpost
+    private var journalpost: Journalpost,
 ) :
     OppdaterJournalpostRequest(journalpostId) {
 
@@ -171,18 +167,18 @@ data class EndreKnyttTilGenerellSakRequest(
     private var journalpostId: Long,
     override var bruker: Bruker?,
     override var tema: String?,
-    override var sak: Sak? = GenerellSak()
+    override var sak: Sak? = GenerellSak(),
 ) : OppdaterJournalpostRequest(journalpostId)
 
 data class InngaaendeTilUtgaaendeRequest(
     private var journalpostId: Long,
-    override var tema: String?
+    override var tema: String?,
 ) : OppdaterJournalpostRequest(journalpostId)
 
 data class RegistrerReturRequest(
     private var journalpostId: Long,
     private var _datoRetur: LocalDate,
-    private var _tilleggsopplysninger: TilleggsOpplysninger?
+    private var _tilleggsopplysninger: TilleggsOpplysninger?,
 ) : OppdaterJournalpostRequest(journalpostId) {
     init {
         datoRetur = DateUtils.formatDate(_datoRetur)

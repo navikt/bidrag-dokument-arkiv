@@ -7,7 +7,7 @@ import static no.nav.bidrag.dokument.arkiv.CacheConfig.PERSON_CACHE;
 import java.util.Optional;
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate;
 import no.nav.bidrag.dokument.arkiv.model.PersonException;
-import no.nav.bidrag.domain.ident.PersonIdent;
+import no.nav.bidrag.domene.ident.Personident;
 import no.nav.bidrag.transport.person.PersonAdresseDto;
 import no.nav.bidrag.transport.person.PersonDto;
 import no.nav.bidrag.transport.person.PersonRequest;
@@ -43,7 +43,7 @@ public class PersonConsumer {
           restTemplate.exchange(
               "/informasjon",
               HttpMethod.POST,
-              new HttpEntity<>(new PersonRequest(new PersonIdent(id))),
+              new HttpEntity<>(new PersonRequest(new Personident(id))),
               PersonDto.class);
       if (HttpStatus.NO_CONTENT == personResponse.getStatusCode()) {
         return Optional.empty();
@@ -63,7 +63,7 @@ public class PersonConsumer {
         .exchange(
             "/adresse/post",
             HttpMethod.POST,
-            new HttpEntity<>(new PersonRequest(new PersonIdent(id))),
+            new HttpEntity<>(new PersonRequest(new Personident(id))),
             PersonAdresseDto.class)
         .getBody();
   }

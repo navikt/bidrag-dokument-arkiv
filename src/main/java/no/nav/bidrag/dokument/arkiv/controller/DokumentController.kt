@@ -27,52 +27,49 @@ class DokumentController(private val dokumentService: DokumentService) {
     @GetMapping(value = ["/dokument/{journalpostId}/{dokumentreferanse}"])
     @Operation(
         security = [SecurityRequirement(name = "bearer-key")],
-        summary = "Henter dokument fra Joark for journalpostid og dokumentreferanse. "
+        summary = "Henter dokument fra Joark for journalpostid og dokumentreferanse. ",
     )
     @ApiResponses(
         value = [
             ApiResponse(
                 responseCode = "200",
-                description = "OK - dokument returneres i form av base64 encoded string."
+                description = "OK - dokument returneres i form av base64 encoded string.",
             ),
             ApiResponse(
                 responseCode = "404",
-                description = "Fant ikke journalpost med oppgitt dokumentreferanse"
-            )
-        ]
+                description = "Fant ikke journalpost med oppgitt dokumentreferanse",
+            ),
+        ],
     )
-    fun hentDokument(
-        @PathVariable journalpostId: String,
-        @PathVariable dokumentreferanse: String
-    ): ResponseEntity<ByteArray> {
+    fun hentDokument(@PathVariable journalpostId: String, @PathVariable dokumentreferanse: String): ResponseEntity<ByteArray> {
         val kildesystemIdenfikator = KildesystemIdenfikator(journalpostId)
         return if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix()) {
             ResponseEntity(
                 WebUtil.initHttpHeadersWith(
                     HttpHeaders.WARNING,
-                    "Ugyldig prefix på journalpostId"
+                    "Ugyldig prefix på journalpostId",
                 ),
-                HttpStatus.BAD_REQUEST
+                HttpStatus.BAD_REQUEST,
             )
         } else {
             dokumentService.hentDokument(
                 kildesystemIdenfikator.hentJournalpostIdLong()!!,
-                dokumentreferanse
+                dokumentreferanse,
             )
         }
     }
 
     @RequestMapping(
         value = ["/dokument/{journalpostId}/{dokumentreferanse}", "/dokument/{journalpostId}", "/dokumentreferanse/{dokumentreferanse}"],
-        method = [RequestMethod.OPTIONS]
+        method = [RequestMethod.OPTIONS],
     )
     @Operation(
         security = [SecurityRequirement(name = "bearer-key")],
-        summary = "Henter dokument for journalpostid og dokumentreferanse. "
+        summary = "Henter dokument for journalpostid og dokumentreferanse. ",
     )
     fun hentDokumentMetadata(
         @PathVariable(required = false) journalpostId: String?,
-        @PathVariable(required = false) dokumentreferanse: String?
+        @PathVariable(required = false) dokumentreferanse: String?,
     ): ResponseEntity<List<DokumentMetadata>> {
         LOGGER.info("Henter dokument for journalpost $journalpostId og dokumentId $dokumentreferanse")
         if (journalpostId.isNullOrEmpty() && dokumentreferanse.isNullOrEmpty()) {
@@ -80,7 +77,7 @@ class DokumentController(private val dokumentService: DokumentService) {
                 .badRequest()
                 .header(
                     HttpHeaders.WARNING,
-                    "Kan ikke hente dokument uten journalpostId eller dokumentereferanse"
+                    "Kan ikke hente dokument uten journalpostId eller dokumentereferanse",
                 )
                 .build()
         }
@@ -97,8 +94,8 @@ class DokumentController(private val dokumentService: DokumentService) {
             ResponseEntity.ok(
                 dokumentService.hentDokumentMetadata(
                     kildesystemIdenfikator.hentJournalpostIdLong(),
-                    dokumentreferanse
-                )
+                    dokumentreferanse,
+                ),
             )
         }
     }

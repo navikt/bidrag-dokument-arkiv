@@ -26,7 +26,7 @@ data class JoarkOpprettJournalpostRequest(
     val datoMottatt: String? = null,
     val bruker: OpprettJournalpostBruker? = null,
     val dokumenter: List<Dokument> = listOf(),
-    val avsenderMottaker: OpprettJournalpostAvsenderMottaker? = null
+    val avsenderMottaker: OpprettJournalpostAvsenderMottaker? = null,
 ) {
     @Suppress("unused") // properties used by jackson
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -41,7 +41,7 @@ data class JoarkOpprettJournalpostRequest(
     data class OpprettJournalpostAvsenderMottaker(
         val navn: String? = null,
         val id: String? = null,
-        val idType: AvsenderMottakerIdType? = null
+        val idType: AvsenderMottakerIdType? = null,
     )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -55,7 +55,7 @@ data class JoarkOpprettJournalpostRequest(
         val dokumentInfoId: String? = null,
         val tittel: String? = null,
         val brevkode: String? = null,
-        val dokumentvarianter: List<DokumentVariant> = emptyList()
+        val dokumentvarianter: List<DokumentVariant> = emptyList(),
     )
 
     @Suppress("unused") // properties used by jackson
@@ -65,7 +65,7 @@ data class JoarkOpprettJournalpostRequest(
         val filtype: String? = null,
         val variantformat: String? = null,
         val fysiskDokument: ByteArray,
-        val filnavn: String? = null
+        val filnavn: String? = null,
     )
 }
 
@@ -118,7 +118,7 @@ class OpprettJournalpostRequestBuilder {
             JoarkOpprettJournalpostRequest.Dokument(
                 tittel = it.tittel,
                 brevkode = it.brevkode,
-                dokumentInfoId = it.dokumentInfoId
+                dokumentInfoId = it.dokumentInfoId,
             )
         }.toMutableList()
     }
@@ -146,7 +146,7 @@ class OpprettJournalpostRequestBuilder {
                 null
             } else {
                 JoarkOpprettJournalpostRequest.OpprettJournalpostSak(
-                    journalpost.sak?.fagsakId
+                    journalpost.sak?.fagsakId,
                 )
             },
             tema = tema ?: "BID",
@@ -180,11 +180,11 @@ class OpprettJournalpostRequestBuilder {
             avsenderMottaker = JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
                 journalpost.avsenderMottaker?.navn,
                 journalpost.avsenderMottaker?.id,
-                avsenderType
+                avsenderType,
             ),
             bruker = JoarkOpprettJournalpostRequest.OpprettJournalpostBruker(
                 journalpost.bruker?.id,
-                journalpost.bruker?.type
+                journalpost.bruker?.type,
             ),
             tilleggsopplysninger = if (fjernDistribusjonMetadata) {
                 val tillegssopplysninger = TilleggsOpplysninger()
@@ -203,30 +203,24 @@ class OpprettJournalpostRequestBuilder {
                     ?.toString()
             } else {
                 null
-            }
+            },
         )
     }
 }
 
 @OpprettJournalpostRequestBuilderDsl
-fun dupliserJournalpost(
-    journalpost: Journalpost,
-    setup: OpprettJournalpostRequestBuilder.() -> Unit
-): JoarkOpprettJournalpostRequest {
+fun dupliserJournalpost(journalpost: Journalpost, setup: OpprettJournalpostRequestBuilder.() -> Unit): JoarkOpprettJournalpostRequest {
     val opprettJournalpostBuilder = OpprettJournalpostRequestBuilder()
     opprettJournalpostBuilder.setup()
     return opprettJournalpostBuilder.build(journalpost)
 }
 
-fun opprettDokumentVariant(
-    filnavn: String? = null,
-    dokumentByte: ByteArray
-): JoarkOpprettJournalpostRequest.DokumentVariant {
+fun opprettDokumentVariant(filnavn: String? = null, dokumentByte: ByteArray): JoarkOpprettJournalpostRequest.DokumentVariant {
     return JoarkOpprettJournalpostRequest.DokumentVariant(
         variantformat = "ARKIV",
         filtype = "PDFA",
         fysiskDokument = dokumentByte,
-        filnavn = if (filnavn != null) "$filnavn.pdf" else null
+        filnavn = if (filnavn != null) "$filnavn.pdf" else null,
     )
 }
 
@@ -235,24 +229,24 @@ data class JoarkOpprettJournalpostResponse(
     val journalstatus: String? = null,
     val melding: String? = null,
     val journalpostferdigstilt: Boolean = false,
-    val dokumenter: List<DokumentInfo>? = emptyList()
+    val dokumenter: List<DokumentInfo>? = emptyList(),
 )
 
 data class OpprettDokument(
     var dokumentInfoId: String?,
     var dokument: ByteArray?,
     var tittel: String?,
-    var brevkode: String?
+    var brevkode: String?,
 )
 
 data class DokumentInfo(
-    val dokumentInfoId: String?
+    val dokumentInfoId: String?,
 )
 
 enum class JoarkJournalpostType {
     INNGAAENDE,
     UTGAAENDE,
-    NOTAT
+    NOTAT,
 }
 
 enum class JoarkMottakUtsendingKanal {
@@ -261,19 +255,16 @@ enum class JoarkMottakUtsendingKanal {
     SKAN_BID,
     S, // Sentral print
     L, // Lokal print
-    INGEN_DISTRIBUSJON
+    INGEN_DISTRIBUSJON,
 }
 
-fun validerKanOppretteJournalpost(
-    opprettJournalpost: JoarkOpprettJournalpostRequest,
-    skalFerdigstilles: Boolean = false
-) {
+fun validerKanOppretteJournalpost(opprettJournalpost: JoarkOpprettJournalpostRequest, skalFerdigstilles: Boolean = false) {
     Validate.isTrue(opprettJournalpost.journalpostType != null, "Journalposttype må settes")
     Validate.isTrue(opprettJournalpost.bruker?.id != null, "Journalpost må ha satt brukerid")
     opprettJournalpost.dokumenter.forEach {
         Validate.isTrue(
             it.dokumentvarianter.isNotEmpty(),
-            "Dokument \"${it.dokumentInfoId ?: it.tittel}\" må minst ha en dokumentvariant"
+            "Dokument \"${it.dokumentInfoId ?: it.tittel}\" må minst ha en dokumentvariant",
         )
         Validate.isTrue(!it.tittel.isNullOrEmpty(), "Alle dokumenter må ha tittel")
     }
@@ -281,7 +272,7 @@ fun validerKanOppretteJournalpost(
     if (opprettJournalpost.journalpostType != JoarkJournalpostType.NOTAT) {
         Validate.isTrue(
             opprettJournalpost.hasAvsenderMottaker(),
-            "Journalpost må ha satt avsender/mottaker"
+            "Journalpost må ha satt avsender/mottaker",
         )
     }
 
@@ -292,22 +283,22 @@ fun validerKanOppretteJournalpost(
     if (opprettJournalpost.journalpostType == JoarkJournalpostType.INNGAAENDE) {
         Validate.isTrue(
             opprettJournalpost.kanal != null,
-            "Kanal må settes for inngående journalpost"
+            "Kanal må settes for inngående journalpost",
         )
     }
 
     if (skalFerdigstilles) {
         Validate.isTrue(
             opprettJournalpost.tema == "BID" || opprettJournalpost.tema == "FAR",
-            "Journalpost som skal ferdigstilles må ha tema BID/FAR"
+            "Journalpost som skal ferdigstilles må ha tema BID/FAR",
         )
         Validate.isTrue(
             !opprettJournalpost.journalfoerendeEnhet.isNullOrEmpty(),
-            "Journalpost som skal ferdigstilles må ha satt journalførendeEnhet"
+            "Journalpost som skal ferdigstilles må ha satt journalførendeEnhet",
         )
         Validate.isTrue(
             opprettJournalpost.hasSak(),
-            "Journalpost som skal ferdigstilles må ha minst en sak"
+            "Journalpost som skal ferdigstilles må ha minst en sak",
         )
     }
 }
@@ -315,7 +306,7 @@ fun validerKanOppretteJournalpost(
 fun validerUtgaaendeJournalpostKanDupliseres(journalpost: Journalpost) {
     Validate.isTrue(
         journalpost.tema == "BID" || journalpost.tema == "FAR",
-        "Journalpost må ha tema BID/FAR"
+        "Journalpost må ha tema BID/FAR",
     )
     Validate.isTrue(journalpost.isUtgaaendeDokument(), "Journalpost må være utgående dokument")
     Validate.isTrue(journalpost.hasMottakerId(), "Journalpost må ha satt mottakerId")
@@ -328,29 +319,29 @@ fun validerKanOppretteJournalpost(request: OpprettJournalpostRequest) {
     request.dokumenter.forEachIndexed { index, it ->
         Validate.isTrue(
             it.tittel.isNotEmpty(),
-            "Dokument ${index + 1} mangler tittel. Alle dokumenter må ha satt tittel"
+            "Dokument ${index + 1} mangler tittel. Alle dokumenter må ha satt tittel",
         )
     }
     if (request.journalposttype != no.nav.bidrag.transport.dokument.JournalpostType.NOTAT) {
         Validate.isTrue(
             request.hasAvsenderMottaker(),
-            "Journalpost må ha satt avsender/mottaker navn eller ident"
+            "Journalpost må ha satt avsender/mottaker navn eller ident",
         )
         validateMaxLength(
             request.avsenderMottaker?.navn,
             128,
-            "Navn på mottaker kan ikke være lengre enn 128 tegn"
+            "Navn på mottaker kan ikke være lengre enn 128 tegn",
         )
     }
 
     if (request.skalFerdigstilles) {
         Validate.isTrue(
             request.tema == "BID" || request.tema == "FAR",
-            "Journalpost som skal ferdigstilles må ha tema BID/FAR"
+            "Journalpost som skal ferdigstilles må ha tema BID/FAR",
         )
         Validate.isTrue(
             !request.hentJournalførendeEnhet().isNullOrEmpty(),
-            "Journalpost som skal ferdigstilles må ha satt journalførendeEnhet"
+            "Journalpost som skal ferdigstilles må ha satt journalførendeEnhet",
         )
         Validate.isTrue(request.hasSak(), "Journalpost som skal ferdigstilles må ha minst en sak")
     }

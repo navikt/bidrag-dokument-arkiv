@@ -39,26 +39,26 @@ class AvvikController(private val avvikService: AvvikService) : BaseController()
         security = [SecurityRequirement(name = "bearer-key")],
         summary = "Henter mulige avvik for en journalpost, id på formatet '" +
             KildesystemIdenfikator.PREFIX_JOARK +
-            "<journalpostId>'"
+            "<journalpostId>'",
     )
     @ApiResponses(
         value = [
             ApiResponse(
                 responseCode = "200",
-                description = "Tilgjengelig avvik for journalpost er hentet"
+                description = "Tilgjengelig avvik for journalpost er hentet",
             ), ApiResponse(
                 responseCode = "404",
-                description = "Fant ikke journalpost som det skal hentes avvik på"
-            )
-        ]
+                description = "Fant ikke journalpost som det skal hentes avvik på",
+            ),
+        ],
     )
     fun hentAvvik(
         @PathVariable journalpostId: String?,
         @Parameter(name = "saksnummer", description = "journalposten tilhører sak")
         @RequestParam(
-            required = false
+            required = false,
         )
-        saksnummer: String?
+        saksnummer: String?,
     ): ResponseEntity<List<AvvikType>> {
         val muligSak = Optional.ofNullable(saksnummer)
         if (muligSak.isPresent) {
@@ -71,37 +71,37 @@ class AvvikController(private val avvikService: AvvikService) : BaseController()
             ResponseEntity(
                 initHttpHeadersWith(
                     HttpHeaders.WARNING,
-                    "Ugyldig prefix på journalpostId"
+                    "Ugyldig prefix på journalpostId",
                 ),
-                HttpStatus.BAD_REQUEST
+                HttpStatus.BAD_REQUEST,
             )
         } else {
             ResponseEntity.ok(
                 avvikService.hentAvvik(
                     java.lang.Long.valueOf(
-                        kildesystemIdenfikator.hentJournalpostId()!!.toLong()
-                    )
-                )
+                        kildesystemIdenfikator.hentJournalpostId()!!.toLong(),
+                    ),
+                ),
             )
         }
     }
 
     @PostMapping(
         value = [ROOT_JOURNAL + "/{journalpostId}/avvik"],
-        consumes = [MediaType.APPLICATION_JSON_VALUE]
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
     )
     @Operation(
         security = [SecurityRequirement(name = "bearer-key")],
         summary = "Behandler et avvik for en journalpost, id på formatet '" +
             KildesystemIdenfikator.PREFIX_JOARK_COMPLETE +
-            "<journalpostId>'"
+            "<journalpostId>'",
     )
     @Transactional
     @ApiResponses(
         value = [
             ApiResponse(
                 responseCode = "200",
-                description = "Avvik på journalpost er behandlet"
+                description = "Avvik på journalpost er behandlet",
             ), ApiResponse(
                 responseCode = "400",
                 description = """En av følgende:
@@ -112,34 +112,34 @@ class AvvikController(private val avvikService: AvvikService) : BaseController()
             - oppretting av oppgave feiler
             - BESTILL_SPLITTING: beskrivelse må være i avvikshendelsen
             - OVERFOR_TIL_ANNEN_ENHET: nyttEnhetsnummer og gammeltEnhetsnummer må være i detaljer map
-          """
+          """,
             ), ApiResponse(
                 responseCode = "503",
-                description = "Oppretting av oppgave for avviket feilet"
-            )
-        ]
+                description = "Oppretting av oppgave for avviket feilet",
+            ),
+        ],
     )
     fun behandleAvvik(
         @PathVariable journalpostId: String?,
         @RequestBody avvikshendelse: Avvikshendelse,
-        @RequestHeader(EnhetFilter.X_ENHET_HEADER) enhet: String?
+        @RequestHeader(EnhetFilter.X_ENHET_HEADER) enhet: String?,
     ): ResponseEntity<BehandleAvvikshendelseResponse> {
         LOGGER.info(
             "Behandle avvik {} for journalpost {}",
             avvikshendelse.avvikType,
-            journalpostId
+            journalpostId,
         )
         SECURE_LOGGER.info(
             "Behandle avvik {} for journalpost {}: {}",
             avvikshendelse.avvikType,
             journalpostId,
-            avvikshendelse
+            avvikshendelse,
         )
         val kildesystemIdenfikator = KildesystemIdenfikator(journalpostId!!)
         if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix()) {
             return ResponseEntity(
                 initHttpHeadersWith(HttpHeaders.WARNING, "Ugyldig prefix på journalpostId"),
-                HttpStatus.BAD_REQUEST
+                HttpStatus.BAD_REQUEST,
             )
         }
         val muligAvvikstype = avvikshendelse.hent()
@@ -148,20 +148,20 @@ class AvvikController(private val avvikService: AvvikService) : BaseController()
                 "BAD REQUEST: avvikshendelse: %s, mulig avvik: %s, enhet: %s",
                 avvikshendelse,
                 muligAvvikstype,
-                enhet
+                enhet,
             )
             LOGGER.warn(message)
             return ResponseEntity(
                 initHttpHeadersWith(HttpHeaders.WARNING, message),
-                HttpStatus.BAD_REQUEST
+                HttpStatus.BAD_REQUEST,
             )
         }
         val behandleAvvikResponse = avvikService.behandleAvvik(
             AvvikshendelseIntern(
                 avvikshendelse,
                 enhet,
-                kildesystemIdenfikator.hentJournalpostId()!!.toLong()
-            )
+                kildesystemIdenfikator.hentJournalpostId()!!.toLong(),
+            ),
         )
         return ResponseEntity.ok(behandleAvvikResponse)
     }

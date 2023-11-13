@@ -12,7 +12,7 @@ import java.time.LocalTime
 
 data class OppdaterFlaggNyDistribusjonBestiltRequest(
     private var journalpostId: Long,
-    private var journalpost: Journalpost
+    private var journalpost: Journalpost,
 ) :
     OppdaterJournalpostRequest(journalpostId) {
     init {
@@ -23,7 +23,7 @@ data class OppdaterFlaggNyDistribusjonBestiltRequest(
 
 data class OppdaterDistribusjonsInfoRequest(
     val settStatusEkspedert: Boolean,
-    val utsendingsKanal: JournalpostUtsendingKanal
+    val utsendingsKanal: JournalpostUtsendingKanal,
 )
 
 data class OpprettNyReturLoggRequest(private var journalpost: Journalpost, private val kommentar: String? = null) :
@@ -38,8 +38,8 @@ data class OpprettNyReturLoggRequest(private var journalpost: Journalpost, priva
             journalpost.tilleggsopplysninger.addReturDetaljLog(
                 ReturDetaljerLogDO(
                     kommentar ?: "Returpost",
-                    dateNow
-                )
+                    dateNow,
+                ),
             )
         }
         tilleggsopplysninger = journalpost.tilleggsopplysninger
@@ -52,8 +52,8 @@ data class LagreReturDetaljForSisteReturRequest(private var journalpost: Journal
         journalpost.tilleggsopplysninger.addReturDetaljLog(
             ReturDetaljerLogDO(
                 "Returpost",
-                journalpost.hentDatoRetur()!!
-            )
+                journalpost.hentDatoRetur()!!,
+            ),
         )
         tilleggsopplysninger = journalpost.tilleggsopplysninger
     }
@@ -61,7 +61,7 @@ data class LagreReturDetaljForSisteReturRequest(private var journalpost: Journal
 
 data class LagreAvsenderNavnRequest(
     private var journalpostId: Long,
-    private var avsenderNavn: String
+    private var avsenderNavn: String,
 ) :
     OppdaterJournalpostRequest(journalpostId = journalpostId) {
     init {
@@ -82,7 +82,7 @@ data class LockReturDetaljerRequest(private var journalpost: Journalpost) :
 data class LeggTilBeskjedPåTittel(
     private var journalpostId: Long,
     private var journalpost: Journalpost,
-    private val beskjed: String
+    private val beskjed: String,
 ) :
     OppdaterJournalpostRequest(journalpostId) {
     init {
@@ -91,15 +91,15 @@ data class LeggTilBeskjedPåTittel(
             listOf(
                 Dokument(
                     dokumentInfoId = hoveddokument.dokumentInfoId,
-                    tittel = "${hoveddokument.tittel} ($beskjed)"
-                )
+                    tittel = "${hoveddokument.tittel} ($beskjed)",
+                ),
             )
     }
 }
 
 data class OppdaterDokumentdatoTilIdag(
     private var journalpostId: Long,
-    private var journalpost: Journalpost
+    private var journalpost: Journalpost,
 ) :
     OppdaterJournalpostRequest(journalpostId) {
     init {
@@ -109,7 +109,7 @@ data class OppdaterDokumentdatoTilIdag(
 
 data class OppdaterJournalpostTilleggsopplysninger(
     private var journalpostId: Long,
-    private var journalpost: Journalpost
+    private var journalpost: Journalpost,
 ) :
     OppdaterJournalpostRequest(journalpostId) {
     init {
@@ -119,7 +119,7 @@ data class OppdaterJournalpostTilleggsopplysninger(
 
 data class OppdaterJournalpostDistribusjonsInfoRequest(
     private var journalpostId: Long,
-    private var journalpost: Journalpost
+    private var journalpost: Journalpost,
 ) :
     OppdaterJournalpostRequest(journalpostId) {
     init {
@@ -131,7 +131,7 @@ data class OppdaterJournalpostDistribusjonsInfoRequest(
 data class LagreAdresseRequest(
     private var journalpostId: Long,
     private val mottakerAdresse: DistribuerTilAdresse?,
-    private var journalpost: Journalpost
+    private var journalpost: Journalpost,
 ) : OppdaterJournalpostRequest(journalpostId) {
     init {
         val mottakerAdresseDO = mapToAdresseDO(mottakerAdresse)
@@ -149,7 +149,7 @@ data class LagreAdresseRequest(
                 adresselinje3 = adresse.adresselinje3,
                 land = adresse.land!!,
                 poststed = adresse.poststed,
-                postnummer = adresse.postnummer
+                postnummer = adresse.postnummer,
             )
         } else {
             null
@@ -160,7 +160,7 @@ data class LagreAdresseRequest(
 data class LagreJournalfortAvIdentRequest(
     private var journalpostId: Long,
     private var journalpost: Journalpost,
-    private var journalfortAvIdent: String
+    private var journalfortAvIdent: String,
 ) : OppdaterJournalpostRequest(journalpostId) {
     init {
         journalpost.tilleggsopplysninger.setJournalfortAvIdent(journalfortAvIdent)
@@ -171,7 +171,7 @@ data class LagreJournalfortAvIdentRequest(
 data class LagreJournalpostRequest(
     private var journalpostId: Long,
     private var endreJournalpostCommand: EndreJournalpostCommandIntern,
-    private var journalpost: Journalpost
+    private var journalpost: Journalpost,
 ) : OppdaterJournalpostRequest(journalpostId) {
     init {
         if (journalpost.isStatusMottatt()) {
@@ -182,7 +182,7 @@ data class LagreJournalpostRequest(
             datoDokument = endreJournalpostCommand.endreJournalpostCommand.dokumentDato?.let {
                 LocalDateTime.of(
                     it,
-                    LocalTime.MIDNIGHT
+                    LocalTime.MIDNIGHT,
                 )
             }?.toString()
         }
@@ -193,7 +193,7 @@ data class LagreJournalpostRequest(
                     Dokument(
                         dokument.dokId.toString(),
                         dokument.tittel,
-                        dokument.brevkode
+                        dokument.brevkode,
                     )
                 }
         }
@@ -218,14 +218,14 @@ data class LagreJournalpostRequest(
                         if (it.originalDato != null) {
                             journalpost.tilleggsopplysninger.updateReturDetaljLog(
                                 it.originalDato!!,
-                                ReturDetaljerLogDO(it.beskrivelse, it.nyDato ?: it.originalDato!!)
+                                ReturDetaljerLogDO(it.beskrivelse, it.nyDato ?: it.originalDato!!),
                             )
                         } else if (journalpost.manglerReturDetaljForSisteRetur() && it.nyDato != null && !journalpost.hasReturDetaljerWithDate(
-                                it.nyDato!!
+                                it.nyDato!!,
                             )
                         ) {
                             journalpost.tilleggsopplysninger.addReturDetaljLog(
-                                ReturDetaljerLogDO(it.beskrivelse, it.nyDato!!)
+                                ReturDetaljerLogDO(it.beskrivelse, it.nyDato!!),
                             )
                         }
                     }
@@ -248,7 +248,7 @@ data class LagreJournalpostRequest(
         bruker = if (endreJournalpostCommand.hentGjelder() != null) {
             Bruker(
                 endreJournalpostCommand.hentGjelder(),
-                endreJournalpostCommand.hentGjelderType().name
+                endreJournalpostCommand.hentGjelderType().name,
             )
         } else if (journalpost.bruker != null) {
             Bruker(journalpost.bruker?.id, journalpost.bruker?.type)
@@ -282,7 +282,7 @@ sealed class OppdaterJournalpostRequest(private var journalpostId: Long? = -1) {
     data class AvsenderMottaker(
         val navn: String? = null,
         var id: String? = null,
-        var idType: AvsenderMottakerIdType? = null
+        var idType: AvsenderMottakerIdType? = null,
     )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -290,7 +290,7 @@ sealed class OppdaterJournalpostRequest(private var journalpostId: Long? = -1) {
     data class Dokument(
         val dokumentInfoId: String? = null,
         var tittel: String? = null,
-        val brevkode: String? = null
+        val brevkode: String? = null,
     )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -316,29 +316,46 @@ data class FerdigstillJournalpostRequest(
     val journalfoerendeEnhet: String,
     val journalfortAvNavn: String? = null,
     val opprettetAvNavn: String? = null,
-    val datoJournal: LocalDate? = null
+    val datoJournal: LocalDate? = null,
 ) {
     constructor(journalpostId: Long, journalfoerendeEnhet: String) : this(
         journalpostId,
         journalfoerendeEnhet,
         null,
         null,
-        null
+        null,
     )
 }
 
 enum class Sakstype {
-    FAGSAK, GENERELL_SAK
+    FAGSAK,
+    GENERELL_SAK,
 }
 
 enum class BrukerIdType {
-    FNR, ORGNR, AKTOERID
+    FNR,
+    ORGNR,
+    AKTOERID,
 }
 
 enum class Fagsaksystem {
-    FS38, FS36, UFM, OEBS, OB36, AO01, AO11, IT01, PP01, K9, BISYS, BA, EF, KONT
+    FS38,
+    FS36,
+    UFM,
+    OEBS,
+    OB36,
+    AO01,
+    AO11,
+    IT01,
+    PP01,
+    K9,
+    BISYS,
+    BA,
+    EF,
+    KONT,
 }
 
 enum class Fagomrade {
-    BID, FAR
+    BID,
+    FAR,
 }

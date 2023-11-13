@@ -1,450 +1,453 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.1.4</version>
-    <relativePath/> <!-- lookup parent from repository -->
-  </parent>
-
-  <groupId>no.nav.bidrag.dokument</groupId>
-  <artifactId>bidrag-dokument-arkiv</artifactId>
-  <version>1.0.233-SNAPSHOT</version>
-  <packaging>jar</packaging>
-
-  <description>Backend NAIS, bidrag-dokument-arkiv, henter fra arkiv (JOARK)</description>
-  <url>https://github.com/navikt/bidrag-dokument-arkiv</url>
-
-  <properties>
-
-    <!-- language -->
-    <java.version>17</java.version>
-    <kotlin.version>1.9.10</kotlin.version>
-
-    <!-- dependent versions other than from spring-boot -->
-    <apache-avro-version>1.11.3</apache-avro-version>
-    <bidrag-commons.version>20231013111728_2a4d649</bidrag-commons.version>
-    <bidrag-commons-test.version>1.20230503150725_3c2c77b</bidrag-commons-test.version>
-    <bidrag-transport.version>20231010134706_52d8d27</bidrag-transport.version>
-    <commons-codec.version>1.15</commons-codec.version>
-    <graphq-dgs-client.version>6.0.5</graphq-dgs-client.version>
-    <joark-hendelse.version>67a9be4476b63b7247cfacfaf821ab656bd2a952</joark-hendelse.version>
-    <kafka-avro-serializer.version>7.3.3</kafka-avro-serializer.version>
-    <logback-encoder.version>7.3</logback-encoder.version>
-    <nimbus-jose-jwt.version>9.15.2</nimbus-jose-jwt.version>
-    <springdoc-openapi-ui.version>2.1.0</springdoc-openapi-ui.version>
-    <springframework-cloud.version>4.0.2</springframework-cloud.version>
-    <squareup.version>4.11.0</squareup.version>
-    <token-support.version>3.0.11</token-support.version>
-
-    <!-- build -->
-    <build-helper-maven.version>3.3.0</build-helper-maven.version>
-    <maven.compiler.version>3.8.0</maven.compiler.version>
-    <maven.surefire.version>2.22.2</maven.surefire.version>
-    <maven.compiler.release>${java.version}</maven.compiler.release>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <kotlin-logging-jvm.version>3.0.5</kotlin-logging-jvm.version>
-  </properties>
-  <repositories>
-    <repository>
-      <id>github</id>
-      <name>GitHub felles Apache Maven Packages for navikt</name>
-      <url>https://maven.pkg.github.com/navikt/maven-release/</url>
-    </repository>
-    <repository>
-      <id>confluent</id>
-      <name>Confluent kafka</name>
-      <url>https://packages.confluent.io/maven/</url>
-    </repository>
-    <repository>
-      <id>github-commons</id>
-      <url>https://maven.pkg.github.com/navikt/bidrag-commons</url>
-    </repository>
-  </repositories>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.yaml</groupId>
-        <artifactId>snakeyaml</artifactId>
-        <version>2.0</version>
-      </dependency>
-      <dependency>
-        <groupId>org.scala-lang</groupId>
-        <artifactId>scala-library</artifactId>
-        <version>2.13.10</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
-  <dependencies>
-    <dependency>
-      <groupId>org.jetbrains.kotlinx</groupId>
-      <artifactId>kotlinx-datetime-jvm</artifactId>
-      <version>0.4.0</version>
-    </dependency>
-    <!-- joark hendelser med avro avhengighet -->
-    <dependency>
-      <groupId>no.nav.syfo.schemas</groupId>
-      <artifactId>dok-journalfoering-hendelse-v1</artifactId>
-      <version>${joark-hendelse.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.confluent</groupId>
-      <artifactId>kafka-avro-serializer</artifactId>
-      <version>${kafka-avro-serializer.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-compress</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-compress</artifactId>
-      <version>1.24.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.avro</groupId>
-      <artifactId>avro</artifactId>
-      <version>${apache-avro-version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-cache</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.github.ben-manes.caffeine</groupId>
-      <artifactId>caffeine</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.netflix.graphql.dgs</groupId>
-      <artifactId>graphql-dgs-client</artifactId>
-      <version>${graphq-dgs-client.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.micrometer</groupId>
-      <artifactId>micrometer-registry-prometheus</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>no.nav.bidrag</groupId>
-      <artifactId>bidrag-commons</artifactId>
-      <version>${bidrag-commons.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>no.nav.bidrag</groupId>
-      <artifactId>bidrag-transport</artifactId>
-      <version>${bidrag-transport.version}</version>
-    </dependency>
-
-    <!-- spring-boot -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-actuator</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-validation</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-devtools</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <!-- kafka -->
-    <dependency>
-      <groupId>org.springframework.kafka</groupId>
-      <artifactId>spring-kafka</artifactId>
-    </dependency>
-
-    <!-- misc -->
-    <dependency>
-      <groupId>org.apache.httpcomponents.client5</groupId>
-      <artifactId>httpclient5</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>commons-codec</groupId>
-      <artifactId>commons-codec</artifactId>
-      <version>${commons-codec.version}</version>
-    </dependency>
-
-    <!-- kotlin -->
-    <dependency>
-      <groupId>org.jetbrains.kotlin</groupId>
-      <artifactId>kotlin-stdlib-jdk8</artifactId>
-      <version>${kotlin.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.github.microutils</groupId>
-      <artifactId>kotlin-logging-jvm</artifactId>
-      <version>${kotlin-logging-jvm.version}</version>
-    </dependency>
-
-    <!-- swagger -->
-    <dependency>
-      <groupId>org.springdoc</groupId>
-      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-      <version>${springdoc-openapi-ui.version}</version>
-    </dependency>
-
-    <!-- logback -->
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-core</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>net.logstash.logback</groupId>
-      <artifactId>logstash-logback-encoder</artifactId>
-      <version>${logback-encoder.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson-core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-
-    <!-- aspectj -->
-    <dependency>
-      <groupId>org.aspectj</groupId>
-      <artifactId>aspectjweaver</artifactId>
-    </dependency>
-
-    <!-- test -->
-    <dependency>
-      <groupId>no.nav.bidrag</groupId>
-      <artifactId>bidrag-commons-test</artifactId>
-      <version>${bidrag-commons-test.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.awaitility</groupId>
-      <artifactId>awaitility-kotlin</artifactId>
-      <version>4.2.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>no.nav.security</groupId>
-      <artifactId>token-validation-spring-test</artifactId>
-      <version>${token-support.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.squareup.okhttp3</groupId>
-      <artifactId>mockwebserver</artifactId>
-      <version>${squareup.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.squareup.okhttp3</groupId>
-      <artifactId>okhttp</artifactId>
-      <version>${squareup.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-starter-contract-stub-runner</artifactId>
-      <version>${springframework-cloud.version}</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-collections</groupId>
-          <artifactId>commons-collections</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>org.springframework.kafka</groupId>
-      <artifactId>spring-kafka-test</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.kotest</groupId>
-      <artifactId>kotest-assertions-core-jvm</artifactId>
-      <version>5.6.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.ninja-squad</groupId>
-      <artifactId>springmockk</artifactId>
-      <version>4.0.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jetbrains.kotlin</groupId>
-      <artifactId>kotlin-test</artifactId>
-      <version>${kotlin.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-  </dependencies>
-
-  <build>
-    <plugins>
-
-      <plugin>
+    <parent>
         <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-      </plugin>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.1.5</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
 
-      <plugin>
-        <groupId>org.jetbrains.kotlin</groupId>
-        <artifactId>kotlin-maven-plugin</artifactId>
-        <version>${kotlin.version}</version>
-        <executions>
-          <execution>
-            <id>compile</id>
-            <phase>process-sources</phase>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-            <configuration>
-              <sourceDirs>
-                <source>src/main/java</source>
-                <source>src/main/kotlin</source>
-              </sourceDirs>
-            </configuration>
-          </execution>
-          <execution>
-            <id>test-compile</id>
-            <phase>process-test-sources</phase>
-            <goals>
-              <goal>test-compile</goal>
-            </goals>
-            <configuration>
-              <sourceDirs>
-                <source>src/test/java</source>
-                <source>src/test/kotlin</source>
-              </sourceDirs>
-            </configuration>
-          </execution>
-        </executions>
-        <configuration>
-          <jvmTarget>17</jvmTarget>
-          <compilerPlugins>
-            <plugin>spring</plugin>
-          </compilerPlugins>
-        </configuration>
+    <groupId>no.nav.bidrag.dokument</groupId>
+    <artifactId>bidrag-dokument-arkiv</artifactId>
+    <version>1.0.233-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <description>Backend NAIS, bidrag-dokument-arkiv, henter fra arkiv (JOARK)</description>
+    <url>https://github.com/navikt/bidrag-dokument-arkiv</url>
+
+    <properties>
+
+        <!-- language -->
+        <java.version>21</java.version>
+        <kotlin.version>1.9.20</kotlin.version>
+
+        <!-- dependent versions other than from spring-boot -->
+        <apache-avro-version>1.11.3</apache-avro-version>
+        <bidrag-commons.version>20231103132440_edabbf8</bidrag-commons.version>
+        <bidrag-commons-test.version>1.20230503150725_3c2c77b</bidrag-commons-test.version>
+        <bidrag-transport.version>20231113102624_1040a39</bidrag-transport.version>
+        <commons-codec.version>1.16.0</commons-codec.version>
+        <graphq-dgs-client.version>6.0.5</graphq-dgs-client.version>
+        <joark-hendelse.version>67a9be4476b63b7247cfacfaf821ab656bd2a952</joark-hendelse.version>
+        <kafka-avro-serializer.version>7.3.3</kafka-avro-serializer.version>
+        <logback-encoder.version>7.3</logback-encoder.version>
+        <nimbus-jose-jwt.version>9.15.2</nimbus-jose-jwt.version>
+        <springdoc-openapi-ui.version>2.1.0</springdoc-openapi-ui.version>
+        <springframework-cloud.version>4.0.4</springframework-cloud.version>
+        <squareup.version>4.11.0</squareup.version>
+        <token-support.version>3.0.11</token-support.version>
+
+        <!-- build -->
+        <build-helper-maven.version>3.3.0</build-helper-maven.version>
+        <maven.compiler.version>3.8.0</maven.compiler.version>
+        <maven.surefire.version>2.22.2</maven.surefire.version>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <kotlin-logging-jvm.version>3.0.5</kotlin-logging-jvm.version>
+    </properties>
+    <repositories>
+        <repository>
+            <id>github</id>
+            <name>GitHub felles Apache Maven Packages for navikt</name>
+            <url>https://maven.pkg.github.com/navikt/maven-release/</url>
+        </repository>
+        <repository>
+            <id>confluent</id>
+            <name>Confluent kafka</name>
+            <url>https://packages.confluent.io/maven/</url>
+        </repository>
+        <repository>
+            <id>github-commons</id>
+            <url>https://maven.pkg.github.com/navikt/bidrag-commons</url>
+        </repository>
+    </repositories>
+
+    <dependencyManagement>
         <dependencies>
-          <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-maven-allopen</artifactId>
-            <version>${kotlin.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-maven-noarg</artifactId>
-            <version>${kotlin.version}</version>
-          </dependency>
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>2.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-library</artifactId>
+                <version>2.13.12</version>
+            </dependency>
         </dependencies>
-      </plugin>
+    </dependencyManagement>
 
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>${build-helper-maven.version}</version>
-        <executions>
-          <execution>
-            <id>remove-old-artifacts</id>
-            <phase>package</phase>
-            <goals>
-              <goal>remove-project-artifact</goal>
-            </goals>
-            <configuration>
-              <removeAll>true</removeAll>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>3.1.0</version>
-        <executions>
-          <execution>
-            <id>ktlint</id>
-            <phase>verify</phase>
-            <configuration>
-              <target name="ktlint">
-                <java taskname="ktlint" dir="${basedir}" fork="true" failonerror="true"
-                  classpathref="maven.plugin.classpath" classname="com.pinterest.ktlint.Main">
-                  <arg value="src/**/*.kt"/>
-                </java>
-              </target>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>ktlint-format</id>
-            <phase>validate</phase>
-            <configuration>
-              <target name="ktlint">
-                <java taskname="ktlint" dir="${basedir}" fork="true" failonerror="true"
-                  classpathref="maven.plugin.classpath" classname="com.pinterest.ktlint.Main">
-                  <jvmarg value="--add-opens"/>
-                  <jvmarg value="java.base/java.lang=ALL-UNNAMED"/>
-                  <arg value="-F"/>
-                  <arg value="src/**/*.kt"/>
-                </java>
-              </target>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>com.pinterest</groupId>
-            <artifactId>ktlint</artifactId>
-            <version>0.47.1</version>
-          </dependency>
-          <!-- additional 3rd party ruleset(s) can be specified here -->
-        </dependencies>
-      </plugin>
+    <dependencies>
+        <dependency>
+            <groupId>org.jetbrains.kotlinx</groupId>
+            <artifactId>kotlinx-datetime-jvm</artifactId>
+            <version>0.4.0</version>
+        </dependency>
+        <!-- joark hendelser med avro avhengighet -->
+        <dependency>
+            <groupId>no.nav.syfo.schemas</groupId>
+            <artifactId>dok-journalfoering-hendelse-v1</artifactId>
+            <version>${joark-hendelse.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>kafka-avro-serializer</artifactId>
+            <version>${kafka-avro-serializer.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.24.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+            <version>${apache-avro-version}</version>
+        </dependency>
 
-    </plugins>
-  </build>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.netflix.graphql.dgs</groupId>
+            <artifactId>graphql-dgs-client</artifactId>
+            <version>${graphq-dgs-client.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>no.nav.bidrag</groupId>
+            <artifactId>bidrag-commons</artifactId>
+            <version>${bidrag-commons.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.bidrag</groupId>
+            <artifactId>bidrag-transport</artifactId>
+            <version>${bidrag-transport.version}</version>
+        </dependency>
+
+        <!-- spring-boot -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- kafka -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+
+        <!-- misc -->
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>${commons-codec.version}</version>
+        </dependency>
+
+        <!-- kotlin -->
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib-jdk8</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.microutils</groupId>
+            <artifactId>kotlin-logging-jvm</artifactId>
+            <version>${kotlin-logging-jvm.version}</version>
+        </dependency>
+
+        <!-- swagger -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc-openapi-ui.version}</version>
+        </dependency>
+
+        <!-- logback -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>${logback-encoder.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson-core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <!-- aspectj -->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+        </dependency>
+
+        <!-- test -->
+        <dependency>
+            <groupId>no.nav.bidrag</groupId>
+            <artifactId>bidrag-commons-test</artifactId>
+            <version>${bidrag-commons-test.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility-kotlin</artifactId>
+            <version>4.2.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.security</groupId>
+            <artifactId>token-validation-spring-test</artifactId>
+            <version>${token-support.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>mockwebserver</artifactId>
+            <version>${squareup.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>${squareup.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-contract-stub-runner</artifactId>
+            <version>${springframework-cloud.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-collections</groupId>
+                    <artifactId>commons-collections</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.kotest</groupId>
+            <artifactId>kotest-assertions-core-jvm</artifactId>
+            <version>5.6.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.ninja-squad</groupId>
+            <artifactId>springmockk</artifactId>
+            <version>4.0.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-test</artifactId>
+            <version>${kotlin.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <finalName>app</finalName>
+        <plugins>
+
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <version>${kotlin.version}</version>
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirs>
+                                <source>src/main/java</source>
+                                <source>src/main/kotlin</source>
+                            </sourceDirs>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>test-compile</id>
+                        <phase>process-test-sources</phase>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirs>
+                                <source>src/test/java</source>
+                                <source>src/test/kotlin</source>
+                            </sourceDirs>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <jvmTarget>21</jvmTarget>
+                    <compilerPlugins>
+                        <plugin>spring</plugin>
+                    </compilerPlugins>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.jetbrains.kotlin</groupId>
+                        <artifactId>kotlin-maven-allopen</artifactId>
+                        <version>${kotlin.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.jetbrains.kotlin</groupId>
+                        <artifactId>kotlin-maven-noarg</artifactId>
+                        <version>${kotlin.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>${build-helper-maven.version}</version>
+                <executions>
+                    <execution>
+                        <id>remove-old-artifacts</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>remove-project-artifact</goal>
+                        </goals>
+                        <configuration>
+                            <removeAll>true</removeAll>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>ktlint</id>
+                        <phase>verify</phase>
+                        <configuration>
+                            <target name="ktlint">
+                                <java taskname="ktlint" dir="${basedir}" fork="true" failonerror="true"
+                                      classpathref="maven.plugin.classpath" classname="com.pinterest.ktlint.Main">
+                                    <jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
+                                    <arg value="src/**/*.kt"/>
+                                </java>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>ktlint-format</id>
+                        <phase>validate</phase>
+                        <configuration>
+                            <target name="ktlint">
+                                <java taskname="ktlint" dir="${basedir}" fork="true" failonerror="true"
+                                      classpathref="maven.plugin.classpath" classname="com.pinterest.ktlint.Main">
+                                    <!-- Note: the JVM args below is only required when running ktlint with Java 16+ in format mode -->
+                                    <jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
+                                    <!-- see https://pinterest.github.io/ktlint/install/cli/#command-line-usage for more information -->
+                                    <arg value="-F"/>
+                                    <arg value="src/**/*.kt"/>
+                                </java>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.pinterest.ktlint</groupId>
+                        <artifactId>ktlint-cli</artifactId>
+                        <version>1.0.1</version>
+                    </dependency>
+                    <!-- additional 3rd party ruleset(s) can be specified here -->
+                </dependencies>
+            </plugin>
+
+        </plugins>
+    </build>
 
 </project>

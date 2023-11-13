@@ -12,7 +12,7 @@ data class BestemDistribusjonKanalRequest(
     val mottakerId: String?,
     val gjelderId: String,
     val tema: String = "BID",
-    val forsendelseStoerrelse: Int? = null
+    val forsendelseStoerrelse: Int? = null,
 )
 
 data class DokDistDistribuerJournalpostRequest(
@@ -22,7 +22,7 @@ data class DokDistDistribuerJournalpostRequest(
     var dokumentProdApp: String = "bidragDokArkiv",
     var distribusjonstype: DistribusjonsType = DistribusjonsType.VIKTIG,
     var distribusjonstidspunkt: DistribusjonsTidspunkt = DistribusjonsTidspunkt.KJERNETID,
-    var adresse: DokDistDistribuerTilAdresse? = null
+    var adresse: DokDistDistribuerTilAdresse? = null,
 ) {
 
     private fun mapAdresse(distribuerTilAdresse: DistribuerTilAdresse?): DokDistDistribuerTilAdresse? {
@@ -36,7 +36,7 @@ data class DokDistDistribuerJournalpostRequest(
             adressetype = dokDistAdresseType,
             land = adresse.land!!,
             postnummer = adresse.postnummer,
-            poststed = adresse.poststed
+            poststed = adresse.poststed,
         )
     }
 
@@ -45,9 +45,9 @@ data class DokDistDistribuerJournalpostRequest(
         brevkode: String?,
         tittel: String?,
         distribuerTilAdresse: DistribuerTilAdresse?,
-        _batchId: String?
+        _batchId: String?,
     ) : this(
-        journalpostId = journalpostId
+        journalpostId = journalpostId,
     ) {
         batchId = _batchId
         adresse = mapAdresse(distribuerTilAdresse)
@@ -58,19 +58,19 @@ data class DokDistDistribuerJournalpostRequest(
 
 enum class DistribusjonsTidspunkt {
     UMIDDELBART,
-    KJERNETID
+    KJERNETID,
 }
 
 enum class DistribusjonsType {
     VEDTAK,
     VIKTIG,
-    ANNET
+    ANNET,
 }
 
 enum class DokDistAdresseType(val verdi: String) {
     // Kotlin code style krever at enumer begynner med stor bokstav. Lagt til verdi med gammelt ennum-navn for ikke å brekke noe.
     NorskPostadresse("norskPostadresse"),
-    UtenlandskPostadresse("utenlandskPostadresse")
+    UtenlandskPostadresse("utenlandskPostadresse"),
 }
 
 data class DokDistDistribuerTilAdresse(
@@ -80,17 +80,17 @@ data class DokDistDistribuerTilAdresse(
     var adressetype: String,
     var land: String,
     var postnummer: String? = null,
-    var poststed: String? = null
+    var poststed: String? = null,
 )
 
 data class DistribuerJournalpostRequestInternal(
-    var request: DistribuerJournalpostRequest? = null
+    var request: DistribuerJournalpostRequest? = null,
 ) {
 
     constructor(distribuerTilAdresse: DistribuerTilAdresse?) : this(
         DistribuerJournalpostRequest(
-            adresse = distribuerTilAdresse
-        )
+            adresse = distribuerTilAdresse,
+        ),
     )
 
     fun erLokalUtskrift(): Boolean = request?.lokalUtskrift ?: false
@@ -104,7 +104,7 @@ data class DistribuerJournalpostRequestInternal(
                 adresselinje3 = StringUtils.stripToNull(adresse.adresselinje3),
                 land = adresse.land ?: ALPHA2_NORGE,
                 poststed = StringUtils.stripToNull(adresse.poststed),
-                postnummer = StringUtils.stripToNull(adresse.postnummer)
+                postnummer = StringUtils.stripToNull(adresse.postnummer),
             )
         } else {
             null
@@ -113,7 +113,7 @@ data class DistribuerJournalpostRequestInternal(
 }
 
 data class DokDistDistribuerJournalpostResponse(
-    var bestillingsId: String
+    var bestillingsId: String,
 ) {
     fun toDistribuerJournalpostResponse(journalpostId: Long): DistribuerJournalpostResponse {
         return DistribuerJournalpostResponse("JOARK-$journalpostId", bestillingsId)
@@ -124,27 +124,27 @@ fun validerKanDistribueres(journalpost: Journalpost?) {
     Validate.isTrue(journalpost != null, "Fant ingen journalpost")
     Validate.isTrue(
         journalpost != null && journalpost.hentTilknyttetSaker().size < 2,
-        "Kan bare distribuere journalpost med 1 sak"
+        "Kan bare distribuere journalpost med 1 sak",
     )
     Validate.isTrue(
         journalpost?.journalstatus == JournalStatus.FERDIGSTILT,
-        "Journalpost må ha status FERDIGSTILT"
+        "Journalpost må ha status FERDIGSTILT",
     )
     Validate.isTrue(
         journalpost?.tilleggsopplysninger?.isDistribusjonBestilt() == false,
-        "Journalpost er allerede distribuert"
+        "Journalpost er allerede distribuert",
     )
     Validate.isTrue(
         journalpost?.hasMottakerId() == true || journalpost?.hentAvsenderNavn()
             ?.isNotEmpty() == true,
-        "Journalpost må ha satt mottakerId eller mottakerNavn"
+        "Journalpost må ha satt mottakerId eller mottakerNavn",
     )
 }
 
 fun validerKanDistribueresUtenAdresse(journalpost: Journalpost?) {
     Validate.isTrue(
         journalpost?.hasMottakerId() == true,
-        "Journalpost må ha satt mottakerId for å kunne distribuere uten å sette adresse"
+        "Journalpost må ha satt mottakerId for å kunne distribuere uten å sette adresse",
     )
 }
 
@@ -153,22 +153,22 @@ fun validerAdresse(adresse: DistribuerTilAdresse?) {
     validateNotNullOrEmpty(adresse?.land, "Land er påkrevd på adresse")
     Validate.isTrue(
         adresse?.land?.length == 2,
-        "Land må være formatert som Alpha-2 to-bokstavers landkode "
+        "Land må være formatert som Alpha-2 to-bokstavers landkode ",
     )
     validateMaxLength(
         adresse?.adresselinje1,
         128,
-        "Adresselinje 1 kan ikke være lengre enn 128 tegn"
+        "Adresselinje 1 kan ikke være lengre enn 128 tegn",
     )
     validateMaxLength(
         adresse?.adresselinje2,
         128,
-        "Adresselinje 2 kan ikke være lengre enn 128 tegn"
+        "Adresselinje 2 kan ikke være lengre enn 128 tegn",
     )
     validateMaxLength(
         adresse?.adresselinje3,
         128,
-        "Adresselinje 3 kan ikke være lengre enn 128 tegn"
+        "Adresselinje 3 kan ikke være lengre enn 128 tegn",
     )
     if (ALPHA2_NORGE == adresse?.land) {
         validateNotNullOrEmpty(adresse.postnummer, "Postnummer er påkrevd på norsk adresse")
@@ -176,7 +176,7 @@ fun validerAdresse(adresse: DistribuerTilAdresse?) {
     } else {
         validateNotNullOrEmpty(
             adresse?.adresselinje1,
-            "Adresselinje1 er påkrevd på utenlandsk adresse"
+            "Adresselinje1 er påkrevd på utenlandsk adresse",
         )
     }
 }

@@ -45,7 +45,7 @@ class OpprettJournalpostService(
     private val saksbehandlerInfoManager: SaksbehandlerInfoManager,
     private val dokumentService: DokumentService,
     private val endreJournalpostService: EndreJournalpostService,
-    private val bidragDokumentConsumer: BidragDokumentConsumer
+    private val bidragDokumentConsumer: BidragDokumentConsumer,
 ) {
     private val dokarkivConsumer: DokarkivConsumer
     private val safConsumer: SafConsumer
@@ -65,33 +65,29 @@ class OpprettJournalpostService(
             val respons = opprettJournalpost(
                 opprettJournalpostRequest,
                 request.tilknyttSaker,
-                skalFerdigstilles = false
+                skalFerdigstilles = false,
             )
             val journalpostId = respons.journalpostId!!.toLong()
             ferdigstillJournalpost(
                 journalpostId,
                 request.hentJournalførendeEnhet()!!,
-                request.saksbehandlerIdent
+                request.saksbehandlerIdent,
             )
             lagreSaksbehandlerIdentOgKnyttFerdigstiltJournalpostTilSaker(
                 journalpostId,
                 request.tilknyttSaker,
-                request.saksbehandlerIdent
+                request.saksbehandlerIdent,
             )
             return respons
         }
         return opprettJournalpost(
             opprettJournalpostRequest,
             request.tilknyttSaker,
-            skalFerdigstilles = request.skalFerdigstilles
+            skalFerdigstilles = request.skalFerdigstilles,
         )
     }
 
-    private fun ferdigstillJournalpost(
-        journalpostId: Long,
-        journalfoerendeEnhet: String,
-        saksbehandlerIdent: String?
-    ) {
+    private fun ferdigstillJournalpost(journalpostId: Long, journalfoerendeEnhet: String, saksbehandlerIdent: String?) {
         val saksbehandlerNavn =
             saksbehandlerIdent?.let { saksbehandlerInfoManager.hentSaksbehandler(it) }
                 ?.orElse(null)?.navn
@@ -100,8 +96,8 @@ class OpprettJournalpostService(
                 journalpostId = journalpostId,
                 journalfoerendeEnhet = journalfoerendeEnhet,
                 opprettetAvNavn = saksbehandlerNavn,
-                journalfortAvNavn = saksbehandlerNavn
-            )
+                journalfortAvNavn = saksbehandlerNavn,
+            ),
         )
     }
 
@@ -109,7 +105,7 @@ class OpprettJournalpostService(
         _request: JoarkOpprettJournalpostRequest,
         knyttTilSaker: List<String> = emptyList(),
         originalJournalpostId: Long?,
-        skalFerdigstilles: Boolean = false
+        skalFerdigstilles: Boolean = false,
     ): OpprettJournalpostResponse {
         val tilknyttetSak =
             if (knyttTilSaker.isNotEmpty()) knyttTilSaker[0] else _request.sak?.fagsakId
@@ -119,9 +115,9 @@ class OpprettJournalpostService(
                     null
                 } else {
                     JoarkOpprettJournalpostRequest.OpprettJournalpostSak(
-                        tilknyttetSak
+                        tilknyttetSak,
                     )
-                }
+                },
             )
         request = populerMedDokumenterByteData(request, originalJournalpostId)
         return opprettJournalpost(request, knyttTilSaker, skalFerdigstilles)
@@ -130,12 +126,14 @@ class OpprettJournalpostService(
     private fun opprettJournalpost(
         request: JoarkOpprettJournalpostRequest,
         knyttTilSaker: List<String> = emptyList(),
-        skalFerdigstilles: Boolean = false
+        skalFerdigstilles: Boolean = false,
     ): OpprettJournalpostResponse {
         validerKanOppretteJournalpost(request, skalFerdigstilles)
 
         val response = dokarkivConsumer.opprett(request, skalFerdigstilles)
-        LOGGER.info("Opprettet ny journalpost ${response.journalpostId} med type=${request.journalpostType} kanal=${request.kanal}, tema=${request.tema}, referanseId=${request.eksternReferanseId} og enhet=${request.journalfoerendeEnhet}")
+        LOGGER.info(
+            "Opprettet ny journalpost ${response.journalpostId} med type=${request.journalpostType} kanal=${request.kanal}, tema=${request.tema}, referanseId=${request.eksternReferanseId} og enhet=${request.journalfoerendeEnhet}",
+        )
         SECURE_LOGGER.info("Opprettet ny journalpost {}", response)
 
         validerOpprettJournalpostResponse(skalFerdigstilles, response)
@@ -143,7 +141,7 @@ class OpprettJournalpostService(
         if (response.journalpostferdigstilt) {
             lagreSaksbehandlerIdentOgKnyttFerdigstiltJournalpostTilSaker(
                 response.journalpostId!!,
-                knyttTilSaker
+                knyttTilSaker,
             )
         }
 
@@ -151,39 +149,36 @@ class OpprettJournalpostService(
             journalpostId = response.journalpostId.toString(),
             dokumenter = response.dokumenter?.map {
                 OpprettDokumentDto(dokumentreferanse = it.dokumentInfoId)
-            } ?: emptyList()
+            } ?: emptyList(),
         )
     }
 
     private fun lagreSaksbehandlerIdentOgKnyttFerdigstiltJournalpostTilSaker(
         journalpostId: Long,
         knyttTilSaker: List<String>,
-        saksbehandlerIdent: String? = null
+        saksbehandlerIdent: String? = null,
     ) {
         try {
             val opprettetJournalpost = hentJournalpost(journalpostId)
             endreJournalpostService.lagreSaksbehandlerIdentForJournalfortJournalpost(
                 opprettetJournalpost,
-                saksbehandlerIdent
+                saksbehandlerIdent,
             )
             knyttSakerTilOpprettetJournalpost(opprettetJournalpost, knyttTilSaker)
         } catch (e: Exception) {
             LOGGER.error(
                 "Etterbehandling av opprettet journalpost feilet (knytt til flere saker eller lagre saksbehandler ident). Fortsetter behandling da feilen må behandles manuelt.",
-                e
+                e,
             )
         }
     }
 
-    private fun validerOpprettJournalpostResponse(
-        skalFerdigstilles: Boolean,
-        response: JoarkOpprettJournalpostResponse
-    ) {
+    private fun validerOpprettJournalpostResponse(skalFerdigstilles: Boolean, response: JoarkOpprettJournalpostResponse) {
         if (skalFerdigstilles && !response.journalpostferdigstilt) {
             val message = String.format(
                 "Kunne ikke journalføre journalpost %s med feilmelding %s",
                 response.journalpostId,
-                response.melding
+                response.melding,
             )
             LOGGER.error(message)
             throw KunneIkkeJournalforeOpprettetJournalpost(message)
@@ -198,25 +193,19 @@ class OpprettJournalpostService(
         }
     }
 
-    private fun knyttSakerTilOpprettetJournalpost(
-        opprettetJournalpost: Journalpost,
-        knyttTilSaker: List<String>
-    ) {
+    private fun knyttSakerTilOpprettetJournalpost(opprettetJournalpost: Journalpost, knyttTilSaker: List<String>) {
         knyttTilSaker
             .stream()
             .filter { saksnummer: String -> saksnummer != opprettetJournalpost.sak!!.fagsakId }
             .forEach { saksnummer: String? ->
                 endreJournalpostService.tilknyttTilSak(
                     saksnummer,
-                    opprettetJournalpost
+                    opprettetJournalpost,
                 )
             }
     }
 
-    private fun populerMedDokumenterByteData(
-        request: JoarkOpprettJournalpostRequest,
-        originalJournalpostId: Long?
-    ): JoarkOpprettJournalpostRequest {
+    private fun populerMedDokumenterByteData(request: JoarkOpprettJournalpostRequest, originalJournalpostId: Long?): JoarkOpprettJournalpostRequest {
         if (originalJournalpostId != null) {
             return request.copy(
                 dokumenter = request.dokumenter.map {
@@ -226,7 +215,7 @@ class OpprettJournalpostService(
                     } else {
                         it
                     }
-                }
+                },
             )
         }
         return request
@@ -286,11 +275,11 @@ class OpprettJournalpostService(
             },
             bruker = JoarkOpprettJournalpostRequest.OpprettJournalpostBruker(
                 id = request.hentGjelderIdent(),
-                idType = request.hentGjelderType()?.name
+                idType = request.hentGjelderType()?.name,
             ),
             avsenderMottaker = if (request.journalposttype != JournalpostType.NOTAT) {
                 mapMottaker(
-                    request
+                    request,
                 )
             } else {
                 null
@@ -307,12 +296,12 @@ class OpprettJournalpostService(
                     dokumentvarianter = listOf(
                         opprettDokumentVariant(
                             null,
-                            hentDokument(it)
-                        )
-                    )
+                            hentDokument(it),
+                        ),
+                    ),
                 )
             },
-            tilleggsopplysninger = tilleggsOpplysninger
+            tilleggsopplysninger = tilleggsOpplysninger,
         )
     }
 
@@ -322,18 +311,18 @@ class OpprettJournalpostService(
         } ?: dokumentDto.dokumentreferanse?.let {
             LOGGER.info("Henter dokument bytedata for dokument med tittel ${dokumentDto.tittel} og dokumentreferanse ${dokumentDto.dokumentreferanse}")
             bidragDokumentConsumer.hentDokument(
-                it
+                it,
             )
         } ?: throw HttpClientErrorException(
             HttpStatus.BAD_REQUEST,
-            "Fant ikke referanse eller data for dokument med tittel ${dokumentDto.tittel}"
+            "Fant ikke referanse eller data for dokument med tittel ${dokumentDto.tittel}",
         )
     }
 
     private fun mapMottaker(request: OpprettJournalpostRequest): JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker =
         if (request.avsenderMottaker?.erSamhandler() == true) {
             JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
-                navn = request.avsenderMottaker?.navn
+                navn = request.avsenderMottaker?.navn,
             )
         } else {
             JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
@@ -346,7 +335,7 @@ class OpprettJournalpostService(
                         AvsenderMottakerDtoIdType.UTENLANDSK_ORGNR -> AvsenderMottakerIdType.UTL_ORG
                         else -> AvsenderMottakerIdType.FNR
                     }
-                }
+                },
             )
         }
 

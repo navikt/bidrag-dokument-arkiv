@@ -27,13 +27,13 @@ import no.nav.bidrag.dokument.arkiv.stubs.JOURNALPOST_ID
 import no.nav.bidrag.dokument.arkiv.stubs.createDistribuerTilAdresse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
-import no.nav.bidrag.domain.enums.Adressetype
-import no.nav.bidrag.domain.string.Adresselinje1
-import no.nav.bidrag.domain.string.Adresselinje2
-import no.nav.bidrag.domain.string.Landkode2
-import no.nav.bidrag.domain.string.Landkode3
-import no.nav.bidrag.domain.string.Postnummer
-import no.nav.bidrag.domain.string.Poststed
+import no.nav.bidrag.domene.enums.Adressetype
+import no.nav.bidrag.domene.streng.Adresselinje1
+import no.nav.bidrag.domene.streng.Adresselinje2
+import no.nav.bidrag.domene.streng.Landkode2
+import no.nav.bidrag.domene.streng.Landkode3
+import no.nav.bidrag.domene.streng.Postnummer
+import no.nav.bidrag.domene.streng.Poststed
 import no.nav.bidrag.transport.dokument.DistribuerJournalpostRequest
 import no.nav.bidrag.transport.dokument.DistribuerJournalpostResponse
 import no.nav.bidrag.transport.dokument.DistribuerTilAdresse
@@ -61,8 +61,8 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             BestemKanalResponse(
                 regel = "",
                 regelBegrunnelse = "",
-                distribusjonskanal = DistribusjonsKanal.PRINT
-            )
+                distribusjonskanal = DistribusjonsKanal.PRINT,
+            ),
         )
     }
 
@@ -81,33 +81,33 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
         tilleggsopplysningerEtterDist.add(
             mapOf(
                 "nokkel" to "dokdistBestillingsId",
-                "verdi" to "asdsadasdsadasdasd"
-            )
+                "verdi" to "asdsadasdsadasdasd",
+            ),
         )
         stubs.mockBestmDistribusjonskanal(
             BestemKanalResponse(
                 regel = "",
                 regelBegrunnelse = "",
-                distribusjonskanal = DistribusjonsKanal.PRINT
-            )
+                distribusjonskanal = DistribusjonsKanal.PRINT,
+            ),
         )
         stubs.mockSafResponseHentJournalpost(
             opprettUtgaendeSafResponse(
                 tilleggsopplysninger = tilleggsopplysninger,
-                relevanteDatoer = listOf(DatoType(LocalDateTime.now().toString(), "DATO_DOKUMENT"))
+                relevanteDatoer = listOf(DatoType(LocalDateTime.now().toString(), "DATO_DOKUMENT")),
             ),
             null,
-            "ETTER_DIST"
+            "ETTER_DIST",
         )
         stubs.mockSafResponseHentJournalpost(
             opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsopplysningerEtterDist),
             "ETTER_DIST",
-            "ETTER_DIST2"
+            "ETTER_DIST2",
         )
         stubs.mockSafResponseHentJournalpost(
             opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsopplysningerEtterDist),
             "ETTER_DIST2",
-            "ETTER_DIST3"
+            "ETTER_DIST3",
         )
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
@@ -116,14 +116,14 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                 TilknyttetJournalpost(
                     JOURNALPOST_ID,
                     JournalStatus.FERDIGSTILT,
-                    Sak("5276661")
-                )
-            )
+                    Sak("5276661"),
+                ),
+            ),
         )
         val distribuerTilAdresse = createDistribuerTilAdresse()
             .copy(
                 adresselinje2 = "Adresselinje2",
-                adresselinje3 = "Adresselinje3"
+                adresselinje3 = "Adresselinje3",
             )
 
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
@@ -131,7 +131,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
         // when
         val response = httpHeaderTestRestTemplate.postForEntity<JournalpostDto>(
             initUrl() + "/journal/distribuer/JOARK-" + JOURNALPOST_ID,
-            HttpEntity(request, headersMedEnhet)
+            HttpEntity(request, headersMedEnhet),
         )
 
         // then
@@ -144,20 +144,20 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                         "BI01A01",
                         null,
                         request.adresse,
-                        null
-                    )
-                )
+                        null,
+                    ),
+                ),
             )
             stubs.verifyStub.dokdistFordelingKalt(DistribusjonsType.VEDTAK.name)
             stubs.verifyStub.dokdistFordelingKalt(DistribusjonsTidspunkt.KJERNETID.name)
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
                 request.adresse!!.adresselinje1,
-                request.adresse!!.land
+                request.adresse!!.land,
             )
             stubs.verifyStub.dokarkivIkkeOppdaterKalt(
                 JOURNALPOST_ID,
-                "datoDokument"
+                "datoDokument",
             )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
@@ -166,7 +166,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                     "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
                     "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
                     "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
-                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
+                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}",
             )
         }
     }
@@ -186,34 +186,34 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
         tilleggsopplysningerEtterDist.add(
             mapOf(
                 "nokkel" to "dokdistBestillingsId",
-                "verdi" to "asdsadasdsadasdasd"
-            )
+                "verdi" to "asdsadasdsadasdasd",
+            ),
         )
 
         stubs.mockBestmDistribusjonskanal(
             BestemKanalResponse(
                 regel = "",
                 regelBegrunnelse = "",
-                distribusjonskanal = DistribusjonsKanal.DITT_NAV
-            )
+                distribusjonskanal = DistribusjonsKanal.DITT_NAV,
+            ),
         )
         stubs.mockSafResponseHentJournalpost(
             opprettUtgaendeSafResponse(
                 tilleggsopplysninger = tilleggsopplysninger,
-                relevanteDatoer = listOf(DatoType(LocalDateTime.now().toString(), "DATO_DOKUMENT"))
+                relevanteDatoer = listOf(DatoType(LocalDateTime.now().toString(), "DATO_DOKUMENT")),
             ),
             null,
-            "ETTER_DIST"
+            "ETTER_DIST",
         )
         stubs.mockSafResponseHentJournalpost(
             opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsopplysningerEtterDist),
             "ETTER_DIST",
-            "ETTER_DIST2"
+            "ETTER_DIST2",
         )
         stubs.mockSafResponseHentJournalpost(
             opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsopplysningerEtterDist),
             "ETTER_DIST2",
-            "ETTER_DIST3"
+            "ETTER_DIST3",
         )
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
@@ -222,14 +222,14 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                 TilknyttetJournalpost(
                     JOURNALPOST_ID,
                     JournalStatus.FERDIGSTILT,
-                    Sak("5276661")
-                )
-            )
+                    Sak("5276661"),
+                ),
+            ),
         )
         // when
         val response = httpHeaderTestRestTemplate.postForEntity<JournalpostDto>(
             initUrl() + "/journal/distribuer/JOARK-" + JOURNALPOST_ID,
-            HttpEntity(null, headersMedEnhet)
+            HttpEntity(null, headersMedEnhet),
         )
 
         // then
@@ -242,18 +242,18 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                         "BI01A01",
                         null,
                         null,
-                        null
-                    )
-                )
+                        null,
+                    ),
+                ),
             )
             stubs.verifyStub.dokdistFordelingKalt(DistribusjonsType.VEDTAK.name)
             stubs.verifyStub.dokdistFordelingKalt(DistribusjonsTidspunkt.KJERNETID.name)
             stubs.verifyStub.dokarkivOppdaterKalt(
-                JOURNALPOST_ID
+                JOURNALPOST_ID,
             )
             stubs.verifyStub.dokarkivIkkeOppdaterKalt(
                 JOURNALPOST_ID,
-                "datoDokument"
+                "datoDokument",
             )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
@@ -261,7 +261,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                     "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
                     "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
                     "{\"nokkel\":\"origDistDigitalt\",\"verdi\":\"true\"}," +
-                    "{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
+                    "{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}",
             )
         }
     }
@@ -281,24 +281,24 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
         tilleggsopplysningerEtterDist.add(
             mapOf(
                 "nokkel" to "dokdistBestillingsId",
-                "verdi" to "asdsadasdsadasdasd"
-            )
+                "verdi" to "asdsadasdsadasdasd",
+            ),
         )
 
         stubs.mockSafResponseHentJournalpost(
             opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsopplysninger),
             null,
-            "ETTER_DIST"
+            "ETTER_DIST",
         )
         stubs.mockSafResponseHentJournalpost(
             opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsopplysningerEtterDist),
             "ETTER_DIST",
-            "ETTER_DIST2"
+            "ETTER_DIST2",
         )
         stubs.mockSafResponseHentJournalpost(
             opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsopplysningerEtterDist),
             "ETTER_DIST2",
-            "ETTER_DIST3"
+            "ETTER_DIST3",
         )
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
@@ -307,20 +307,20 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                 TilknyttetJournalpost(
                     JOURNALPOST_ID,
                     JournalStatus.FERDIGSTILT,
-                    Sak("5276661")
-                )
-            )
+                    Sak("5276661"),
+                ),
+            ),
         )
         val distribuerTilAdresse = createDistribuerTilAdresse().copy(
             adresselinje2 = "Adresselinje2",
-            adresselinje3 = "Adresselinje3"
+            adresselinje3 = "Adresselinje3",
         )
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
         val response = httpHeaderTestRestTemplate.postForEntity<JournalpostDto>(
             initUrl() + "/journal/distribuer/JOARK-" + JOURNALPOST_ID,
-            HttpEntity(request, headersMedEnhet)
+            HttpEntity(request, headersMedEnhet),
         )
 
         // then
@@ -333,20 +333,20 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                         "BI01A01",
                         null,
                         request.adresse,
-                        null
-                    )
-                )
+                        null,
+                    ),
+                ),
             )
             stubs.verifyStub.dokdistFordelingKalt(DistribusjonsType.VEDTAK.name)
             stubs.verifyStub.dokdistFordelingKalt(DistribusjonsTidspunkt.KJERNETID.name)
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
                 request.adresse!!.adresselinje1,
-                request.adresse!!.land
+                request.adresse!!.land,
             )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
-                "datoDokument"
+                "datoDokument",
             )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
@@ -355,7 +355,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                     "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
                     "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
                     "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
-                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
+                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}",
             )
         }
     }
@@ -372,7 +372,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             journalpostId.toString(),
             journalpostType = JournalpostType.U,
             journalstatus = JournalStatus.FERDIGSTILT,
-            avsenderMottaker = AvsenderMottaker(navn = "Samhandler Navnesen")
+            avsenderMottaker = AvsenderMottaker(navn = "Samhandler Navnesen"),
         )
             .copy(tema = "FAR")
         stubs.mockSafResponseHentJournalpost(safresponse)
@@ -383,21 +383,21 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                 TilknyttetJournalpost(
                     journalpostId,
                     JournalStatus.FERDIGSTILT,
-                    Sak("5276661")
-                )
-            )
+                    Sak("5276661"),
+                ),
+            ),
         )
         val distribuerTilAdresse = createDistribuerTilAdresse()
             .copy(
                 adresselinje2 = "Adresselinje2",
-                adresselinje3 = "Adresselinje3"
+                adresselinje3 = "Adresselinje3",
             )
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
         val response = httpHeaderTestRestTemplate.postForEntity<JournalpostDto>(
             initUrl() + "/journal/distribuer/JOARK-" + journalpostId,
-            HttpEntity(request, headersMedEnhet)
+            HttpEntity(request, headersMedEnhet),
 
         )
 
@@ -410,13 +410,13 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                         "BI01A06",
                         null,
                         request.adresse,
-                        null
-                    )
-                )
+                        null,
+                    ),
+                ),
             )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 journalpostId,
-                "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}"
+                "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}",
             )
         }
     }
@@ -435,7 +435,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             journalpostId.toString(),
             journalpostType = JournalpostType.U,
             journalstatus = JournalStatus.FERDIGSTILT,
-            avsenderMottaker = AvsenderMottaker(navn = "Samhandler Navnesen")
+            avsenderMottaker = AvsenderMottaker(navn = "Samhandler Navnesen"),
         )
         stubs.mockSafResponseHentJournalpost(safresponse)
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
@@ -445,21 +445,21 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                 TilknyttetJournalpost(
                     journalpostId,
                     JournalStatus.FERDIGSTILT,
-                    Sak("5276661")
-                )
-            )
+                    Sak("5276661"),
+                ),
+            ),
         )
         val distribuerTilAdresse = createDistribuerTilAdresse()
             .copy(
                 adresselinje2 = "Adresselinje2",
-                adresselinje3 = "Adresselinje3"
+                adresselinje3 = "Adresselinje3",
             )
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
         // when
         val response = httpHeaderTestRestTemplate.postForEntity<JournalpostDto>(
             initUrl() + "/journal/distribuer/JOARK-" + journalpostId,
-            HttpEntity(request, headersMedEnhet)
+            HttpEntity(request, headersMedEnhet),
         )
 
         assertSoftly {
@@ -471,13 +471,13 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                         "BI01A06",
                         null,
                         request.adresse,
-                        null
-                    )
-                )
+                        null,
+                    ),
+                ),
             )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 journalpostId,
-                "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}"
+                "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}",
             )
         }
     }
@@ -496,12 +496,12 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                 journalposttype = "U",
                 kanal = JournalpostKanal.NAV_NO,
                 utsendingsinfo = UtsendingsInfo(
-                    digitalpostSendt = DigitalpostSendt("test@nav.no")
+                    digitalpostSendt = DigitalpostSendt("test@nav.no"),
                 ),
                 tilleggsopplysninger = tilleggsOpplysninger,
-                relevanteDatoer = listOf(DATO_DOKUMENT)
+                relevanteDatoer = listOf(DATO_DOKUMENT),
             ),
-            journalpostId
+            journalpostId,
         )
         // when
         val response =
@@ -535,12 +535,12 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                 journalposttype = "U",
                 kanal = JournalpostKanal.NAV_NO,
                 utsendingsinfo = UtsendingsInfo(
-                    epostVarselSendt = EpostVarselSendt("test@nav.no", "tittel", "varslingtekst")
+                    epostVarselSendt = EpostVarselSendt("test@nav.no", "tittel", "varslingtekst"),
                 ),
                 tilleggsopplysninger = tilleggsOpplysninger,
-                relevanteDatoer = listOf(DATO_DOKUMENT)
+                relevanteDatoer = listOf(DATO_DOKUMENT),
             ),
-            journalpostId
+            journalpostId,
         )
         // when
         val response =
@@ -572,7 +572,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
         val safresponse = opprettSafResponse(
             journalpostId.toString(),
             journalpostType = JournalpostType.U,
-            journalstatus = JournalStatus.FERDIGSTILT
+            journalstatus = JournalStatus.FERDIGSTILT,
         )
         stubs.mockSafResponseHentJournalpost(safresponse)
         val tilleggsOpplysninger = TilleggsOpplysninger()
@@ -580,10 +580,10 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost(
             safresponse.copy(
                 tilleggsopplysninger = tilleggsOpplysninger,
-                relevanteDatoer = listOf(DatoType(LocalDateTime.now().toString(), "DATO_DOKUMENT"))
+                relevanteDatoer = listOf(DatoType(LocalDateTime.now().toString(), "DATO_DOKUMENT")),
             ),
             null,
-            "ETTER_DIST"
+            "ETTER_DIST",
         )
         stubs.mockSafResponseHentJournalpost(
             safresponse.copy(
@@ -595,10 +595,10 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                     } else {
                         dokument
                     }
-                }
+                },
             ),
             "ETTER_DIST",
-            null
+            null,
         )
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
@@ -607,9 +607,9 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                 TilknyttetJournalpost(
                     journalpostId,
                     JournalStatus.FERDIGSTILT,
-                    Sak("5276661")
-                )
-            )
+                    Sak("5276661"),
+                ),
+            ),
         )
         stubs.mockDokarkivOppdaterDistribusjonsInfoRequest(journalpostId)
         val request = DistribuerJournalpostRequest(lokalUtskrift = true)
@@ -619,7 +619,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             initUrl() + "/journal/distribuer/JOARK-" + journalpostId,
             HttpMethod.POST,
             HttpEntity(request, headersMedEnhet),
-            JournalpostDto::class.java
+            JournalpostDto::class.java,
         )
 
         response.statusCode shouldBe HttpStatus.OK
@@ -628,15 +628,15 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokdistFordelingIkkeKalt()
             stubs.verifyStub.dokarkivOppdaterDistribusjonsInfoKalt(
                 journalpostId,
-                "{\"settStatusEkspedert\":true,\"utsendingsKanal\":\"L\"}"
+                "{\"settStatusEkspedert\":true,\"utsendingsKanal\":\"L\"}",
             )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 journalpostId,
-                "{\"tilleggsopplysninger\":[{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
+                "{\"tilleggsopplysninger\":[{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}",
             )
             stubs.verifyStub.dokarkivIkkeOppdaterKalt(
                 journalpostId,
-                "{\"dokumenter\":[{\"dokumentInfoId\":\"$DOKUMENT_1_ID\",\"tittel\":\"Tittel på dokument 1 (dokumentet er sendt per post med vedlegg)\"}]}"
+                "{\"dokumenter\":[{\"dokumentInfoId\":\"$DOKUMENT_1_ID\",\"tittel\":\"Tittel på dokument 1 (dokumentet er sendt per post med vedlegg)\"}]}",
             )
         }
     }
@@ -652,7 +652,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
         val safresponse = opprettSafResponse(
             journalpostId.toString(),
             journalpostType = JournalpostType.U,
-            journalstatus = JournalStatus.FERDIGSTILT
+            journalstatus = JournalStatus.FERDIGSTILT,
         )
         stubs.mockSafResponseHentJournalpost(safresponse)
         val tilleggsOpplysninger = TilleggsOpplysninger()
@@ -660,18 +660,18 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost(
             safresponse.copy(
                 tilleggsopplysninger = tilleggsOpplysninger,
-                relevanteDatoer = listOf(DatoType(LocalDateTime.now().toString(), "DATO_DOKUMENT"))
+                relevanteDatoer = listOf(DatoType(LocalDateTime.now().toString(), "DATO_DOKUMENT")),
             ),
             null,
-            "ETTER_DIST"
+            "ETTER_DIST",
         )
         stubs.mockSafResponseHentJournalpost(
             safresponse.copy(
                 tilleggsopplysninger = tilleggsOpplysninger,
-                journalstatus = JournalStatus.EKSPEDERT
+                journalstatus = JournalStatus.EKSPEDERT,
             ),
             "ETTER_DIST",
-            null
+            null,
         )
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
@@ -680,9 +680,9 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                 TilknyttetJournalpost(
                     journalpostId,
                     JournalStatus.FERDIGSTILT,
-                    Sak("5276661")
-                )
-            )
+                    Sak("5276661"),
+                ),
+            ),
         )
         stubs.mockDokarkivOppdaterDistribusjonsInfoRequest(journalpostId)
         val request = DistribuerJournalpostRequest(lokalUtskrift = true)
@@ -692,7 +692,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             initUrl() + "/journal/distribuer/JOARK-" + journalpostId,
             HttpMethod.POST,
             HttpEntity(request, headersMedEnhet),
-            JournalpostDto::class.java
+            JournalpostDto::class.java,
         )
 
         response.statusCode shouldBe HttpStatus.OK
@@ -701,15 +701,15 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokdistFordelingIkkeKalt()
             stubs.verifyStub.dokarkivOppdaterDistribusjonsInfoKalt(
                 journalpostId,
-                "{\"settStatusEkspedert\":true,\"utsendingsKanal\":\"L\"}"
+                "{\"settStatusEkspedert\":true,\"utsendingsKanal\":\"L\"}",
             )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 journalpostId,
-                "{\"tilleggsopplysninger\":[{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
+                "{\"tilleggsopplysninger\":[{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}",
             )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 journalpostId,
-                "{\"dokumenter\":[{\"dokumentInfoId\":\"$DOKUMENT_1_ID\",\"tittel\":\"Tittel på dokument 1 (dokumentet er sendt per post med vedlegg)\"}]}"
+                "{\"dokumenter\":[{\"dokumentInfoId\":\"$DOKUMENT_1_ID\",\"tittel\":\"Tittel på dokument 1 (dokumentet er sendt per post med vedlegg)\"}]}",
             )
         }
     }
@@ -726,7 +726,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             journalpostId.toString(),
             journalpostType = JournalpostType.U,
             journalstatus = JournalStatus.FERDIGSTILT,
-            tema = "FAR"
+            tema = "FAR",
         )
         stubs.mockSafResponseHentJournalpost(safresponse)
         val tilleggsOpplysninger = TilleggsOpplysninger()
@@ -734,18 +734,18 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
         stubs.mockSafResponseHentJournalpost(
             safresponse.copy(
                 tilleggsopplysninger = tilleggsOpplysninger,
-                relevanteDatoer = listOf(DatoType(LocalDateTime.now().toString(), "DATO_DOKUMENT"))
+                relevanteDatoer = listOf(DatoType(LocalDateTime.now().toString(), "DATO_DOKUMENT")),
             ),
             null,
-            "ETTER_DIST"
+            "ETTER_DIST",
         )
         stubs.mockSafResponseHentJournalpost(
             safresponse.copy(
                 tilleggsopplysninger = tilleggsOpplysninger,
-                journalstatus = JournalStatus.EKSPEDERT
+                journalstatus = JournalStatus.EKSPEDERT,
             ),
             "ETTER_DIST",
-            null
+            null,
         )
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(journalpostId)
@@ -754,9 +754,9 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                 TilknyttetJournalpost(
                     journalpostId,
                     JournalStatus.FERDIGSTILT,
-                    Sak("5276661")
-                )
-            )
+                    Sak("5276661"),
+                ),
+            ),
         )
         stubs.mockDokarkivOppdaterDistribusjonsInfoRequest(journalpostId)
         val request = DistribuerJournalpostRequest(lokalUtskrift = true)
@@ -766,7 +766,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             initUrl() + "/journal/distribuer/JOARK-" + journalpostId,
             HttpMethod.POST,
             HttpEntity(request, headersMedEnhet),
-            JournalpostDto::class.java
+            JournalpostDto::class.java,
         )
 
         response.statusCode shouldBe HttpStatus.OK
@@ -775,15 +775,15 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokdistFordelingIkkeKalt()
             stubs.verifyStub.dokarkivOppdaterDistribusjonsInfoKalt(
                 journalpostId,
-                "{\"settStatusEkspedert\":true,\"utsendingsKanal\":\"L\"}"
+                "{\"settStatusEkspedert\":true,\"utsendingsKanal\":\"L\"}",
             )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 journalpostId,
-                "{\"tilleggsopplysninger\":[{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}"
+                "{\"tilleggsopplysninger\":[{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}",
             )
             stubs.verifyStub.dokarkivIkkeOppdaterKalt(
                 journalpostId,
-                "{\"dokumenter\":[{\"dokumentInfoId\":\"$DOKUMENT_1_ID\",\"tittel\":\"Tittel på dokument 1 (dokumentet er sendt per post med vedlegg)\"}]}"
+                "{\"dokumenter\":[{\"dokumentInfoId\":\"$DOKUMENT_1_ID\",\"tittel\":\"Tittel på dokument 1 (dokumentet er sendt per post med vedlegg)\"}]}",
             )
         }
     }
@@ -803,7 +803,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
         val distribuerTilAdresse = createDistribuerTilAdresse().copy(
             adresselinje2 = "Adresselinje2",
-            adresselinje3 = "Adresselinje3"
+            adresselinje3 = "Adresselinje3",
         )
 
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
@@ -812,7 +812,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
         val oppdaterJournalpostResponseEntity =
             httpHeaderTestRestTemplate.postForEntity<DistribuerJournalpostResponse>(
                 initUrl() + "/journal/distribuer/JOARK-" + journalpostIdFraJson,
-                HttpEntity(request, headersMedEnhet)
+                HttpEntity(request, headersMedEnhet),
             )
 
         // then
@@ -830,7 +830,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                     .`as`("journalpostId")
                     .isEqualTo("JOARK-201028011")
             },
-            { stubs.verifyStub.dokdistFordelingIkkeKalt() }
+            { stubs.verifyStub.dokdistFordelingIkkeKalt() },
         )
     }
 
@@ -853,7 +853,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             postnummer = Postnummer("3939"),
             poststed = Poststed("OSLO"),
             land = Landkode2("NO"),
-            land3 = Landkode3("NOR")
+            land3 = Landkode3("NOR"),
         )
 
         headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
@@ -865,15 +865,17 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                 TilknyttetJournalpost(
                     journalpostIdFraJson,
                     JournalStatus.FERDIGSTILT,
-                    Sak("5276661")
-                )
-            )
+                    Sak("5276661"),
+                ),
+            ),
         )
         stubs.mockPersonAdresseResponse(postadresse)
 
         // when
         val oppdaterJournalpostResponseEntity =
-            httpHeaderTestRestTemplate.postForEntity<JournalpostDto>(initUrl() + "/journal/distribuer/JOARK-" + journalpostIdFraJson + "?batchId=" + batchId)
+            httpHeaderTestRestTemplate.postForEntity<JournalpostDto>(
+                initUrl() + "/journal/distribuer/JOARK-" + journalpostIdFraJson + "?batchId=" + batchId,
+            )
 
         // then
         org.junit.jupiter.api.Assertions.assertAll(
@@ -896,11 +898,11 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                                 postadresse.adresselinje3?.verdi,
                                 postadresse.land.verdi,
                                 postadresse.postnummer?.verdi,
-                                postadresse.poststed?.verdi
+                                postadresse.poststed?.verdi,
                             ),
-                            batchId
-                        )
-                    )
+                            batchId,
+                        ),
+                    ),
                 )
             },
             { stubs.verifyStub.dokdistFordelingKalt(DistribusjonsType.VEDTAK.name) },
@@ -911,9 +913,9 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostIdFraJson,
-                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}"
+                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}",
                 )
-            }
+            },
         )
     }
 
@@ -929,7 +931,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
         headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
         stubs.mockSafResponseHentJournalpost(
             "journalpostSafUtgaaendeResponseVedtakTittel.json",
-            HttpStatus.OK
+            HttpStatus.OK,
         )
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
@@ -937,7 +939,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
         val distribuerTilAdresse = createDistribuerTilAdresse()
             .copy(
                 adresselinje2 = "Adresselinje2",
-                adresselinje3 = "Adresselinje3"
+                adresselinje3 = "Adresselinje3",
             )
         val request = DistribuerJournalpostRequest(adresse = distribuerTilAdresse)
 
@@ -945,7 +947,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
         val oppdaterJournalpostResponseEntity =
             httpHeaderTestRestTemplate.postForEntity<JournalpostDto>(
                 initUrl() + "/journal/distribuer/JOARK-" + journalpostIdFraJson,
-                HttpEntity(request, headersMedEnhet)
+                HttpEntity(request, headersMedEnhet),
             )
 
         // then
@@ -964,9 +966,9 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                             "BI01H03",
                             "Brev som inneholder Vedtak",
                             request.adresse,
-                            null
-                        )
-                    )
+                            null,
+                        ),
+                    ),
                 )
             },
             { stubs.verifyStub.dokdistFordelingKalt(DistribusjonsType.VEDTAK.name) },
@@ -975,15 +977,15 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostIdFraJson,
                     request.adresse!!.adresselinje1,
-                    request.adresse!!.land
+                    request.adresse!!.land,
                 )
             },
             {
                 stubs.verifyStub.dokarkivOppdaterKalt(
                     journalpostIdFraJson,
-                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}"
+                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}",
                 )
-            }
+            },
         )
     }
 
@@ -999,7 +1001,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
         headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
         stubs.mockSafResponseHentJournalpost(
             "journalpostSafUtgaaendeResponseNoMottaker.json",
-            HttpStatus.OK
+            HttpStatus.OK,
         )
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
@@ -1009,7 +1011,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
         val oppdaterJournalpostResponseEntity =
             httpHeaderTestRestTemplate.postForEntity<JournalpostDto>(
                 initUrl() + "/journal/distribuer/JOARK-" + journalpostIdFraJson,
-                HttpEntity(request, headersMedEnhet)
+                HttpEntity(request, headersMedEnhet),
             )
 
         // then
@@ -1020,7 +1022,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.BAD_REQUEST)
             },
-            { stubs.verifyStub.dokdistFordelingIkkeKalt() }
+            { stubs.verifyStub.dokdistFordelingIkkeKalt() },
         )
     }
 
@@ -1048,7 +1050,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                     .extracting { it.statusCode }
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.OK)
-            }
+            },
         )
     }
 
@@ -1064,13 +1066,13 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
         headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
         stubs.mockSafResponseHentJournalpost(
             "journalpostSafUtgaaendeResponseNoMottaker.json",
-            HttpStatus.OK
+            HttpStatus.OK,
         )
         stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
         // when
         val response = httpHeaderTestRestTemplate.getForEntity<JournalpostDto>(
             initUrl() + "/journal/distribuer/JOARK-" + journalpostIdFraJson + "/enabled",
-            HttpEntity<Any>(headersMedEnhet)
+            HttpEntity<Any>(headersMedEnhet),
         )
 
         // then
@@ -1080,7 +1082,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                     .extracting { it.statusCode }
                     .`as`("statusCode")
                     .isEqualTo(HttpStatus.NOT_ACCEPTABLE)
-            }
+            },
         )
     }
 }

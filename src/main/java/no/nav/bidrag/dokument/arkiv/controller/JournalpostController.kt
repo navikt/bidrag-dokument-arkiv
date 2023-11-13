@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController
 @Protected
 class JournalpostController(
     journalpostService: ResourceByDiscriminator<JournalpostService?>,
-    private val endreJournalpostService: EndreJournalpostService
+    private val endreJournalpostService: EndreJournalpostService,
 ) : BaseController() {
     private val journalpostService: JournalpostService
 
@@ -44,27 +44,27 @@ class JournalpostController(
     @GetMapping("$ROOT_JOURNAL/{joarkJournalpostId}")
     @Operation(
         description = "Hent en journalpost for en id på formatet '" + KildesystemIdenfikator.PREFIX_JOARK_COMPLETE + "<journalpostId>'",
-        security = [SecurityRequirement(name = "bearer-key")]
+        security = [SecurityRequirement(name = "bearer-key")],
     )
     @ApiResponses(
         value = [
             ApiResponse(responseCode = "200", description = "Journalpost er hentet"), ApiResponse(
                 responseCode = "400",
-                description = "Journalpost som skal hentes er ikke koblet mot gitt saksnummer, eller det er feil prefix/id på journalposten"
+                description = "Journalpost som skal hentes er ikke koblet mot gitt saksnummer, eller det er feil prefix/id på journalposten",
             ), ApiResponse(
                 responseCode = "404",
-                description = "Fant ikke journalpost som skal hentes"
-            )
-        ]
+                description = "Fant ikke journalpost som skal hentes",
+            ),
+        ],
     )
     fun hentJournalpost(
         @PathVariable joarkJournalpostId: String,
-        @RequestParam(required = false) saksnummer: String?
+        @RequestParam(required = false) saksnummer: String?,
     ): ResponseEntity<JournalpostResponse> {
         LOGGER.info("Henter journalpost {} med saksnummer {}", joarkJournalpostId, saksnummer)
         val kildesystemIdenfikator = KildesystemIdenfikator(joarkJournalpostId)
         if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix() || erIkkePrefixetMedJoark(
-                joarkJournalpostId
+                joarkJournalpostId,
             )
         ) {
             return ResponseEntity
@@ -77,14 +77,14 @@ class JournalpostController(
                 .badRequest()
                 .header(
                     HttpHeaders.WARNING,
-                    "Kunne ikke hente id fra prefikset journalpostId: $joarkJournalpostId"
+                    "Kunne ikke hente id fra prefikset journalpostId: $joarkJournalpostId",
                 )
                 .build()
         return journalpostService.hentJournalpostMedFnrOgTilknyttedeSaker(
             java.lang.Long.valueOf(
-                journalpostId.toLong()
+                journalpostId.toLong(),
             ),
-            saksnummer
+            saksnummer,
         )
             .map { journalpost: Journalpost -> ResponseEntity.ok(journalpost.tilJournalpostResponse()) }
             .orElse(
@@ -94,10 +94,10 @@ class JournalpostController(
                         String.format(
                             "Fant ingen journalpost med id %s og saksnummer %s",
                             journalpostId,
-                            saksnummer
-                        )
+                            saksnummer,
+                        ),
                     )
-                    .build()
+                    .build(),
             )
     }
 
@@ -106,56 +106,57 @@ class JournalpostController(
     }
 
     @GetMapping("/sak/{saksnummer}/journal")
-    @Operation(description = "Finn journalposter for et saksnummer og fagområde. Parameter fagomrade=BID er bidragjournal og fagomrade=FAR er farskapsjournal")
+    @Operation(
+        description = "Finn journalposter for et saksnummer og fagområde. Parameter fagomrade=BID er bidragjournal og fagomrade=FAR er farskapsjournal",
+    )
     @ApiResponses(
         value = [
             ApiResponse(
                 responseCode = "200",
-                description = "Liste over journalposter for saksnummer og fagområde"
+                description = "Liste over journalposter for saksnummer og fagområde",
             ), ApiResponse(
                 responseCode = "404",
-                description = "Fant ikke journalposter for oppgitt sak og fagområde"
-            )
-        ]
+                description = "Fant ikke journalposter for oppgitt sak og fagområde",
+            ),
+        ],
     )
-    fun hentJournal(
-        @PathVariable saksnummer: String,
-        @RequestParam fagomrade: List<String> = emptyList()
-    ): ResponseEntity<List<JournalpostDto>> {
+    fun hentJournal(@PathVariable saksnummer: String, @RequestParam fagomrade: List<String> = emptyList()): ResponseEntity<List<JournalpostDto>> {
         LOGGER.info("Henter journal for saksnummer {} og tema {}", saksnummer, fagomrade)
         return ResponseEntity.ok(journalpostService.finnJournalposter(saksnummer, fagomrade))
     }
 
     @PatchMapping("$ROOT_JOURNAL/{joarkJournalpostId}")
-    @Operation(description = "endre eksisterende journalpost med journalpostId på formatet '" + KildesystemIdenfikator.PREFIX_JOARK_COMPLETE + "<journalpostId>'")
+    @Operation(
+        description = "endre eksisterende journalpost med journalpostId på formatet '" + KildesystemIdenfikator.PREFIX_JOARK_COMPLETE + "<journalpostId>'",
+    )
     @ApiResponses(
         value = [
             ApiResponse(responseCode = "203", description = "Journalpost er endret"), ApiResponse(
                 responseCode = "400",
-                description = "Prefiks på journalpostId er ugyldig, JournalpostEndreJournalpostCommandDto.gjelder er ikke satt eller det ikke finnes en journalpost på gitt id"
+                description = "Prefiks på journalpostId er ugyldig, JournalpostEndreJournalpostCommandDto.gjelder er ikke satt eller det ikke finnes en journalpost på gitt id",
             ), ApiResponse(
                 responseCode = "404",
-                description = "Fant ikke journalpost som skal endres, ingen 'payload' eller feil prefix/id på journalposten"
-            )
-        ]
+                description = "Fant ikke journalpost som skal endres, ingen 'payload' eller feil prefix/id på journalposten",
+            ),
+        ],
     )
     fun patch(
         @RequestBody endreJournalpostCommand: EndreJournalpostCommand,
         @PathVariable joarkJournalpostId: String,
-        @RequestHeader(EnhetFilter.X_ENHET_HEADER) enhet: String?
+        @RequestHeader(EnhetFilter.X_ENHET_HEADER) enhet: String?,
     ): ResponseEntity<Void> {
         LOGGER.info("Mottatt oppdater journalpost {} kall", joarkJournalpostId)
         SECURE_LOGGER.info(
             "Oppdater journalpost {} med body: {}",
             joarkJournalpostId,
-            endreJournalpostCommand
+            endreJournalpostCommand,
         )
         val kildesystemIdenfikator = KildesystemIdenfikator(joarkJournalpostId)
         if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix()) {
             val msgBadRequest = String.format(
                 "Id har ikke riktig prefix: %s eller det mangler gjelder person %s",
                 joarkJournalpostId,
-                endreJournalpostCommand
+                endreJournalpostCommand,
             )
             LOGGER.warn(msgBadRequest)
             return ResponseEntity
@@ -165,9 +166,9 @@ class JournalpostController(
         }
         endreJournalpostService.endre(
             java.lang.Long.valueOf(
-                kildesystemIdenfikator.hentJournalpostId()!!.toLong()
+                kildesystemIdenfikator.hentJournalpostId()!!.toLong(),
             ),
-            EndreJournalpostCommandIntern(endreJournalpostCommand, enhet!!)
+            EndreJournalpostCommandIntern(endreJournalpostCommand, enhet!!),
         )
         return ResponseEntity(HttpStatus.OK)
     }

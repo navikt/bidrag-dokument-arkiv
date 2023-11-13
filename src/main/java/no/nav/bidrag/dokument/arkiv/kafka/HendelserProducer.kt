@@ -23,7 +23,7 @@ open class HendelserProducer(
     open val kafkaTemplate: KafkaTemplate<String, String>,
     open val objectMapper: ObjectMapper,
     open val topic: String,
-    open val saksbehandlerInfoManager: SaksbehandlerInfoManager
+    open val saksbehandlerInfoManager: SaksbehandlerInfoManager,
 ) {
     fun publishJournalpostUpdated(journalpostId: Long, saksbehandlersEnhet: String?) {
         val journalpostHendelse = createJournalpostHendelse(journalpostId, saksbehandlersEnhet)
@@ -34,42 +34,36 @@ open class HendelserProducer(
         publish(journalpostHendelse)
     }
 
-    private fun createJournalpostHendelse(
-        journalpostId: Long,
-        saksbehandlersEnhet: String?
-    ): JournalpostHendelse {
+    private fun createJournalpostHendelse(journalpostId: Long, saksbehandlersEnhet: String?): JournalpostHendelse {
         val journalpost = journalpostService.hentJournalpostMedTilknyttedeSaker(journalpostId)
             ?: throw JournalpostIkkeFunnetException(
                 String.format(
                     "Fant ikke journalpost med id %s",
-                    journalpostId
-                )
+                    journalpostId,
+                ),
             )
         return createJournalpostHendelse(journalpost, saksbehandlersEnhet)
     }
 
-    private fun createJournalpostHendelse(
-        journalpost: Journalpost,
-        saksbehandlersEnhet: String?
-    ): JournalpostHendelse {
+    private fun createJournalpostHendelse(journalpost: Journalpost, saksbehandlersEnhet: String?): JournalpostHendelse {
         val saksbehandler = saksbehandlerInfoManager.hentSaksbehandler()
             .orElse(
                 Optional.ofNullable(journalpost.hentJournalfortAvIdent())
                     .map { ident: String? -> Saksbehandler(ident, journalpost.journalfortAvNavn) }
-                    .orElse(Saksbehandler(null, "bidrag-dokument-arkiv"))
+                    .orElse(Saksbehandler(null, "bidrag-dokument-arkiv")),
             )
         val saksbehandlerMedEnhet = saksbehandler.tilEnhet(saksbehandlersEnhet)
         return JournalpostHendelseIntern(
             journalpost,
             saksbehandlerMedEnhet,
-            null
+            null,
         ).hentJournalpostHendelse()
     }
 
     @Retryable(
         value = [Exception::class],
         maxAttempts = 10,
-        backoff = Backoff(delay = 1000, maxDelay = 12000, multiplier = 2.0)
+        backoff = Backoff(delay = 1000, maxDelay = 12000, multiplier = 2.0),
     )
     private fun publish(journalpostHendelse: JournalpostHendelse) {
         try {
@@ -77,7 +71,7 @@ open class HendelserProducer(
             SECURE_LOGGER.info("Publiserer hendelse {}", message)
             LOGGER.info(
                 "Publiserer hendelse med journalpostId={}",
-                journalpostHendelse.journalpostId
+                journalpostHendelse.journalpostId,
             )
             kafkaTemplate.send(topic, journalpostHendelse.journalpostId, message)
         } catch (e: JsonProcessingException) {

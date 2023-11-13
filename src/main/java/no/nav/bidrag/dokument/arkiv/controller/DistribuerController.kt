@@ -37,24 +37,24 @@ class DistribuerController(private val distribuerJournalpostService: DistribuerJ
         value = [
             ApiResponse(
                 responseCode = "200",
-                description = "Distribusjon av journalpost er bestilt"
+                description = "Distribusjon av journalpost er bestilt",
             ), ApiResponse(
                 responseCode = "400",
-                description = "Journalpost mangler mottakerid eller adresse er ikke oppgitt i kallet"
-            )
-        ]
+                description = "Journalpost mangler mottakerid eller adresse er ikke oppgitt i kallet",
+            ),
+        ],
     )
     @ResponseBody
     fun distribuerJournalpost(
         @RequestBody(required = false) distribuerJournalpostRequest: DistribuerJournalpostRequest?,
         @PathVariable joarkJournalpostId: String,
-        @RequestParam(required = false, name = "batchId") batchIdHeader: String?
+        @RequestParam(required = false, name = "batchId") batchIdHeader: String?,
     ): ResponseEntity<DistribuerJournalpostResponse> {
         val batchId = if (Strings.isEmpty(batchIdHeader)) null else batchIdHeader
         LOGGER.info(
             "Distribuerer journalpost {}{}",
             joarkJournalpostId,
-            if (Strings.isNotEmpty(batchId)) String.format(" og batchId %s", batchId) else ""
+            if (Strings.isNotEmpty(batchId)) String.format(" og batchId %s", batchId) else "",
         )
         val kildesystemIdenfikator = KildesystemIdenfikator(joarkJournalpostId!!)
         if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix()) {
@@ -70,8 +70,8 @@ class DistribuerController(private val distribuerJournalpostService: DistribuerJ
             distribuerJournalpostService.distribuerJournalpost(
                 journalpostId!!,
                 batchId,
-                DistribuerJournalpostRequestInternal(distribuerJournalpostRequest)
-            )
+                DistribuerJournalpostRequestInternal(distribuerJournalpostRequest),
+            ),
         )
     }
 
@@ -81,12 +81,12 @@ class DistribuerController(private val distribuerJournalpostService: DistribuerJ
         value = [
             ApiResponse(
                 responseCode = "200",
-                description = "Distribusjon av journalpost kan bestilles"
+                description = "Distribusjon av journalpost kan bestilles",
             ), ApiResponse(
                 responseCode = "406",
-                description = "Distribusjon av journalpost kan ikke bestilles"
-            )
-        ]
+                description = "Distribusjon av journalpost kan ikke bestilles",
+            ),
+        ],
     )
     @ResponseBody
     fun kanDistribuerJournalpost(@PathVariable journalpostId: String): ResponseEntity<Void> {
@@ -116,14 +116,14 @@ class DistribuerController(private val distribuerJournalpostService: DistribuerJ
         value = [
             ApiResponse(
                 responseCode = "200",
-                description = "Hentet informasjon om distribusjon av journalpost"
+                description = "Hentet informasjon om distribusjon av journalpost",
             ),
             ApiResponse(
                 responseCode = "202",
-                description = "Journalpost er ikke distribuert eller er av type NOTAT eller INNGÅENDE"
+                description = "Journalpost er ikke distribuert eller er av type NOTAT eller INNGÅENDE",
             ),
-            ApiResponse(responseCode = "404", description = "Fant ikke journalpost")
-        ]
+            ApiResponse(responseCode = "404", description = "Fant ikke journalpost"),
+        ],
     )
     @ResponseBody
     fun hentDistribusjonsInfo(@PathVariable journalpostId: String): ResponseEntity<DistribusjonInfoDto> {
@@ -151,9 +151,9 @@ class DistribuerController(private val distribuerJournalpostService: DistribuerJ
         value = [
             ApiResponse(
                 responseCode = "200",
-                description = "Hentet informasjon om hvilken kanal mottaker vil motta forsendelse på"
-            )
-        ]
+                description = "Hentet informasjon om hvilken kanal mottaker vil motta forsendelse på",
+            ),
+        ],
     )
     @ResponseBody
     fun hentDistribusjonKanal(@RequestBody request: BestemDistribusjonKanalRequest): BestemKanalResponse {

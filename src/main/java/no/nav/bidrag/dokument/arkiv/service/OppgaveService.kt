@@ -17,8 +17,8 @@ import no.nav.bidrag.dokument.arkiv.model.Discriminator
 import no.nav.bidrag.dokument.arkiv.model.OppgaveSokParametre
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager
-import no.nav.bidrag.domain.ident.AktørId
-import no.nav.bidrag.domain.ident.PersonIdent
+import no.nav.bidrag.domene.ident.AktørId
+import no.nav.bidrag.domene.ident.Personident
 import no.nav.bidrag.transport.person.PersonDto
 import org.slf4j.LoggerFactory
 import java.util.function.Consumer
@@ -26,14 +26,10 @@ import java.util.function.Consumer
 class OppgaveService(
     private val personConsumers: ResourceByDiscriminator<PersonConsumer>,
     private val oppgaveConsumers: ResourceByDiscriminator<OppgaveConsumer>,
-    private val saksbehandlerInfoManager: SaksbehandlerInfoManager
+    private val saksbehandlerInfoManager: SaksbehandlerInfoManager,
 ) {
 
-    fun leggTilKommentarPaaJournalforingsoppgave(
-        journalpost: Journalpost,
-        saksbehandlerMedEnhet: SaksbehandlerMedEnhet,
-        kommentar: String
-    ) {
+    fun leggTilKommentarPaaJournalforingsoppgave(journalpost: Journalpost, saksbehandlerMedEnhet: SaksbehandlerMedEnhet, kommentar: String) {
         val oppgaver = finnJournalforingOppgaverForJournalpost(journalpost.hentJournalpostIdLong())
         oppgaver.filter { it.tildeltEnhetsnr != OppgaveEnhet.FAGPOST }.forEach(
             Consumer { oppgave: OppgaveData ->
@@ -43,11 +39,11 @@ class OppgaveService(
                             oppgave,
                             saksbehandlerMedEnhet.enhetsnummer,
                             saksbehandlerMedEnhet.hentSaksbehandlerInfo(),
-                            kommentar
-                        )
+                            kommentar,
+                        ),
                     )
                 LOGGER.info("Journalføringsoppgave ${oppgave.id} for journalpost ${journalpost.journalpostId} ble overført til fagpost")
-            }
+            },
         )
     }
 
@@ -59,13 +55,7 @@ class OppgaveService(
         opprettOppgave(opprettOppgaveFagpostRequest)
     }
 
-    fun opprettVurderDokumentOppgave(
-        journalpost: Journalpost,
-        journalpostId: String,
-        tildeltEnhetsnr: String,
-        tema: String,
-        kommentar: String?
-    ) {
+    fun opprettVurderDokumentOppgave(journalpost: Journalpost, journalpostId: String, tildeltEnhetsnr: String, tema: String, kommentar: String?) {
         val aktorId = hentAktorId(journalpost.hentGjelderId())
         opprettOppgave(
             OpprettVurderDokumentOppgaveRequest(
@@ -75,8 +65,8 @@ class OppgaveService(
                 tema,
                 aktorId!!,
                 hentSaksbehandlerMedEnhet(journalpost.journalforendeEnhet),
-                kommentar
-            )
+                kommentar,
+            ),
         )
     }
 
@@ -89,7 +79,7 @@ class OppgaveService(
         LOGGER.info(
             "Ferdigstiller oppgave {} med oppgavetype {}",
             oppgaveData.id,
-            oppgaveData.oppgavetype
+            oppgaveData.oppgavetype,
         )
         oppgaveConsumers.get(Discriminator.SERVICE_USER)
             .patchOppgave(FerdigstillOppgaveRequest(oppgaveData, enhetsnr))
@@ -111,8 +101,8 @@ class OppgaveService(
         return personConsumers.get(Discriminator.SERVICE_USER).hentPerson(gjelder)
             .orElseGet {
                 PersonDto(
-                    ident = PersonIdent(gjelder),
-                    aktørId = AktørId(gjelder)
+                    ident = Personident(gjelder),
+                    aktørId = AktørId(gjelder),
                 )
             }.aktørId?.verdi
     }
