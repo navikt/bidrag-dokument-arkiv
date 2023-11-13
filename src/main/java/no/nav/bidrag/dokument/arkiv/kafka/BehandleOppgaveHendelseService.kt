@@ -53,7 +53,12 @@ class BehandleOppgaveHendelseService(
         journalpostService
             .hentJournalpost(oppgave.journalpostId!!.toLong())?.let { journalpost: Journalpost ->
                 if (journalpost.manglerReturDetaljForSisteRetur()) {
-                    dokarkivConsumer.endre(OpprettNyReturLoggRequest(journalpost))
+                    dokarkivConsumer.endre(
+                        OpprettNyReturLoggRequest(
+                            journalpost,
+                            opprettKommentarSomLeggesTilOppgave(journalpost, oppgave)
+                        )
+                    )
                     LOGGER.info {
                         "Lagt til ny returlogg med returdato ${LocalDate.now()} på journalpost ${journalpost.journalpostId} med dokumentdato ${journalpost.hentDatoDokument()}."
                     }
@@ -107,7 +112,7 @@ class BehandleOppgaveHendelseService(
         oppgave: OppgaveData
     ) {
         try {
-            val kommentar = opprettEkstraKommentarSomLeggesTilOppgave(journalpost)
+            val kommentar = opprettKommentarSomLeggesTilOppgave(journalpost, oppgave)
             if (oppgave.saksreferanse != journalpost.hentSaksnummer()) {
                 oppgaveConsumer.patchOppgaveWithVersionRetry(
                     OppdaterSakRequest(
@@ -131,10 +136,10 @@ class BehandleOppgaveHendelseService(
         }
     }
 
-    private fun opprettEkstraKommentarSomLeggesTilOppgave(journalpost: Journalpost): String? {
+    private fun opprettKommentarSomLeggesTilOppgave(journalpost: Journalpost, oppgave: OppgaveData): String? {
         SECURE_LOGGER.info("Journalpost kommet retur med følgende detaljer ${journalpost.journalpostId} ${journalpost.journalstatus} ${journalpost.distribuertTilAdresse()} ${
             journalpost.relevanteDatoer.joinToString(",") { "${it.datotype}:${it.dato}" }
         }")
-        return if (journalpost.distribuertTilAdresse() == null) "Mottaker har ikke åpnet forsendelsen via www.nav.no innen 40 timer. Ingen postadresse er registrert. Vurder om mottaker har adresse forsendelsen kan sendes til." else null
+        return if (journalpost.distribuertTilAdresse() == null) "${oppgave.beskrivelse}\r\n\r\nMottaker har ikke åpnet forsendelsen via www.nav.no innen 40 timer. Ingen postadresse er registrert. Vurder om mottaker har adresse forsendelsen kan sendes til." else null
     }
 }

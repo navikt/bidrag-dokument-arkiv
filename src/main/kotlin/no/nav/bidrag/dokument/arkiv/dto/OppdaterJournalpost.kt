@@ -26,7 +26,7 @@ data class OppdaterDistribusjonsInfoRequest(
     val utsendingsKanal: JournalpostUtsendingKanal
 )
 
-data class OpprettNyReturLoggRequest(private var journalpost: Journalpost) :
+data class OpprettNyReturLoggRequest(private var journalpost: Journalpost, private val kommentar: String? = null) :
     OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {
     init {
         val dateNow = LocalDate.now()
@@ -37,7 +37,7 @@ data class OpprettNyReturLoggRequest(private var journalpost: Journalpost) :
         } else {
             journalpost.tilleggsopplysninger.addReturDetaljLog(
                 ReturDetaljerLogDO(
-                    "Returpost",
+                    kommentar ?: "Returpost",
                     dateNow
                 )
             )
