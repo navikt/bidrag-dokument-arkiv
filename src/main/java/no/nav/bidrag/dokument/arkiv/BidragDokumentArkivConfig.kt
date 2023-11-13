@@ -295,7 +295,6 @@ class BidragDokumentArkivConfig {
         @Value("\${BIDRAG_PERSON_URL}") bidragPersonUrl: String,
         @Value("\${SAF_URL}") safUrl: String,
         @Value("\${OPPGAVE_URL}") oppgaveUrl: String?,
-        @Value("\${SRV_BD_ARKIV_AUTH}") secretForServiceUser: String,
         @Value("\${ACCESS_TOKEN_URL}") securityTokenUrl: String,
         @Value("\${BIDRAG_ORGANISASJON_URL}") bidragOrganisasjonUrl: String,
         @Value("\${NAIS_APP_NAME}") naisAppName: String,
@@ -306,7 +305,6 @@ class BidragDokumentArkivConfig {
             dokarkivKnyttTilSakUrl,
             safUrl,
             oppgaveUrl,
-            secretForServiceUser,
             securityTokenUrl,
             naisAppName,
             bidragPersonUrl,
@@ -322,7 +320,6 @@ class BidragDokumentArkivConfig {
         val dokarkivKnyttTilSakUrl: String,
         val safUrl: String,
         val oppgaveUrl: String?,
-        val secretForServiceUser: String,
         val securityTokenUrl: String,
         val naisAppName: String,
         val bidragPersonUrl: String,
@@ -330,35 +327,27 @@ class BidragDokumentArkivConfig {
     ) {
         override fun toString(): String {
             return (
-                "dokarkivUrl='" +
-                    dokarkivUrl +
-                    '\'' +
-                    ", safUrl='" +
-                    safUrl +
-                    '\'' +
-                    ", bidragPersonUrl='" +
-                    bidragPersonUrl +
-                    '\'' +
-                    ", dokarkivKnyttTilSakUrl='" +
-                    dokarkivKnyttTilSakUrl +
-                    '\'' +
-                    ", securityTokenUrl='" +
-                    securityTokenUrl +
-                    '\'' +
-                    ", bidragOrganisasjonUrl='" +
-                    bidragOrganisasjonUrl +
-                    '\'' +
-                    ", naisAppName='" +
-                    naisAppName +
-                    '\'' +
-                    ", secretForServiceUser '" +
-                    notActualValue() +
-                    "'."
-                )
-        }
-
-        private fun notActualValue(): String {
-            return if ("No authentication available" == secretForServiceUser) "is not initialized" else "seems to be initialized by init_srvbdarkiv.sh"
+                    "dokarkivUrl='" +
+                            dokarkivUrl +
+                            '\'' +
+                            ", safUrl='" +
+                            safUrl +
+                            '\'' +
+                            ", bidragPersonUrl='" +
+                            bidragPersonUrl +
+                            '\'' +
+                            ", dokarkivKnyttTilSakUrl='" +
+                            dokarkivKnyttTilSakUrl +
+                            '\'' +
+                            ", securityTokenUrl='" +
+                            securityTokenUrl +
+                            '\'' +
+                            ", bidragOrganisasjonUrl='" +
+                            bidragOrganisasjonUrl +
+                            '\'' +
+                            ", naisAppName='" +
+                            naisAppName
+                    )
         }
     }
 
