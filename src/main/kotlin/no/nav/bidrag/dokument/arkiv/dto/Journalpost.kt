@@ -223,10 +223,12 @@ data class Journalpost(
             utsendingsinfo?.fysiskpostSendt?.adressetekstKonvolutt?.let {
                 val postadresseSplit = it.split("\n").reversed()
                 val landkode2 = postadresseSplit.getOrNull(0)
-                val adresse = if (postadresseSplit.size == 2 && landkode2 != "NO") DistribuerTilAdresse(
-                    adresselinje1 = postadresseSplit.getOrNull(1),
-                    land = landkode2
-                ) else {
+                val adresse = if (postadresseSplit.size == 2 && landkode2 != "NO") {
+                    DistribuerTilAdresse(
+                        adresselinje1 = postadresseSplit.getOrNull(1),
+                        land = landkode2,
+                    )
+                } else {
                     val postnummerPoststed = postadresseSplit.getOrNull(1)?.split(" ") ?: emptyList()
                     val postnummer = if (postnummerPoststed.size == 2) postnummerPoststed.getOrNull(0) else null
                     val poststed =

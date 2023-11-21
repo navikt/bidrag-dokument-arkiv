@@ -1,7 +1,11 @@
 [*.{kt,kts}]
 ktlint_code_style = intellij_idea
-ktlint_standard_property-naming = disabled
 max_line_length = 150
 tab_width = 4
-ktlint_standard_max-line-length = disabled
 ktlint_standard_class-naming = disabled
+ktlint_standard_property-naming = disabled
+ktlint_standard_max-line-length = disabled
+
+[**/test/**/*.{kt,kts}]
+ktlint_standard_max-line-length = disabled
+ktlint_standard_property-naming = disabled
