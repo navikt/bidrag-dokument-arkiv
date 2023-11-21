@@ -223,36 +223,43 @@ data class Journalpost(
             utsendingsinfo?.fysiskpostSendt?.adressetekstKonvolutt?.let {
                 val postadresseSplit = it.split("\n").reversed()
                 val landkode2 = postadresseSplit.getOrNull(0)
-                val postnummerPoststed = postadresseSplit.getOrNull(1)?.split(" ") ?: emptyList()
-                val postnummer = if (postnummerPoststed.size == 2) postnummerPoststed.getOrNull(0) else null
-                val poststed =
-                    if (postnummerPoststed.size == 1) {
-                        postnummerPoststed.getOrNull(0)
-                    } else {
-                        postnummerPoststed.getOrNull(
-                            1,
-                        )
+                val adresse = if (postadresseSplit.size == 2 && landkode2 != "NO") {
+                    DistribuerTilAdresse(
+                        adresselinje1 = postadresseSplit.getOrNull(1),
+                        land = landkode2,
+                    )
+                } else {
+                    val postnummerPoststed = postadresseSplit.getOrNull(1)?.split(" ") ?: emptyList()
+                    val postnummer = if (postnummerPoststed.size == 2) postnummerPoststed.getOrNull(0) else null
+                    val poststed =
+                        if (postnummerPoststed.size == 1) {
+                            postnummerPoststed.getOrNull(0)
+                        } else {
+                            postnummerPoststed.getOrNull(
+                                1,
+                            )
+                        }
+                    val adresselinje1 = when (postadresseSplit.size) {
+                        3 -> postadresseSplit.getOrNull(2)
+                        4 -> postadresseSplit.getOrNull(3)
+                        5 -> postadresseSplit.getOrNull(4)
+                        else -> null
                     }
-                val adresselinje1 = when (postadresseSplit.size) {
-                    3 -> postadresseSplit.getOrNull(2)
-                    4 -> postadresseSplit.getOrNull(3)
-                    5 -> postadresseSplit.getOrNull(4)
-                    else -> null
+                    val adresselinje2 = when (postadresseSplit.size) {
+                        4 -> postadresseSplit.getOrNull(2)
+                        5 -> postadresseSplit.getOrNull(3)
+                        else -> null
+                    }
+                    val adresselinje3 = if (postadresseSplit.size == 5) postadresseSplit.getOrNull(2) else null
+                    DistribuerTilAdresse(
+                        adresselinje1 = adresselinje1,
+                        adresselinje2 = adresselinje2,
+                        adresselinje3 = adresselinje3,
+                        poststed = poststed,
+                        postnummer = postnummer,
+                        land = landkode2,
+                    )
                 }
-                val adresselinje2 = when (postadresseSplit.size) {
-                    4 -> postadresseSplit.getOrNull(2)
-                    5 -> postadresseSplit.getOrNull(3)
-                    else -> null
-                }
-                val adresselinje3 = if (postadresseSplit.size == 5) postadresseSplit.getOrNull(2) else null
-                val adresse = DistribuerTilAdresse(
-                    adresselinje1 = adresselinje1,
-                    adresselinje2 = adresselinje2,
-                    adresselinje3 = adresselinje3,
-                    poststed = poststed,
-                    postnummer = postnummer,
-                    land = landkode2,
-                )
                 SECURE_LOGGER.info {
                     "Lest og mappet postadresse fra SAF ${
                         it.split("\n").joinToString("\\n")

@@ -665,6 +665,23 @@ internal class JournalpostTest {
         distribuertTilAdresse?.land shouldBe "USA"
     }
 
+    @Test
+    fun `skal hent fysisk postadresse uten postnummer og sted`() {
+        val journalpost = opprettUtgaendeSafResponse()
+            .copy(
+                utsendingsinfo = UtsendingsInfo(
+                    fysiskpostSendt = FysiskpostSendt("Berlin gaten 11\nDE"),
+                ),
+            )
+        val distribuertTilAdresse = journalpost.distribuertTilAdresse()
+        distribuertTilAdresse?.adresselinje1 shouldBe "Berlin gaten 11"
+        distribuertTilAdresse?.adresselinje2 shouldBe null
+        distribuertTilAdresse?.adresselinje3 shouldBe null
+        distribuertTilAdresse?.postnummer shouldBe null
+        distribuertTilAdresse?.poststed shouldBe null
+        distribuertTilAdresse?.land shouldBe "DE"
+    }
+
     private fun getReturDetaljerDOByDate(returDetaljerLogDOList: List<ReturDetaljerLogDO>, dato: String): ReturDetaljerLogDO {
         return returDetaljerLogDOList.stream()
             .filter { (_, dato1): ReturDetaljerLogDO -> dato1 == LocalDate.parse(dato) }.findFirst()
