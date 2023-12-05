@@ -46,7 +46,6 @@ spec:
     path: /bidrag-dokument-arkiv/actuator/prometheus
   resources:
     requests:
-      cpu: 1500m
       memory: 2500Mi
     limits:
       memory: 4096Mi

@@ -309,7 +309,7 @@ fun validerUtgaaendeJournalpostKanDupliseres(journalpost: Journalpost) {
         "Journalpost må ha tema BID/FAR",
     )
     Validate.isTrue(journalpost.isUtgaaendeDokument(), "Journalpost må være utgående dokument")
-    Validate.isTrue(journalpost.hasMottakerId(), "Journalpost må ha satt mottakerId")
+    Validate.isTrue(journalpost.hasMottakerId() || journalpost.hasMottakerNavn(), "Journalpost må ha satt mottakerId eller mottaker navn")
     Validate.isTrue(journalpost.hasSak(), "Journalpost må ha sak")
     Validate.isTrue(journalpost.bruker?.id != null, "Journalpost må ha satt brukerid")
 }
