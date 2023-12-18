@@ -42,7 +42,7 @@
         <token-support.version>3.2.0</token-support.version>
 
         <!-- build -->
-        <build-helper-maven.version>3.3.0</build-helper-maven.version>
+        <build-helper-maven.version>3.5.0</build-helper-maven.version>
         <maven.compiler.version>3.8.0</maven.compiler.version>
         <maven.surefire.version>2.22.2</maven.surefire.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
