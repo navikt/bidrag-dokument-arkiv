@@ -682,6 +682,57 @@ internal class JournalpostTest {
         distribuertTilAdresse?.land shouldBe "DE"
     }
 
+    @Test
+    fun `skal hent fysisk postadresse for utlandsk adresse`() {
+        val journalpost = opprettUtgaendeSafResponse()
+            .copy(
+                utsendingsinfo = UtsendingsInfo(
+                    fysiskpostSendt = FysiskpostSendt("Nordland 123\nSE-123 00 Shoppeland\nSE"),
+                ),
+            )
+        val distribuertTilAdresse = journalpost.distribuertTilAdresse()
+        distribuertTilAdresse?.adresselinje1 shouldBe "Nordland 123"
+        distribuertTilAdresse?.adresselinje2 shouldBe "SE-123 00 Shoppeland"
+        distribuertTilAdresse?.adresselinje3 shouldBe null
+        distribuertTilAdresse?.postnummer shouldBe null
+        distribuertTilAdresse?.poststed shouldBe null
+        distribuertTilAdresse?.land shouldBe "SE"
+    }
+
+    @Test
+    fun `skal hent fysisk postadresse for utlandsk adresse 2`() {
+        val journalpost = opprettUtgaendeSafResponse()
+            .copy(
+                utsendingsinfo = UtsendingsInfo(
+                    fysiskpostSendt = FysiskpostSendt("Route de France\n12331 Fransestreeta\nFranriket\nFR"),
+                ),
+            )
+        val distribuertTilAdresse = journalpost.distribuertTilAdresse()
+        distribuertTilAdresse?.adresselinje1 shouldBe "Route de France"
+        distribuertTilAdresse?.adresselinje2 shouldBe "12331 Fransestreeta"
+        distribuertTilAdresse?.adresselinje3 shouldBe "Franriket"
+        distribuertTilAdresse?.postnummer shouldBe null
+        distribuertTilAdresse?.poststed shouldBe null
+        distribuertTilAdresse?.land shouldBe "FR"
+    }
+
+    @Test
+    fun `skal hent fysisk postadresse for utlandsk adresse 3`() {
+        val journalpost = opprettUtgaendeSafResponse()
+            .copy(
+                utsendingsinfo = UtsendingsInfo(
+                    fysiskpostSendt = FysiskpostSendt("Kallegata 123\nStreet 12\nDansegata 5\n123213 Svin Sund\nSE"),
+                ),
+            )
+        val distribuertTilAdresse = journalpost.distribuertTilAdresse()
+        distribuertTilAdresse?.adresselinje1 shouldBe "Kallegata 123"
+        distribuertTilAdresse?.adresselinje2 shouldBe "Street 12"
+        distribuertTilAdresse?.adresselinje3 shouldBe "Dansegata 5"
+        distribuertTilAdresse?.postnummer shouldBe "123213"
+        distribuertTilAdresse?.poststed shouldBe "Svin Sund"
+        distribuertTilAdresse?.land shouldBe "SE"
+    }
+
     private fun getReturDetaljerDOByDate(returDetaljerLogDOList: List<ReturDetaljerLogDO>, dato: String): ReturDetaljerLogDO {
         return returDetaljerLogDOList.stream()
             .filter { (_, dato1): ReturDetaljerLogDO -> dato1 == LocalDate.parse(dato) }.findFirst()
