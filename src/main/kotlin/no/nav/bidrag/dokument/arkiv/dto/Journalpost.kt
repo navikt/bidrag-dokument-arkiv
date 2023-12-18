@@ -33,6 +33,7 @@ import no.nav.bidrag.transport.dokument.KodeDto
 import no.nav.bidrag.transport.dokument.MottakerAdresseTo
 import no.nav.bidrag.transport.dokument.ReturDetaljer
 import no.nav.bidrag.transport.dokument.ReturDetaljerLog
+import no.nav.bidrag.transport.dokument.isNumeric
 import org.apache.logging.log4j.util.Strings
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -223,9 +224,18 @@ data class Journalpost(
             utsendingsinfo?.fysiskpostSendt?.adressetekstKonvolutt?.let {
                 val postadresseSplit = it.split("\n").reversed()
                 val landkode2 = postadresseSplit.getOrNull(0)
-                val adresse = if (postadresseSplit.size == 2 && landkode2 != "NO") {
+                val adresse = if (landkode2 != "NO") {
+                    val postadresseList = postadresseSplit.subList(1, postadresseSplit.size).reversed()
+                    val postadresseOgSted = if (postadresseList.size == 4) postadresseList.lastOrNull()?.split(" ") ?: emptyList() else emptyList()
+                    val postnummer = if (postadresseOgSted.firstOrNull()?.isNumeric == true) postadresseOgSted.firstOrNull() else null
+                    val poststed = postadresseOgSted.subList(if (postadresseOgSted.firstOrNull()?.isNumeric == true) 1 else 0, postadresseOgSted.size)
+                        .joinToString(" ")
                     DistribuerTilAdresse(
-                        adresselinje1 = postadresseSplit.getOrNull(1),
+                        adresselinje1 = postadresseList.getOrNull(0),
+                        adresselinje2 = postadresseList.getOrNull(1),
+                        adresselinje3 = postadresseList.getOrNull(2),
+                        postnummer = postnummer,
+                        poststed = poststed.ifEmpty { null },
                         land = landkode2,
                     )
                 } else {
@@ -260,11 +270,11 @@ data class Journalpost(
                         land = landkode2,
                     )
                 }
-                SECURE_LOGGER.info {
-                    "Lest og mappet postadresse fra SAF ${
-                        it.split("\n").joinToString("\\n")
-                    } til $adresse"
-                }
+//                SECURE_LOGGER.info {
+//                    "Lest og mappet postadresse fra SAF ${
+//                        it.split("\n").joinToString("\\n")
+//                    } til $adresse"
+//                }
                 return adresse
             }
         } catch (e: Exception) {
