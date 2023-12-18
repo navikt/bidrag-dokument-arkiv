@@ -31,7 +31,7 @@
         <bidrag-commons-test.version>1.20230503150725_3c2c77b</bidrag-commons-test.version>
         <bidrag-transport.version>20231113102624_1040a39</bidrag-transport.version>
         <commons-codec.version>1.16.0</commons-codec.version>
-        <graphq-dgs-client.version>6.0.5</graphq-dgs-client.version>
+        <graphq-dgs-client.version>8.2.0</graphq-dgs-client.version>
         <joark-hendelse.version>67a9be4476b63b7247cfacfaf821ab656bd2a952</joark-hendelse.version>
         <kafka-avro-serializer.version>7.3.3</kafka-avro-serializer.version>
         <logback-encoder.version>7.3</logback-encoder.version>
