@@ -28,7 +28,6 @@
         <!-- dependent versions other than from spring-boot -->
         <apache-avro-version>1.11.3</apache-avro-version>
         <bidrag-commons.version>20231103132440_edabbf8</bidrag-commons.version>
-        <bidrag-commons-test.version>1.20230503150725_3c2c77b</bidrag-commons-test.version>
         <bidrag-transport.version>20231113102624_1040a39</bidrag-transport.version>
         <commons-codec.version>1.16.0</commons-codec.version>
         <graphq-dgs-client.version>6.0.5</graphq-dgs-client.version>
@@ -247,13 +246,6 @@
         </dependency>
 
         <!-- test -->
-        <dependency>
-            <groupId>no.nav.bidrag</groupId>
-            <artifactId>bidrag-commons-test</artifactId>
-            <version>${bidrag-commons-test.version}</version>
-            <scope>test</scope>
-        </dependency>
-
         <dependency>
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility-kotlin</artifactId>
