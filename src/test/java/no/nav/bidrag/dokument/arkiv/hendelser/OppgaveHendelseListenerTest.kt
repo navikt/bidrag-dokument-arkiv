@@ -39,7 +39,7 @@ import java.time.LocalDateTime
 @ActiveProfiles(
     value = [BidragDokumentArkivConfig.PROFILE_KAFKA_TEST, BidragDokumentArkivConfig.PROFILE_TEST, BidragDokumentArkivTest.PROFILE_INTEGRATION],
 )
-@SpringBootTest(classes = [BidragDokumentArkivTest::class])
+@SpringBootTest(classes = [BidragDokumentArkivTest::class], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWireMock(port = 0)
 @EnableMockOAuth2Server
 class OppgaveHendelseListenerTest {

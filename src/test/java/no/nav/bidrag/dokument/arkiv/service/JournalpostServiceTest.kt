@@ -38,7 +38,7 @@ import java.util.Objects
 import java.util.Optional
 
 @ActiveProfiles(BidragDokumentArkivConfig.PROFILE_TEST)
-@SpringBootTest(classes = [BidragDokumentArkivTest::class])
+@SpringBootTest(classes = [BidragDokumentArkivTest::class], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("JournalpostService")
 @EnableMockOAuth2Server
 @ExtendWith(SpringExtension::class)

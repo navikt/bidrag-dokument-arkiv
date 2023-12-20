@@ -31,7 +31,7 @@ import org.springframework.kafka.test.utils.KafkaTestUtils
 import org.springframework.test.context.ActiveProfiles
 import java.time.Duration
 
-@SpringBootTest(classes = [BidragDokumentArkivTest::class])
+@SpringBootTest(classes = [BidragDokumentArkivTest::class], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles(value = [PROFILE_KAFKA_TEST, PROFILE_TEST, BidragDokumentArkivTest.PROFILE_INTEGRATION])
 @DisplayName("OppgaveEndretHendelseListenerTest")
 @EnableMockOAuth2Server

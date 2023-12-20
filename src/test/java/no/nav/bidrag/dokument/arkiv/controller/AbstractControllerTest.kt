@@ -3,9 +3,9 @@ package no.nav.bidrag.dokument.arkiv.controller
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import no.nav.bidrag.commons.web.EnhetFilter
-import no.nav.bidrag.commons.web.test.HttpHeaderTestRestTemplate
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivTest
+import no.nav.bidrag.dokument.arkiv.HttpHeaderTestRestTemplate
 import no.nav.bidrag.dokument.arkiv.stubs.Stubs
 import no.nav.bidrag.dokument.arkiv.stubs.X_ENHET_HEADER
 import no.nav.bidrag.domene.ident.AktørId
