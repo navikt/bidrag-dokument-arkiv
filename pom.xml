@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.0</version>
+        <version>3.2.1</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -23,7 +23,7 @@
 
         <!-- language -->
         <java.version>21</java.version>
-        <kotlin.version>1.9.20</kotlin.version>
+        <kotlin.version>1.9.22</kotlin.version>
 
         <!-- dependent versions other than from spring-boot -->
         <apache-avro-version>1.11.3</apache-avro-version>
@@ -31,18 +31,18 @@
         <bidrag-commons-test.version>1.20230503150725_3c2c77b</bidrag-commons-test.version>
         <bidrag-transport.version>20231113102624_1040a39</bidrag-transport.version>
         <commons-codec.version>1.16.0</commons-codec.version>
-        <graphq-dgs-client.version>6.0.5</graphq-dgs-client.version>
+        <graphq-dgs-client.version>8.2.1</graphq-dgs-client.version>
         <joark-hendelse.version>67a9be4476b63b7247cfacfaf821ab656bd2a952</joark-hendelse.version>
-        <kafka-avro-serializer.version>7.3.3</kafka-avro-serializer.version>
-        <logback-encoder.version>7.3</logback-encoder.version>
+        <kafka-avro-serializer.version>7.5.3</kafka-avro-serializer.version>
+        <logback-encoder.version>7.4</logback-encoder.version>
         <nimbus-jose-jwt.version>9.15.2</nimbus-jose-jwt.version>
         <springdoc-openapi-ui.version>2.1.0</springdoc-openapi-ui.version>
         <springframework-cloud.version>4.0.4</springframework-cloud.version>
-        <squareup.version>4.11.0</squareup.version>
+        <squareup.version>4.12.0</squareup.version>
         <token-support.version>3.2.0</token-support.version>
 
         <!-- build -->
-        <build-helper-maven.version>3.3.0</build-helper-maven.version>
+        <build-helper-maven.version>3.5.0</build-helper-maven.version>
         <maven.compiler.version>3.8.0</maven.compiler.version>
         <maven.surefire.version>2.22.2</maven.surefire.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
@@ -86,7 +86,7 @@
         <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-datetime-jvm</artifactId>
-            <version>0.4.0</version>
+            <version>0.5.0</version>
         </dependency>
         <!-- joark hendelser med avro avhengighet -->
         <dependency>
@@ -216,11 +216,13 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
+            <version>1.4.12</version>
         </dependency>
 
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
+            <version>1.4.12</version>
         </dependency>
 
         <dependency>

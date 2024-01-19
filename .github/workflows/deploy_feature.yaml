@@ -5,7 +5,6 @@ on:
       - '**'
       - '!main'
       - '!dependabot/**'
-      -
 jobs:
   build-deploy:
     name: "Build and deploy to feature"
