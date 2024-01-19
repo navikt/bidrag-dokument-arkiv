@@ -5,7 +5,6 @@ import com.netflix.graphql.dgs.client.GraphQLError
 import com.netflix.graphql.dgs.client.GraphQLResponse
 import com.netflix.graphql.dgs.client.HttpResponse
 import no.nav.bidrag.commons.web.HttpHeaderRestTemplate
-import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer.NotFoundException
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsInfo
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
@@ -71,7 +70,7 @@ open class SafConsumer(private val restTemplate: RestTemplate) {
         val queryString = query.getQuery()
         val graphQLClient = CustomGraphQLClient("") { _: String, _: Map<String, List<String>>, body: String ->
             val exchange = restTemplate.exchange("/graphql", HttpMethod.POST, HttpEntity(body), String::class.java)
-            HttpResponse(exchange.statusCodeValue, exchange.body)
+            HttpResponse(exchange.statusCode.value(), exchange.body)
         }
         val response = graphQLClient.executeQuery(queryString, query.getVariables())
         if (response.hasErrors()) {
