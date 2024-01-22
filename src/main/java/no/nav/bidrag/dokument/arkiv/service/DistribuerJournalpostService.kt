@@ -218,7 +218,7 @@ class DistribuerJournalpostService(
             dokdistFordelingConsumer.distribuerJournalpost(journalpost, batchId, adresse)
         LOGGER.info(
             "Bestillte distribusjon av journalpost $journalpostId med bestillingsId ${distribuerResponse.bestillingsId}, " +
-                "antall dokumenter ${journalpost.dokumenter.size} og kanal ${distribusjonKanal.distribusjonskanal}(${distribusjonKanal.regel}-${distribusjonKanal.regelBegrunnelse}).",
+                    "antall dokumenter ${journalpost.dokumenter.size} og kanal ${distribusjonKanal.distribusjonskanal}(${distribusjonKanal.regel}-${distribusjonKanal.regelBegrunnelse}).",
         )
 
         // Distribusjonsløpet oppdaterer journalpost og overskriver alt av tilleggsopplysninger. Hent journalpost på nytt for å unngå overskrive noe som distribusjon har lagret
@@ -339,12 +339,12 @@ class DistribuerJournalpostService(
             return null
         }
         return DistribuerTilAdresse(
-            adresseResponse.adresselinje1?.verdi,
-            adresseResponse.adresselinje2?.verdi,
-            adresseResponse.adresselinje3?.verdi,
+            adresseResponse.adresselinje1,
+            adresseResponse.adresselinje2,
+            adresseResponse.adresselinje3,
             adresseResponse.land.verdi,
-            adresseResponse.postnummer?.verdi,
-            adresseResponse.poststed?.verdi,
+            adresseResponse.postnummer,
+            adresseResponse.poststed,
         )
     }
 

@@ -8,7 +8,6 @@ import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivTest
 import no.nav.bidrag.dokument.arkiv.stubs.Stubs
 import no.nav.bidrag.dokument.arkiv.stubs.X_ENHET_HEADER
-import no.nav.bidrag.domene.ident.AktørId
 import no.nav.bidrag.domene.ident.Personident
 import no.nav.bidrag.transport.person.PersonDto
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
@@ -36,7 +35,7 @@ import org.springframework.test.context.ActiveProfiles
 @EnableMockOAuth2Server
 abstract class AbstractControllerTest {
     protected var PERSON_IDENT = Personident("12345678910")
-    protected var AKTOR_IDENT = AktørId("92345678910")
+    protected var AKTOR_IDENT = "92345678910"
     protected var responseJournalpostJson = "journalpostSafResponse.json"
     protected var responseJournalpostJsonUtgaaende = "journalpostSafUtgaaendeResponse.json"
     protected var responseJournalpostJsonWithReturDetaljer =

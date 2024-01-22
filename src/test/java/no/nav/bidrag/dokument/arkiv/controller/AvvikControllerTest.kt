@@ -28,7 +28,6 @@ import no.nav.bidrag.dokument.arkiv.stubs.createOppgaveDataWithJournalpostId
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeDistribuertSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
-import no.nav.bidrag.domene.streng.FulltNavn
 import no.nav.bidrag.transport.dokument.AvvikType
 import no.nav.bidrag.transport.dokument.Avvikshendelse
 import no.nav.bidrag.transport.dokument.BehandleAvvikshendelseResponse
@@ -636,7 +635,7 @@ class AvvikControllerTest : AbstractControllerTest() {
             PersonDto(
                 PERSON_IDENT,
                 aktørId = AKTOR_IDENT,
-                navn = FulltNavn("Personnavn"),
+                navn = "Personnavn",
             ),
             HttpStatus.OK,
         )

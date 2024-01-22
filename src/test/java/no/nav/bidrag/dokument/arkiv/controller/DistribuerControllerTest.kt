@@ -27,13 +27,9 @@ import no.nav.bidrag.dokument.arkiv.stubs.JOURNALPOST_ID
 import no.nav.bidrag.dokument.arkiv.stubs.createDistribuerTilAdresse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
-import no.nav.bidrag.domene.enums.Adressetype
-import no.nav.bidrag.domene.streng.Adresselinje1
-import no.nav.bidrag.domene.streng.Adresselinje2
-import no.nav.bidrag.domene.streng.Landkode2
-import no.nav.bidrag.domene.streng.Landkode3
-import no.nav.bidrag.domene.streng.Postnummer
-import no.nav.bidrag.domene.streng.Poststed
+import no.nav.bidrag.domene.enums.adresse.Adressetype
+import no.nav.bidrag.domene.land.Landkode2
+import no.nav.bidrag.domene.land.Landkode3
 import no.nav.bidrag.transport.dokument.DistribuerJournalpostRequest
 import no.nav.bidrag.transport.dokument.DistribuerJournalpostResponse
 import no.nav.bidrag.transport.dokument.DistribuerTilAdresse
@@ -847,11 +843,11 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
         val headersMedEnhet = HttpHeaders()
         val postadresse = PersonAdresseDto(
             adressetype = Adressetype.BOSTEDSADRESSE,
-            adresselinje1 = Adresselinje1("Ramsegata 1"),
-            adresselinje2 = Adresselinje2("Bakredør"),
+            adresselinje1 = "Ramsegata 1",
+            adresselinje2 = "Bakredør",
             adresselinje3 = null,
-            postnummer = Postnummer("3939"),
-            poststed = Poststed("OSLO"),
+            postnummer = "3939",
+            poststed = "OSLO",
             land = Landkode2("NO"),
             land3 = Landkode3("NOR"),
         )
@@ -893,12 +889,12 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                             "BI01A01",
                             null,
                             DistribuerTilAdresse(
-                                postadresse.adresselinje1?.verdi,
-                                postadresse.adresselinje2?.verdi,
-                                postadresse.adresselinje3?.verdi,
+                                postadresse.adresselinje1,
+                                postadresse.adresselinje2,
+                                postadresse.adresselinje3,
                                 postadresse.land.verdi,
-                                postadresse.postnummer?.verdi,
-                                postadresse.poststed?.verdi,
+                                postadresse.postnummer,
+                                postadresse.poststed,
                             ),
                             batchId,
                         ),
