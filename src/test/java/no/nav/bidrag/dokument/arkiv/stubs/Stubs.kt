@@ -24,13 +24,9 @@ import no.nav.bidrag.dokument.arkiv.dto.OppgaveData
 import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse
 import no.nav.bidrag.dokument.arkiv.dto.SaksbehandlerInfoResponse
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
-import no.nav.bidrag.domene.enums.Adressetype
-import no.nav.bidrag.domene.streng.Adresselinje1
-import no.nav.bidrag.domene.streng.Adresselinje2
-import no.nav.bidrag.domene.streng.Landkode2
-import no.nav.bidrag.domene.streng.Landkode3
-import no.nav.bidrag.domene.streng.Postnummer
-import no.nav.bidrag.domene.streng.Poststed
+import no.nav.bidrag.domene.enums.adresse.Adressetype
+import no.nav.bidrag.domene.land.Landkode2
+import no.nav.bidrag.domene.land.Landkode3
 import no.nav.bidrag.transport.person.PersonAdresseDto
 import no.nav.bidrag.transport.person.PersonDto
 import org.junit.Assert
@@ -525,11 +521,11 @@ class Stubs {
                                 ObjectMapper().writeValueAsString(
                                     hentPostadresseResponse ?: PersonAdresseDto(
                                         adressetype = Adressetype.BOSTEDSADRESSE,
-                                        adresselinje1 = Adresselinje1("Ramsegata 1"),
-                                        adresselinje2 = Adresselinje2("Bakredør"),
+                                        adresselinje1 = "Ramsegata 1",
+                                        adresselinje2 = "Bakredør",
                                         adresselinje3 = null,
-                                        postnummer = Postnummer("3939"),
-                                        poststed = Poststed("OSLO"),
+                                        postnummer = "3939",
+                                        poststed = "OSLO",
                                         land = Landkode2("NO"),
                                         land3 = Landkode3("NOR"),
                                     ),

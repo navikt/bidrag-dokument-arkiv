@@ -4,6 +4,9 @@ ingresses:
   - https://bidrag-dokument-arkiv.dev.intern.nav.no/
 kafka:
   pool: nav-dev
+cpu:
+  limits: 1000m
+  requests: 50m
 env:
   ACCEPTED_SERVICE_USER_AUDIENCE: srvbdarkivering,srvbisys
   STS_ISSUER_URL: https://security-token-service.dev.adeo.no

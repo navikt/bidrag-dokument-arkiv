@@ -458,7 +458,7 @@ class AvvikService(
         if (!journalpost.harAvsenderMottaker()) {
             val brukerNavn = personConsumer.hentPerson(journalpost.bruker!!.id)
                 .orElseThrow { UgyldigAvvikException("Fant ikke person") }
-                .navn?.verdi
+                .navn
             dokarkivConsumer.endre(
                 LagreAvsenderNavnRequest(
                     journalpost.hentJournalpostIdLong()!!,

@@ -28,7 +28,9 @@ data class KnyttTilSakRequest(
         fagsakId = saksnummer,
         journalfoerendeEnhet = journalpost.journalforendeEnhet ?: "",
         bruker = KnyttTilBruker(journalpost.bruker?.id, journalpost.bruker?.type),
-        tema = tema ?: journalpost.tema ?: throw KnyttTilSakManglerTemaException("Kunne ikke knytte journalpost til annen sak. Journalpost mangler tema. "),
+        tema = tema ?: journalpost.tema ?: throw KnyttTilSakManglerTemaException(
+            "Kunne ikke knytte journalpost til annen sak. Journalpost mangler tema. ",
+        ),
     )
 }
 
@@ -45,7 +47,9 @@ data class KnyttTilGenerellSakRequest(
     constructor(journalpost: Journalpost, tema: String?) : this(
         journalfoerendeEnhet = journalpost.journalforendeEnhet ?: "9999",
         bruker = KnyttTilBruker(journalpost.bruker?.id, journalpost.bruker?.type),
-        tema = tema ?: journalpost.tema ?: throw KnyttTilSakManglerTemaException("Kunne ikke knytte journalpost til annen sak. Journalpost mangler tema. "),
+        tema = tema ?: journalpost.tema ?: throw KnyttTilSakManglerTemaException(
+            "Kunne ikke knytte journalpost til annen sak. Journalpost mangler tema. ",
+        ),
     )
 }
 

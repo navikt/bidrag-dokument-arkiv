@@ -23,7 +23,6 @@ import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_ID
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_TITTEL
 import no.nav.bidrag.dokument.arkiv.stubs.Stubs
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
-import no.nav.bidrag.domene.ident.AktørId
 import no.nav.bidrag.domene.ident.Personident
 import no.nav.bidrag.transport.dokument.HendelseType
 import no.nav.bidrag.transport.dokument.JournalpostHendelse
@@ -361,7 +360,7 @@ class JoarkHendelseTest {
         stubs.mockSafResponseTilknyttedeJournalposter(listOf())
         stubs.mockBidragOrganisasjonSaksbehandler()
         stubs.mockPersonResponse(
-            PersonDto(Personident("123"), aktørId = AktørId("12321")),
+            PersonDto(Personident("123"), aktørId = "12321"),
             HttpStatus.OK,
         )
 
@@ -437,7 +436,7 @@ class JoarkHendelseTest {
         val journalpostId = 123213L
         stubs.mockSts()
         stubs.mockPersonResponse(
-            PersonDto(Personident("123"), aktørId = AktørId("12321")),
+            PersonDto(Personident("123"), aktørId = "12321"),
             HttpStatus.OK,
         )
         stubs.mockSafResponseTilknyttedeJournalposter(

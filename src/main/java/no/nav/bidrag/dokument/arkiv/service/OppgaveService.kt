@@ -17,7 +17,6 @@ import no.nav.bidrag.dokument.arkiv.model.Discriminator
 import no.nav.bidrag.dokument.arkiv.model.OppgaveSokParametre
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager
-import no.nav.bidrag.domene.ident.AktørId
 import no.nav.bidrag.domene.ident.Personident
 import no.nav.bidrag.transport.person.PersonDto
 import org.slf4j.LoggerFactory
@@ -102,9 +101,9 @@ class OppgaveService(
             .orElseGet {
                 PersonDto(
                     ident = Personident(gjelder),
-                    aktørId = AktørId(gjelder),
+                    aktørId = gjelder,
                 )
-            }.aktørId?.verdi
+            }.aktørId
     }
 
     private fun finnVurderDokumentOppgaverForJournalpost(journalpostId: Long): List<OppgaveData> {

@@ -38,6 +38,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Scope
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import org.springframework.http.client.observation.DefaultClientRequestObservationConvention
 import org.springframework.retry.annotation.EnableRetry
 
 @Configuration
@@ -61,6 +62,9 @@ import org.springframework.retry.annotation.EnableRetry
     MdcFilter::class,
 )
 class BidragDokumentArkivConfig {
+    @Bean
+    fun clientRequestObservationConvention() = DefaultClientRequestObservationConvention()
+
     @Bean
     @Scope("prototype")
     fun baseSafConsumer(
