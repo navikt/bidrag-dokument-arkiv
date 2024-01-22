@@ -837,8 +837,8 @@ class Stubs {
                 WireMock.patchRequestedFor(
                     WireMock.urlMatching(
                         "/dokarkiv" +
-                                DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" +
-                                journalpostId + "/oppdaterDistribusjonsinfo",
+                            DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "/" +
+                            journalpostId + "/oppdaterDistribusjonsinfo",
                     ),
                 ).withRequestBody(ContainsPattern(kanal.name)),
             )

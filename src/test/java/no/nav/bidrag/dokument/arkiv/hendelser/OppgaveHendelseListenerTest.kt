@@ -376,7 +376,9 @@ class OppgaveHendelseListenerTest {
                 journalpostId,
                 "\"tilleggsopplysninger\":" +
                     "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"origDistDigitalt\",\"verdi\":\"true\"}," +
-                    "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"Distribusjon feilet, mottaker mangler postadresse\"}]",
+                    "{\"nokkel\":\"retur0_${DateUtils.formatDate(
+                        LocalDate.now(),
+                    )}\",\"verdi\":\"Distribusjon feilet, mottaker mangler postadresse\"}]",
             )
         }
     }
@@ -433,7 +435,9 @@ class OppgaveHendelseListenerTest {
                     "\"tilleggsopplysninger\":" +
                         "[{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
                         "{\"nokkel\":\"Lretur0_2020-01-02\",\"verdi\":\"En god begrunnelse for hvorfor dokument kom i retur\"}," +
-                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(LocalDate.now())}\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}",
+                        "{\"nokkel\":\"retur0_${DateUtils.formatDate(
+                            LocalDate.now(),
+                        )}\",\"verdi\":\"En annen god begrunnelse for hvorfor dokument kom i retur\"}",
                 )
             },
         )
