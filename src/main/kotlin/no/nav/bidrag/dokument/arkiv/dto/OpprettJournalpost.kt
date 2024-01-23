@@ -66,7 +66,11 @@ data class JoarkOpprettJournalpostRequest(
         val variantformat: String? = null,
         val fysiskDokument: ByteArray,
         val filnavn: String? = null,
-    )
+    ) {
+        override fun toString(): String {
+            return "filtype: $filtype, variantformat: $variantformat, fysiskDokument størrelse: ${fysiskDokument.size}, filnavn: $filnavn"
+        }
+    }
 }
 
 @DslMarker
