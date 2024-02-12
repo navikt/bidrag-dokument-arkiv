@@ -49,6 +49,7 @@ data class BestemKanalRequest(
     val mottakerId: String,
     val erArkivert: Boolean = true,
     val tema: String = "BID",
+    val dokumenttypeId: String = "U000001",
     val forsendelseStoerrelse: Int? = null,
 )
 
