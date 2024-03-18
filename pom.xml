@@ -29,7 +29,7 @@
         <apache-avro-version>1.11.3</apache-avro-version>
         <bidrag-felles.version>2024.01.19.131059</bidrag-felles.version>
         <commons-codec.version>1.16.0</commons-codec.version>
-        <graphq-dgs-client.version>8.2.2</graphq-dgs-client.version>
+        <graphq-dgs-client.version>8.4.1</graphq-dgs-client.version>
         <joark-hendelse.version>67a9be4476b63b7247cfacfaf821ab656bd2a952</joark-hendelse.version>
         <kafka-avro-serializer.version>7.5.3</kafka-avro-serializer.version>
         <logback-encoder.version>7.4</logback-encoder.version>
