@@ -199,9 +199,7 @@ data class LagreJournalpostRequest(
         }
 
         if (journalpost.isInngaaendeDokument()) {
-            if (!journalpost.isStatusJournalfort() || journalpost.hentDatoJournalfort()
-                    ?.isAfter(LocalDate.now().minusYears(1).minusDays(1)) == true
-            ) {
+            if (!journalpost.erJournalførtSenereEnnEttÅrSiden()) {
                 avsenderMottaker =
                     AvsenderMottaker(endreJournalpostCommand.hentAvsenderNavn(journalpost))
             }

@@ -11,6 +11,8 @@ import no.nav.bidrag.dokument.arkiv.dto.OppgaveSokResponse
 import no.nav.bidrag.dokument.arkiv.dto.ReturDetaljerLogDO
 import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
+import no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT
+import no.nav.bidrag.dokument.arkiv.stubs.DATO_JOURNALFORT
 import no.nav.bidrag.dokument.arkiv.stubs.RETUR_DETALJER_DATO_1
 import no.nav.bidrag.dokument.arkiv.stubs.RETUR_DETALJER_DATO_2
 import no.nav.bidrag.dokument.arkiv.stubs.Stubs
@@ -194,6 +196,49 @@ class EndreJournalpostControllerTest : AbstractControllerTest() {
             },
             { stubs.verifyStub.dokarkivFerdigstillKalt(journalpostId) },
         )
+    }
+
+    @Test
+    fun `Skal endre journalført journalpost uten å endre avsendernavn`() {
+        val sak = "200000"
+        val journalpostId = 201028011L
+
+        val endreJournalpostCommand: EndreJournalpostCommand = createEndreJournalpostCommand()
+
+        stubs.mockSafResponseHentJournalpost(
+            opprettSafResponse(
+                journalpostId = journalpostId.toString(),
+                journalstatus = JournalStatus.JOURNALFOERT,
+                relevanteDatoer = listOf(
+                    DATO_DOKUMENT,
+                    DATO_JOURNALFORT,
+                ),
+            ),
+        )
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockDokarkivOppdaterRequest(journalpostId)
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
+
+        // when
+        val oppdaterJournalpostResponseEntity = httpHeaderTestRestTemplate.exchange(
+            initUrl() + "/journal/JOARK-" + journalpostId,
+            HttpMethod.PATCH,
+            HttpEntity(endreJournalpostCommand, headerMedEnhet),
+            JournalpostDto::class.java,
+        )
+
+        assertSoftly(oppdaterJournalpostResponseEntity) {
+            statusCode shouldBe HttpStatus.OK
+
+            assertSoftly(body) {
+                stubs.verifyStub.dokarkivOppdaterKalt(
+                    journalpostId,
+                    "\"dokumenter\":[{\"dokumentInfoId\":\"1\",\"tittel\":\"In a galazy far far away\",\"brevkode\":\"BLABLA\"}]",
+                )
+                stubs.verifyStub.dokarkivIkkeOppdaterKalt(journalpostId, "\"avsenderMottaker\":{\"navn\":\"Dauden, Svarte\"}")
+            }
+        }
     }
 
     @Test
