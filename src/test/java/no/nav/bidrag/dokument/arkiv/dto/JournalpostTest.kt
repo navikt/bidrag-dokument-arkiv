@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.kotest.matchers.shouldBe
 import no.nav.bidrag.dokument.arkiv.stubs.RETUR_DETALJER_DATO_1
 import no.nav.bidrag.dokument.arkiv.stubs.RETUR_DETALJER_DATO_2
+import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponseWithReturDetaljer
 import no.nav.bidrag.transport.dokument.AvvikType
@@ -731,6 +732,45 @@ internal class JournalpostTest {
         distribuertTilAdresse?.postnummer shouldBe "123213"
         distribuertTilAdresse?.poststed shouldBe "Svin Sund"
         distribuertTilAdresse?.land shouldBe "SE"
+    }
+
+    @Test
+    fun `skal validere at journalpost er journalført eldre enn 1 år`() {
+        opprettSafResponse()
+            .copy(
+                journalstatus = JournalStatus.JOURNALFOERT,
+                relevanteDatoer = listOf(DatoType("2022-08-18T13:20:33", "DATO_JOURNALFOERT")),
+            ).erJournalførtSenereEnnEttÅrSiden() shouldBe true
+
+        opprettSafResponse()
+            .copy(
+                journalstatus = JournalStatus.JOURNALFOERT,
+                relevanteDatoer = listOf(DatoType(LocalDateTime.now().minusMonths(11).toString(), "DATO_JOURNALFOERT")),
+            ).erJournalførtSenereEnnEttÅrSiden() shouldBe false
+
+        opprettSafResponse()
+            .copy(
+                journalstatus = JournalStatus.JOURNALFOERT,
+                relevanteDatoer = listOf(DatoType(LocalDateTime.now().minusMonths(12).toString(), "DATO_JOURNALFOERT")),
+            ).erJournalførtSenereEnnEttÅrSiden() shouldBe false
+
+        opprettSafResponse()
+            .copy(
+                journalstatus = JournalStatus.JOURNALFOERT,
+                relevanteDatoer = listOf(DatoType(LocalDateTime.now().minusMonths(12).minusDays(1).toString(), "DATO_JOURNALFOERT")),
+            ).erJournalførtSenereEnnEttÅrSiden() shouldBe true
+
+        opprettSafResponse()
+            .copy(
+                journalstatus = JournalStatus.MOTTATT,
+                relevanteDatoer = listOf(DatoType(LocalDateTime.now().minusMonths(11).toString(), "DATO_DOKUMENT")),
+            ).erJournalførtSenereEnnEttÅrSiden() shouldBe false
+
+        opprettSafResponse()
+            .copy(
+                journalstatus = JournalStatus.JOURNALFOERT,
+                relevanteDatoer = listOf(DatoType(LocalDateTime.now().minusMonths(11).toString(), "DATO_DOKUMENT")),
+            ).erJournalførtSenereEnnEttÅrSiden() shouldBe false
     }
 
     private fun getReturDetaljerDOByDate(returDetaljerLogDOList: List<ReturDetaljerLogDO>, dato: String): ReturDetaljerLogDO {

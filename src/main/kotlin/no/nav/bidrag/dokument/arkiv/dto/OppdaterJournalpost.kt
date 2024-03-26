@@ -199,8 +199,10 @@ data class LagreJournalpostRequest(
         }
 
         if (journalpost.isInngaaendeDokument()) {
-            avsenderMottaker =
-                AvsenderMottaker(endreJournalpostCommand.hentAvsenderNavn(journalpost))
+            if (!journalpost.erJournalførtSenereEnnEttÅrSiden()) {
+                avsenderMottaker =
+                    AvsenderMottaker(endreJournalpostCommand.hentAvsenderNavn(journalpost))
+            }
             datoMottatt =
                 DateUtils.formatDate(endreJournalpostCommand.endreJournalpostCommand.dokumentDato)
         }

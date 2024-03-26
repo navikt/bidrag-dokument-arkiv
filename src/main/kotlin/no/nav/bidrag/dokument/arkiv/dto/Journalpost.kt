@@ -574,6 +574,9 @@ data class Journalpost(
 
     fun isSkanning(): Boolean = kanal == JournalpostKanal.SKAN_IM
 
+    fun erJournalførtSenereEnnEttÅrSiden() =
+        isStatusJournalfort() && hentDatoJournalfort() != null && hentDatoJournalfort()!!.isBefore(LocalDate.now().minusYears(1))
+
     fun tilJournalpostResponse(): JournalpostResponse {
         val journalpost = tilJournalpostDto()
         val saksnummer = sak?.fagsakId
