@@ -540,7 +540,7 @@ data class Journalpost(
             )
         }
         if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
-            if (isStatusEkspedert() && isDistribusjonKommetIRetur() || isStatusFerdigsstilt() && !isDistribusjonBestilt()) {
+            if ((isStatusFerdigsstilt() || isStatusEkspedert()) && isDistribusjonKommetIRetur() || isStatusFerdigsstilt() && !isDistribusjonBestilt()) {
                 avvikTypeList.add(
                     AvvikType.MANGLER_ADRESSE,
                 )
