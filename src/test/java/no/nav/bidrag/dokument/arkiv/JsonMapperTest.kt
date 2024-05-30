@@ -240,7 +240,7 @@ internal class JsonMapperTest {
             Executable {
                 Assertions.assertThat(safQuery.getVariables())
                     .`as`("Variables")
-                    .containsEntry("journalpostId", 1235L)
+                    .containsEntry("journalpostId", "1235")
             },
         )
     }
