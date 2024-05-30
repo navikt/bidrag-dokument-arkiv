@@ -7,6 +7,6 @@ data class JournalpostQuery(val journalpostId: Long) : GraphQuery() {
     }
 
     override fun getVariables(): HashMap<String, Any> {
-        return hashMapOf("journalpostId" to journalpostId)
+        return hashMapOf("journalpostId" to journalpostId.toString())
     }
 }
