@@ -327,6 +327,7 @@ class AvvikService(
                 fjern journalførendeenhet true
                 med dokumenter journalpost.dokumenter
                 fjern sakstilknytning true
+                med eksternReferanseId "${journalpost.tema}_overfor_${journalpost.journalpostId}_${avvikshendelseIntern.nyttFagomrade}"
             },
             originalJournalpostId = journalpost.hentJournalpostIdLong(),
             skalFerdigstilles = false,

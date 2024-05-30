@@ -474,6 +474,7 @@ class AvvikControllerTest : AbstractControllerTest() {
                     "" +
                         "{\"tittel\":\"Tittel på dokument 1\"," +
                         "\"journalpostType\":\"INNGAAENDE\"," +
+                        "\"eksternReferanseId\":\"BID_overfor_${originalJournalpostId}_AAP\"," +
                         "\"tilleggsopplysninger\":[]," +
                         "\"tema\":\"AAP\"," +
                         "\"kanal\":\"NAV_NO\"," +
