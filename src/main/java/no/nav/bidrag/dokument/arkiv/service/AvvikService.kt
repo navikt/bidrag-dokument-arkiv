@@ -239,6 +239,7 @@ class AvvikService(
 
         val request = dupliserJournalpost(journalpost) {
             med journalførendeenhet avvikshendelseIntern.saksbehandlersEnhet
+            med eksternReferanseId "BID_kopiert_fra_${journalpost.journalpostId}_${journalpost.tema}"
             med tittel "$nyJournalpostTittel (Kopiert fra dokument: ${journalpost.hentTittel()})"
             avvikshendelseIntern.dokumenter!!.forEach(
                 Consumer { (dokumentreferanse, _, _, tittel, dokument, brevkode): DokumentDto ->

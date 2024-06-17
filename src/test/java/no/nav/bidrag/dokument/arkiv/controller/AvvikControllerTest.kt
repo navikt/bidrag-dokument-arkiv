@@ -1324,6 +1324,7 @@ class AvvikControllerTest : AbstractControllerTest() {
                         "\"tittel\":\"$tittelDokument1 (Kopiert fra dokument: $tittelOriginalDokument)\"," +
                         "\"journalfoerendeEnhet\":\"$xEnhet\"," +
                         "\"journalpostType\":\"INNGAAENDE\"," +
+                        "\"eksternReferanseId\":\"BID_kopiert_fra_${journalpostIdAnnenFagomrade}_BAR\"," +
                         "\"tilleggsopplysninger\":[]," +
                         "\"tema\":\"BID\"," +
                         "\"kanal\":\"NAV_NO\"," +
