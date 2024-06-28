@@ -97,40 +97,34 @@ data class DistribusjonsInfo(
         return registrert?.dato?.let { LocalDateTime.parse(it) }
     }
 
-    fun hentDistribuertAvIdent(): String? {
-        return tilleggsopplysninger.hentDistribuertAvIdent()
-    }
+    fun hentDistribuertAvIdent(): String? = tilleggsopplysninger.hentDistribuertAvIdent()
 
-    fun hentBestillingId(): String? {
-        return tilleggsopplysninger.hentBestillingId()
-    }
+    fun hentBestillingId(): String? = tilleggsopplysninger.hentBestillingId()
 
     fun isStatusEkspedert(): Boolean = journalstatus == JournalStatus.EKSPEDERT.name
     fun isUtgaaendeDokument(): Boolean = journalposttype == JournalpostType.U.name
     fun isDistribusjonBestilt(): Boolean = tilleggsopplysninger.isDistribusjonBestilt() || isStatusEkspedert()
 
-    fun hentJournalStatus(): JournalpostStatus {
-        return when (journalstatus) {
-            JournalStatus.MOTTATT.name -> JournalpostStatus.MOTTATT
-            JournalStatus.JOURNALFOERT.name -> JournalpostStatus.JOURNALFØRT
-            JournalStatus.FEILREGISTRERT.name -> JournalpostStatus.FEILREGISTRERT
-            JournalStatus.EKSPEDERT.name -> JournalpostStatus.EKSPEDERT
-            JournalStatus.FERDIGSTILT.name ->
-                if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
-                    if (isDistribusjonBestilt()) {
-                        JournalpostStatus.DISTRIBUERT
-                    } else {
-                        JournalpostStatus.KLAR_FOR_DISTRIBUSJON
-                    }
+    fun hentJournalStatus(): JournalpostStatus = when (journalstatus) {
+        JournalStatus.MOTTATT.name -> JournalpostStatus.MOTTATT
+        JournalStatus.JOURNALFOERT.name -> JournalpostStatus.JOURNALFØRT
+        JournalStatus.FEILREGISTRERT.name -> JournalpostStatus.FEILREGISTRERT
+        JournalStatus.EKSPEDERT.name -> JournalpostStatus.EKSPEDERT
+        JournalStatus.FERDIGSTILT.name ->
+            if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
+                if (isDistribusjonBestilt()) {
+                    JournalpostStatus.DISTRIBUERT
                 } else {
-                    JournalpostStatus.FERDIGSTILT
+                    JournalpostStatus.KLAR_FOR_DISTRIBUSJON
                 }
+            } else {
+                JournalpostStatus.FERDIGSTILT
+            }
 
-            JournalStatus.UNDER_ARBEID.name, JournalStatus.RESERVERT.name -> JournalpostStatus.UNDER_PRODUKSJON
-            JournalStatus.UTGAAR.name -> JournalpostStatus.UTGÅR
-            JournalStatus.AVBRUTT.name -> JournalpostStatus.AVBRUTT
-            else -> JournalpostStatus.UKJENT
-        }
+        JournalStatus.UNDER_ARBEID.name, JournalStatus.RESERVERT.name -> JournalpostStatus.UNDER_PRODUKSJON
+        JournalStatus.UTGAAR.name -> JournalpostStatus.UTGÅR
+        JournalStatus.AVBRUTT.name -> JournalpostStatus.AVBRUTT
+        else -> JournalpostStatus.UKJENT
     }
 }
 
@@ -147,21 +141,13 @@ data class UtsendingsInfo(
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class EpostVarselSendt(
-    val adresse: String,
-    val tittel: String,
-    val varslingstekst: String,
-)
+data class EpostVarselSendt(val adresse: String, val tittel: String, val varslingstekst: String)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class DigitalpostSendt(
-    val adresse: String,
-)
+data class DigitalpostSendt(val adresse: String)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class FysiskpostSendt(
-    val adressetekstKonvolutt: String,
-)
+data class FysiskpostSendt(val adressetekstKonvolutt: String)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class VarselSendt(
@@ -173,10 +159,7 @@ data class VarselSendt(
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class SmsVarselSendt(
-    val varslingstekst: String,
-    val adresse: String,
-)
+data class SmsVarselSendt(val varslingstekst: String, val adresse: String)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Journalpost(
@@ -202,21 +185,17 @@ data class Journalpost(
     val utsendingsinfo: UtsendingsInfo? = null,
 ) {
 
-    fun distribuertTilAdresse(): DistribuerTilAdresse? {
-        return parseFysiskPostadrese() ?: tilleggsopplysninger.hentAdresseDo()?.toDistribuerTilAdresse()
-    }
+    fun distribuertTilAdresse(): DistribuerTilAdresse? = parseFysiskPostadrese() ?: tilleggsopplysninger.hentAdresseDo()?.toDistribuerTilAdresse()
 
-    fun mottakerAdresse(): MottakerAdresseTo? {
-        return distribuertTilAdresse()?.let {
-            MottakerAdresseTo(
-                adresselinje1 = it.adresselinje1 ?: "",
-                adresselinje2 = it.adresselinje2,
-                adresselinje3 = it.adresselinje3,
-                postnummer = it.postnummer,
-                poststed = it.poststed,
-                landkode = it.land,
-            )
-        }
+    fun mottakerAdresse(): MottakerAdresseTo? = distribuertTilAdresse()?.let {
+        MottakerAdresseTo(
+            adresselinje1 = it.adresselinje1 ?: "",
+            adresselinje2 = it.adresselinje2,
+            adresselinje3 = it.adresselinje3,
+            postnummer = it.postnummer,
+            poststed = it.poststed,
+            landkode = it.land,
+        )
     }
 
     private fun parseFysiskPostadrese(): DistribuerTilAdresse? {
@@ -292,35 +271,33 @@ data class Journalpost(
     fun harAvsenderMottaker(): Boolean = avsenderMottaker?.navn != null || avsenderMottaker?.id != null
 
     fun hentAvsenderMottakerId(): String? = avsenderMottaker?.id
-    fun hentJournalStatus(): JournalpostStatus? {
-        return if (isDistribusjonKommetIRetur() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
-            JournalpostStatus.RETUR
-        } else {
-            when (journalstatus) {
-                JournalStatus.MOTTATT -> JournalpostStatus.MOTTATT
-                JournalStatus.JOURNALFOERT -> JournalpostStatus.JOURNALFØRT
-                JournalStatus.FEILREGISTRERT -> JournalpostStatus.FEILREGISTRERT
-                JournalStatus.EKSPEDERT -> JournalpostStatus.EKSPEDERT
-                JournalStatus.FERDIGSTILT ->
-                    if (hentBrevkodeDto()?.kode == "CRM_MELDINGSKJEDE") {
-                        JournalpostStatus.JOURNALFØRT
-                    } else if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
-                        if (isDistribusjonBestilt()) {
-                            JournalpostStatus.EKSPEDERT
-                        } else {
-                            JournalpostStatus.KLAR_FOR_DISTRIBUSJON
-                        }
-                    } else if (isNotat()) {
-                        JournalpostStatus.RESERVERT
+    fun hentJournalStatus(): JournalpostStatus? = if (isDistribusjonKommetIRetur() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
+        JournalpostStatus.RETUR
+    } else {
+        when (journalstatus) {
+            JournalStatus.MOTTATT -> JournalpostStatus.MOTTATT
+            JournalStatus.JOURNALFOERT -> JournalpostStatus.JOURNALFØRT
+            JournalStatus.FEILREGISTRERT -> JournalpostStatus.FEILREGISTRERT
+            JournalStatus.EKSPEDERT -> JournalpostStatus.EKSPEDERT
+            JournalStatus.FERDIGSTILT ->
+                if (hentBrevkodeDto()?.kode == "CRM_MELDINGSKJEDE") {
+                    JournalpostStatus.JOURNALFØRT
+                } else if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
+                    if (isDistribusjonBestilt()) {
+                        JournalpostStatus.EKSPEDERT
                     } else {
-                        JournalpostStatus.JOURNALFØRT
+                        JournalpostStatus.KLAR_FOR_DISTRIBUSJON
                     }
+                } else if (isNotat()) {
+                    JournalpostStatus.RESERVERT
+                } else {
+                    JournalpostStatus.JOURNALFØRT
+                }
 
-                JournalStatus.UNDER_ARBEID, JournalStatus.RESERVERT -> JournalpostStatus.UNDER_PRODUKSJON
-                JournalStatus.UTGAAR -> JournalpostStatus.UTGÅR
-                JournalStatus.AVBRUTT -> JournalpostStatus.AVBRUTT
-                else -> JournalpostStatus.fraKode(journalstatus?.name)
-            }
+            JournalStatus.UNDER_ARBEID, JournalStatus.RESERVERT -> JournalpostStatus.UNDER_PRODUKSJON
+            JournalStatus.UTGAAR -> JournalpostStatus.UTGÅR
+            JournalStatus.AVBRUTT -> JournalpostStatus.AVBRUTT
+            else -> JournalpostStatus.fraKode(journalstatus?.name)
         }
     }
 
@@ -332,19 +309,17 @@ data class Journalpost(
 
     fun isFeilregistrert() = journalstatus == JournalStatus.FEILREGISTRERT
 
-    fun hentKanal(): Kanal? {
-        return when (kanal) {
-            JournalpostKanal.NAV_NO -> Kanal.NAV_NO
-            JournalpostKanal.NAV_NO_CHAT -> Kanal.NAV_NO
-            JournalpostKanal.NAV_NO_UINNLOGGET -> Kanal.NAV_NO
-            JournalpostKanal.SKAN_NETS -> Kanal.SKAN_NETS
+    fun hentKanal(): Kanal? = when (kanal) {
+        JournalpostKanal.NAV_NO -> Kanal.NAV_NO
+        JournalpostKanal.NAV_NO_CHAT -> Kanal.NAV_NO
+        JournalpostKanal.NAV_NO_UINNLOGGET -> Kanal.NAV_NO
+        JournalpostKanal.SKAN_NETS -> Kanal.SKAN_NETS
 //            JournalpostKanal.SKAN_IM -> Kanal.SKAN_IM
-            JournalpostKanal.LOKAL_UTSKRIFT -> Kanal.LOKAL_UTSKRIFT
-            JournalpostKanal.SENTRAL_UTSKRIFT -> Kanal.SENTRAL_UTSKRIFT
-            JournalpostKanal.SDP -> Kanal.SDP
-            JournalpostKanal.INGEN_DISTRIBUSJON -> Kanal.INGEN_DISTRIBUSJON
-            else -> null
-        }
+        JournalpostKanal.LOKAL_UTSKRIFT -> Kanal.LOKAL_UTSKRIFT
+        JournalpostKanal.SENTRAL_UTSKRIFT -> Kanal.SENTRAL_UTSKRIFT
+        JournalpostKanal.SDP -> Kanal.SDP
+        JournalpostKanal.INGEN_DISTRIBUSJON -> Kanal.INGEN_DISTRIBUSJON
+        else -> null
     }
 
     fun isSentralPrint() = hentKanal() == Kanal.SENTRAL_UTSKRIFT
@@ -367,13 +342,9 @@ data class Journalpost(
     fun hasLockedReturDetaljerWithDate(date: LocalDate) = !tilleggsopplysninger.hentReturDetaljerLogDO().stream()
         .filter { it.dato == date && it.locked == true }.findAny().isEmpty
 
-    fun hentJournalfortAvNavn(): String? {
-        return tilleggsopplysninger.hentJournalfortAv() ?: journalfortAvNavn
-    }
+    fun hentJournalfortAvNavn(): String? = tilleggsopplysninger.hentJournalfortAv() ?: journalfortAvNavn
 
-    fun hentJournalfortAvIdent(): String? {
-        return tilleggsopplysninger.hentJournalfortAvIdent()
-    }
+    fun hentJournalfortAvIdent(): String? = tilleggsopplysninger.hentJournalfortAvIdent()
 
     fun hentReturDetaljer(): ReturDetaljer? {
         val returDetaljerLog = hentReturDetaljerLog()
@@ -381,9 +352,11 @@ data class Journalpost(
             val senestReturDato = returDetaljerLog
                 .filter { it.dato != null && it.locked != true }
                 .filter {
-                    !isDistribusjonKommetIRetur() || it.dato!!.isEqual(hentDatoDokument()) || it.dato!!.isAfter(
-                        hentDatoDokument(),
-                    )
+                    !isDistribusjonKommetIRetur() ||
+                        it.dato!!.isEqual(hentDatoDokument()) ||
+                        it.dato!!.isAfter(
+                            hentDatoDokument(),
+                        )
                 }
                 .maxOfOrNull { it.dato!! }
             return ReturDetaljer(
@@ -513,7 +486,7 @@ data class Journalpost(
         if (!isTemaBidrag()) {
             return if (isStatusMottatt() && isInngaaendeDokument()) {
                 listOf(AvvikType.ENDRE_FAGOMRADE)
-            } else if (isInngaaendeDokument()) {
+            } else if (isInngaaendeDokument() || isNotat()) {
                 listOf(AvvikType.KOPIER_FRA_ANNEN_FAGOMRADE)
             } else {
                 emptyList()
@@ -540,7 +513,11 @@ data class Journalpost(
             )
         }
         if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
-            if ((isStatusFerdigsstilt() || isStatusEkspedert()) && isDistribusjonKommetIRetur() || isStatusFerdigsstilt() && !isDistribusjonBestilt()) {
+            if ((isStatusFerdigsstilt() || isStatusEkspedert()) &&
+                isDistribusjonKommetIRetur() ||
+                isStatusFerdigsstilt() &&
+                !isDistribusjonBestilt()
+            ) {
                 avvikTypeList.add(
                     AvvikType.MANGLER_ADRESSE,
                 )
@@ -603,9 +580,7 @@ data class Journalpost(
     fun hentAvsenderNavn() = avsenderMottaker?.navn
     fun erIkkeTilknyttetSakNarOppgitt(saksnummer: String?) = if (saksnummer == null) false else !erTilknyttetSak(saksnummer)
 
-    fun kanJournalfores(journalpost: Journalpost): Boolean {
-        return journalpost.isStatusMottatt() && journalpost.hasSak()
-    }
+    fun kanJournalfores(journalpost: Journalpost): Boolean = journalpost.isStatusMottatt() && journalpost.hasSak()
 
     fun hentAntallDokumenter(): Int = dokumenter.size
 }
@@ -677,27 +652,23 @@ data class DistribuertTilAdresseDo(
         )
     }
 
-    fun toDistribuerTilAdresse(): DistribuerTilAdresse {
-        return DistribuerTilAdresse(
-            adresselinje1 = adresselinje1,
-            adresselinje2 = adresselinje2,
-            adresselinje3 = adresselinje3,
-            land = land,
-            postnummer = postnummer,
-            poststed = poststed,
-        )
-    }
+    fun toDistribuerTilAdresse(): DistribuerTilAdresse = DistribuerTilAdresse(
+        adresselinje1 = adresselinje1,
+        adresselinje2 = adresselinje2,
+        adresselinje3 = adresselinje3,
+        land = land,
+        postnummer = postnummer,
+        poststed = poststed,
+    )
 
-    fun toMottakerAdresse(): MottakerAdresseTo {
-        return MottakerAdresseTo(
-            adresselinje1 = adresselinje1 ?: "",
-            adresselinje2 = adresselinje2,
-            adresselinje3 = adresselinje3,
-            landkode = land,
-            postnummer = postnummer,
-            poststed = poststed,
-        )
-    }
+    fun toMottakerAdresse(): MottakerAdresseTo = MottakerAdresseTo(
+        adresselinje1 = adresselinje1 ?: "",
+        adresselinje2 = adresselinje2,
+        adresselinje3 = adresselinje3,
+        landkode = land,
+        postnummer = postnummer,
+        poststed = poststed,
+    )
 }
 
 class TilleggsOpplysninger : MutableList<Map<String, String>> by mutableListOf() {
@@ -718,38 +689,30 @@ class TilleggsOpplysninger : MutableList<Map<String, String>> by mutableListOf()
         this.add(mapOf("nokkel" to DISTRIBUERT_AV_IDENT_KEY, "verdi" to distribuertAvIdent))
     }
 
-    fun hentBestillingId(): String? {
-        return this.filter { it["nokkel"]?.contains(DOKDIST_BESTILLING_ID) ?: false }
-            .filter { Strings.isNotEmpty(it["verdi"]) }
-            .map { it["verdi"] }
-            .firstOrNull()
-    }
+    fun hentBestillingId(): String? = this.filter { it["nokkel"]?.contains(DOKDIST_BESTILLING_ID) ?: false }
+        .filter { Strings.isNotEmpty(it["verdi"]) }
+        .map { it["verdi"] }
+        .firstOrNull()
 
-    fun hentDistribuertAvIdent(): String? {
-        return this.filter { it["nokkel"]?.contains(DISTRIBUERT_AV_IDENT_KEY) ?: false }
-            .filter { Strings.isNotEmpty(it["verdi"]) }
-            .map { it["verdi"] }
-            .firstOrNull()
-    }
+    fun hentDistribuertAvIdent(): String? = this.filter { it["nokkel"]?.contains(DISTRIBUERT_AV_IDENT_KEY) ?: false }
+        .filter { Strings.isNotEmpty(it["verdi"]) }
+        .map { it["verdi"] }
+        .firstOrNull()
 
     fun setJournalfortAvIdent(journalfortAvIdent: String) {
         this.removeAll { it["nokkel"]?.contains(JOURNALFORT_AV_IDENT_KEY) ?: false }
         this.add(mapOf("nokkel" to JOURNALFORT_AV_IDENT_KEY, "verdi" to journalfortAvIdent))
     }
 
-    fun hentJournalfortAvIdent(): String? {
-        return this.filter { it["nokkel"]?.contains(JOURNALFORT_AV_IDENT_KEY) ?: false }
-            .filter { Strings.isNotEmpty(it["verdi"]) }
-            .map { it["verdi"] }
-            .firstOrNull()
-    }
+    fun hentJournalfortAvIdent(): String? = this.filter { it["nokkel"]?.contains(JOURNALFORT_AV_IDENT_KEY) ?: false }
+        .filter { Strings.isNotEmpty(it["verdi"]) }
+        .map { it["verdi"] }
+        .firstOrNull()
 
-    fun hentJournalfortAv(): String? {
-        return this.filter { it["nokkel"]?.contains(JOURNALFORT_AV_KEY) ?: false }
-            .filter { Strings.isNotEmpty(it["verdi"]) }
-            .map { it["verdi"] }
-            .firstOrNull()
-    }
+    fun hentJournalfortAv(): String? = this.filter { it["nokkel"]?.contains(JOURNALFORT_AV_KEY) ?: false }
+        .filter { Strings.isNotEmpty(it["verdi"]) }
+        .map { it["verdi"] }
+        .firstOrNull()
 
     fun removeDistribusjonMetadata() {
         this.removeAll { it["nokkel"]?.contains(DISTRIBUSJON_BESTILT_KEY) ?: false }
@@ -763,28 +726,22 @@ class TilleggsOpplysninger : MutableList<Map<String, String>> by mutableListOf()
         this.add(mapOf("nokkel" to ORIGINALT_DISTRIBUERT_DIGITALT_KEY, "verdi" to "true"))
     }
 
-    fun isOriginalDistribuertDigitalt(): Boolean {
-        return this.any { it["nokkel"]?.contains(ORIGINALT_DISTRIBUERT_DIGITALT_KEY) ?: false }
-    }
+    fun isOriginalDistribuertDigitalt(): Boolean = this.any { it["nokkel"]?.contains(ORIGINALT_DISTRIBUERT_DIGITALT_KEY) ?: false }
 
     fun setDistribusjonBestillt() {
         this.removeAll { it["nokkel"]?.contains(DISTRIBUSJON_BESTILT_KEY) ?: false }
         this.add(mapOf("nokkel" to DISTRIBUSJON_BESTILT_KEY, "verdi" to "true"))
     }
 
-    fun isDistribusjonBestilt(): Boolean {
-        return this.any { it["nokkel"]?.contains(DISTRIBUSJON_BESTILT_KEY) ?: false }
-    }
+    fun isDistribusjonBestilt(): Boolean = this.any { it["nokkel"]?.contains(DISTRIBUSJON_BESTILT_KEY) ?: false }
 
     fun setNyDistribusjonBestiltFlagg() {
         this.removeAll { it["nokkel"]?.contains(AVVIK_NY_DISTRIBUSJON_BESTILT_KEY) ?: false }
         this.add(mapOf("nokkel" to AVVIK_NY_DISTRIBUSJON_BESTILT_KEY, "verdi" to "true"))
     }
 
-    fun isNyDistribusjonBestilt(): Boolean {
-        return this.filter { it["nokkel"]?.contains(AVVIK_NY_DISTRIBUSJON_BESTILT_KEY) ?: false }
-            .any { it["verdi"] == "true" }
-    }
+    fun isNyDistribusjonBestilt(): Boolean = this.filter { it["nokkel"]?.contains(AVVIK_NY_DISTRIBUSJON_BESTILT_KEY) ?: false }
+        .any { it["verdi"] == "true" }
 
     fun setEndretTemaFlagg() {
         this.removeAll { it["nokkel"]?.contains(AVVIK_ENDRET_TEMA_KEY) ?: false }
@@ -796,20 +753,16 @@ class TilleggsOpplysninger : MutableList<Map<String, String>> by mutableListOf()
         this.add(mapOf("nokkel" to ORIGINAL_BESTILT_KEY, "verdi" to "true"))
     }
 
-    fun isOriginalBestilt(): Boolean {
-        return this.filter { it["nokkel"]?.contains(ORIGINAL_BESTILT_KEY) ?: false }
-            .any { it["verdi"] == "true" }
-    }
+    fun isOriginalBestilt(): Boolean = this.filter { it["nokkel"]?.contains(ORIGINAL_BESTILT_KEY) ?: false }
+        .any { it["verdi"] == "true" }
 
     fun removeEndretTemaFlagg() {
         this.removeAll { it["nokkel"]?.contains(AVVIK_ENDRET_TEMA_KEY) ?: false }
         this.add(mapOf("nokkel" to AVVIK_ENDRET_TEMA_KEY, "verdi" to "false"))
     }
 
-    fun isEndretTema(): Boolean {
-        return this.filter { it["nokkel"]?.contains(AVVIK_ENDRET_TEMA_KEY) ?: false }
-            .any { it["verdi"] == "true" }
-    }
+    fun isEndretTema(): Boolean = this.filter { it["nokkel"]?.contains(AVVIK_ENDRET_TEMA_KEY) ?: false }
+        .any { it["verdi"] == "true" }
 
     fun addMottakerAdresse(adresseDo: DistribuertTilAdresseDo) {
         this.removeAll { it["nokkel"]?.contains(DISTRIBUERT_ADRESSE_KEY) ?: false }
@@ -821,12 +774,10 @@ class TilleggsOpplysninger : MutableList<Map<String, String>> by mutableListOf()
         this.add(mapOf("nokkel" to SAMHANDLER_ID_KEY, "verdi" to samhandlerId))
     }
 
-    fun hentSamhandlerId(): String? {
-        return this.filter { it["nokkel"]?.contains(SAMHANDLER_ID_KEY) ?: false }
-            .filter { Strings.isNotEmpty(it["verdi"]) }
-            .map { it["verdi"] }
-            .firstOrNull()
-    }
+    fun hentSamhandlerId(): String? = this.filter { it["nokkel"]?.contains(SAMHANDLER_ID_KEY) ?: false }
+        .filter { Strings.isNotEmpty(it["verdi"]) }
+        .map { it["verdi"] }
+        .firstOrNull()
 
     fun addReturDetaljLog(returDetaljerLogDO: ReturDetaljerLogDO) {
         this.addAll(returDetaljerLogDO.toMap())
@@ -919,11 +870,7 @@ data class ReturDetaljerLogDO(
     }
 }
 
-data class AvsenderMottaker(
-    var navn: String? = null,
-    var id: String? = null,
-    var type: AvsenderMottakerIdType? = null,
-)
+data class AvsenderMottaker(var navn: String? = null, var id: String? = null, var type: AvsenderMottakerIdType? = null)
 
 enum class AvsenderMottakerIdType {
     FNR,
@@ -939,32 +886,21 @@ enum class BrukerType {
     FNR,
 }
 
-data class Bruker(
-    var id: String? = null,
-    var type: String? = null,
-) {
-    fun tilAktorDto(): AktorDto {
-        return if (id != null) {
-            AktorDto(
-                id!!,
-                runCatchingIgnoreException { type?.let { IdentType.valueOf(it) } } ?: IdentType.FNR,
-            )
-        } else {
-            throw JournalpostDataException("ingen id i $this")
-        }
+data class Bruker(var id: String? = null, var type: String? = null) {
+    fun tilAktorDto(): AktorDto = if (id != null) {
+        AktorDto(
+            id!!,
+            runCatchingIgnoreException { type?.let { IdentType.valueOf(it) } } ?: IdentType.FNR,
+        )
+    } else {
+        throw JournalpostDataException("ingen id i $this")
     }
 
     @JsonIgnore
-    fun isAktoerId(): Boolean {
-        return this.type == BrukerType.AKTOERID.name
-    }
+    fun isAktoerId(): Boolean = this.type == BrukerType.AKTOERID.name
 }
 
-data class Dokument(
-    var tittel: String? = null,
-    var dokumentInfoId: String? = null,
-    var brevkode: String? = null,
-) {
+data class Dokument(var tittel: String? = null, var dokumentInfoId: String? = null, var brevkode: String? = null) {
     fun tilDokumentDto(journalposttype: String?): DokumentDto = DokumentDto(
         arkivSystem = DokumentArkivSystemDto.JOARK,
         dokumentmalId = brevkode,
@@ -975,10 +911,7 @@ data class Dokument(
     )
 }
 
-data class DatoType(
-    var dato: String? = null,
-    var datotype: String? = null,
-) {
+data class DatoType(var dato: String? = null, var datotype: String? = null) {
     fun somDato(): LocalDate {
         val datoStreng = dato?.substring(0, 10)
 
@@ -994,12 +927,7 @@ data class DatoType(
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class Sak(
-    var fagsakId: String? = null,
-    var fagsakSystem: String? = null,
-    var sakstype: String? = null,
-    var tema: String? = null,
-) {
+data class Sak(var fagsakId: String? = null, var fagsakSystem: String? = null, var sakstype: String? = null, var tema: String? = null) {
     constructor(fagsakId: String?) : this(fagsakId, null, null, null)
 }
 
@@ -1096,15 +1024,17 @@ data class EndreJournalpostCommandIntern(
 
             val endringAvLaastReturDetalj =
                 endreReturDetaljer.any {
-                    it.originalDato != null && journalpost.hasLockedReturDetaljerWithDate(
-                        it.originalDato!!,
-                    )
+                    it.originalDato != null &&
+                        journalpost.hasLockedReturDetaljerWithDate(
+                            it.originalDato!!,
+                        )
                 }
             val opprettelseAvEksisterendeReturDato =
                 endreReturDetaljer.any {
-                    it.originalDato == null && journalpost.hasLockedReturDetaljerWithDate(
-                        it.nyDato!!,
-                    )
+                    it.originalDato == null &&
+                        journalpost.hasLockedReturDetaljerWithDate(
+                            it.nyDato!!,
+                        )
                 }
             if (endringAvLaastReturDetalj || opprettelseAvEksisterendeReturDato) {
                 violations.add("Kan ikke endre låste returdetaljer")
@@ -1134,20 +1064,16 @@ data class TilknyttetJournalpost(
     var dokumenter: List<TilknyttetDokument> = emptyList(),
 ) {
     fun isNotFeilregistrert() = journalstatus != JournalStatus.FEILREGISTRERT
-    data class TilknyttetDokument(
-        val tittel: String? = null,
-    )
+    data class TilknyttetDokument(val tittel: String? = null)
 
     val tittel get() = dokumenter.firstOrNull()?.tittel
 }
 
-fun returDetaljerDOListDoToMap(returDetaljerLog: List<ReturDetaljerLogDO>): Map<String, String> {
-    return mapOf(
-        "nokkel" to RETUR_DETALJER_KEY,
-        "verdi" to jacksonObjectMapper().registerModule(JavaTimeModule())
-            .writeValueAsString(returDetaljerLog),
-    )
-}
+fun returDetaljerDOListDoToMap(returDetaljerLog: List<ReturDetaljerLogDO>): Map<String, String> = mapOf(
+    "nokkel" to RETUR_DETALJER_KEY,
+    "verdi" to jacksonObjectMapper().registerModule(JavaTimeModule())
+        .writeValueAsString(returDetaljerLog),
+)
 
 enum class JournalpostType(var dekode: String) {
     N("Notat"),
