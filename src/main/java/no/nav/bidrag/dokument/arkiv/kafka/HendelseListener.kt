@@ -54,9 +54,7 @@ class HendelseListener(
         )
     }
 
-    private fun erOpprettetAvNKS(record: JournalfoeringHendelseRecord): Boolean {
-        return JournalpostKanal.NAV_NO_CHAT.name == record.mottaksKanal
-    }
+    private fun erOpprettetAvNKS(record: JournalfoeringHendelseRecord): Boolean = JournalpostKanal.NAV_NO_CHAT.name == record.mottaksKanal
 
     companion object {
         private val LOGGER = LoggerFactory.getLogger(HendelseListener::class.java)

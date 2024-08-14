@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.model
 
 import no.nav.bidrag.commons.CorrelationId
+import no.nav.bidrag.commons.util.secureLogger
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottakerIdType
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.JournalstatusDto
@@ -33,7 +34,13 @@ class JournalpostHendelseIntern(
             sakstilknytninger = journalpost.hentTilknyttetSaker().toList(),
             dokumentDato = journalpost.hentDatoDokument() ?: journalpost.hentDatoRegistrert(),
             journalfortDato = journalpost.hentDatoJournalfort(),
-            hendelseType = if (journalforingHendelse?.hendelsesType == JoarkHendelseType.ENDELIG_JOURNALFORT.hendelsesType) HendelseType.JOURNALFORING else HendelseType.ENDRING,
+            hendelseType = if (journalforingHendelse?.hendelsesType ==
+                JoarkHendelseType.ENDELIG_JOURNALFORT.hendelsesType
+            ) {
+                HendelseType.JOURNALFORING
+            } else {
+                HendelseType.ENDRING
+            },
             journalposttype = journalpost.journalposttype?.name,
             behandlingstema = journalpost.behandlingstema,
         )
@@ -83,6 +90,7 @@ class JournalforingHendelseIntern(var journalforingHendelse: JournalfoeringHende
 
     fun hentSaksbehandler(journalpost: Journalpost): SaksbehandlerMedEnhet {
         if (journalpost.isStatusJournalfort()) {
+            secureLogger.info { }
             return Saksbehandler(
                 journalpost.hentJournalfortAvIdent(),
                 journalpost.journalfortAvNavn,
@@ -92,20 +100,18 @@ class JournalforingHendelseIntern(var journalforingHendelse: JournalfoeringHende
         return Saksbehandler(null, "bidrag-dokument-arkiv").tilEnhet("9999")
     }
 
-    fun journalforingHendelseToJournalpostHendelse(): JournalpostHendelse {
-        return JournalpostHendelse(
-            sporing = opprettSporingsData(),
-            journalpostId = "JOARK-${journalforingHendelse.journalpostId}",
-            journalstatus = when (journalforingHendelse.journalpostStatus) {
-                "MOTTATT" -> JournalstatusDto.MOTTAKSREGISTRERT
-                "JOURNALFOERT" -> JournalstatusDto.JOURNALFORT
-                "UTGAAR" -> JournalstatusDto.UTGAR
-                else -> null
-            },
-            enhet = null,
-            fagomrade = journalforingHendelse.temaNytt ?: journalforingHendelse.temaGammelt,
-        )
-    }
+    fun journalforingHendelseToJournalpostHendelse(): JournalpostHendelse = JournalpostHendelse(
+        sporing = opprettSporingsData(),
+        journalpostId = "JOARK-${journalforingHendelse.journalpostId}",
+        journalstatus = when (journalforingHendelse.journalpostStatus) {
+            "MOTTATT" -> JournalstatusDto.MOTTAKSREGISTRERT
+            "JOURNALFOERT" -> JournalstatusDto.JOURNALFORT
+            "UTGAAR" -> JournalstatusDto.UTGAR
+            else -> null
+        },
+        enhet = null,
+        fagomrade = journalforingHendelse.temaNytt ?: journalforingHendelse.temaGammelt,
+    )
 
     private fun opprettSporingsData(): Sporingsdata = Sporingsdata(
         CorrelationId.fetchCorrelationIdForThread(),

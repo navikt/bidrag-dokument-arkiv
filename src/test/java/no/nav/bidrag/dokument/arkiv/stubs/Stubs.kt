@@ -32,17 +32,16 @@ import no.nav.bidrag.transport.person.PersonDto
 import org.junit.Assert
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import wiremock.com.fasterxml.jackson.annotation.JsonProperty
 import java.util.Arrays
 
 class Stubs {
     private val objectMapper: ObjectMapper = ObjectMapper().findAndRegisterModules()
     val verifyStub = VerifyStub()
-    private fun aClosedJsonResponse(): ResponseDefinitionBuilder {
-        return WireMock.aResponse()
-            .withHeader(HttpHeaders.CONNECTION, "close")
-            .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-    }
+    private fun aClosedJsonResponse(): ResponseDefinitionBuilder = WireMock.aResponse()
+        .withHeader(HttpHeaders.CONNECTION, "close")
+        .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
 
     fun mockDokarkivTilknyttRequest(journalpostId: Long) {
         mockDokarkivTilknyttRequest(journalpostId, 123213213L)
@@ -193,6 +192,7 @@ class Stubs {
             WireMock.get(WireMock.urlMatching("/dokument/dokumentreferanse/$dokumentref"))
                 .willReturn(
                     aClosedJsonResponse()
+                        .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE)
                         .withStatus(HttpStatus.OK.value())
                         .withBody(response),
                 ),
@@ -891,12 +891,9 @@ class Stubs {
     }
 }
 
-class NotContainsPattern(@JsonProperty("contains") expectedValue: String?) :
-    StringValuePattern(expectedValue) {
+class NotContainsPattern(@JsonProperty("contains") expectedValue: String?) : StringValuePattern(expectedValue) {
     val contains: String
         get() = expectedValue as String
 
-    override fun match(value: String?): MatchResult {
-        return MatchResult.of(value?.contains((expectedValue as CharSequence)) == false)
-    }
+    override fun match(value: String?): MatchResult = MatchResult.of(value?.contains((expectedValue as CharSequence)) == false)
 }
