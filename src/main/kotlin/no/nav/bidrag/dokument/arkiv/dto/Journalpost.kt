@@ -283,7 +283,7 @@ data class Journalpost(
                 if (hentBrevkodeDto()?.kode == "CRM_MELDINGSKJEDE") {
                     JournalpostStatus.JOURNALFØRT
                 } else if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
-                    if (isDistribusjonBestilt()) {
+                    if (isDistribusjonBestilt() || kanal == JournalpostKanal.LOKAL_UTSKRIFT) {
                         JournalpostStatus.EKSPEDERT
                     } else {
                         JournalpostStatus.KLAR_FOR_DISTRIBUSJON
