@@ -26,7 +26,7 @@
         <kotlin.version>1.9.22</kotlin.version>
 
         <!-- dependent versions other than from spring-boot -->
-        <apache-avro-version>1.11.3</apache-avro-version>
+        <apache-avro-version>1.12.0</apache-avro-version>
         <bidrag-felles.version>2024.01.19.131059</bidrag-felles.version>
         <commons-codec.version>1.16.0</commons-codec.version>
         <graphq-dgs-client.version>8.4.2</graphq-dgs-client.version>
