@@ -6,6 +6,7 @@ import no.nav.bidrag.commons.web.EnhetFilter
 import no.nav.bidrag.dokument.arkiv.consumer.BestemKanalResponse
 import no.nav.bidrag.dokument.arkiv.consumer.DistribusjonsKanal
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker
+import no.nav.bidrag.dokument.arkiv.dto.DatoType
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.Dokument
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
@@ -49,6 +50,7 @@ import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import java.io.IOException
+import java.time.LocalDateTime
 import java.util.Base64
 
 class AvvikControllerTest : AbstractControllerTest() {
@@ -119,6 +121,7 @@ class AvvikControllerTest : AbstractControllerTest() {
                         tittel = "tittel",
                     ),
                 ),
+                relevanteDatoer = listOf(DatoType(LocalDateTime.now().minusMonths(8).toString(), "DATO_REGISTRERT")),
                 tema = "FAR",
                 journalstatus = JournalStatus.JOURNALFOERT,
             ),
@@ -133,6 +136,53 @@ class AvvikControllerTest : AbstractControllerTest() {
             stubs.verifyStub.dokarkivOppdaterKalt(
                 journalpostIdFraJson,
                 "\"tittel\":\"FARSKAP UTELUKKET: Tittel på dokument 1\",\"dokumenter\":[{\"dokumentInfoId\":\"123123\",\"tittel\":\"FARSKAP UTELUKKET: Tittel på dokument 1\"}]",
+            )
+            Mockito.verify(kafkaTemplateMock).send(
+                ArgumentMatchers.eq(topicJournalpost),
+                ArgumentMatchers.eq(
+                    "JOARK-$journalpostIdFraJson",
+                ),
+                ArgumentMatchers.any(),
+            )
+        }
+    }
+
+    @Test
+    fun `skal utfore avvik FARSKAP_UTELUKKET og ikke oppdatere tittel hvis eldre enn 1 år`() {
+        // given
+        val xEnhet = "1234"
+        val journalpostIdFraJson = 201028011L
+        val avvikHendelse = createAvvikHendelse(AvvikType.FARSKAP_UTELUKKET, emptyMap())
+        stubs.mockSafResponseTilknyttedeJournalposter(HttpStatus.OK)
+        stubs.mockSafResponseHentJournalpost(
+            opprettSafResponse(
+                journalpostIdFraJson.toString(),
+                avsenderMottaker = AvsenderMottaker(),
+                dokumenter = listOf(
+                    Dokument(
+                        dokumentInfoId = DOKUMENT_1_ID,
+                        tittel = DOKUMENT_1_TITTEL,
+                    ),
+                    Dokument(
+                        dokumentInfoId = "123213",
+                        tittel = "tittel",
+                    ),
+                ),
+                tema = "FAR",
+                relevanteDatoer = listOf(DatoType(LocalDateTime.now().minusYears(1).toString(), "DATO_REGISTRERT")),
+                journalstatus = JournalStatus.JOURNALFOERT,
+            ),
+        )
+        stubs.mockPersonResponse(PersonDto(PERSON_IDENT, aktørId = AKTOR_IDENT), HttpStatus.OK)
+        stubs.mockDokarkivOppdaterRequest(journalpostIdFraJson)
+
+        val response = sendAvvikRequest(xEnhet, journalpostIdFraJson, avvikHendelse)
+
+        assertSoftly {
+            response.statusCode shouldBe HttpStatus.OK
+            stubs.verifyStub.dokarkivOppdaterKalt(
+                journalpostIdFraJson,
+                "\"dokumenter\":[{\"dokumentInfoId\":\"123123\",\"tittel\":\"FARSKAP UTELUKKET: Tittel på dokument 1\"}]",
             )
             Mockito.verify(kafkaTemplateMock).send(
                 ArgumentMatchers.eq(topicJournalpost),
@@ -1468,10 +1518,8 @@ class AvvikControllerTest : AbstractControllerTest() {
         )
     }
 
-    private fun createAvvikHendelse(avvikType: AvvikType, detaljer: Map<String, String>): Avvikshendelse {
-        return Avvikshendelse(
-            avvikType = avvikType,
-            detaljer = detaljer,
-        )
-    }
+    private fun createAvvikHendelse(avvikType: AvvikType, detaljer: Map<String, String>): Avvikshendelse = Avvikshendelse(
+        avvikType = avvikType,
+        detaljer = detaljer,
+    )
 }
