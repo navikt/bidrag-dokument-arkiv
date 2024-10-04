@@ -145,7 +145,11 @@ data class EndreTittelRequest(private var journalpostId: Long, private var _titt
             dokumenter =
                 listOf(Dokument(hoveddokument.dokumentInfoId, _tittel, null))
         }
-        if (journalpost.isInngaaendeDokument()) tittel = _tittel
+        if (journalpost.isInngaaendeDokument() &&
+            journalpost.hentDatoRegistrert()?.isAfter(LocalDate.now().minusYears(1).minusDays(1)) == true
+        ) {
+            tittel = _tittel
+        }
     }
 }
 
