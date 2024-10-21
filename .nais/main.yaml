@@ -7,6 +7,9 @@ kafka:
 cpu:
   limits: 1000m
   requests: 50m
+memory:
+  limits: 2Gi
+  requests: 1Gi
 env:
   ACCEPTED_SERVICE_USER_AUDIENCE: srvbdarkivering,srvbisys
   STS_ISSUER_URL: https://security-token-service.dev.adeo.no
