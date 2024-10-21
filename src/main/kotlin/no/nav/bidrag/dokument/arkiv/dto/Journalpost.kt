@@ -112,7 +112,7 @@ data class DistribusjonsInfo(
         JournalStatus.EKSPEDERT.name -> JournalpostStatus.EKSPEDERT
         JournalStatus.FERDIGSTILT.name ->
             if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
-                if (isDistribusjonBestilt()) {
+                if (isDistribusjonBestilt() || kanal == JournalpostKanal.LOKAL_UTSKRIFT) {
                     JournalpostStatus.DISTRIBUERT
                 } else {
                     JournalpostStatus.KLAR_FOR_DISTRIBUSJON
@@ -283,7 +283,7 @@ data class Journalpost(
                 if (hentBrevkodeDto()?.kode == "CRM_MELDINGSKJEDE") {
                     JournalpostStatus.JOURNALFØRT
                 } else if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
-                    if (isDistribusjonBestilt()) {
+                    if (isDistribusjonBestilt() || kanal == JournalpostKanal.LOKAL_UTSKRIFT) {
                         JournalpostStatus.EKSPEDERT
                     } else {
                         JournalpostStatus.KLAR_FOR_DISTRIBUSJON
