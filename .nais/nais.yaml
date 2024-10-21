@@ -47,10 +47,10 @@ spec:
   resources:
     requests:
       cpu: {{ cpu.requests }}
-      memory: 1Gi
+      memory: {{ memory.requests }}
     limits:
       cpu: {{ cpu.limits }}
-      memory: 2Gi
+      memory: {{ memory.limits }}
   ingresses:
   {{#each ingresses as |url|}}
       - {{url}}
