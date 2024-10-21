@@ -100,14 +100,10 @@ data class AvvikshendelseIntern(
     )
 }
 
-data class OverforEnhetRequest(
-    private var journalpostId: Long,
-    override var journalfoerendeEnhet: String?,
-) :
+data class OverforEnhetRequest(private var journalpostId: Long, override var journalfoerendeEnhet: String?) :
     OppdaterJournalpostRequest(journalpostId)
 
-data class EndreFagomradeRequest(private var journalpostId: Long, override var tema: String?) :
-    OppdaterJournalpostRequest(journalpostId)
+data class EndreFagomradeRequest(private var journalpostId: Long, override var tema: String?) : OppdaterJournalpostRequest(journalpostId)
 
 data class EndreFagomradeOgKnyttTilSakRequest(
     private var journalpostId: Long,
@@ -116,10 +112,7 @@ data class EndreFagomradeOgKnyttTilSakRequest(
     override var sak: Sak? = GenerellSak(),
 ) : OppdaterJournalpostRequest(journalpostId)
 
-data class EndreFagomradeJournalfortJournalpostRequest(
-    private var journalpostId: Long,
-    private var journalpost: Journalpost,
-) :
+data class EndreFagomradeJournalfortJournalpostRequest(private var journalpostId: Long, private var journalpost: Journalpost) :
     OppdaterJournalpostRequest(journalpostId) {
     init {
         journalpost.tilleggsopplysninger.setEndretTemaFlagg()
@@ -135,10 +128,7 @@ data class OppdaterOriginalBestiltFlagg(private var journalpost: Journalpost) :
     }
 }
 
-data class OpphevEndreFagomradeJournalfortJournalpostRequest(
-    private var journalpostId: Long,
-    private var journalpost: Journalpost,
-) :
+data class OpphevEndreFagomradeJournalfortJournalpostRequest(private var journalpostId: Long, private var journalpost: Journalpost) :
     OppdaterJournalpostRequest(journalpostId) {
     init {
         journalpost.tilleggsopplysninger.removeEndretTemaFlagg()
@@ -146,11 +136,7 @@ data class OpphevEndreFagomradeJournalfortJournalpostRequest(
     }
 }
 
-data class EndreTittelRequest(
-    private var journalpostId: Long,
-    private var _tittel: String?,
-    private var journalpost: Journalpost,
-) :
+data class EndreTittelRequest(private var journalpostId: Long, private var _tittel: String?, private var journalpost: Journalpost) :
     OppdaterJournalpostRequest(journalpostId) {
 
     init {
@@ -159,7 +145,11 @@ data class EndreTittelRequest(
             dokumenter =
                 listOf(Dokument(hoveddokument.dokumentInfoId, _tittel, null))
         }
-        if (!journalpost.isUtgaaendeDokument()) tittel = _tittel
+        if (journalpost.isInngaaendeDokument() &&
+            journalpost.hentDatoRegistrert()?.isAfter(LocalDate.now().minusYears(1).minusDays(1)) == true
+        ) {
+            tittel = _tittel
+        }
     }
 }
 
@@ -170,10 +160,7 @@ data class EndreKnyttTilGenerellSakRequest(
     override var sak: Sak? = GenerellSak(),
 ) : OppdaterJournalpostRequest(journalpostId)
 
-data class InngaaendeTilUtgaaendeRequest(
-    private var journalpostId: Long,
-    override var tema: String?,
-) : OppdaterJournalpostRequest(journalpostId)
+data class InngaaendeTilUtgaaendeRequest(private var journalpostId: Long, override var tema: String?) : OppdaterJournalpostRequest(journalpostId)
 
 data class RegistrerReturRequest(
     private var journalpostId: Long,
