@@ -30,16 +30,28 @@ data class DokDistDistribuerJournalpostRequest(
         val dokDistAdresseType =
             if (adresse.land == ALPHA2_NORGE) DokDistAdresseType.NorskPostadresse.verdi else DokDistAdresseType.UtenlandskPostadresse.verdi
         return DokDistDistribuerTilAdresse(
-            adresselinje1 = adresse.adresselinje1,
+            adresselinje1 = opprettAdresselinje1(adresse, dokDistAdresseType),
             adresselinje2 = adresse.adresselinje2,
             adresselinje3 = adresse.adresselinje3,
             adressetype = dokDistAdresseType,
             land = adresse.land!!,
-            postnummer = adresse.postnummer,
-            poststed = adresse.poststed,
+            postnummer = if (dokDistAdresseType == DokDistAdresseType.NorskPostadresse.verdi) adresse.postnummer else null,
+            poststed = if (dokDistAdresseType == DokDistAdresseType.NorskPostadresse.verdi) adresse.poststed else null,
         )
     }
 
+    private fun opprettAdresselinje1(distribuerTilAdresse: DistribuerTilAdresse, dokDistAdresseType: String): String? {
+        if (dokDistAdresseType == DokDistAdresseType.NorskPostadresse.verdi) return distribuerTilAdresse.adresselinje1
+        if (!distribuerTilAdresse.postnummer.isNullOrEmpty() && !distribuerTilAdresse.poststed.isNullOrEmpty()) {
+            return "${distribuerTilAdresse.adresselinje1}, ${distribuerTilAdresse.postnummer} ${distribuerTilAdresse.poststed}"
+        } else if (!distribuerTilAdresse.postnummer.isNullOrEmpty()) {
+            return "${distribuerTilAdresse.adresselinje1}, ${distribuerTilAdresse.postnummer}"
+        } else if (!distribuerTilAdresse.poststed.isNullOrEmpty()) {
+            return "${distribuerTilAdresse.adresselinje1}, ${distribuerTilAdresse.poststed}"
+        } else {
+            return distribuerTilAdresse.adresselinje1
+        }
+    }
     constructor(
         journalpostId: Long,
         brevkode: String?,
@@ -83,9 +95,7 @@ data class DokDistDistribuerTilAdresse(
     var poststed: String? = null,
 )
 
-data class DistribuerJournalpostRequestInternal(
-    var request: DistribuerJournalpostRequest? = null,
-) {
+data class DistribuerJournalpostRequestInternal(var request: DistribuerJournalpostRequest? = null) {
 
     constructor(distribuerTilAdresse: DistribuerTilAdresse?) : this(
         DistribuerJournalpostRequest(
@@ -112,12 +122,9 @@ data class DistribuerJournalpostRequestInternal(
     }
 }
 
-data class DokDistDistribuerJournalpostResponse(
-    var bestillingsId: String,
-) {
-    fun toDistribuerJournalpostResponse(journalpostId: Long): DistribuerJournalpostResponse {
-        return DistribuerJournalpostResponse("JOARK-$journalpostId", bestillingsId)
-    }
+data class DokDistDistribuerJournalpostResponse(var bestillingsId: String) {
+    fun toDistribuerJournalpostResponse(journalpostId: Long): DistribuerJournalpostResponse =
+        DistribuerJournalpostResponse("JOARK-$journalpostId", bestillingsId)
 }
 
 fun validerKanDistribueres(journalpost: Journalpost?) {
@@ -135,8 +142,9 @@ fun validerKanDistribueres(journalpost: Journalpost?) {
         "Journalpost er allerede distribuert",
     )
     Validate.isTrue(
-        journalpost?.hasMottakerId() == true || journalpost?.hentAvsenderNavn()
-            ?.isNotEmpty() == true,
+        journalpost?.hasMottakerId() == true ||
+            journalpost?.hentAvsenderNavn()
+                ?.isNotEmpty() == true,
         "Journalpost må ha satt mottakerId eller mottakerNavn",
     )
 }
@@ -349,9 +357,7 @@ class BrevkodeToDistribusjonstypeMapper {
         return brevkodemap.getOrDefault(brevkode, DistribusjonsType.VIKTIG)
     }
 
-    fun getBrevkodeMap(): Map<String, DistribusjonsType> {
-        return brevkodemap
-    }
+    fun getBrevkodeMap(): Map<String, DistribusjonsType> = brevkodemap
 
     init {
         initBrevkodemap()

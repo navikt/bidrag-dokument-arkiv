@@ -71,15 +71,99 @@ class DokDistDistribuerJournalpostRequestTest {
     var jpid = 123123;
     var distribuerTilAdresse =
         new DistribuerTilAdresse(
-            "Adresselinje1", "Adresselinje2", "Adresselinje3", "SE", "3000", "Ingen");
+            "Adresselinje1", "Adresselinje2", "Adresselinje3", "SE", "3000", "Poststed");
 
     var request =
         new DokDistDistribuerJournalpostRequest(jpid, null, null, distribuerTilAdresse, null);
     var mappedAdresse = request.getAdresse();
+
     assertAll(
         () ->
             assertThat(mappedAdresse.getAdressetype())
-                .isEqualTo(DokDistAdresseType.UtenlandskPostadresse.getVerdi()));
+                .isEqualTo(DokDistAdresseType.UtenlandskPostadresse.getVerdi()),
+        () ->
+            assertThat(mappedAdresse.getAdresselinje1())
+                .isEqualTo("Adresselinje1, 3000 Poststed"),
+        () ->
+            assertThat(mappedAdresse.getPoststed()).isNull(),
+        () ->
+            assertThat(mappedAdresse.getPostnummer()).isNull()
+    );
+  }
+
+  @Test
+  void skalMappeTilUtenlandskAdresseHvisLandIkkeErNOUtenPostssted() throws IOException {
+    var jpid = 123123;
+    var distribuerTilAdresse =
+        new DistribuerTilAdresse(
+            "Adresselinje1", "Adresselinje2", "Adresselinje3", "SE", "3000", null);
+
+    var request =
+        new DokDistDistribuerJournalpostRequest(jpid, null, null, distribuerTilAdresse, null);
+    var mappedAdresse = request.getAdresse();
+
+    assertAll(
+        () ->
+            assertThat(mappedAdresse.getAdressetype())
+                .isEqualTo(DokDistAdresseType.UtenlandskPostadresse.getVerdi()),
+        () ->
+            assertThat(mappedAdresse.getAdresselinje1())
+                .isEqualTo("Adresselinje1, 3000"),
+        () ->
+            assertThat(mappedAdresse.getPoststed()).isNull(),
+        () ->
+            assertThat(mappedAdresse.getPostnummer()).isNull()
+    );
+  }
+
+  @Test
+  void skalMappeTilUtenlandskAdresseHvisLandIkkeErNOUtenPostnummer() throws IOException {
+    var jpid = 123123;
+    var distribuerTilAdresse =
+        new DistribuerTilAdresse(
+            "Adresselinje1", "Adresselinje2", "Adresselinje3", "SE", null, "Poststed");
+
+    var request =
+        new DokDistDistribuerJournalpostRequest(jpid, null, null, distribuerTilAdresse, null);
+    var mappedAdresse = request.getAdresse();
+
+    assertAll(
+        () ->
+            assertThat(mappedAdresse.getAdressetype())
+                .isEqualTo(DokDistAdresseType.UtenlandskPostadresse.getVerdi()),
+        () ->
+            assertThat(mappedAdresse.getAdresselinje1())
+                .isEqualTo("Adresselinje1, Poststed"),
+        () ->
+            assertThat(mappedAdresse.getPoststed()).isNull(),
+        () ->
+            assertThat(mappedAdresse.getPostnummer()).isNull()
+    );
+  }
+
+  @Test
+  void skalMappeTilUtenlandskAdresseHvisLandIkkeErNOUtenPostnummerOgPossted() throws IOException {
+    var jpid = 123123;
+    var distribuerTilAdresse =
+        new DistribuerTilAdresse(
+            "Adresselinje1", "Adresselinje2", "Adresselinje3", "SE", null, null);
+
+    var request =
+        new DokDistDistribuerJournalpostRequest(jpid, null, null, distribuerTilAdresse, null);
+    var mappedAdresse = request.getAdresse();
+
+    assertAll(
+        () ->
+            assertThat(mappedAdresse.getAdressetype())
+                .isEqualTo(DokDistAdresseType.UtenlandskPostadresse.getVerdi()),
+        () ->
+            assertThat(mappedAdresse.getAdresselinje1())
+                .isEqualTo("Adresselinje1"),
+        () ->
+            assertThat(mappedAdresse.getPoststed()).isNull(),
+        () ->
+            assertThat(mappedAdresse.getPostnummer()).isNull()
+    );
   }
 
   @Test
