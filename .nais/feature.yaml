@@ -25,8 +25,8 @@ env:
   TOPIC_JOURNALPOST: bidrag.journalpost-feature
   TOPIC_OPPGAVE_HENDELSE: oppgavehandtering.oppgavehendelse-q1-v1
   TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering-q1
-  BIDRAG_PERSON_URL: https://bidrag-person-feature.dev.intern.nav.no
-  PERSON_SCOPE: dev-fss.bidrag.bidrag-person-feature
+  BIDRAG_PERSON_URL: https://bidrag-person-q1.dev.intern.nav.no
+  PERSON_SCOPE: dev-fss.bidrag.bidrag-person-q1
   BIDRAG_DOKUMENT_URL: https://bidrag-dokument-feature.dev.intern.nav.no/bidrag-dokument
   BIDRAG_DOKUMENT_SCOPE: dev-fss.bidrag.bidrag-dokument-feature
   BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon-feature.dev.intern.nav.no
