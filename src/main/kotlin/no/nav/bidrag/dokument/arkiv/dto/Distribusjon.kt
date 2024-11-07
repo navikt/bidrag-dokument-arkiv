@@ -30,8 +30,8 @@ data class DokDistDistribuerJournalpostRequest(
         val dokDistAdresseType =
             if (adresse.land == ALPHA2_NORGE) DokDistAdresseType.NorskPostadresse.verdi else DokDistAdresseType.UtenlandskPostadresse.verdi
         return DokDistDistribuerTilAdresse(
-            adresselinje1 = opprettAdresselinje1(adresse, dokDistAdresseType),
-            adresselinje2 = adresse.adresselinje2,
+            adresselinje1 = adresse.adresselinje1,
+            adresselinje2 = opprettAdresselinje2(adresse, dokDistAdresseType),
             adresselinje3 = adresse.adresselinje3,
             adressetype = dokDistAdresseType,
             land = adresse.land!!,
@@ -40,16 +40,21 @@ data class DokDistDistribuerJournalpostRequest(
         )
     }
 
-    private fun opprettAdresselinje1(distribuerTilAdresse: DistribuerTilAdresse, dokDistAdresseType: String): String? {
-        if (dokDistAdresseType == DokDistAdresseType.NorskPostadresse.verdi) return distribuerTilAdresse.adresselinje1
-        if (!distribuerTilAdresse.postnummer.isNullOrEmpty() && !distribuerTilAdresse.poststed.isNullOrEmpty()) {
-            return "${distribuerTilAdresse.adresselinje1}, ${distribuerTilAdresse.postnummer} ${distribuerTilAdresse.poststed}"
+    private fun opprettAdresselinje2(distribuerTilAdresse: DistribuerTilAdresse, dokDistAdresseType: String): String? {
+        if (dokDistAdresseType == DokDistAdresseType.NorskPostadresse.verdi) return distribuerTilAdresse.adresselinje2
+        val postnummerSted = if (!distribuerTilAdresse.postnummer.isNullOrEmpty() && !distribuerTilAdresse.poststed.isNullOrEmpty()) {
+            "${distribuerTilAdresse.postnummer} ${distribuerTilAdresse.poststed}"
         } else if (!distribuerTilAdresse.postnummer.isNullOrEmpty()) {
-            return "${distribuerTilAdresse.adresselinje1}, ${distribuerTilAdresse.postnummer}"
-        } else if (!distribuerTilAdresse.poststed.isNullOrEmpty()) {
-            return "${distribuerTilAdresse.adresselinje1}, ${distribuerTilAdresse.poststed}"
+            distribuerTilAdresse.postnummer
         } else {
-            return distribuerTilAdresse.adresselinje1
+            distribuerTilAdresse.poststed
+        }
+        if (!distribuerTilAdresse.adresselinje2.isNullOrEmpty() && !postnummerSted.isNullOrEmpty()) {
+            return "${distribuerTilAdresse.adresselinje2}, $postnummerSted"
+        } else if (distribuerTilAdresse.adresselinje2.isNullOrEmpty()) {
+            return postnummerSted
+        } else {
+            return distribuerTilAdresse.adresselinje2
         }
     }
     constructor(

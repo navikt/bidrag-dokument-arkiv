@@ -83,7 +83,10 @@ class DokDistDistribuerJournalpostRequestTest {
                 .isEqualTo(DokDistAdresseType.UtenlandskPostadresse.getVerdi()),
         () ->
             assertThat(mappedAdresse.getAdresselinje1())
-                .isEqualTo("Adresselinje1, 3000 Poststed"),
+                .isEqualTo("Adresselinje1"),
+        () ->
+            assertThat(mappedAdresse.getAdresselinje2())
+                .isEqualTo("Adresselinje2, 3000 Poststed"),
         () ->
             assertThat(mappedAdresse.getPoststed()).isNull(),
         () ->
@@ -107,8 +110,8 @@ class DokDistDistribuerJournalpostRequestTest {
             assertThat(mappedAdresse.getAdressetype())
                 .isEqualTo(DokDistAdresseType.UtenlandskPostadresse.getVerdi()),
         () ->
-            assertThat(mappedAdresse.getAdresselinje1())
-                .isEqualTo("Adresselinje1, 3000"),
+            assertThat(mappedAdresse.getAdresselinje2())
+                .isEqualTo("Adresselinje2, 3000"),
         () ->
             assertThat(mappedAdresse.getPoststed()).isNull(),
         () ->
@@ -132,8 +135,8 @@ class DokDistDistribuerJournalpostRequestTest {
             assertThat(mappedAdresse.getAdressetype())
                 .isEqualTo(DokDistAdresseType.UtenlandskPostadresse.getVerdi()),
         () ->
-            assertThat(mappedAdresse.getAdresselinje1())
-                .isEqualTo("Adresselinje1, Poststed"),
+            assertThat(mappedAdresse.getAdresselinje2())
+                .isEqualTo("Adresselinje2, Poststed"),
         () ->
             assertThat(mappedAdresse.getPoststed()).isNull(),
         () ->
@@ -157,8 +160,33 @@ class DokDistDistribuerJournalpostRequestTest {
             assertThat(mappedAdresse.getAdressetype())
                 .isEqualTo(DokDistAdresseType.UtenlandskPostadresse.getVerdi()),
         () ->
-            assertThat(mappedAdresse.getAdresselinje1())
-                .isEqualTo("Adresselinje1"),
+            assertThat(mappedAdresse.getAdresselinje2())
+                .isEqualTo("Adresselinje2"),
+        () ->
+            assertThat(mappedAdresse.getPoststed()).isNull(),
+        () ->
+            assertThat(mappedAdresse.getPostnummer()).isNull()
+    );
+  }
+
+  @Test
+  void skalMappeTilUtenlandskAdresseHvisLandIkkeErNOUtenAdresselinje2() throws IOException {
+    var jpid = 123123;
+    var distribuerTilAdresse =
+        new DistribuerTilAdresse(
+            "Adresselinje1", null, "Adresselinje3", "SE", "postnummer", "poststed");
+
+    var request =
+        new DokDistDistribuerJournalpostRequest(jpid, null, null, distribuerTilAdresse, null);
+    var mappedAdresse = request.getAdresse();
+
+    assertAll(
+        () ->
+            assertThat(mappedAdresse.getAdressetype())
+                .isEqualTo(DokDistAdresseType.UtenlandskPostadresse.getVerdi()),
+        () ->
+            assertThat(mappedAdresse.getAdresselinje2())
+                .isEqualTo("postnummer poststed"),
         () ->
             assertThat(mappedAdresse.getPoststed()).isNull(),
         () ->
