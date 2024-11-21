@@ -1,5 +1,6 @@
 package no.nav.bidrag.dokument.arkiv.service
 
+import no.nav.bidrag.commons.util.secureLogger
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer
 import no.nav.bidrag.dokument.arkiv.dto.Bruker
@@ -14,25 +15,17 @@ import no.nav.bidrag.transport.person.PersonDto
 import org.slf4j.LoggerFactory
 import java.util.Optional
 
-class JournalpostService(
-    private val safConsumer: SafConsumer,
-    private val personConsumer: PersonConsumer,
-) {
-    fun hentJournalpost(journalpostId: Long): Journalpost? {
-        return hentJournalpost(journalpostId, null)
-    }
+class JournalpostService(private val safConsumer: SafConsumer, private val personConsumer: PersonConsumer) {
+    fun hentJournalpost(journalpostId: Long): Journalpost? = hentJournalpost(journalpostId, null)
 
-    fun hentJournalpostMedTilknyttedeSaker(journalpostId: Long): Journalpost? {
-        return hentJournalpost(journalpostId)?.let { populerMedTilknyttedeSaker(it) }
-    }
+    fun hentJournalpostMedTilknyttedeSaker(journalpostId: Long): Journalpost? = hentJournalpost(journalpostId)?.let { populerMedTilknyttedeSaker(it) }
 
-    fun hentJournalpostMedFnrOgTilknyttedeSaker(journalpostId: Long, saksnummer: String?): Optional<Journalpost> {
-        return hentJournalpostMedFnr(journalpostId, saksnummer)?.let {
+    fun hentJournalpostMedFnrOgTilknyttedeSaker(journalpostId: Long, saksnummer: String?): Optional<Journalpost> =
+        hentJournalpostMedFnr(journalpostId, saksnummer)?.let {
             Optional.ofNullable(
                 populerMedTilknyttedeSaker(it),
             )
         } ?: Optional.empty()
-    }
 
     fun List<String>.inneholderBidragFagomrader() = this.isEmpty() || this.hentIkkeBidragFagomrader().isEmpty()
 
@@ -51,6 +44,7 @@ class JournalpostService(
 
     private fun hentJournalpost(journalpostId: Long, saksnummer: String?): Journalpost? {
         val journalpost = safConsumer.hentJournalpost(journalpostId)
+        secureLogger.info { "Hentet journalpost $journalpost" }
         return if (journalpost.erIkkeTilknyttetSakNarOppgitt(saksnummer)) null else journalpost
     }
 
@@ -63,9 +57,8 @@ class JournalpostService(
         return dokumentInfoId?.let { finnTilknyttedeJournalposter(it) } ?: emptyList()
     }
 
-    fun finnTilknyttedeJournalposter(dokumentreferanse: String): List<TilknyttetJournalpost> {
-        return safConsumer.finnTilknyttedeJournalposter(dokumentreferanse)
-    }
+    fun finnTilknyttedeJournalposter(dokumentreferanse: String): List<TilknyttetJournalpost> =
+        safConsumer.finnTilknyttedeJournalposter(dokumentreferanse)
 
     fun populerMedTilknyttedeSaker(journalpost: Journalpost): Journalpost {
         val journalpostFagsakId = if (journalpost.sak != null) journalpost.sak!!.fagsakId else ""
@@ -84,17 +77,14 @@ class JournalpostService(
         return journalpost
     }
 
-    fun hentJournalpostMedFnr(journalpostId: Long, saksummer: String?): Journalpost? {
-        return hentJournalpost(journalpostId, saksummer)?.let { konverterAktoerIdTilFnr(it) }
+    fun hentJournalpostMedFnr(journalpostId: Long, saksummer: String?): Journalpost? = hentJournalpost(journalpostId, saksummer)?.let {
+        konverterAktoerIdTilFnr(it)
     }
 
-    fun finnJournalposterForSaksnummer(saksnummer: String, fagomrade: List<String> = emptyList()): List<Journalpost> {
-        return safConsumer.finnJournalposter(saksnummer, fagomrade)
-    }
+    fun finnJournalposterForSaksnummer(saksnummer: String, fagomrade: List<String> = emptyList()): List<Journalpost> =
+        safConsumer.finnJournalposter(saksnummer, fagomrade)
 
-    fun hentDistribusjonsInfo(journalpostId: Long): DistribusjonsInfo {
-        return safConsumer.hentDistribusjonInfo(journalpostId)
-    }
+    fun hentDistribusjonsInfo(journalpostId: Long): DistribusjonsInfo = safConsumer.hentDistribusjonInfo(journalpostId)
 
     private fun konverterAktoerIdTilFnr(journalpost: Journalpost): Journalpost {
         val bruker = journalpost.bruker
