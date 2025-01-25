@@ -52,6 +52,7 @@ public class BehandleJournalforingHendelseService {
     var journalpostId = record.getJournalpostId();
     var journalpost =
         hentJournalpostMedSaksbehandlerIdent(journalpostId, record.getJournalpostStatus());
+    SECURE_LOGGER.info("Mottok journalføringshendelse med id {} og journalpost {}", record, journalpost);
     if (erOpprettetAvNKS(journalpost)) {
       var brevKoder =
           journalpost.getDokumenter().stream()
