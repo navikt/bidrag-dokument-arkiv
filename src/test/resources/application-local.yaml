@@ -55,7 +55,9 @@ SAF_SCOPE: dev-fss.teamdokumenthandtering.saf
 PERSON_SCOPE: dev-fss.bidrag.bidrag-person
 ORGANISASJON_SCOPE: dev-fss.bidrag.bidrag-organisasjon
 DOKARKIV_SCOPE: dev-fss.teamdokumenthandtering.dokarkiv
-
+BIDRAG_DOKUMENT_URL: http://localhost:8099/bidrag-dokument
+INNSENDING_API_URL: https://innsending-api-gcp.intern.dev.nav.no
+INNSENDING_API_SCOPE: dev-gcp.team-soknad.innsending-api
 
 ACCESS_TOKEN_URL: https://security-token-service.dev.adeo.no
 AKTORREGISTER_URL: https://app-q2.adeo.no/aktoerregister

@@ -38,11 +38,9 @@ import java.util.Arrays
 class Stubs {
     private val objectMapper: ObjectMapper = ObjectMapper().findAndRegisterModules()
     val verifyStub = VerifyStub()
-    private fun aClosedJsonResponse(): ResponseDefinitionBuilder {
-        return WireMock.aResponse()
-            .withHeader(HttpHeaders.CONNECTION, "close")
-            .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-    }
+    private fun aClosedJsonResponse(): ResponseDefinitionBuilder = WireMock.aResponse()
+        .withHeader(HttpHeaders.CONNECTION, "close")
+        .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
 
     fun mockDokarkivTilknyttRequest(journalpostId: Long) {
         mockDokarkivTilknyttRequest(journalpostId, 123213213L)
@@ -367,7 +365,7 @@ class Stubs {
                             .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                             .withStatus(HttpStatus.OK.value())
                             .withBody(
-                                "{\"data\":{\"journalpost\": %s }}".formatted(
+                                "{\"data\":{\"journalpost\": %s }}".format(
                                     objectMapper.writeValueAsString(
                                         journalpost,
                                     ),
@@ -435,7 +433,7 @@ class Stubs {
                         aClosedJsonResponse()
                             .withStatus(HttpStatus.OK.value())
                             .withBody(
-                                "{\"data\":{\"dokumentoversiktFagsak\":{\"journalposter\": %s }}}".formatted(
+                                "{\"data\":{\"dokumentoversiktFagsak\":{\"journalposter\": %s }}}".format(
                                     objectMapper.writeValueAsString(
                                         response,
                                     ),
@@ -891,12 +889,9 @@ class Stubs {
     }
 }
 
-class NotContainsPattern(@JsonProperty("contains") expectedValue: String?) :
-    StringValuePattern(expectedValue) {
+class NotContainsPattern(@JsonProperty("contains") expectedValue: String?) : StringValuePattern(expectedValue) {
     val contains: String
         get() = expectedValue as String
 
-    override fun match(value: String?): MatchResult {
-        return MatchResult.of(value?.contains((expectedValue as CharSequence)) == false)
-    }
+    override fun match(value: String?): MatchResult = MatchResult.of(value?.contains((expectedValue as CharSequence)) == false)
 }

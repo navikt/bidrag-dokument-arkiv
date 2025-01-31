@@ -25,18 +25,14 @@ import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.web.client.RestTemplate
 
 open class SafConsumer(private val restTemplate: RestTemplate) {
-    fun hentDokument(journalpostId: Long, dokumentReferanse: Long): ResponseEntity<ByteArray> {
-        return restTemplate.exchange(
-            String.format("/rest/hentdokument/%s/%s/ARKIV", journalpostId, dokumentReferanse),
-            HttpMethod.GET,
-            HttpEntity.EMPTY,
-            ByteArray::class.java,
-        )
-    }
+    fun hentDokument(journalpostId: Long, dokumentReferanse: Long): ResponseEntity<ByteArray> = restTemplate.exchange(
+        String.format("/rest/hentdokument/%s/%s/ARKIV", journalpostId, dokumentReferanse),
+        HttpMethod.GET,
+        HttpEntity.EMPTY,
+        ByteArray::class.java,
+    )
 
-    fun hentJournalpost(journalpostId: Long): Journalpost {
-        return consumeEnkelJournalpostQuery(JournalpostQuery(journalpostId))
-    }
+    fun hentJournalpost(journalpostId: Long): Journalpost = consumeEnkelJournalpostQuery(JournalpostQuery(journalpostId))
 
     fun hentDistribusjonInfo(journalpostId: Long): DistribusjonsInfo {
         val response = consumeQuery(DistribusjonInfoQuery(journalpostId.toString())) { message: String? -> journalpostIkkeFunnetException(message) }
@@ -53,18 +49,14 @@ open class SafConsumer(private val restTemplate: RestTemplate) {
         return listOf(*response.extractValueAsObject("tilknyttedeJournalposter", Array<TilknyttetJournalpost>::class.java))
     }
 
-    private fun journalIkkeFunnetException(message: String?): RuntimeException {
-        return JournalIkkeFunnetException(message ?: "")
-    }
+    private fun journalIkkeFunnetException(message: String?): RuntimeException = JournalIkkeFunnetException(message ?: "")
 
     private fun consumeEnkelJournalpostQuery(query: GraphQuery): Journalpost {
         val response = consumeQuery(query) { message: String? -> journalpostIkkeFunnetException(message) }
         return response.extractValueAsObject("journalpost", Journalpost::class.java)
     }
 
-    private fun journalpostIkkeFunnetException(message: String?): RuntimeException {
-        return JournalpostIkkeFunnetException(message ?: "")
-    }
+    private fun journalpostIkkeFunnetException(message: String?): RuntimeException = JournalpostIkkeFunnetException(message ?: "")
 
     private fun consumeQuery(query: GraphQuery, notFoundException: NotFoundException): GraphQLResponse {
         val queryString = query.getQuery()

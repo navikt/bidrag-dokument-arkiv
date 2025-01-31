@@ -12,6 +12,7 @@ import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.model.Discriminator
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
 import no.nav.bidrag.dokument.arkiv.service.EndreJournalpostService
+import no.nav.bidrag.dokument.arkiv.service.InnsendingService
 import no.nav.bidrag.dokument.arkiv.service.JournalpostService
 import no.nav.bidrag.transport.dokument.EndreJournalpostCommand
 import no.nav.bidrag.transport.dokument.JournalpostDto
@@ -34,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController
 class JournalpostController(
     journalpostService: ResourceByDiscriminator<JournalpostService?>,
     private val endreJournalpostService: EndreJournalpostService,
+    private val innsendingService: InnsendingService,
 ) : BaseController() {
     private val journalpostService: JournalpostService
 
@@ -63,7 +65,8 @@ class JournalpostController(
     ): ResponseEntity<JournalpostResponse> {
         LOGGER.info("Henter journalpost {} med saksnummer {}", joarkJournalpostId, saksnummer)
         val kildesystemIdenfikator = KildesystemIdenfikator(joarkJournalpostId)
-        if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix() || erIkkePrefixetMedJoark(
+        if (kildesystemIdenfikator.erUkjentPrefixEllerHarIkkeTallEtterPrefix() ||
+            erIkkePrefixetMedJoark(
                 joarkJournalpostId,
             )
         ) {
@@ -86,7 +89,9 @@ class JournalpostController(
             ),
             saksnummer,
         )
-            .map { journalpost: Journalpost -> ResponseEntity.ok(journalpost.tilJournalpostResponse()) }
+            .map { journalpost: Journalpost ->
+                ResponseEntity.ok(journalpost.tilJournalpostResponse())
+            }
             .orElse(
                 ResponseEntity.notFound()
                     .header(
@@ -101,9 +106,7 @@ class JournalpostController(
             )
     }
 
-    private fun erIkkePrefixetMedJoark(joarkJournalpostId: String): Boolean {
-        return !joarkJournalpostId.startsWith(KildesystemIdenfikator.PREFIX_JOARK_COMPLETE)
-    }
+    private fun erIkkePrefixetMedJoark(joarkJournalpostId: String): Boolean = !joarkJournalpostId.startsWith(KildesystemIdenfikator.PREFIX_JOARK_COMPLETE)
 
     @GetMapping("/sak/{saksnummer}/journal")
     @Operation(

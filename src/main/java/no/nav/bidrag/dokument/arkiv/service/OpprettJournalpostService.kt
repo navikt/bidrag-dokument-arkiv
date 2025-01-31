@@ -24,6 +24,7 @@ import no.nav.bidrag.dokument.arkiv.model.KunneIkkeJournalforeOpprettetJournalpo
 import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager
 import no.nav.bidrag.dokument.arkiv.service.utvidelser.erNotat
+import no.nav.bidrag.dokument.arkiv.service.utvidelser.toTilleggsopplysning
 import no.nav.bidrag.transport.dokument.AvsenderMottakerDtoIdType
 import no.nav.bidrag.transport.dokument.JournalpostType
 import no.nav.bidrag.transport.dokument.MottakUtsendingKanal
@@ -185,12 +186,10 @@ class OpprettJournalpostService(
         }
     }
 
-    private fun hentJournalpost(journalpostId: Long): Journalpost {
-        return try {
-            safConsumer.hentJournalpost(journalpostId)
-        } catch (e: Exception) {
-            throw HentJournalpostFeilet("Det skjedde en feil ved henting av journalpost", e)
-        }
+    private fun hentJournalpost(journalpostId: Long): Journalpost = try {
+        safConsumer.hentJournalpost(journalpostId)
+    } catch (e: Exception) {
+        throw HentJournalpostFeilet("Det skjedde en feil ved henting av journalpost", e)
     }
 
     private fun knyttSakerTilOpprettetJournalpost(opprettetJournalpost: Journalpost, knyttTilSaker: List<String>) {
@@ -235,6 +234,10 @@ class OpprettJournalpostService(
 
         samhandlerId?.let {
             tilleggsOpplysninger.leggTilSamhandlerId(it)
+        }
+
+        request.ettersendingsoppgave?.let {
+            tilleggsOpplysninger.addInnsendingsOppgave(it.toTilleggsopplysning())
         }
 
         return JoarkOpprettJournalpostRequest(
@@ -305,43 +308,38 @@ class OpprettJournalpostService(
         )
     }
 
-    private fun hentDokument(dokumentDto: OpprettDokumentDto): ByteArray {
-        return dokumentDto.fysiskDokument ?: dokumentDto.dokument?.let {
-            Base64.getDecoder().decode(it)
-        } ?: dokumentDto.dokumentreferanse?.let {
-            LOGGER.info(
-                "Henter dokument bytedata for dokument med tittel ${dokumentDto.tittel} og dokumentreferanse ${dokumentDto.dokumentreferanse}",
-            )
-            bidragDokumentConsumer.hentDokument(
-                it,
-            )
-        } ?: throw HttpClientErrorException(
-            HttpStatus.BAD_REQUEST,
-            "Fant ikke referanse eller data for dokument med tittel ${dokumentDto.tittel}",
+    private fun hentDokument(dokumentDto: OpprettDokumentDto): ByteArray = dokumentDto.fysiskDokument ?: dokumentDto.dokument?.let {
+        Base64.getDecoder().decode(it)
+    } ?: dokumentDto.dokumentreferanse?.let {
+        LOGGER.info(
+            "Henter dokument bytedata for dokument med tittel ${dokumentDto.tittel} og dokumentreferanse ${dokumentDto.dokumentreferanse}",
+        )
+        bidragDokumentConsumer.hentDokument(
+            it,
+        )
+    } ?: throw HttpClientErrorException(
+        HttpStatus.BAD_REQUEST,
+        "Fant ikke referanse eller data for dokument med tittel ${dokumentDto.tittel}",
+    )
+
+    private fun mapMottaker(request: OpprettJournalpostRequest): JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker = if (request.avsenderMottaker?.erSamhandler() == true) {
+        JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
+            navn = request.avsenderMottaker?.navn,
+        )
+    } else {
+        JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
+            navn = request.avsenderMottaker?.navn,
+            id = request.avsenderMottaker?.ident,
+            idType = request.avsenderMottaker?.ident?.let {
+                when (request.avsenderMottaker?.type) {
+                    AvsenderMottakerDtoIdType.FNR -> AvsenderMottakerIdType.FNR
+                    AvsenderMottakerDtoIdType.ORGNR -> AvsenderMottakerIdType.ORGNR
+                    AvsenderMottakerDtoIdType.UTENLANDSK_ORGNR -> AvsenderMottakerIdType.UTL_ORG
+                    else -> AvsenderMottakerIdType.FNR
+                }
+            },
         )
     }
 
-    private fun mapMottaker(request: OpprettJournalpostRequest): JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker =
-        if (request.avsenderMottaker?.erSamhandler() == true) {
-            JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
-                navn = request.avsenderMottaker?.navn,
-            )
-        } else {
-            JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
-                navn = request.avsenderMottaker?.navn,
-                id = request.avsenderMottaker?.ident,
-                idType = request.avsenderMottaker?.ident?.let {
-                    when (request.avsenderMottaker?.type) {
-                        AvsenderMottakerDtoIdType.FNR -> AvsenderMottakerIdType.FNR
-                        AvsenderMottakerDtoIdType.ORGNR -> AvsenderMottakerIdType.ORGNR
-                        AvsenderMottakerDtoIdType.UTENLANDSK_ORGNR -> AvsenderMottakerIdType.UTL_ORG
-                        else -> AvsenderMottakerIdType.FNR
-                    }
-                },
-            )
-        }
-
-    private fun hentDokument(journalpostId: Long, dokumentId: String): ByteArray {
-        return dokumentService.hentDokument(journalpostId, dokumentId).body!!
-    }
+    private fun hentDokument(journalpostId: Long, dokumentId: String): ByteArray = dokumentService.hentDokument(journalpostId, dokumentId).body!!
 }
