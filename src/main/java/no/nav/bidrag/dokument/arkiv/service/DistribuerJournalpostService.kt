@@ -48,6 +48,7 @@ import no.nav.bidrag.transport.dokument.OpprettEttersendingsppgaveDto
 import no.nav.bidrag.transport.dokument.UtsendingsInfoDto
 import org.springframework.stereotype.Service
 import java.time.LocalDate
+import java.time.Period
 import java.util.Objects
 
 private val LOGGER = KotlinLogging.logger {}
@@ -201,7 +202,11 @@ class DistribuerJournalpostService(
                     )
                 }
 
-                return DistribuerJournalpostResponse("JOARK-$journalpostId", null)
+                return DistribuerJournalpostResponse(
+                    "JOARK-$journalpostId",
+                    null,
+                    ettersendingsoppgave = journalpost.ettersendingsoppgave()?.innsendingsId?.let { OpprettEttersendingsoppgaveResponseDto(it) },
+                )
             }
             validerKanDistribueres(journalpost)
 
@@ -260,13 +265,21 @@ class DistribuerJournalpostService(
     }
 
     private fun opprettEttersendingsoppgave(journalpost: Journalpost, requestInternal: DistribuerJournalpostRequestInternal): String? {
-        val ettersending = requestInternal.request?.ettersendingsoppgave ?: run {
-            val lagretEttersending = journalpost.tilleggsopplysninger.hentInnsendingsoppgave() ?: return null
-            if (lagretEttersending.innsendingsId != null) {
-                LOGGER.warn("Det finnes allerede en ettersendingsoppgave med innsendingsid=${lagretEttersending.innsendingsId} på journalpost ${journalpost.journalpostId}. Oppretter ikke på nytt")
+        if (journalpost.hentDatoJournalfort() != null &&
+            journalpost.isDistribusjonBestilt() &&
+            Period.between(journalpost.hentDatoJournalfort(), LocalDate.now()).days > 2
+        ) {
+            LOGGER.warn("Journalpost ${journalpost.journalpostId} er eldre enn 2 dager. Oppretter ikke ettersendingsoppgave")
+            return null
+        }
+        journalpost.tilleggsopplysninger.hentInnsendingsoppgave()?.let {
+            if (it.innsendingsId != null) {
+                LOGGER.warn("Det finnes allerede en ettersendingsoppgave med innsendingsid=${it.innsendingsId} på journalpost ${journalpost.journalpostId}. Oppretter ikke på nytt")
                 return null
             }
-            lagretEttersending.toOpprettEttersendingsoppgaveDto()
+        }
+        val ettersending = requestInternal.request?.ettersendingsoppgave ?: run {
+            journalpost.tilleggsopplysninger.hentInnsendingsoppgave()?.toOpprettEttersendingsoppgaveDto() ?: return null
         }
 
         LOGGER.info("Oppretter og lagrer ettersendingsoppgave for journalpost ${journalpost.journalpostId}")

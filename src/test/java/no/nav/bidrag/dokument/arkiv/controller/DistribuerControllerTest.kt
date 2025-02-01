@@ -14,6 +14,8 @@ import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsTidspunkt
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsType
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.dto.EpostVarselSendt
+import no.nav.bidrag.dokument.arkiv.dto.EttersendingsoppgaveDo
+import no.nav.bidrag.dokument.arkiv.dto.EttersendingsoppgaveDo.EttersendingsoppgaveVedleggDo
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostKanal
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostType
@@ -249,7 +251,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
         )
 
         // when
-        val response = httpHeaderTestRestTemplate.postForEntity<JournalpostDto>(
+        val response = httpHeaderTestRestTemplate.postForEntity<DistribuerJournalpostResponse>(
             initUrl() + "/journal/distribuer/JOARK-" + JOURNALPOST_ID,
             HttpEntity(request, headersMedEnhet),
         )
@@ -279,6 +281,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                 JOURNALPOST_ID,
                 "datoDokument",
             )
+            response.body?.ettersendingsoppgave?.innsendingsId shouldBe "213213"
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
                 "{\"tilleggsopplysninger\":[" +
@@ -289,6 +292,449 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                     "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
                     "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}",
             )
+        }
+    }
+
+    @Test
+    fun `skal opprette ettersending hvis journalpost allerede er distribuert`() {
+        // given
+        val xEnhet = "1234"
+        val bestillingId = "TEST_BEST_ID"
+        val headersMedEnhet = HttpHeaders()
+        headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
+
+        val tilleggsopplysninger = TilleggsOpplysninger()
+        tilleggsopplysninger.setJournalfortAvIdent("Z99999")
+        tilleggsopplysninger.setDistribusjonBestillt()
+        tilleggsopplysninger.addInnsendingsOppgave(
+            EttersendingsoppgaveDo(
+                tittel = "Tittel",
+                skjemaId = "NAV 10-07.17",
+                språk = "nb",
+                innsendingsFristDager = 1,
+                vedleggsliste = listOf(
+                    EttersendingsoppgaveVedleggDo(
+                        tittel = "Vedlegg 1",
+                        vedleggsnr = "NAV 10-07.17",
+                    ),
+                ),
+            ),
+        )
+        tilleggsopplysninger.add(
+            mapOf(
+                "nokkel" to "dokdistBestillingsId",
+                "verdi" to "asdsadasdsadasdasd",
+            ),
+        )
+        stubs.mockInnsendingApi()
+        stubs.mockSafResponseHentJournalpost(
+            opprettUtgaendeSafResponse(
+                tilleggsopplysninger = tilleggsopplysninger,
+                relevanteDatoer = listOf(DatoType(LocalDateTime.now().toString(), "DATO_DOKUMENT")),
+            ).copy(
+                relevanteDatoer = listOf(
+                    DatoType(LocalDateTime.now().toString(), "DATO_JOURNALFOERT"),
+                ),
+            ),
+        )
+
+        stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
+        stubs.mockSafResponseTilknyttedeJournalposter(
+            listOf(
+                TilknyttetJournalpost(
+                    JOURNALPOST_ID,
+                    JournalStatus.FERDIGSTILT,
+                    Sak("5276661"),
+                ),
+            ),
+        )
+        val request = DistribuerJournalpostRequest(
+            ettersendingsoppgave =
+            OpprettEttersendingsppgaveDto(
+                tittel = "Tittel",
+                skjemaId = "NAV 10-07.17",
+                språk = Språk.NB,
+                innsendingsFristDager = 27,
+                vedleggsliste = listOf(
+                    OpprettEttersendingsoppgaveVedleggDto(
+                        tittel = "Vedlegg 1",
+                        vedleggsnr = "NAV 10-07.17",
+                    ),
+                ),
+            ),
+        )
+
+        // when
+        val response = httpHeaderTestRestTemplate.postForEntity<DistribuerJournalpostResponse>(
+            initUrl() + "/journal/distribuer/JOARK-" + JOURNALPOST_ID,
+            HttpEntity(request, headersMedEnhet),
+        )
+
+        // then
+        assertSoftly {
+            response.statusCode shouldBe HttpStatus.OK
+            stubs.verifyStub.dokdistFordelingIkkeKalt()
+            stubs.verifyStub.opprettEttersendingKalt(1)
+
+            response.body?.ettersendingsoppgave?.innsendingsId shouldBe "213213"
+            stubs.verifyStub.dokarkivOppdaterKalt(
+                JOURNALPOST_ID,
+                "{\"tilleggsopplysninger\":[" +
+                    "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
+                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                    "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
+                    "{\"nokkel\":\"ettOppgave0\",\"verdi\":\"{\\\"tittel\\\":\\\"Tittel dokument\\\",\\\"skjemaId\\\":\\\"NAV 123\\\",\\\"språk\\\":\\\"nb\\\",\\\"innsendingsId\\\":\\\"213213\\\",\\\"innsendingsF\"}," +
+                    "{\"nokkel\":\"ettOppgave1\",\"verdi\":\"ristDager\\\":27,\\\"fristDato\\\":\\\"2022-01-01\\\",\\\"slettesDato\\\":\\\"2022-01-01\\\",\\\"vedleggsliste\\\":[{\\\"tittel\\\":\\\"Tittel\"},{\"nokkel\":\"ettOppgave2\",\"verdi\":\" vedlegg 1\\\",\\\"vedleggsnr\\\":\\\"1231\\\"}," +
+                    "{\\\"tittel\\\":\\\"Tittel vedlegg 2\\\",\\\"vedleggsnr\\\":\\\"1231\\\"}]}\"}],\"dokumenter\":[]}",
+            )
+        }
+    }
+
+    @Test
+    fun `skal opprette ettersending hvis journalpost ikke er distribuert og er eldre enn 2 dager`() {
+        // given
+        val xEnhet = "1234"
+        val bestillingId = "TEST_BEST_ID"
+        val headersMedEnhet = HttpHeaders()
+        headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
+
+        val tilleggsopplysninger = TilleggsOpplysninger()
+        tilleggsopplysninger.setJournalfortAvIdent("Z99999")
+
+        tilleggsopplysninger.addInnsendingsOppgave(
+            EttersendingsoppgaveDo(
+                tittel = "Tittel",
+                skjemaId = "NAV 10-07.17",
+                språk = "nb",
+                innsendingsFristDager = 1,
+                vedleggsliste = listOf(
+                    EttersendingsoppgaveVedleggDo(
+                        tittel = "Vedlegg 1",
+                        vedleggsnr = "NAV 10-07.17",
+                    ),
+                ),
+            ),
+        )
+        tilleggsopplysninger.add(
+            mapOf(
+                "nokkel" to "dokdistBestillingsId",
+                "verdi" to "asdsadasdsadasdasd",
+            ),
+        )
+        stubs.mockInnsendingApi()
+        stubs.mockSafResponseHentJournalpost(
+            opprettUtgaendeSafResponse(
+                tilleggsopplysninger = tilleggsopplysninger,
+                relevanteDatoer = listOf(DatoType(LocalDateTime.now().toString(), "DATO_DOKUMENT")),
+            ).copy(
+                relevanteDatoer = listOf(
+                    DatoType(LocalDateTime.now().minusDays(10).toString(), "DATO_JOURNALFOERT"),
+                ),
+            ),
+        )
+        stubs.mockBestmDistribusjonskanal(
+            BestemKanalResponse(
+                regel = "",
+                regelBegrunnelse = "",
+                distribusjonskanal = DistribusjonsKanal.PRINT,
+            ),
+        )
+
+        stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
+        stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
+        stubs.mockSafResponseTilknyttedeJournalposter(
+            listOf(
+                TilknyttetJournalpost(
+                    JOURNALPOST_ID,
+                    JournalStatus.FERDIGSTILT,
+                    Sak("5276661"),
+                ),
+            ),
+        )
+        val distribuerTilAdresse = createDistribuerTilAdresse()
+            .copy(
+                adresselinje2 = "Adresselinje2",
+                adresselinje3 = "Adresselinje3",
+            )
+        val request = DistribuerJournalpostRequest(
+            adresse = distribuerTilAdresse,
+            ettersendingsoppgave =
+            OpprettEttersendingsppgaveDto(
+                tittel = "Tittel",
+                skjemaId = "NAV 10-07.17",
+                språk = Språk.NB,
+                innsendingsFristDager = 27,
+                vedleggsliste = listOf(
+                    OpprettEttersendingsoppgaveVedleggDto(
+                        tittel = "Vedlegg 1",
+                        vedleggsnr = "NAV 10-07.17",
+                    ),
+                ),
+            ),
+        )
+
+        // when
+        val response = httpHeaderTestRestTemplate.postForEntity<JournalpostDto>(
+            initUrl() + "/journal/distribuer/JOARK-" + JOURNALPOST_ID,
+            HttpEntity(request, headersMedEnhet),
+        )
+
+        // then
+        assertSoftly {
+            response.statusCode shouldBe HttpStatus.OK
+            stubs.verifyStub.dokdistFordelingKalt()
+            stubs.verifyStub.opprettEttersendingKalt(1)
+
+            stubs.verifyStub.dokarkivOppdaterKalt(JOURNALPOST_ID)
+        }
+    }
+
+    @Test
+    fun `skal ikke opprette ettersending hvis journalpost allerede er distribuert og er eldre enn 2 dager`() {
+        // given
+        val xEnhet = "1234"
+        val bestillingId = "TEST_BEST_ID"
+        val headersMedEnhet = HttpHeaders()
+        headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
+
+        val tilleggsopplysninger = TilleggsOpplysninger()
+        tilleggsopplysninger.setJournalfortAvIdent("Z99999")
+        tilleggsopplysninger.setDistribusjonBestillt()
+
+        tilleggsopplysninger.addInnsendingsOppgave(
+            EttersendingsoppgaveDo(
+                tittel = "Tittel",
+                skjemaId = "NAV 10-07.17",
+                språk = "nb",
+                innsendingsFristDager = 1,
+                vedleggsliste = listOf(
+                    EttersendingsoppgaveVedleggDo(
+                        tittel = "Vedlegg 1",
+                        vedleggsnr = "NAV 10-07.17",
+                    ),
+                ),
+            ),
+        )
+        tilleggsopplysninger.add(
+            mapOf(
+                "nokkel" to "dokdistBestillingsId",
+                "verdi" to "asdsadasdsadasdasd",
+            ),
+        )
+        stubs.mockInnsendingApi()
+        stubs.mockSafResponseHentJournalpost(
+            opprettUtgaendeSafResponse(
+                tilleggsopplysninger = tilleggsopplysninger,
+                relevanteDatoer = listOf(DatoType(LocalDateTime.now().toString(), "DATO_DOKUMENT")),
+            ).copy(
+                relevanteDatoer = listOf(
+                    DatoType(LocalDateTime.now().minusDays(10).toString(), "DATO_JOURNALFOERT"),
+                ),
+            ),
+        )
+
+        stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
+        stubs.mockSafResponseTilknyttedeJournalposter(
+            listOf(
+                TilknyttetJournalpost(
+                    JOURNALPOST_ID,
+                    JournalStatus.FERDIGSTILT,
+                    Sak("5276661"),
+                ),
+            ),
+        )
+        val request = DistribuerJournalpostRequest(
+            ettersendingsoppgave =
+            OpprettEttersendingsppgaveDto(
+                tittel = "Tittel",
+                skjemaId = "NAV 10-07.17",
+                språk = Språk.NB,
+                innsendingsFristDager = 27,
+                vedleggsliste = listOf(
+                    OpprettEttersendingsoppgaveVedleggDto(
+                        tittel = "Vedlegg 1",
+                        vedleggsnr = "NAV 10-07.17",
+                    ),
+                ),
+            ),
+        )
+
+        // when
+        val response = httpHeaderTestRestTemplate.postForEntity<DistribuerJournalpostResponse>(
+            initUrl() + "/journal/distribuer/JOARK-" + JOURNALPOST_ID,
+            HttpEntity(request, headersMedEnhet),
+        )
+
+        // then
+        assertSoftly {
+            response.statusCode shouldBe HttpStatus.OK
+            stubs.verifyStub.dokdistFordelingIkkeKalt()
+            stubs.verifyStub.opprettEttersendingKalt(0)
+
+            stubs.verifyStub.dokarkivOppdaterIkkeKalt(JOURNALPOST_ID)
+            response.body.ettersendingsoppgave?.innsendingsId shouldBe null
+        }
+    }
+
+    @Test
+    fun `skal ikke opprette ettersending hvis journalpost allerede er distribuert og ettersending opprettet uten ettersending forespørsel`() {
+        // given
+        val xEnhet = "1234"
+        val bestillingId = "TEST_BEST_ID"
+        val headersMedEnhet = HttpHeaders()
+        headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
+
+        val tilleggsopplysninger = TilleggsOpplysninger()
+        tilleggsopplysninger.setJournalfortAvIdent("Z99999")
+        tilleggsopplysninger.setDistribusjonBestillt()
+
+        tilleggsopplysninger.addInnsendingsOppgave(
+            EttersendingsoppgaveDo(
+                tittel = "Tittel",
+                skjemaId = "NAV 10-07.17",
+                språk = "nb",
+                innsendingsId = "innsending_id",
+                innsendingsFristDager = 1,
+                vedleggsliste = listOf(
+                    EttersendingsoppgaveVedleggDo(
+                        tittel = "Vedlegg 1",
+                        vedleggsnr = "NAV 10-07.17",
+                    ),
+                ),
+            ),
+        )
+        tilleggsopplysninger.add(
+            mapOf(
+                "nokkel" to "dokdistBestillingsId",
+                "verdi" to "asdsadasdsadasdasd",
+            ),
+        )
+        stubs.mockInnsendingApi()
+        stubs.mockSafResponseHentJournalpost(
+            opprettUtgaendeSafResponse(
+                tilleggsopplysninger = tilleggsopplysninger,
+                relevanteDatoer = listOf(DatoType(LocalDateTime.now().toString(), "DATO_DOKUMENT")),
+            ).copy(
+                relevanteDatoer = listOf(
+                    DatoType(LocalDateTime.now().toString(), "DATO_JOURNALFOERT"),
+                ),
+            ),
+        )
+
+        stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
+        stubs.mockSafResponseTilknyttedeJournalposter(
+            listOf(
+                TilknyttetJournalpost(
+                    JOURNALPOST_ID,
+                    JournalStatus.FERDIGSTILT,
+                    Sak("5276661"),
+                ),
+            ),
+        )
+        val request = DistribuerJournalpostRequest()
+
+        // when
+        val response = httpHeaderTestRestTemplate.postForEntity<DistribuerJournalpostResponse>(
+            initUrl() + "/journal/distribuer/JOARK-" + JOURNALPOST_ID,
+            HttpEntity(request, headersMedEnhet),
+        )
+
+        // then
+        assertSoftly {
+            response.statusCode shouldBe HttpStatus.OK
+            stubs.verifyStub.dokdistFordelingIkkeKalt()
+            stubs.verifyStub.opprettEttersendingKalt(0)
+
+            stubs.verifyStub.dokarkivOppdaterIkkeKalt(JOURNALPOST_ID)
+            response.body.ettersendingsoppgave?.innsendingsId shouldBe "innsending_id"
+        }
+    }
+
+    @Test
+    fun `skal ikke opprette ettersending hvis journalpost allerede er distribuert og ettersending opprettet`() {
+        // given
+        val xEnhet = "1234"
+        val bestillingId = "TEST_BEST_ID"
+        val headersMedEnhet = HttpHeaders()
+        headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
+
+        val tilleggsopplysninger = TilleggsOpplysninger()
+        tilleggsopplysninger.setJournalfortAvIdent("Z99999")
+        tilleggsopplysninger.setDistribusjonBestillt()
+
+        tilleggsopplysninger.addInnsendingsOppgave(
+            EttersendingsoppgaveDo(
+                tittel = "Tittel",
+                skjemaId = "NAV 10-07.17",
+                språk = "nb",
+                innsendingsId = "innsending_id",
+                innsendingsFristDager = 1,
+                vedleggsliste = listOf(
+                    EttersendingsoppgaveVedleggDo(
+                        tittel = "Vedlegg 1",
+                        vedleggsnr = "NAV 10-07.17",
+                    ),
+                ),
+            ),
+        )
+        tilleggsopplysninger.add(
+            mapOf(
+                "nokkel" to "dokdistBestillingsId",
+                "verdi" to "asdsadasdsadasdasd",
+            ),
+        )
+        stubs.mockInnsendingApi()
+        stubs.mockSafResponseHentJournalpost(
+            opprettUtgaendeSafResponse(
+                tilleggsopplysninger = tilleggsopplysninger,
+                relevanteDatoer = listOf(DatoType(LocalDateTime.now().toString(), "DATO_DOKUMENT")),
+            ).copy(
+                relevanteDatoer = listOf(
+                    DatoType(LocalDateTime.now().toString(), "DATO_JOURNALFOERT"),
+                ),
+            ),
+        )
+
+        stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
+        stubs.mockSafResponseTilknyttedeJournalposter(
+            listOf(
+                TilknyttetJournalpost(
+                    JOURNALPOST_ID,
+                    JournalStatus.FERDIGSTILT,
+                    Sak("5276661"),
+                ),
+            ),
+        )
+        val request = DistribuerJournalpostRequest(
+            ettersendingsoppgave =
+            OpprettEttersendingsppgaveDto(
+                tittel = "Tittel",
+                skjemaId = "NAV 10-07.17",
+                språk = Språk.NB,
+                innsendingsFristDager = 27,
+                vedleggsliste = listOf(
+                    OpprettEttersendingsoppgaveVedleggDto(
+                        tittel = "Vedlegg 1",
+                        vedleggsnr = "NAV 10-07.17",
+                    ),
+                ),
+            ),
+        )
+
+        // when
+        val response = httpHeaderTestRestTemplate.postForEntity<DistribuerJournalpostResponse>(
+            initUrl() + "/journal/distribuer/JOARK-" + JOURNALPOST_ID,
+            HttpEntity(request, headersMedEnhet),
+        )
+
+        // then
+        assertSoftly {
+            response.statusCode shouldBe HttpStatus.OK
+            stubs.verifyStub.dokdistFordelingIkkeKalt()
+            stubs.verifyStub.opprettEttersendingKalt(0)
+
+            stubs.verifyStub.dokarkivOppdaterIkkeKalt(JOURNALPOST_ID)
+            response.body.ettersendingsoppgave?.innsendingsId shouldBe "innsending_id"
         }
     }
 

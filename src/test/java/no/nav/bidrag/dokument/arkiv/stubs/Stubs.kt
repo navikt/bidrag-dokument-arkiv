@@ -598,6 +598,19 @@ class Stubs {
     }
 
     class VerifyStub {
+
+        fun opprettEttersendingKalt(times: Int, vararg contains: String?) {
+            val requestPattern =
+                WireMock.postRequestedFor(
+                    WireMock.urlEqualTo("/innsending/ekstern/v1/oppgaver"),
+                )
+            Arrays.stream(contains).forEach { contain: String? ->
+                requestPattern.withRequestBody(
+                    ContainsPattern(contain),
+                )
+            }
+            WireMock.verify(WireMock.exactly(times), requestPattern)
+        }
         fun hentPersonAdresseKalt(personId: String?) {
             val requestPattern =
                 WireMock.postRequestedFor(WireMock.urlMatching("/person/bidrag-person/adresse/post"))
