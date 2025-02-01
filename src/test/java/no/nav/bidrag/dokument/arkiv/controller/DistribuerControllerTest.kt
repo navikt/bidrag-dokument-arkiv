@@ -28,6 +28,7 @@ import no.nav.bidrag.dokument.arkiv.stubs.createDistribuerTilAdresse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
 import no.nav.bidrag.domene.enums.adresse.Adressetype
+import no.nav.bidrag.domene.enums.diverse.Språk
 import no.nav.bidrag.domene.land.Landkode2
 import no.nav.bidrag.domene.land.Landkode3
 import no.nav.bidrag.transport.dokument.DistribuerJournalpostRequest
@@ -36,6 +37,8 @@ import no.nav.bidrag.transport.dokument.DistribuerTilAdresse
 import no.nav.bidrag.transport.dokument.DistribusjonInfoDto
 import no.nav.bidrag.transport.dokument.JournalpostDto
 import no.nav.bidrag.transport.dokument.JournalpostStatus
+import no.nav.bidrag.transport.dokument.OpprettEttersendingsoppgaveVedleggDto
+import no.nav.bidrag.transport.dokument.OpprettEttersendingsppgaveDto
 import no.nav.bidrag.transport.person.PersonAdresseDto
 import org.assertj.core.api.Assertions
 import org.json.JSONException
@@ -160,6 +163,128 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                 "{\"tilleggsopplysninger\":[" +
                     "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
                     "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
+                    "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
+                    "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
+                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}",
+            )
+        }
+    }
+
+    @Test
+    fun `skal distribuere journalpost med ettersending`() {
+        // given
+        val xEnhet = "1234"
+        val bestillingId = "TEST_BEST_ID"
+        val headersMedEnhet = HttpHeaders()
+        headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
+
+        val tilleggsopplysninger = TilleggsOpplysninger()
+        tilleggsopplysninger.setJournalfortAvIdent("Z99999")
+
+        val tilleggsopplysningerEtterDist = TilleggsOpplysninger()
+        tilleggsopplysningerEtterDist.add(
+            mapOf(
+                "nokkel" to "dokdistBestillingsId",
+                "verdi" to "asdsadasdsadasdasd",
+            ),
+        )
+        stubs.mockInnsendingApi()
+        stubs.mockBestmDistribusjonskanal(
+            BestemKanalResponse(
+                regel = "",
+                regelBegrunnelse = "",
+                distribusjonskanal = DistribusjonsKanal.PRINT,
+            ),
+        )
+        stubs.mockSafResponseHentJournalpost(
+            opprettUtgaendeSafResponse(
+                tilleggsopplysninger = tilleggsopplysninger,
+                relevanteDatoer = listOf(DatoType(LocalDateTime.now().toString(), "DATO_DOKUMENT")),
+            ),
+            null,
+            "ETTER_DIST",
+        )
+        stubs.mockSafResponseHentJournalpost(
+            opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsopplysningerEtterDist),
+            "ETTER_DIST",
+            "ETTER_DIST2",
+        )
+        stubs.mockSafResponseHentJournalpost(
+            opprettUtgaendeSafResponse(tilleggsopplysninger = tilleggsopplysningerEtterDist),
+            "ETTER_DIST2",
+            "ETTER_DIST3",
+        )
+        stubs.mockDokdistFordelingRequest(HttpStatus.OK, bestillingId)
+        stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
+        stubs.mockSafResponseTilknyttedeJournalposter(
+            listOf(
+                TilknyttetJournalpost(
+                    JOURNALPOST_ID,
+                    JournalStatus.FERDIGSTILT,
+                    Sak("5276661"),
+                ),
+            ),
+        )
+        val distribuerTilAdresse = createDistribuerTilAdresse()
+            .copy(
+                adresselinje2 = "Adresselinje2",
+                adresselinje3 = "Adresselinje3",
+            )
+
+        val request = DistribuerJournalpostRequest(
+            adresse = distribuerTilAdresse,
+            ettersendingsoppgave =
+            OpprettEttersendingsppgaveDto(
+                tittel = "Tittel",
+                skjemaId = "NAV 10-07.17",
+                språk = Språk.NB,
+                innsendingsFristDager = 27,
+                vedleggsliste = listOf(
+                    OpprettEttersendingsoppgaveVedleggDto(
+                        tittel = "Vedlegg 1",
+                        vedleggsnr = "NAV 10-07.17",
+                    ),
+                ),
+            ),
+        )
+
+        // when
+        val response = httpHeaderTestRestTemplate.postForEntity<JournalpostDto>(
+            initUrl() + "/journal/distribuer/JOARK-" + JOURNALPOST_ID,
+            HttpEntity(request, headersMedEnhet),
+        )
+
+        // then
+        assertSoftly {
+            response.statusCode shouldBe HttpStatus.OK
+            stubs.verifyStub.dokdistFordelingKalt(
+                objectMapper.writeValueAsString(
+                    DokDistDistribuerJournalpostRequest(
+                        JOURNALPOST_ID,
+                        "BI01A01",
+                        null,
+                        request.adresse,
+                        null,
+                    ),
+                ),
+            )
+            stubs.verifyStub.dokdistFordelingKalt(DistribusjonsType.VEDTAK.name)
+            stubs.verifyStub.dokdistFordelingKalt(DistribusjonsTidspunkt.KJERNETID.name)
+            stubs.verifyStub.dokarkivOppdaterKalt(
+                JOURNALPOST_ID,
+                request.adresse!!.adresselinje1,
+                request.adresse!!.land,
+            )
+            stubs.verifyStub.dokarkivIkkeOppdaterKalt(
+                JOURNALPOST_ID,
+                "datoDokument",
+            )
+            stubs.verifyStub.dokarkivOppdaterKalt(
+                JOURNALPOST_ID,
+                "{\"tilleggsopplysninger\":[" +
+                    "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
+                    "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
+                    "{\"nokkel\":\"ettOppgave0\",\"verdi\":\"{\\\"tittel\\\":\\\"Tittel dokument\\\",\\\"skjemaId\\\":\\\"NAV 123\\\",\\\"språk\\\":\\\"nb\\\",\\\"innsendingsId\\\":\\\"213213\\\",\\\"innsendingsF\"},{\"nokkel\":\"ettOppgave1\",\"verdi\":\"ristDager\\\":27,\\\"fristDato\\\":\\\"2022-01-01\\\",\\\"slettesDato\\\":\\\"2022-01-01\\\",\\\"vedleggsliste\\\":[{\\\"tittel\\\":\\\"Tittel\"},{\"nokkel\":\"ettOppgave2\",\"verdi\":\" vedlegg 1\\\",\\\"vedleggsnr\\\":\\\"1231\\\"},{\\\"tittel\\\":\\\"Tittel vedlegg 2\\\",\\\"vedleggsnr\\\":\\\"1231\\\"}]}\"}," +
                     "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
                     "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
                     "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}",

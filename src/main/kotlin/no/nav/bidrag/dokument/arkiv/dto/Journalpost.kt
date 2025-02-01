@@ -674,7 +674,7 @@ data class EttersendingsoppgaveDo(
             "de_DE" -> Språk.DE
             "en_GB" -> Språk.EN
             "fr_FR" -> Språk.FR
-            else -> Språk.values().find { it.name == språk } ?: Språk.NB
+            else -> Språk.values().find { it.name.lowercase() == språk.lowercase() } ?: Språk.NB
         },
         vedleggsliste = vedleggsliste.map {
             OpprettEttersendingsoppgaveVedleggDto(

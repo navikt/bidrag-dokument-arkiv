@@ -194,11 +194,13 @@ class DistribuerJournalpostService(
                     journalpostId,
                     if (batchId != null) String.format(" med batchId %s", batchId) else "",
                 )
-                opprettEttersendingsoppgave(journalpost, distribuerJournalpostRequest)
-                endreJournalpostService.oppdaterJournalpostTilleggsopplysninger(
-                    journalpostId,
-                    journalpost,
-                )
+                opprettEttersendingsoppgave(journalpost, distribuerJournalpostRequest)?.run {
+                    endreJournalpostService.oppdaterJournalpostTilleggsopplysninger(
+                        journalpostId,
+                        journalpost,
+                    )
+                }
+
                 return DistribuerJournalpostResponse("JOARK-$journalpostId", null)
             }
             validerKanDistribueres(journalpost)
@@ -298,11 +300,11 @@ class DistribuerJournalpostService(
             EttersendingsoppgaveDo(
                 tittel = oppgave.tittel,
                 skjemaId = oppgave.skjemanr,
-                språk = oppgave.spraak!!,
-                slettesDato = oppgave.skalSlettesDato!!.toLocalDate(),
+                språk = oppgave.spraak ?: "nb",
+                slettesDato = oppgave.skalSlettesDato?.toLocalDate(),
                 innsendingsId = oppgave.innsendingsId!!,
                 innsendingsFristDager = ettersending.innsendingsFristDager,
-                fristDato = oppgave.innsendingsFristDato!!.toLocalDate(),
+                fristDato = oppgave.innsendingsFristDato?.toLocalDate(),
                 vedleggsliste = oppgave.vedleggsListe.map {
                     EttersendingsoppgaveDo.EttersendingsoppgaveVedleggDo(
                         vedleggsnr = it.vedleggsnr!!,

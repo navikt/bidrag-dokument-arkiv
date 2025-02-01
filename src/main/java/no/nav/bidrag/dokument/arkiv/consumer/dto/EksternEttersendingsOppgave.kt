@@ -203,21 +203,21 @@ data class VedleggDto(
     val tittel: String,
     // Visnings navn for et vedlegg.
     @get:JsonProperty("label")
-    val label: String,
+    val label: String = "",
     // true dersom vedlegget/dokumentet er søknadens hoveddokument
     @get:JsonProperty("erHoveddokument")
-    val erHoveddokument: Boolean,
+    val erHoveddokument: Boolean = false,
     // true dersom vedlegget/dokumentet er variant at søknadens hoveddokument (på json format)
     @get:JsonProperty("erVariant")
-    val erVariant: Boolean,
+    val erVariant: Boolean = false,
     // true dersom vedlegget/dokumentet er på PDF/a format
     @get:JsonProperty("erPdfa")
-    val erPdfa: Boolean,
+    val erPdfa: Boolean = false,
     // true dersom vedlegget/dokumentet er påkevd for å kunne bli behandlet av saksbehandler.
     @get:JsonProperty("erPakrevd")
-    val erPakrevd: Boolean,
+    val erPakrevd: Boolean = false,
     @get:JsonProperty("opplastingsStatus")
-    val opplastingsStatus: OpplastingsStatus,
+    val opplastingsStatus: OpplastingsStatus = OpplastingsStatus.IKKE_VALGT,
     // Opprettet dato og tid som UTC
     @get:JsonProperty("opprettetdato")
     val opprettetdato: OffsetDateTime,

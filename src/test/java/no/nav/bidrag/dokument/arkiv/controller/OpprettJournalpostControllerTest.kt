@@ -13,11 +13,14 @@ import no.nav.bidrag.dokument.arkiv.stubs.TITTEL_HOVEDDOKUMENT
 import no.nav.bidrag.dokument.arkiv.stubs.TITTEL_VEDLEGG1
 import no.nav.bidrag.dokument.arkiv.stubs.createOpprettJournalpostRequest
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
+import no.nav.bidrag.domene.enums.diverse.Språk
 import no.nav.bidrag.transport.dokument.AvsenderMottakerDto
 import no.nav.bidrag.transport.dokument.AvsenderMottakerDtoIdType
 import no.nav.bidrag.transport.dokument.JournalpostType
 import no.nav.bidrag.transport.dokument.MottakUtsendingKanal
 import no.nav.bidrag.transport.dokument.OpprettDokumentDto
+import no.nav.bidrag.transport.dokument.OpprettEttersendingsoppgaveVedleggDto
+import no.nav.bidrag.transport.dokument.OpprettEttersendingsppgaveDto
 import no.nav.bidrag.transport.dokument.OpprettJournalpostResponse
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Nested
@@ -63,6 +66,68 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
                     "\"behandlingstema\":\"$BEHANDLINGSTEMA\"," +
                     "\"eksternReferanseId\":\"$REFID\"," +
                     "\"tilleggsopplysninger\":[]," +
+                    "\"tema\":\"BID\"," +
+                    "\"kanal\":\"NAV_NO\"," +
+                    "\"datoMottatt\":\"$DATO_MOTTATT\"," +
+                    "\"bruker\":{\"id\":\"$GJELDER_ID\",\"idType\":\"FNR\"}," +
+                    "\"dokumenter\":[" +
+                    "{\"tittel\":\"$TITTEL_HOVEDDOKUMENT\"," +
+                    "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SW5uaG9sZCBww6UgZG9rdW1lbnRldA==\"}]}," +
+                    "{\"tittel\":\"$TITTEL_VEDLEGG1\"," +
+                    "\"dokumentvarianter\":[{\"filtype\":\"PDFA\",\"variantformat\":\"ARKIV\",\"fysiskDokument\":\"SW5uaG9sZCBww6UgZG9rdW1lbnRldCB2ZWRsZWdn\"}]}]," +
+                    "\"avsenderMottaker\":{\"id\":\"$GJELDER_ID\",\"idType\":\"FNR\"}}",
+            )
+        }
+    }
+
+    @Test
+    fun `skal opprette inngående journalpost med ettersendingsoppgave`() {
+        val request = createOpprettJournalpostRequest()
+            .copy(
+                ettersendingsoppgave =
+                OpprettEttersendingsppgaveDto(
+                    tittel = "Tittel",
+                    skjemaId = "NAV 10-07.17",
+                    språk = Språk.NB,
+                    innsendingsFristDager = 27,
+                    vedleggsliste = listOf(
+                        OpprettEttersendingsoppgaveVedleggDto(
+                            tittel = "Vedlegg 1",
+                            vedleggsnr = "NAV 10-07.17",
+                        ),
+                    ),
+                ),
+            )
+
+        val nyJpId = 123123123L
+        stubs.mockDokarkivOpprettRequest(
+            nyJpId,
+            ferdigstill = false,
+            dokumentList = request.dokumenter.map { DokumentInfo("DOK_ID_${it.tittel}") },
+        )
+
+        val response = httpHeaderTestRestTemplate.exchange(
+            initUrl() + "/journalpost",
+            HttpMethod.POST,
+            HttpEntity(request),
+            OpprettJournalpostResponse::class.java,
+        )
+
+        response.statusCode shouldBe HttpStatus.OK
+
+        val responseBody = response.body!!
+        assertSoftly {
+            responseBody.journalpostId shouldBe nyJpId.toString()
+            responseBody.dokumenter shouldHaveSize 2
+            stubs.verifyStub.dokarkivOpprettKalt(
+                false,
+                "{\"tittel\":\"$TITTEL_HOVEDDOKUMENT\"," +
+                    "\"journalpostType\":\"INNGAAENDE\"," +
+                    "\"behandlingstema\":\"$BEHANDLINGSTEMA\"," +
+                    "\"eksternReferanseId\":\"$REFID\"," +
+                    "\"tilleggsopplysninger\":[" +
+                    "{\"nokkel\":\"ettOppgave0\",\"verdi\":\"{\\\"tittel\\\":\\\"Tittel\\\",\\\"skjemaId\\\":\\\"NAV 10-07.17\\\",\\\"språk\\\":\\\"NB\\\",\\\"innsendingsFristDager\\\":27,\\\"vedleggsliste\\\"\"}," +
+                    "{\"nokkel\":\"ettOppgave1\",\"verdi\":\":[{\\\"tittel\\\":\\\"Vedlegg 1\\\",\\\"vedleggsnr\\\":\\\"NAV 10-07.17\\\"}]}\"}]," +
                     "\"tema\":\"BID\"," +
                     "\"kanal\":\"NAV_NO\"," +
                     "\"datoMottatt\":\"$DATO_MOTTATT\"," +
