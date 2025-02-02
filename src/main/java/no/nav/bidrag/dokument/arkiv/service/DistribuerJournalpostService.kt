@@ -9,15 +9,10 @@ import no.nav.bidrag.dokument.arkiv.consumer.BestemKanalResponse
 import no.nav.bidrag.dokument.arkiv.consumer.DistribusjonsKanal
 import no.nav.bidrag.dokument.arkiv.consumer.DokdistFordelingConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.DokdistKanalConsumer
-import no.nav.bidrag.dokument.arkiv.consumer.InnsendingConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer
-import no.nav.bidrag.dokument.arkiv.consumer.dto.Brukernotifikasjonstype
-import no.nav.bidrag.dokument.arkiv.consumer.dto.EksternEttersendingsOppgave
-import no.nav.bidrag.dokument.arkiv.consumer.dto.InnsendtVedleggDto
 import no.nav.bidrag.dokument.arkiv.dto.BestemDistribusjonKanalRequest
 import no.nav.bidrag.dokument.arkiv.dto.DistribuerJournalpostRequestInternal
 import no.nav.bidrag.dokument.arkiv.dto.DistribuertTilAdresseDo
-import no.nav.bidrag.dokument.arkiv.dto.EttersendingsoppgaveDo
 import no.nav.bidrag.dokument.arkiv.dto.JournalStatus
 import no.nav.bidrag.dokument.arkiv.dto.Journalpost
 import no.nav.bidrag.dokument.arkiv.dto.JournalpostUtsendingKanal
@@ -38,8 +33,8 @@ import no.nav.bidrag.dokument.arkiv.model.ResourceByDiscriminator
 import no.nav.bidrag.dokument.arkiv.model.UgyldigDistribusjonException
 import no.nav.bidrag.dokument.arkiv.model.ifFalse
 import no.nav.bidrag.dokument.arkiv.security.SaksbehandlerInfoManager
+import no.nav.bidrag.dokument.arkiv.service.utvidelser.tilTilleggsopplysning
 import no.nav.bidrag.dokument.arkiv.service.utvidelser.toTilleggsopplysning
-import no.nav.bidrag.domene.enums.diverse.Språk
 import no.nav.bidrag.transport.dokument.DistribuerJournalpostResponse
 import no.nav.bidrag.transport.dokument.DistribuerTilAdresse
 import no.nav.bidrag.transport.dokument.DistribusjonInfoDto
@@ -48,7 +43,6 @@ import no.nav.bidrag.transport.dokument.OpprettEttersendingsppgaveDto
 import no.nav.bidrag.transport.dokument.UtsendingsInfoDto
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.time.Period
 import java.util.Objects
 
 private val LOGGER = KotlinLogging.logger {}
@@ -62,7 +56,7 @@ class DistribuerJournalpostService(
     val dokdistFordelingConsumer: DokdistFordelingConsumer,
     val saksbehandlerInfoManager: SaksbehandlerInfoManager,
     val dokdistKanalConsumer: DokdistKanalConsumer,
-    val innsendingConsumer: InnsendingConsumer,
+    val innsendingService: InnsendingService,
     final val meterRegistry: MeterRegistry,
 ) {
     private final val journalpostService: JournalpostService
@@ -265,69 +259,21 @@ class DistribuerJournalpostService(
     }
 
     private fun opprettEttersendingsoppgave(journalpost: Journalpost, requestInternal: DistribuerJournalpostRequestInternal): String? {
-        if (journalpost.hentDatoJournalfort() != null &&
-            journalpost.isDistribusjonBestilt() &&
-            Period.between(journalpost.hentDatoJournalfort(), LocalDate.now()).days > 2
-        ) {
-            LOGGER.warn("Journalpost ${journalpost.journalpostId} er eldre enn 2 dager. Oppretter ikke ettersendingsoppgave")
+        try {
+            val oppgave = innsendingService.opprettEttersendingsoppgave(
+                journalpost,
+                requestInternal.request?.ettersendingsoppgave,
+            ) ?: return null
+
+            journalpost.tilleggsopplysninger.addInnsendingsOppgave(
+                oppgave.tilTilleggsopplysning(),
+            )
+
+            return oppgave.innsendingsId
+        } catch (e: Exception) {
+            LOGGER.error("Feil ved oppretting av ettersendingsoppgave for journalpost ${journalpost.journalpostId}", e)
             return null
         }
-        journalpost.tilleggsopplysninger.hentInnsendingsoppgave()?.let {
-            if (it.innsendingsId != null) {
-                LOGGER.warn("Det finnes allerede en ettersendingsoppgave med innsendingsid=${it.innsendingsId} på journalpost ${journalpost.journalpostId}. Oppretter ikke på nytt")
-                return null
-            }
-        }
-        val ettersending = requestInternal.request?.ettersendingsoppgave ?: run {
-            journalpost.tilleggsopplysninger.hentInnsendingsoppgave()?.toOpprettEttersendingsoppgaveDto() ?: return null
-        }
-
-        LOGGER.info("Oppretter og lagrer ettersendingsoppgave for journalpost ${journalpost.journalpostId}")
-        SECURE_LOGGER.info("Oppretter og lagrer ettersendingsoppgave $ettersending for journalpost ${journalpost.journalpostId}")
-
-        val oppgave = innsendingConsumer.opprettEttersendingsoppgave(
-            EksternEttersendingsOppgave(
-                brukerId = journalpost.hentGjelderId()!!,
-                skjemanr = ettersending.skjemaId,
-                sprak = when (ettersending.språk) {
-                    Språk.NB -> "nb_NO"
-                    Språk.NN -> "nn_NO"
-                    Språk.DE -> "de_DE"
-                    Språk.EN -> "en_GB"
-                    Språk.FR -> "fr_FR"
-                },
-                tittel = ettersending.tittel,
-                tema = journalpost.tema!!,
-                innsendingsFristDager = ettersending.innsendingsFristDager,
-                brukernotifikasjonstype = Brukernotifikasjonstype.oppgave,
-                vedleggsListe =
-                ettersending.vedleggsliste.map {
-                    InnsendtVedleggDto(
-                        vedleggsnr = it.vedleggsnr,
-                        tittel = it.tittel,
-                    )
-                },
-            ),
-        )
-        journalpost.tilleggsopplysninger.addInnsendingsOppgave(
-            EttersendingsoppgaveDo(
-                tittel = oppgave.tittel,
-                skjemaId = oppgave.skjemanr,
-                språk = oppgave.spraak ?: "nb",
-                slettesDato = oppgave.skalSlettesDato?.toLocalDate(),
-                innsendingsId = oppgave.innsendingsId!!,
-                innsendingsFristDager = ettersending.innsendingsFristDager,
-                fristDato = oppgave.innsendingsFristDato?.toLocalDate(),
-                vedleggsliste = oppgave.vedleggsListe.map {
-                    EttersendingsoppgaveDo.EttersendingsoppgaveVedleggDo(
-                        vedleggsnr = it.vedleggsnr!!,
-                        tittel = it.tittel,
-                    )
-                },
-            ),
-        )
-
-        return oppgave.innsendingsId
     }
 
     private fun lagreEttersendingsoppgave(journalpostId: Long, ettersendingsoppgave: OpprettEttersendingsppgaveDto) {

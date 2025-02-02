@@ -12,8 +12,6 @@ import no.nav.bidrag.dokument.arkiv.consumer.BestemKanalResponse
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivKnyttTilSakConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.dto.DokumentSoknadDto
-import no.nav.bidrag.dokument.arkiv.consumer.dto.DokumentSoknadDto.Status
-import no.nav.bidrag.dokument.arkiv.consumer.dto.VedleggDto
 import no.nav.bidrag.dokument.arkiv.dto.DistribusjonsInfo
 import no.nav.bidrag.dokument.arkiv.dto.DokDistDistribuerJournalpostResponse
 import no.nav.bidrag.dokument.arkiv.dto.DokumentInfo
@@ -36,9 +34,6 @@ import org.junit.Assert
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import wiremock.com.fasterxml.jackson.annotation.JsonProperty
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import java.util.Arrays
 
 class Stubs {
@@ -78,7 +73,25 @@ class Stubs {
             Assert.fail(e.message)
         }
     }
-    fun mockInnsendingApi() {
+
+    fun mockHentInnsendingApi(response: List<DokumentSoknadDto> = listOf(opprettDokumentSoknadDto())) {
+        try {
+            WireMock.stubFor(
+                WireMock.get(WireMock.urlPathMatching("/innsending/ekstern/v1/oppgaver"))
+                    .willReturn(
+                        aClosedJsonResponse()
+                            .withStatus(HttpStatus.OK.value())
+                            .withBody(
+                                objectMapper.writeValueAsString(response),
+
+                            ),
+                    ),
+            )
+        } catch (e: JsonProcessingException) {
+            Assert.fail(e.message)
+        }
+    }
+    fun mockInnsendingApi(response: DokumentSoknadDto = opprettDokumentSoknadDto()) {
         try {
             WireMock.stubFor(
                 WireMock.post(WireMock.urlPathMatching("/innsending/ekstern/v1/oppgaver"))
@@ -86,32 +99,7 @@ class Stubs {
                         aClosedJsonResponse()
                             .withStatus(HttpStatus.OK.value())
                             .withBody(
-                                objectMapper.writeValueAsString(
-                                    DokumentSoknadDto(
-                                        innsendingsId = "213213",
-                                        skjemanr = "NAV 123",
-                                        tema = "BID",
-                                        spraak = "nb",
-                                        skalSlettesDato = OffsetDateTime.of(LocalDateTime.of(2022, 1, 1, 1, 1, 1), ZoneOffset.UTC),
-                                        innsendingsFristDato = OffsetDateTime.of(LocalDateTime.of(2022, 1, 1, 1, 1, 1), ZoneOffset.UTC),
-                                        opprettetDato = OffsetDateTime.of(LocalDateTime.of(2022, 1, 1, 1, 1, 1), ZoneOffset.UTC),
-                                        vedleggsListe = listOf(
-                                            VedleggDto(
-                                                tittel = "Tittel vedlegg 1",
-                                                vedleggsnr = "1231",
-                                                opprettetdato = OffsetDateTime.of(LocalDateTime.of(2022, 1, 1, 1, 1, 1), ZoneOffset.UTC),
-                                            ),
-                                            VedleggDto(
-                                                tittel = "Tittel vedlegg 2",
-                                                vedleggsnr = "1231",
-                                                opprettetdato = OffsetDateTime.of(LocalDateTime.of(2022, 1, 1, 1, 1, 1), ZoneOffset.UTC),
-                                            ),
-                                        ),
-                                        tittel = "Tittel dokument",
-                                        brukerId = "13213",
-                                        status = Status.OPPRETTET,
-                                    ),
-                                ),
+                                objectMapper.writeValueAsString(response),
                             ),
                     ),
             )
@@ -598,7 +586,18 @@ class Stubs {
     }
 
     class VerifyStub {
-
+        fun hentEttersendingKalt(times: Int, vararg contains: String?) {
+            val requestPattern =
+                WireMock.getRequestedFor(
+                    WireMock.urlEqualTo("/innsending/ekstern/v1/oppgaver"),
+                )
+            Arrays.stream(contains).forEach { contain: String? ->
+                requestPattern.withRequestBody(
+                    ContainsPattern(contain),
+                )
+            }
+            WireMock.verify(WireMock.exactly(times), requestPattern)
+        }
         fun opprettEttersendingKalt(times: Int, vararg contains: String?) {
             val requestPattern =
                 WireMock.postRequestedFor(

@@ -1013,6 +1013,14 @@ data class DatoType(var dato: String? = null, var datotype: String? = null) {
             )
         }
     }
+
+    fun somDatoTidspunkt(): LocalDateTime = if (dato != null) {
+        LocalDateTime.parse(dato)
+    } else {
+        throw JournalpostDataException(
+            "Kunne ikke trekke ut dato fra: $dato",
+        )
+    }
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)

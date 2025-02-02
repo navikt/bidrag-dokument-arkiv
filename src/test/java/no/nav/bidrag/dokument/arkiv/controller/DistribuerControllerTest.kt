@@ -23,10 +23,12 @@ import no.nav.bidrag.dokument.arkiv.dto.Sak
 import no.nav.bidrag.dokument.arkiv.dto.TilknyttetJournalpost
 import no.nav.bidrag.dokument.arkiv.dto.TilleggsOpplysninger
 import no.nav.bidrag.dokument.arkiv.dto.UtsendingsInfo
+import no.nav.bidrag.dokument.arkiv.stubs.BRUKER_AKTOER_ID
 import no.nav.bidrag.dokument.arkiv.stubs.DATO_DOKUMENT
 import no.nav.bidrag.dokument.arkiv.stubs.DOKUMENT_1_ID
 import no.nav.bidrag.dokument.arkiv.stubs.JOURNALPOST_ID
 import no.nav.bidrag.dokument.arkiv.stubs.createDistribuerTilAdresse
+import no.nav.bidrag.dokument.arkiv.stubs.opprettDokumentSoknadDto
 import no.nav.bidrag.dokument.arkiv.stubs.opprettSafResponse
 import no.nav.bidrag.dokument.arkiv.stubs.opprettUtgaendeSafResponse
 import no.nav.bidrag.domene.enums.adresse.Adressetype
@@ -53,6 +55,8 @@ import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import java.io.IOException
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 internal class DistribuerControllerTest : AbstractControllerTest() {
 
@@ -190,7 +194,16 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                 "verdi" to "asdsadasdsadasdasd",
             ),
         )
-        stubs.mockInnsendingApi()
+        stubs.mockInnsendingApi(opprettDokumentSoknadDto().copy(fristForEttersendelse = 27))
+        stubs.mockHentInnsendingApi(
+            listOf(
+                opprettDokumentSoknadDto().copy(
+                    skjemanr = "NAV 10-07.10",
+                    brukerId = BRUKER_AKTOER_ID,
+                    opprettetDato = OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.UTC),
+                ),
+            ),
+        )
         stubs.mockBestmDistribusjonskanal(
             BestemKanalResponse(
                 regel = "",
@@ -282,6 +295,13 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                 "datoDokument",
             )
             response.body?.ettersendingsoppgave?.innsendingsId shouldBe "213213"
+            stubs.verifyStub.opprettEttersendingKalt(
+                1,
+                "{\"brukerId\":\"12345678910\"," +
+                    "\"skjemanr\":\"NAV 10-07.17\",\"sprak\":\"nb_NO\",\"tema\":\"BID\"," +
+                    "\"vedleggsListe\":[{\"vedleggsnr\":\"NAV 10-07.17\",\"tittel\":\"Vedlegg 1\",\"url\":null,\"opplastingsValgKommentarLedetekst\":null,\"opplastingsValgKommentar\":null}]," +
+                    "\"tittel\":\"Tittel\",\"brukernotifikasjonstype\":\"oppgave\",\"koblesTilEksisterendeSoknad\":true,\"innsendingsFristDager\":27,\"mellomlagringDager\":null}",
+            )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
                 "{\"tilleggsopplysninger\":[" +
@@ -326,7 +346,16 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                 "verdi" to "asdsadasdsadasdasd",
             ),
         )
-        stubs.mockInnsendingApi()
+        stubs.mockInnsendingApi(opprettDokumentSoknadDto().copy(fristForEttersendelse = 27))
+        stubs.mockHentInnsendingApi(
+            listOf(
+                opprettDokumentSoknadDto().copy(
+                    skjemanr = "NAV 10-07.10",
+                    brukerId = BRUKER_AKTOER_ID,
+                    opprettetDato = OffsetDateTime.of(LocalDateTime.now().minusDays(5), ZoneOffset.UTC),
+                ),
+            ),
+        )
         stubs.mockSafResponseHentJournalpost(
             opprettUtgaendeSafResponse(
                 tilleggsopplysninger = tilleggsopplysninger,
@@ -486,6 +515,117 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             stubs.verifyStub.opprettEttersendingKalt(1)
 
             stubs.verifyStub.dokarkivOppdaterKalt(JOURNALPOST_ID)
+        }
+    }
+
+    @Test
+    fun `skal ikke opprette ettersending hvis det finnes ettersending opprettet etter journalpost`() {
+        // given
+        val xEnhet = "1234"
+        val bestillingId = "TEST_BEST_ID"
+        val headersMedEnhet = HttpHeaders()
+        headersMedEnhet.add(EnhetFilter.X_ENHET_HEADER, xEnhet)
+
+        val tilleggsopplysninger = TilleggsOpplysninger()
+        tilleggsopplysninger.setJournalfortAvIdent("Z99999")
+        tilleggsopplysninger.setDistribusjonBestillt()
+
+        tilleggsopplysninger.addInnsendingsOppgave(
+            EttersendingsoppgaveDo(
+                tittel = "Tittel",
+                skjemaId = "NAV 10-07.17",
+                språk = "nb",
+                innsendingsFristDager = 1,
+                vedleggsliste = listOf(
+                    EttersendingsoppgaveVedleggDo(
+                        tittel = "Vedlegg 1",
+                        vedleggsnr = "NAV 10-07.17",
+                    ),
+                ),
+            ),
+        )
+        tilleggsopplysninger.add(
+            mapOf(
+                "nokkel" to "dokdistBestillingsId",
+                "verdi" to "asdsadasdsadasdasd",
+            ),
+        )
+        stubs.mockInnsendingApi()
+        stubs.mockHentInnsendingApi(
+            listOf(
+                opprettDokumentSoknadDto().copy(
+                    skjemanr = "NAV 10-07.17",
+                    innsendingsId = "INNSENDING_ID",
+                    brukerId = BRUKER_AKTOER_ID,
+                    opprettetDato = OffsetDateTime.of(LocalDateTime.now(), ZoneOffset.UTC),
+                ),
+                opprettDokumentSoknadDto().copy(
+                    skjemanr = "NAV 10-07.17",
+                    brukerId = BRUKER_AKTOER_ID,
+                    opprettetDato = OffsetDateTime.of(LocalDateTime.now().minusDays(4), ZoneOffset.UTC),
+                ),
+            ),
+        )
+        stubs.mockSafResponseHentJournalpost(
+            opprettUtgaendeSafResponse(
+                tilleggsopplysninger = tilleggsopplysninger,
+                relevanteDatoer = listOf(DatoType(LocalDateTime.now().toString(), "DATO_DOKUMENT")),
+            ).copy(
+                relevanteDatoer = listOf(
+                    DatoType(LocalDateTime.now().toString(), "DATO_JOURNALFOERT"),
+                ),
+            ),
+        )
+
+        stubs.mockDokarkivOppdaterRequest(JOURNALPOST_ID)
+        stubs.mockSafResponseTilknyttedeJournalposter(
+            listOf(
+                TilknyttetJournalpost(
+                    JOURNALPOST_ID,
+                    JournalStatus.FERDIGSTILT,
+                    Sak("5276661"),
+                ),
+            ),
+        )
+        val request = DistribuerJournalpostRequest(
+            ettersendingsoppgave =
+            OpprettEttersendingsppgaveDto(
+                tittel = "Tittel",
+                skjemaId = "NAV 10-07.17",
+                språk = Språk.NB,
+                innsendingsFristDager = 27,
+                vedleggsliste = listOf(
+                    OpprettEttersendingsoppgaveVedleggDto(
+                        tittel = "Vedlegg 1",
+                        vedleggsnr = "NAV 10-07.17",
+                    ),
+                ),
+            ),
+        )
+
+        // when
+        val response = httpHeaderTestRestTemplate.postForEntity<DistribuerJournalpostResponse>(
+            initUrl() + "/journal/distribuer/JOARK-" + JOURNALPOST_ID,
+            HttpEntity(request, headersMedEnhet),
+        )
+
+        // then
+        assertSoftly {
+            response.statusCode shouldBe HttpStatus.OK
+            stubs.verifyStub.dokdistFordelingIkkeKalt()
+            stubs.verifyStub.opprettEttersendingKalt(0)
+            stubs.verifyStub.hentEttersendingKalt(1)
+
+            stubs.verifyStub.dokarkivOppdaterKalt(
+                JOURNALPOST_ID,
+                "{\"tilleggsopplysninger\":[{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
+                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                    "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
+                    "{\"nokkel\":\"ettOppgave0\",\"verdi\":\"{\\\"tittel\\\":\\\"Tittel dokument\\\",\\\"skjemaId\\\":\\\"NAV 10-07.17\\\",\\\"språk\\\":\\\"nb\\\",\\\"innsendingsId\\\":\\\"INNSENDING_ID\\\",\\\"\"}," +
+                    "{\"nokkel\":\"ettOppgave1\",\"verdi\":\"innsendingsFristDager\\\":14,\\\"fristDato\\\":\\\"2022-01-01\\\",\\\"slettesDato\\\":\\\"2022-01-01\\\",\\\"vedleggsliste\\\":[{\\\"tit\"}," +
+                    "{\"nokkel\":\"ettOppgave2\",\"verdi\":\"tel\\\":\\\"Tittel vedlegg 1\\\",\\\"vedleggsnr\\\":\\\"1231\\\"},{\\\"tittel\\\":\\\"Tittel vedlegg 2\\\",\\\"vedleggsnr\\\":\\\"1231\\\"}]}\"}],\"dokumenter\":[]}",
+            )
+            response.body.ettersendingsoppgave?.innsendingsId shouldBe "INNSENDING_ID"
         }
     }
 
