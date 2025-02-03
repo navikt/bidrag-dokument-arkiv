@@ -1,4 +1,4 @@
-SRV_BD_ARKIV_AUTH: 3x30VnptsOWvQO0OXGWzaV
+SRV_BD_ARKIV_AUTH: changeme
 server.port: 8083
 KAFKA_GROUP_ID: bidrag-arkiv-consumer
 KAFKA_BROKERS: localhost:9092
