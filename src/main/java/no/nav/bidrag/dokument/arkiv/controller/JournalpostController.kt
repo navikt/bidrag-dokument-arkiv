@@ -106,7 +106,9 @@ class JournalpostController(
             )
     }
 
-    private fun erIkkePrefixetMedJoark(joarkJournalpostId: String): Boolean = !joarkJournalpostId.startsWith(KildesystemIdenfikator.PREFIX_JOARK_COMPLETE)
+    private fun erIkkePrefixetMedJoark(joarkJournalpostId: String): Boolean = !joarkJournalpostId.startsWith(
+        KildesystemIdenfikator.PREFIX_JOARK_COMPLETE,
+    )
 
     @GetMapping("/sak/{saksnummer}/journal")
     @Operation(

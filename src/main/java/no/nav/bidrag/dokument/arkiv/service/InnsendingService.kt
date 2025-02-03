@@ -20,11 +20,16 @@ class InnsendingService(private val innsendingConsumer: InnsendingConsumer) {
         val gjelder = journalpost.hentGjelderId()
 
         val ettersendingsoppgave = journalpost.ettersendingsoppgave() ?: return null
-        val ettersendingsoppgaver = innsendingConsumer.hentEttersendingsoppgave(HentEtterseningsoppgaveRequest(gjelder!!, ettersendingsoppgave.skjemaId))
+        val ettersendingsoppgaver = innsendingConsumer.hentEttersendingsoppgave(
+            HentEtterseningsoppgaveRequest(gjelder!!, ettersendingsoppgave.skjemaId),
+        )
         return ettersendingsoppgaver.find { it.innsendingsId == ettersendingsoppgave.innsendingsId }
     }
 
-    fun hentEttersendingsoppgaverOpprettetEtterJournalpost(journalpost: Journalpost, ettersending: OpprettEttersendingsppgaveDto): List<DokumentSoknadDto> {
+    fun hentEttersendingsoppgaverOpprettetEtterJournalpost(
+        journalpost: Journalpost,
+        ettersending: OpprettEttersendingsppgaveDto,
+    ): List<DokumentSoknadDto> {
         try {
             val gjelder = journalpost.hentGjelderId()
 
@@ -55,14 +60,18 @@ class InnsendingService(private val innsendingConsumer: InnsendingConsumer) {
 
         journalpost.tilleggsopplysninger.hentInnsendingsoppgave()?.let {
             if (it.innsendingsId != null) {
-                LOGGER.warn("Det finnes allerede en ettersendingsoppgave med innsendingsid=${it.innsendingsId} på journalpost ${journalpost.journalpostId}. Oppretter ikke på nytt")
+                LOGGER.warn(
+                    "Det finnes allerede en ettersendingsoppgave med innsendingsid=${it.innsendingsId} på journalpost ${journalpost.journalpostId}. Oppretter ikke på nytt",
+                )
                 return null
             }
         }
 
         val eksisterendeOppgaver = hentEttersendingsoppgaverOpprettetEtterJournalpost(journalpost, ettersending)
         if (eksisterendeOppgaver.isNotEmpty()) {
-            LOGGER.warn("Det finnes allerede ${eksisterendeOppgaver.size} ettersendingsoppgaver på journalpost ${journalpost.journalpostId} for skjema ${ettersending.skjemaId}. Oppretter ikke på nytt")
+            LOGGER.warn(
+                "Det finnes allerede ${eksisterendeOppgaver.size} ettersendingsoppgaver på journalpost ${journalpost.journalpostId} for skjema ${ettersending.skjemaId}. Oppretter ikke på nytt",
+            )
             return eksisterendeOppgaver.maxBy { it.opprettetDato }
         }
 

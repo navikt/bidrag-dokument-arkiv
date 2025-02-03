@@ -234,7 +234,12 @@ fun opprettDokumentOversiktfagsakResponse(): List<Journalpost> {
 
 fun createOppgaveDataWithSaksnummer(saksnummer: String): OppgaveData = OppgaveData(saksreferanse = saksnummer, id = 2, versjon = 1, beskrivelse = "")
 
-fun createOppgaveDataWithJournalpostId(journalpostId: String): OppgaveData = OppgaveData(journalpostId = journalpostId, id = 2, versjon = 1, beskrivelse = "")
+fun createOppgaveDataWithJournalpostId(journalpostId: String): OppgaveData = OppgaveData(
+    journalpostId = journalpostId,
+    id = 2,
+    versjon = 1,
+    beskrivelse = "",
+)
 
 fun createTillegsopplysningerWithReturDetaljer(): TilleggsOpplysninger {
     val tilleggsopplysninger = TilleggsOpplysninger()

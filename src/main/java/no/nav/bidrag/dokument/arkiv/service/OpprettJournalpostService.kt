@@ -322,24 +322,25 @@ class OpprettJournalpostService(
         "Fant ikke referanse eller data for dokument med tittel ${dokumentDto.tittel}",
     )
 
-    private fun mapMottaker(request: OpprettJournalpostRequest): JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker = if (request.avsenderMottaker?.erSamhandler() == true) {
-        JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
-            navn = request.avsenderMottaker?.navn,
-        )
-    } else {
-        JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
-            navn = request.avsenderMottaker?.navn,
-            id = request.avsenderMottaker?.ident,
-            idType = request.avsenderMottaker?.ident?.let {
-                when (request.avsenderMottaker?.type) {
-                    AvsenderMottakerDtoIdType.FNR -> AvsenderMottakerIdType.FNR
-                    AvsenderMottakerDtoIdType.ORGNR -> AvsenderMottakerIdType.ORGNR
-                    AvsenderMottakerDtoIdType.UTENLANDSK_ORGNR -> AvsenderMottakerIdType.UTL_ORG
-                    else -> AvsenderMottakerIdType.FNR
-                }
-            },
-        )
-    }
+    private fun mapMottaker(request: OpprettJournalpostRequest): JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker =
+        if (request.avsenderMottaker?.erSamhandler() == true) {
+            JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
+                navn = request.avsenderMottaker?.navn,
+            )
+        } else {
+            JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
+                navn = request.avsenderMottaker?.navn,
+                id = request.avsenderMottaker?.ident,
+                idType = request.avsenderMottaker?.ident?.let {
+                    when (request.avsenderMottaker?.type) {
+                        AvsenderMottakerDtoIdType.FNR -> AvsenderMottakerIdType.FNR
+                        AvsenderMottakerDtoIdType.ORGNR -> AvsenderMottakerIdType.ORGNR
+                        AvsenderMottakerDtoIdType.UTENLANDSK_ORGNR -> AvsenderMottakerIdType.UTL_ORG
+                        else -> AvsenderMottakerIdType.FNR
+                    }
+                },
+            )
+        }
 
     private fun hentDokument(journalpostId: Long, dokumentId: String): ByteArray = dokumentService.hentDokument(journalpostId, dokumentId).body!!
 }

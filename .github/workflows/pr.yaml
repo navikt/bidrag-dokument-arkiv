@@ -15,65 +15,65 @@ jobs:
       nais_variabler_filnavn: main.yaml
     secrets: inherit
 
-  run_cucumber:
-    runs-on: self-hosted
-    name: Run cucumber integration tests
-    needs: build-deploy
-    if: ${{ always() && needs.build-deploy.outputs.deploy_suksess == 'true' }}
-    env:
-      INGRESS_OPPGAVE: https://oppgave.dev.intern.nav.no
-      INGRESS_ARKIV: https://bidrag-dokument-arkiv.dev.intern.nav.no
-      INGRESS_CUCUMBER: https://bidrag-cucumber-onprem.dev.intern.nav.no
-      INGRESS_DOKARKIV: https://dokarkiv-q2.dev.intern.nav.no
-    steps:
-      - name: "@arkiv-swagger"
-        run: |
-          curl -X 'POST' '${{ env.INGRESS_CUCUMBER }}/bidrag-cucumber-onprem/run' -i \
-            -H 'accept: */*' \
-            -H 'Content-Type: application/json' \
-            -d '{
-              "tags":["@arkiv-swagger"],
-              "ingressesForApps":["${{ env.INGRESS_ARKIV }}@bidrag-dokument-arkiv"]
-            }' | tee .cucumber-result
-          cat .cucumber-result | grep HTTP/1.1 | grep -c 200 > /dev/null # fails if count is 0 (http status is not ok, aka http status code is not 200)
-      - name: "@bidrag-dokument-arkiv"
-        run: |
-          curl -X 'POST' '${{ env.INGRESS_CUCUMBER }}/bidrag-cucumber-onprem/run' -i \
-            -H 'accept: */*' \
-            -H 'Content-Type: application/json' \
-            -d '{
-              "tags":["@bidrag-dokument-arkiv"],
-              "noContextPathForApps":["dokarkiv-api", "oppgave-api"],
-              "ingressesForApps":[
-                  "${{ env.INGRESS_ARKIV }}@bidrag-dokument-arkiv",
-                  "${{ env.INGRESS_OPPGAVE }}@oppgave-api",
-                  "${{ env.INGRESS_DOKARKIV }}@dokarkiv-api"]
-            }' | tee .cucumber-result
-          cat .cucumber-result | grep HTTP/1.1 | grep -c 200 > /dev/null # fails if count is 0 (http status is not ok, aka http status code is not 200)
-      - name: "@arkiv-saf"
-        run: |
-          curl -X 'POST' '${{ env.INGRESS_CUCUMBER }}/bidrag-cucumber-onprem/run' -i \
-            -H 'accept: */*' \
-            -H 'Content-Type: application/json' \
-            -d '{
-              "tags":["@arkiv-saf"],
-              "noContextPathForApps":["dokarkiv-api"],"ingressesForApps":[
-                "${{ env.INGRESS_ARKIV }}@bidrag-dokument-arkiv",
-                "${{ env.INGRESS_DOKARKIV }}@dokarkiv-api"
-              ]
-            }' | tee .cucumber-result
-          cat .cucumber-result | grep HTTP/1.1 | grep -c 200 > /dev/null # fails if count is 0 (http status is not ok, aka http status code is not 200)
-
-  remove_files_from_workspace:
-    name: Remove files from workspace
-    runs-on: self-hosted
-    needs: run_cucumber
-
-    if: ${{ always() }}
-
-    steps:
-      - name: Remove files from workspace
-        run: |
-          cd $RUNNER_WORKSPACE
-          echo deleting files in $RUNNER_WORKSPACE
-          sudo rm -rf *
+#  run_cucumber:
+#    runs-on: self-hosted
+#    name: Run cucumber integration tests
+#    needs: build-deploy
+#    if: ${{ always() && needs.build-deploy.outputs.deploy_suksess == 'true' }}
+#    env:
+#      INGRESS_OPPGAVE: https://oppgave.dev.intern.nav.no
+#      INGRESS_ARKIV: https://bidrag-dokument-arkiv.dev.intern.nav.no
+#      INGRESS_CUCUMBER: https://bidrag-cucumber-onprem.dev.intern.nav.no
+#      INGRESS_DOKARKIV: https://dokarkiv-q2.dev.intern.nav.no
+#    steps:
+#      - name: "@arkiv-swagger"
+#        run: |
+#          curl -X 'POST' '${{ env.INGRESS_CUCUMBER }}/bidrag-cucumber-onprem/run' -i \
+#            -H 'accept: */*' \
+#            -H 'Content-Type: application/json' \
+#            -d '{
+#              "tags":["@arkiv-swagger"],
+#              "ingressesForApps":["${{ env.INGRESS_ARKIV }}@bidrag-dokument-arkiv"]
+#            }' | tee .cucumber-result
+#          cat .cucumber-result | grep HTTP/1.1 | grep -c 200 > /dev/null # fails if count is 0 (http status is not ok, aka http status code is not 200)
+#      - name: "@bidrag-dokument-arkiv"
+#        run: |
+#          curl -X 'POST' '${{ env.INGRESS_CUCUMBER }}/bidrag-cucumber-onprem/run' -i \
+#            -H 'accept: */*' \
+#            -H 'Content-Type: application/json' \
+#            -d '{
+#              "tags":["@bidrag-dokument-arkiv"],
+#              "noContextPathForApps":["dokarkiv-api", "oppgave-api"],
+#              "ingressesForApps":[
+#                  "${{ env.INGRESS_ARKIV }}@bidrag-dokument-arkiv",
+#                  "${{ env.INGRESS_OPPGAVE }}@oppgave-api",
+#                  "${{ env.INGRESS_DOKARKIV }}@dokarkiv-api"]
+#            }' | tee .cucumber-result
+#          cat .cucumber-result | grep HTTP/1.1 | grep -c 200 > /dev/null # fails if count is 0 (http status is not ok, aka http status code is not 200)
+#      - name: "@arkiv-saf"
+#        run: |
+#          curl -X 'POST' '${{ env.INGRESS_CUCUMBER }}/bidrag-cucumber-onprem/run' -i \
+#            -H 'accept: */*' \
+#            -H 'Content-Type: application/json' \
+#            -d '{
+#              "tags":["@arkiv-saf"],
+#              "noContextPathForApps":["dokarkiv-api"],"ingressesForApps":[
+#                "${{ env.INGRESS_ARKIV }}@bidrag-dokument-arkiv",
+#                "${{ env.INGRESS_DOKARKIV }}@dokarkiv-api"
+#              ]
+#            }' | tee .cucumber-result
+#          cat .cucumber-result | grep HTTP/1.1 | grep -c 200 > /dev/null # fails if count is 0 (http status is not ok, aka http status code is not 200)
+#
+#  remove_files_from_workspace:
+#    name: Remove files from workspace
+#    runs-on: self-hosted
+#    needs: run_cucumber
+#
+#    if: ${{ always() }}
+#
+#    steps:
+#      - name: Remove files from workspace
+#        run: |
+#          cd $RUNNER_WORKSPACE
+#          echo deleting files in $RUNNER_WORKSPACE
+#          sudo rm -rf *

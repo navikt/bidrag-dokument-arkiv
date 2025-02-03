@@ -22,7 +22,10 @@ class JournalpostService(
 
     fun hentJournalpostMedTilknyttedeSaker(journalpostId: Long): Journalpost? = hentJournalpost(journalpostId)?.let { populerMedTilknyttedeSaker(it) }
 
-    fun hentJournalpostMedFnrOgTilknyttedeSaker(journalpostId: Long, saksnummer: String?): Optional<Journalpost> = hentJournalpostMedFnr(journalpostId, saksnummer)?.let {
+    fun hentJournalpostMedFnrOgTilknyttedeSaker(journalpostId: Long, saksnummer: String?): Optional<Journalpost> = hentJournalpostMedFnr(
+        journalpostId,
+        saksnummer,
+    )?.let {
         Optional.ofNullable(
             populerMedTilknyttedeSaker(it),
         )
@@ -57,7 +60,9 @@ class JournalpostService(
         return dokumentInfoId?.let { finnTilknyttedeJournalposter(it) } ?: emptyList()
     }
 
-    fun finnTilknyttedeJournalposter(dokumentreferanse: String): List<TilknyttetJournalpost> = safConsumer.finnTilknyttedeJournalposter(dokumentreferanse)
+    fun finnTilknyttedeJournalposter(dokumentreferanse: String): List<TilknyttetJournalpost> = safConsumer.finnTilknyttedeJournalposter(
+        dokumentreferanse,
+    )
 
     fun populerMedTilknyttedeSaker(journalpost: Journalpost): Journalpost {
         val journalpostFagsakId = if (journalpost.sak != null) journalpost.sak!!.fagsakId else ""
@@ -76,9 +81,14 @@ class JournalpostService(
         return journalpost
     }
 
-    fun hentJournalpostMedFnr(journalpostId: Long, saksummer: String?): Journalpost? = hentJournalpost(journalpostId, saksummer)?.let { konverterAktoerIdTilFnr(it) }
+    fun hentJournalpostMedFnr(journalpostId: Long, saksummer: String?): Journalpost? = hentJournalpost(journalpostId, saksummer)?.let {
+        konverterAktoerIdTilFnr(it)
+    }
 
-    fun finnJournalposterForSaksnummer(saksnummer: String, fagomrade: List<String> = emptyList()): List<Journalpost> = safConsumer.finnJournalposter(saksnummer, fagomrade)
+    fun finnJournalposterForSaksnummer(saksnummer: String, fagomrade: List<String> = emptyList()): List<Journalpost> = safConsumer.finnJournalposter(
+        saksnummer,
+        fagomrade,
+    )
 
     fun hentDistribusjonsInfo(journalpostId: Long): DistribusjonsInfo = safConsumer.hentDistribusjonInfo(journalpostId)
 

@@ -128,7 +128,8 @@ data class DistribuerJournalpostRequestInternal(var request: DistribuerJournalpo
 }
 
 data class DokDistDistribuerJournalpostResponse(var bestillingsId: String) {
-    fun toDistribuerJournalpostResponse(journalpostId: Long): DistribuerJournalpostResponse = DistribuerJournalpostResponse("JOARK-$journalpostId", bestillingsId)
+    fun toDistribuerJournalpostResponse(journalpostId: Long): DistribuerJournalpostResponse =
+        DistribuerJournalpostResponse("JOARK-$journalpostId", bestillingsId)
 }
 
 fun validerKanDistribueres(journalpost: Journalpost?) {

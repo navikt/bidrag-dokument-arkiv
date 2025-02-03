@@ -25,7 +25,9 @@ data class OppdaterDistribusjonsInfoRequest(
     val utsendingsKanal: JournalpostUtsendingKanal,
 )
 
-data class OpprettNyReturLoggRequest(private var journalpost: Journalpost, private val kommentar: String? = null) : OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {
+data class OpprettNyReturLoggRequest(private var journalpost: Journalpost, private val kommentar: String? = null) : OppdaterJournalpostRequest(
+    journalpostId = journalpost.hentJournalpostIdLong(),
+) {
     init {
         val dateNow = LocalDate.now()
         val returDetaljerLogDO = journalpost.tilleggsopplysninger.hentReturDetaljerLogDO()
@@ -44,7 +46,9 @@ data class OpprettNyReturLoggRequest(private var journalpost: Journalpost, priva
     }
 }
 
-data class LagreReturDetaljForSisteReturRequest(private var journalpost: Journalpost) : OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {
+data class LagreReturDetaljForSisteReturRequest(private var journalpost: Journalpost) : OppdaterJournalpostRequest(
+    journalpostId = journalpost.hentJournalpostIdLong(),
+) {
     init {
         journalpost.tilleggsopplysninger.addReturDetaljLog(
             ReturDetaljerLogDO(
@@ -65,7 +69,9 @@ data class LagreAvsenderNavnRequest(
     }
 }
 
-data class LockReturDetaljerRequest(private var journalpost: Journalpost) : OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {
+data class LockReturDetaljerRequest(private var journalpost: Journalpost) : OppdaterJournalpostRequest(
+    journalpostId = journalpost.hentJournalpostIdLong(),
+) {
     init {
         val updatedTillegsopplysninger = TilleggsOpplysninger()
         updatedTillegsopplysninger.addAll(journalpost.tilleggsopplysninger)
