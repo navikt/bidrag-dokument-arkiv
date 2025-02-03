@@ -20,10 +20,25 @@ class InnsendingService(private val innsendingConsumer: InnsendingConsumer) {
         val gjelder = journalpost.hentGjelderId()
 
         val ettersendingsoppgave = journalpost.ettersendingsoppgave() ?: return null
-        val ettersendingsoppgaver = innsendingConsumer.hentEttersendingsoppgave(
-            HentEtterseningsoppgaveRequest(gjelder!!, ettersendingsoppgave.skjemaId),
+        val ettersendingsoppgaver = hentEttersendingsoppgaver(
+            gjelder!!,
+            ettersendingsoppgave.skjemaId,
         )
         return ettersendingsoppgaver.find { it.innsendingsId == ettersendingsoppgave.innsendingsId }
+    }
+
+    fun hentEttersendingsoppgaver(gjelderId: String, skjemaId: String): List<DokumentSoknadDto> {
+        try {
+            return innsendingConsumer.hentEttersendingsoppgave(
+                HentEtterseningsoppgaveRequest(
+                    gjelderId,
+                    skjemaId,
+                ),
+            )
+        } catch (e: Exception) {
+            LOGGER.error("Feil ved henting av ettersendingsoppgaver", e)
+            return emptyList()
+        }
     }
 
     fun hentEttersendingsoppgaverOpprettetEtterJournalpost(
@@ -33,11 +48,9 @@ class InnsendingService(private val innsendingConsumer: InnsendingConsumer) {
         try {
             val gjelder = journalpost.hentGjelderId()
 
-            val eksisterendeOppgaver = innsendingConsumer.hentEttersendingsoppgave(
-                HentEtterseningsoppgaveRequest(
-                    gjelder!!,
-                    ettersending.skjemaId,
-                ),
+            val eksisterendeOppgaver = hentEttersendingsoppgaver(
+                gjelder!!,
+                ettersending.skjemaId,
             )
             return eksisterendeOppgaver.filter { it.opprettetDato.toLocalDate() >= journalpost.hentDatoJournalfort() }
         } catch (e: Exception) {

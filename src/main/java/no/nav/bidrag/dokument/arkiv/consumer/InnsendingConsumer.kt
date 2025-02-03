@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
+import org.springframework.retry.annotation.Backoff
+import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpStatusCodeException
 import org.springframework.web.client.RestOperations
@@ -39,6 +41,7 @@ class InnsendingConsumer(
         }
     }
 
+    @Retryable(maxAttempts = 3, backoff = Backoff(delay = 500, maxDelay = 1500, multiplier = 2.0))
     fun hentEttersendingsoppgave(oppgave: HentEtterseningsoppgaveRequest): List<DokumentSoknadDto> {
         try {
             return executeMedMetrics(createUri()) {
