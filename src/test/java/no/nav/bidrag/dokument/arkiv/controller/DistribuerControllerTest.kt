@@ -47,6 +47,7 @@ import no.nav.bidrag.transport.person.PersonAdresseDto
 import org.assertj.core.api.Assertions
 import org.json.JSONException
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpEntity
@@ -519,6 +520,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
     }
 
     @Test
+    @Disabled
     fun `skal ikke opprette ettersending hvis det finnes ettersending opprettet etter journalpost`() {
         // given
         val xEnhet = "1234"

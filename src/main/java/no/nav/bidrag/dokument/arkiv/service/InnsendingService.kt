@@ -85,7 +85,7 @@ class InnsendingService(private val innsendingConsumer: InnsendingConsumer) {
             LOGGER.warn(
                 "Det finnes allerede ${eksisterendeOppgaver.size} ettersendingsoppgaver på journalpost ${journalpost.journalpostId} for skjema ${ettersending.skjemaId}. Oppretter ikke på nytt",
             )
-            return eksisterendeOppgaver.maxBy { it.opprettetDato }
+//            return eksisterendeOppgaver.maxBy { it.opprettetDato }
         }
 
         LOGGER.info("Oppretter og lagrer ettersendingsoppgave for journalpost ${journalpost.journalpostId}")
