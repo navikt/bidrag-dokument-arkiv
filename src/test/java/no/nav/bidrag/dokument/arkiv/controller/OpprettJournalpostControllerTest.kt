@@ -127,7 +127,7 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
                     "\"eksternReferanseId\":\"$REFID\"," +
                     "\"tilleggsopplysninger\":[" +
                     "{\"nokkel\":\"ettOppgave0\",\"verdi\":\"{\\\"tittel\\\":\\\"Tittel\\\",\\\"skjemaId\\\":\\\"NAV 10-07.17\\\",\\\"språk\\\":\\\"NB\\\",\\\"innsendingsFristDager\\\":27,\\\"vedleggsliste\\\"\"}," +
-                    "{\"nokkel\":\"ettOppgave1\",\"verdi\":\":[{\\\"tittel\\\":\\\"Vedlegg 1\\\",\\\"vedleggsnr\\\":\\\"NAV 10-07.17\\\"}]}\"}]," +
+                    "{\"nokkel\":\"ettOppgave1\",\"verdi\":\":[{\\\"tittel\\\":\\\"Vedlegg 1\\\",\\\"url\\\":null,\\\"vedleggsnr\\\":\\\"NAV 10-07.17\\\"}]}\"}]," +
                     "\"tema\":\"BID\"," +
                     "\"kanal\":\"NAV_NO\"," +
                     "\"datoMottatt\":\"$DATO_MOTTATT\"," +

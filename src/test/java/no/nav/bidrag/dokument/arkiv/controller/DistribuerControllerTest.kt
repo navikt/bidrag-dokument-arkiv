@@ -430,13 +430,13 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             response.body?.ettersendingsoppgave?.innsendingsId shouldBe "213213"
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
-                "{\"tilleggsopplysninger\":[" +
-                    "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
+                "{\"tilleggsopplysninger\":[{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
                     "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
                     "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
                     "{\"nokkel\":\"ettOppgave0\",\"verdi\":\"{\\\"tittel\\\":\\\"Tittel dokument\\\",\\\"skjemaId\\\":\\\"NAV 123\\\",\\\"språk\\\":\\\"nb\\\",\\\"innsendingsId\\\":\\\"213213\\\",\\\"innsendingsF\"}," +
-                    "{\"nokkel\":\"ettOppgave1\",\"verdi\":\"ristDager\\\":27,\\\"fristDato\\\":\\\"2022-01-01\\\",\\\"slettesDato\\\":\\\"2022-01-01\\\",\\\"vedleggsliste\\\":[{\\\"tittel\\\":\\\"Tittel\"},{\"nokkel\":\"ettOppgave2\",\"verdi\":\" vedlegg 1\\\",\\\"vedleggsnr\\\":\\\"1231\\\"}," +
-                    "{\\\"tittel\\\":\\\"Tittel vedlegg 2\\\",\\\"vedleggsnr\\\":\\\"1231\\\"}]}\"}],\"dokumenter\":[]}",
+                    "{\"nokkel\":\"ettOppgave1\",\"verdi\":\"ristDager\\\":27,\\\"fristDato\\\":\\\"2022-01-01\\\",\\\"slettesDato\\\":\\\"2022-01-01\\\",\\\"vedleggsliste\\\":[{\\\"tittel\\\":\\\"Tittel\"}," +
+                    "{\"nokkel\":\"ettOppgave2\",\"verdi\":\" vedlegg 1\\\",\\\"url\\\":null,\\\"vedleggsnr\\\":\\\"1231\\\"},{\\\"tittel\\\":\\\"Tittel vedlegg 2\\\",\\\"url\\\":null,\\\"vedleggsnr\\\":\\\"12\"}," +
+                    "{\"nokkel\":\"ettOppgave3\",\"verdi\":\"31\\\"}]}\"}],\"dokumenter\":[]}",
             )
         }
     }
