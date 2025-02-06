@@ -20,6 +20,7 @@ fun OpprettEttersendingsppgaveDto.toTilleggsopplysning() = EttersendingsoppgaveD
     vedleggsliste = vedleggsliste.map {
         EttersendingsoppgaveDo.EttersendingsoppgaveVedleggDo(
             vedleggsnr = it.vedleggsnr,
+            url = it.url,
             tittel = it.tittel,
         )
     },
@@ -60,6 +61,7 @@ fun DokumentSoknadDto.tilTilleggsopplysning() = EttersendingsoppgaveDo(
     vedleggsliste = vedleggsListe.map {
         EttersendingsoppgaveDo.EttersendingsoppgaveVedleggDo(
             vedleggsnr = it.vedleggsnr!!,
+            url = it.skjemaurl,
             tittel = it.tittel,
         )
     },

@@ -5,6 +5,7 @@ import io.kotest.matchers.shouldBe
 import no.nav.bidrag.commons.web.EnhetFilter
 import no.nav.bidrag.dokument.arkiv.consumer.BestemKanalResponse
 import no.nav.bidrag.dokument.arkiv.consumer.DistribusjonsKanal
+import no.nav.bidrag.dokument.arkiv.consumer.dto.VedleggDto
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker
 import no.nav.bidrag.dokument.arkiv.dto.DOKDIST_BESTILLING_ID
 import no.nav.bidrag.dokument.arkiv.dto.DatoType
@@ -195,7 +196,24 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                 "verdi" to "asdsadasdsadasdasd",
             ),
         )
-        stubs.mockInnsendingApi(opprettDokumentSoknadDto().copy(fristForEttersendelse = 27))
+        stubs.mockInnsendingApi(
+            opprettDokumentSoknadDto().copy(
+                fristForEttersendelse = 27,
+                vedleggsListe = listOf(
+                    VedleggDto(
+                        tittel = "Tittel vedlegg 1",
+                        vedleggsnr = "1231",
+                        skjemaurl = "http://localhost:8080/vedlegg/1",
+                        opprettetdato = OffsetDateTime.of(LocalDateTime.of(2022, 1, 1, 1, 1, 1), ZoneOffset.UTC),
+                    ),
+                    VedleggDto(
+                        tittel = "Tittel vedlegg 2",
+                        vedleggsnr = "1231",
+                        opprettetdato = OffsetDateTime.of(LocalDateTime.of(2022, 1, 1, 1, 1, 1), ZoneOffset.UTC),
+                    ),
+                ),
+            ),
+        )
         stubs.mockHentInnsendingApi(
             listOf(
                 opprettDokumentSoknadDto().copy(
@@ -258,6 +276,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                 vedleggsliste = listOf(
                     OpprettEttersendingsoppgaveVedleggDto(
                         tittel = "Vedlegg 1",
+                        url = "http://localhost:8080/vedlegg/1",
                         vedleggsnr = "NAV 10-07.17",
                     ),
                 ),
@@ -305,13 +324,15 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
-                "{\"tilleggsopplysninger\":[" +
-                    "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
-                    "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
-                    "{\"nokkel\":\"ettOppgave0\",\"verdi\":\"{\\\"tittel\\\":\\\"Tittel dokument\\\",\\\"skjemaId\\\":\\\"NAV 123\\\",\\\"språk\\\":\\\"nb\\\",\\\"innsendingsId\\\":\\\"213213\\\",\\\"innsendingsF\"},{\"nokkel\":\"ettOppgave1\",\"verdi\":\"ristDager\\\":27,\\\"fristDato\\\":\\\"2022-01-01\\\",\\\"slettesDato\\\":\\\"2022-01-01\\\",\\\"vedleggsliste\\\":[{\\\"tittel\\\":\\\"Tittel\"},{\"nokkel\":\"ettOppgave2\",\"verdi\":\" vedlegg 1\\\",\\\"vedleggsnr\\\":\\\"1231\\\"},{\\\"tittel\\\":\\\"Tittel vedlegg 2\\\",\\\"vedleggsnr\\\":\\\"1231\\\"}]}\"}," +
+                "{\"tilleggsopplysninger\":[{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
+                    "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"ettOppgave0\",\"verdi\":\"{\\\"tittel\\\":\\\"Tittel dokument\\\",\\\"skjemaId\\\":\\\"NAV 123\\\",\\\"språk\\\":\\\"nb\\\",\\\"innsendingsId\\\":\\\"213213\\\",\\\"innsendingsF\"}," +
+                    "{\"nokkel\":\"ettOppgave1\",\"verdi\":\"ristDager\\\":27,\\\"fristDato\\\":\\\"2022-01-01\\\",\\\"slettesDato\\\":\\\"2022-01-01\\\",\\\"vedleggsliste\\\":[{\\\"tittel\\\":\\\"Tittel\"}," +
+                    "{\"nokkel\":\"ettOppgave2\",\"verdi\":\" vedlegg 1\\\",\\\"url\\\":\\\"http://localhost:8080/vedlegg/1\\\",\\\"vedleggsnr\\\":\\\"1231\\\"},{\\\"tittel\\\":\\\"Tittel vedlegg 2\"}," +
+                    "{\"nokkel\":\"ettOppgave3\",\"verdi\":\"\\\",\\\"url\\\":null,\\\"vedleggsnr\\\":\\\"1231\\\"}]}\"}," +
                     "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
                     "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
-                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}",
+                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
+                    "{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}",
             )
         }
     }
