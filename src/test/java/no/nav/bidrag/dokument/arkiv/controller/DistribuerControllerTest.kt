@@ -317,10 +317,12 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             response.body?.ettersendingsoppgave?.innsendingsId shouldBe "213213"
             stubs.verifyStub.opprettEttersendingKalt(
                 1,
-                "{\"brukerId\":\"12345678910\"," +
-                    "\"skjemanr\":\"NAV 10-07.17\",\"sprak\":\"nb_NO\",\"tema\":\"BID\"," +
-                    "\"vedleggsListe\":[{\"vedleggsnr\":\"NAV 10-07.17\",\"tittel\":\"Vedlegg 1\",\"url\":null,\"opplastingsValgKommentarLedetekst\":null,\"opplastingsValgKommentar\":null}]," +
-                    "\"tittel\":\"Tittel\",\"brukernotifikasjonstype\":\"oppgave\",\"koblesTilEksisterendeSoknad\":true,\"innsendingsFristDager\":27,\"mellomlagringDager\":null}",
+                "{\"brukerId\":\"12345678910\",\"skjemanr\":\"NAV 10-07.17\",\"sprak\":\"nb_NO\"," +
+                    "\"tema\":\"BID\",\"vedleggsListe\":[" +
+                    "{\"vedleggsnr\":\"NAV 10-07.17\",\"tittel\":\"Vedlegg 1\",\"url\":\"http://localhost:8080/vedlegg/1\",\"opplastingsValgKommentarLedetekst\":null,\"opplastingsValgKommentar\":null}" +
+                    "]," +
+                    "\"tittel\":\"Tittel\"," +
+                    "\"brukernotifikasjonstype\":\"oppgave\",\"koblesTilEksisterendeSoknad\":true,\"innsendingsFristDager\":27,\"mellomlagringDager\":null}",
             )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
