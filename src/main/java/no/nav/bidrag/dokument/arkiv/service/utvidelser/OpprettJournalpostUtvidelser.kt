@@ -45,6 +45,7 @@ fun OpprettEttersendingsppgaveDto.tilRequest(journalpost: Journalpost) = Ekstern
     vedleggsliste.map {
         InnsendtVedleggDto(
             vedleggsnr = it.vedleggsnr,
+            url = it.url,
             tittel = it.tittel,
         )
     },
