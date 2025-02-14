@@ -2,7 +2,7 @@
 
 mkdir src/test/resources/kafka
 cd src/test/resources/kafka
-SECRET_NAME=aiven-bidrag-dokument-arkiv-4334638c-2023-35
+SECRET_NAME=aiven-bidrag-dokument-arkiv-4334638c-2024-40
 kubectl get secret $SECRET_NAME -o 'go-template={{index .data "client.keystore.p12" | base64decode}}' > client.keystore.p12
 kubectl get secret $SECRET_NAME -o 'go-template={{index .data "client.truststore.jks" | base64decode}}' > client.truststore.jks
 kubectl get secret $SECRET_NAME -o 'go-template={{index .data "KAFKA_PRIVATE_KEY"}}' > kafka-private-key.pem

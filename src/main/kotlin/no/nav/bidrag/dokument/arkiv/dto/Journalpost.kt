@@ -8,12 +8,14 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import mu.KotlinLogging
 import no.nav.bidrag.dokument.arkiv.SECURE_LOGGER
+import no.nav.bidrag.dokument.arkiv.consumer.dto.DokumentSoknadDto
 import no.nav.bidrag.dokument.arkiv.model.JournalpostDataException
 import no.nav.bidrag.dokument.arkiv.model.ViolationException
 import no.nav.bidrag.dokument.arkiv.model.runCatchingIgnoreException
 import no.nav.bidrag.dokument.arkiv.utils.DateUtils
 import no.nav.bidrag.dokument.arkiv.utils.JsonMapper.fromJsonString
 import no.nav.bidrag.dokument.arkiv.utils.JsonMapper.toJsonString
+import no.nav.bidrag.domene.enums.diverse.Språk
 import no.nav.bidrag.transport.dokument.AktorDto
 import no.nav.bidrag.transport.dokument.AvsenderMottakerDto
 import no.nav.bidrag.transport.dokument.AvsenderMottakerDtoIdType
@@ -23,6 +25,10 @@ import no.nav.bidrag.transport.dokument.DokumentArkivSystemDto
 import no.nav.bidrag.transport.dokument.DokumentDto
 import no.nav.bidrag.transport.dokument.DokumentStatusDto
 import no.nav.bidrag.transport.dokument.EndreJournalpostCommand
+import no.nav.bidrag.transport.dokument.EttersendingsoppgaveStatus
+import no.nav.bidrag.transport.dokument.EttersendingsoppgaveVedleggDto
+import no.nav.bidrag.transport.dokument.EttersendingsppgaveDto
+import no.nav.bidrag.transport.dokument.EttersingdsoppgaveOpplastingsStatus
 import no.nav.bidrag.transport.dokument.FARSKAP_UTELUKKET_PREFIKS
 import no.nav.bidrag.transport.dokument.IdentType
 import no.nav.bidrag.transport.dokument.JournalpostDto
@@ -31,6 +37,8 @@ import no.nav.bidrag.transport.dokument.JournalpostStatus
 import no.nav.bidrag.transport.dokument.Kanal
 import no.nav.bidrag.transport.dokument.KodeDto
 import no.nav.bidrag.transport.dokument.MottakerAdresseTo
+import no.nav.bidrag.transport.dokument.OpprettEttersendingsoppgaveVedleggDto
+import no.nav.bidrag.transport.dokument.OpprettEttersendingsppgaveDto
 import no.nav.bidrag.transport.dokument.ReturDetaljer
 import no.nav.bidrag.transport.dokument.ReturDetaljerLog
 import no.nav.bidrag.transport.dokument.isNumeric
@@ -44,6 +52,7 @@ private val LOGGER = KotlinLogging.logger {}
 // Max key length is 20
 const val RETUR_DETALJER_KEY = "retur"
 const val DISTRIBUERT_ADRESSE_KEY = "distAdresse"
+const val ETTERSENDINGSOPPGAVE_KEY = "ettOppgave"
 const val DISTRIBUERT_AV_IDENT_KEY = "distribuertAvIdent"
 const val DOKDIST_BESTILLING_ID = "dokdistBestillingsId"
 const val SAMHANDLER_ID_KEY = "samhandlerId"
@@ -186,6 +195,7 @@ data class Journalpost(
 ) {
 
     fun distribuertTilAdresse(): DistribuerTilAdresse? = parseFysiskPostadrese() ?: tilleggsopplysninger.hentAdresseDo()?.toDistribuerTilAdresse()
+    fun ettersendingsoppgave(): EttersendingsppgaveDto? = tilleggsopplysninger.hentInnsendingsoppgave()?.toEttersendingsoppgaveDto()
 
     fun mottakerAdresse(): MottakerAdresseTo? = distribuertTilAdresse()?.let {
         MottakerAdresseTo(
@@ -434,7 +444,7 @@ data class Journalpost(
 
     fun hentHoveddokument(): Dokument? = if (dokumenter.isNotEmpty()) dokumenter[0] else null
     fun hentTittel(): String? = hentHoveddokument()?.tittel ?: tittel
-    fun tilJournalpostDto(): JournalpostDto {
+    fun tilJournalpostDto(ettersendingsOppgave: DokumentSoknadDto? = null): JournalpostDto {
         val erSamhandlerId = tilleggsopplysninger.hentSamhandlerId() != null
         @Suppress("UNCHECKED_CAST")
         return JournalpostDto(
@@ -479,6 +489,7 @@ data class Journalpost(
             returDetaljer = hentReturDetaljer(),
             brevkode = hentBrevkodeDto(),
             distribuertTilAdresse = distribuertTilAdresse(),
+            ettersendingsppgave = ettersendingsOppgave?.tilEttersendingsoppgaveDto() ?: ettersendingsoppgave(),
         )
     }
 
@@ -551,11 +562,14 @@ data class Journalpost(
 
     fun isSkanning(): Boolean = kanal == JournalpostKanal.SKAN_IM
 
-    fun erJournalførtSenereEnnEttÅrSiden() =
-        isStatusJournalfort() && hentDatoJournalfort() != null && hentDatoJournalfort()!!.isBefore(LocalDate.now().minusYears(1))
+    fun erJournalførtSenereEnnEttÅrSiden() = isStatusJournalfort() &&
+        hentDatoJournalfort() != null &&
+        hentDatoJournalfort()!!.isBefore(
+            LocalDate.now().minusYears(1),
+        )
 
-    fun tilJournalpostResponse(): JournalpostResponse {
-        val journalpost = tilJournalpostDto()
+    fun tilJournalpostResponse(ettersendingsOppgave: DokumentSoknadDto? = null): JournalpostResponse {
+        val journalpost = tilJournalpostDto(ettersendingsOppgave)
         val saksnummer = sak?.fagsakId
         val saksnummerList = if (saksnummer != null) mutableListOf(saksnummer) else mutableListOf()
         saksnummerList.addAll(tilknyttedeSaker)
@@ -632,6 +646,70 @@ enum class JournalpostUtsendingKanal {
     EESSI,
     TRYGDERETTEN,
     HELSENETTET,
+}
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class EttersendingsoppgaveDo(
+    val tittel: String,
+    val skjemaId: String,
+    val språk: String,
+    val innsendingsId: String? = null,
+    val innsendingsFristDager: Int,
+    val fristDato: LocalDate? = null,
+    val slettesDato: LocalDate? = null,
+    val opprettetDato: LocalDate? = null,
+    val vedleggsliste: List<EttersendingsoppgaveVedleggDo>,
+) {
+    private fun asJsonString(): String = toJsonString(this)
+    fun toMap(): List<Map<String, String>> = asJsonString().chunked(100).mapIndexed { index, it ->
+        mapOf(
+            "nokkel" to "$ETTERSENDINGSOPPGAVE_KEY$index",
+            "verdi" to it,
+        )
+    }
+
+    fun toOpprettEttersendingsoppgaveDto() = OpprettEttersendingsppgaveDto(
+        tittel = tittel,
+        skjemaId = skjemaId,
+        innsendingsFristDager = innsendingsFristDager,
+        språk = when (språk) {
+            "nb_NO" -> Språk.NB
+            "nn_NO" -> Språk.NN
+            "de_DE" -> Språk.DE
+            "en_GB" -> Språk.EN
+            "fr_FR" -> Språk.FR
+            else -> Språk.values().find { it.name.lowercase() == språk.lowercase() } ?: Språk.NB
+        },
+        vedleggsliste = vedleggsliste.map {
+            OpprettEttersendingsoppgaveVedleggDto(
+                tittel = it.tittel,
+                vedleggsnr = it.vedleggsnr,
+            )
+        },
+    )
+    fun toEttersendingsoppgaveDto() = EttersendingsppgaveDto(
+        tittel = tittel,
+        slettesDato = slettesDato,
+        fristDato = fristDato,
+        skjemaId = skjemaId,
+        språk = språk,
+        opprettetDato = opprettetDato,
+        innsendingsId = innsendingsId,
+        status = if (innsendingsId != null) EttersendingsoppgaveStatus.UKJENT else EttersendingsoppgaveStatus.IKKE_OPPRETTET,
+        vedleggsliste = vedleggsliste.map {
+            EttersendingsoppgaveVedleggDto(
+                tittel = it.tittel,
+                vedleggsnr = it.vedleggsnr,
+            )
+        },
+    )
+
+    data class EttersendingsoppgaveVedleggDo(
+        val tittel: String? = null,
+        val url: String? = null,
+        val vedleggsnr: String,
+    )
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -764,6 +842,11 @@ class TilleggsOpplysninger : MutableList<Map<String, String>> by mutableListOf()
     fun isEndretTema(): Boolean = this.filter { it["nokkel"]?.contains(AVVIK_ENDRET_TEMA_KEY) ?: false }
         .any { it["verdi"] == "true" }
 
+    fun addInnsendingsOppgave(ettersendingsOppgave: EttersendingsoppgaveDo) {
+        this.removeAll { it["nokkel"]?.contains(ETTERSENDINGSOPPGAVE_KEY) ?: false }
+        this.addAll(ettersendingsOppgave.toMap())
+    }
+
     fun addMottakerAdresse(adresseDo: DistribuertTilAdresseDo) {
         this.removeAll { it["nokkel"]?.contains(DISTRIBUERT_ADRESSE_KEY) ?: false }
         this.addAll(adresseDo.toMap())
@@ -773,7 +856,20 @@ class TilleggsOpplysninger : MutableList<Map<String, String>> by mutableListOf()
         this.removeAll { it["nokkel"]?.contains(SAMHANDLER_ID_KEY) ?: false }
         this.add(mapOf("nokkel" to SAMHANDLER_ID_KEY, "verdi" to samhandlerId))
     }
+    fun hentInnsendingsoppgave(): EttersendingsoppgaveDo? {
+        // Key format (DISTRIBUERT_ADRESSE_KEY)(index)
+        val ettersendingsoppgaveMap =
+            this.filter { it["nokkel"]?.contains(ETTERSENDINGSOPPGAVE_KEY) ?: false }
+                .filter { Strings.isNotEmpty(it["verdi"]) }
+                .sortedBy { extractIndexFromKey(it["nokkel"]!!) }
 
+        if (ettersendingsoppgaveMap.isEmpty()) {
+            return null
+        }
+
+        val jsonString = ettersendingsoppgaveMap.map { it["verdi"] }.joinToString("")
+        return fromJsonString(jsonString)
+    }
     fun hentSamhandlerId(): String? = this.filter { it["nokkel"]?.contains(SAMHANDLER_ID_KEY) ?: false }
         .filter { Strings.isNotEmpty(it["verdi"]) }
         .map { it["verdi"] }
@@ -922,6 +1018,14 @@ data class DatoType(var dato: String? = null, var datotype: String? = null) {
                 "Kunne ikke trekke ut dato fra: $dato",
             )
         }
+    }
+
+    fun somDatoTidspunkt(): LocalDateTime = if (dato != null) {
+        LocalDateTime.parse(dato)
+    } else {
+        throw JournalpostDataException(
+            "Kunne ikke trekke ut dato fra: $dato",
+        )
     }
 }
 
@@ -1080,3 +1184,21 @@ enum class JournalpostType(var dekode: String) {
     I("Inngående dokument"),
     U("Utgående dokument"),
 }
+
+fun DokumentSoknadDto.tilEttersendingsoppgaveDto() = EttersendingsppgaveDto(
+    tittel = tittel,
+    skjemaId = skjemanr,
+    innsendingsId = innsendingsId,
+    språk = spraak ?: Språk.NB.name,
+    opprettetDato = opprettetDato.toLocalDate(),
+    fristDato = innsendingsFristDato?.toLocalDate(),
+    slettesDato = skalSlettesDato?.toLocalDate(),
+    vedleggsliste = vedleggsListe.map {
+        EttersendingsoppgaveVedleggDto(
+            tittel = it.tittel,
+            vedleggsnr = it.vedleggsnr ?: "",
+            status = EttersingdsoppgaveOpplastingsStatus.values().find { s -> s.name == it.opplastingsStatus.name } ?: EttersingdsoppgaveOpplastingsStatus.UKJENT,
+        )
+    },
+    status = EttersendingsoppgaveStatus.values().find { it.name == status.name } ?: EttersendingsoppgaveStatus.UKJENT,
+)

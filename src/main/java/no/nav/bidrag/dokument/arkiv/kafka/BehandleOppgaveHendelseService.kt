@@ -143,7 +143,6 @@ class BehandleOppgaveHendelseService(
         return if (journalpost.harReturKommetFraNavNo()) "Mottaker har ikke åpnet forsendelsen via www.nav.no innen 40 timer. Ingen postadresse er registrert. Vurder om mottaker har adresse forsendelsen kan sendes til." else null
     }
 
-    private fun opprettKommentarSomLeggesTilReturlogg(journalpost: Journalpost): String {
-        return if (journalpost.harReturKommetFraNavNo()) "Distribusjon feilet, mottaker mangler postadresse" else "Returpost"
-    }
+    private fun opprettKommentarSomLeggesTilReturlogg(journalpost: Journalpost): String =
+        if (journalpost.harReturKommetFraNavNo()) "Distribusjon feilet, mottaker mangler postadresse" else "Returpost"
 }

@@ -5,6 +5,7 @@ DOKARKIV_KNYTT_TIL_SAK_URL: http://dokarkiv
 ACCESS_TOKEN_URL: http://sts
 BIDRAG_PERSON_URL: http://person
 DOKDISTFORDELING_URL: http://dokdistfordeling
+INNSENDING_API_URL: http://dokdistfordeling
 BIDRAG_ORGANISASJON_URL: http://organisasjon
 BIDRAG_DOKUMENT_URL: http://organisasjon
 DOKDISTKANAL_URL: http://organisasjon

@@ -1,5 +1,8 @@
 package no.nav.bidrag.dokument.arkiv.stubs
 
+import no.nav.bidrag.dokument.arkiv.consumer.dto.DokumentSoknadDto
+import no.nav.bidrag.dokument.arkiv.consumer.dto.DokumentSoknadDto.Status
+import no.nav.bidrag.dokument.arkiv.consumer.dto.VedleggDto
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottaker
 import no.nav.bidrag.dokument.arkiv.dto.AvsenderMottakerIdType
 import no.nav.bidrag.dokument.arkiv.dto.Bruker
@@ -26,6 +29,8 @@ import no.nav.bidrag.transport.dokument.OpprettDokumentDto
 import no.nav.bidrag.transport.dokument.OpprettJournalpostRequest
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 val DOKUMENT_FIL = "JVBERi0xLjcgQmFzZTY0IGVuY29kZXQgZnlzaXNrIGRva3VtZW50"
 var X_ENHET_HEADER = "1234"
@@ -75,16 +80,14 @@ fun OppgaveHendelse.toOppgaveData(_versjon: Int? = null) = OppgaveData(
 
 )
 
-fun createDistribuerTilAdresse(): DistribuerTilAdresse {
-    return DistribuerTilAdresse(
-        adresselinje1 = "Adresselinje1",
-        adresselinje2 = null,
-        adresselinje3 = null,
-        land = "NO",
-        postnummer = "3000",
-        poststed = "Ingen",
-    )
-}
+fun createDistribuerTilAdresse(): DistribuerTilAdresse = DistribuerTilAdresse(
+    adresselinje1 = "Adresselinje1",
+    adresselinje2 = null,
+    adresselinje3 = null,
+    land = "NO",
+    postnummer = "3000",
+    poststed = "Ingen",
+)
 
 fun opprettUtgaendeDistribuertSafResponse(journalpostId: String = JOURNALPOST_ID.toString()): Journalpost {
     val tilleggsopplysninger = TilleggsOpplysninger()
@@ -98,15 +101,13 @@ fun opprettUtgaendeDistribuertSafResponse(journalpostId: String = JOURNALPOST_ID
     )
 }
 
-fun opprettUtgaendeSafResponseWithReturDetaljer(journalpostId: String = JOURNALPOST_ID.toString()): Journalpost {
-    return opprettSafResponse(
-        journalpostId = journalpostId,
-        tilleggsopplysninger = createTillegsopplysningerWithReturDetaljer(),
-        journalpostType = JournalpostType.U,
-        journalstatus = JournalStatus.FERDIGSTILT,
-        relevanteDatoer = listOf(DATO_DOKUMENT, DATO_RETUR),
-    )
-}
+fun opprettUtgaendeSafResponseWithReturDetaljer(journalpostId: String = JOURNALPOST_ID.toString()): Journalpost = opprettSafResponse(
+    journalpostId = journalpostId,
+    tilleggsopplysninger = createTillegsopplysningerWithReturDetaljer(),
+    journalpostType = JournalpostType.U,
+    journalstatus = JournalStatus.FERDIGSTILT,
+    relevanteDatoer = listOf(DATO_DOKUMENT, DATO_RETUR),
+)
 
 fun opprettUtgaendeSafResponse(
     journalpostId: String = JOURNALPOST_ID.toString(),
@@ -119,16 +120,14 @@ fun opprettUtgaendeSafResponse(
         ),
     ),
     tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger(),
-): Journalpost {
-    return opprettSafResponse(
-        journalpostId = journalpostId,
-        dokumenter = dokumenter,
-        relevanteDatoer = relevanteDatoer,
-        tilleggsopplysninger = tilleggsopplysninger,
-        journalpostType = JournalpostType.U,
-        journalstatus = JournalStatus.FERDIGSTILT,
-    )
-}
+): Journalpost = opprettSafResponse(
+    journalpostId = journalpostId,
+    dokumenter = dokumenter,
+    relevanteDatoer = relevanteDatoer,
+    tilleggsopplysninger = tilleggsopplysninger,
+    journalpostType = JournalpostType.U,
+    journalstatus = JournalStatus.FERDIGSTILT,
+)
 
 fun opprettSafResponse(
     journalpostId: String = JOURNALPOST_ID.toString(),
@@ -153,24 +152,22 @@ fun opprettSafResponse(
     sak: Sak? = Sak("5276661"),
     tilleggsopplysninger: TilleggsOpplysninger = TilleggsOpplysninger(),
     journalfortAvNavn: String? = null,
-): Journalpost {
-    return Journalpost(
-        kanal = JournalpostKanal.NAV_NO,
-        avsenderMottaker = avsenderMottaker,
-        bruker = bruker,
-        dokumenter = dokumenter,
-        journalforendeEnhet = journalforendeEnhet,
-        journalpostId = journalpostId,
-        journalposttype = journalpostType,
-        journalstatus = journalstatus,
-        relevanteDatoer = relevanteDatoer,
-        tema = tema,
-        tittel = tittel,
-        sak = sak,
-        tilleggsopplysninger = tilleggsopplysninger,
-        journalfortAvNavn = journalfortAvNavn,
-    )
-}
+): Journalpost = Journalpost(
+    kanal = JournalpostKanal.NAV_NO,
+    avsenderMottaker = avsenderMottaker,
+    bruker = bruker,
+    dokumenter = dokumenter,
+    journalforendeEnhet = journalforendeEnhet,
+    journalpostId = journalpostId,
+    journalposttype = journalpostType,
+    journalstatus = journalstatus,
+    relevanteDatoer = relevanteDatoer,
+    tema = tema,
+    tittel = tittel,
+    sak = sak,
+    tilleggsopplysninger = tilleggsopplysninger,
+    journalfortAvNavn = journalfortAvNavn,
+)
 
 fun opprettDokumentOversiktfagsakResponse(): List<Journalpost> {
     val tilleggsopplysningerEndretFagomrade = TilleggsOpplysninger()
@@ -235,13 +232,14 @@ fun opprettDokumentOversiktfagsakResponse(): List<Journalpost> {
     )
 }
 
-fun createOppgaveDataWithSaksnummer(saksnummer: String): OppgaveData {
-    return OppgaveData(saksreferanse = saksnummer, id = 2, versjon = 1, beskrivelse = "")
-}
+fun createOppgaveDataWithSaksnummer(saksnummer: String): OppgaveData = OppgaveData(saksreferanse = saksnummer, id = 2, versjon = 1, beskrivelse = "")
 
-fun createOppgaveDataWithJournalpostId(journalpostId: String): OppgaveData {
-    return OppgaveData(journalpostId = journalpostId, id = 2, versjon = 1, beskrivelse = "")
-}
+fun createOppgaveDataWithJournalpostId(journalpostId: String): OppgaveData = OppgaveData(
+    journalpostId = journalpostId,
+    id = 2,
+    versjon = 1,
+    beskrivelse = "",
+)
 
 fun createTillegsopplysningerWithReturDetaljer(): TilleggsOpplysninger {
     val tilleggsopplysninger = TilleggsOpplysninger()
@@ -281,58 +279,80 @@ val REFID = "REFID"
 val GJELDER_ID = "12345678910"
 val DATO_MOTTATT = LocalDateTime.parse("2022-11-29T16:00:00.00000")
 
-fun createJoarkOpprettJournalpostRequest(): JoarkOpprettJournalpostRequest {
-    return JoarkOpprettJournalpostRequest(
-        datoMottatt = DATO_MOTTATT.toString(),
-        dokumenter = listOf(
-            JoarkOpprettJournalpostRequest.Dokument(
-                tittel = TITTEL_HOVEDDOKUMENT,
-                dokumentvarianter = listOf(
-                    JoarkOpprettJournalpostRequest.DokumentVariant(
-                        fysiskDokument = "Innhold på dokumentet".toByteArray(),
-                    ),
-                ),
-            ),
-            JoarkOpprettJournalpostRequest.Dokument(
-                tittel = TITTEL_VEDLEGG1,
-                dokumentvarianter = listOf(
-                    JoarkOpprettJournalpostRequest.DokumentVariant(
-                        fysiskDokument = "Innhold på dokumentet vedlegg".toByteArray(),
-                    ),
+fun createJoarkOpprettJournalpostRequest(): JoarkOpprettJournalpostRequest = JoarkOpprettJournalpostRequest(
+    datoMottatt = DATO_MOTTATT.toString(),
+    dokumenter = listOf(
+        JoarkOpprettJournalpostRequest.Dokument(
+            tittel = TITTEL_HOVEDDOKUMENT,
+            dokumentvarianter = listOf(
+                JoarkOpprettJournalpostRequest.DokumentVariant(
+                    fysiskDokument = "Innhold på dokumentet".toByteArray(),
                 ),
             ),
         ),
-        journalpostType = JoarkJournalpostType.INNGAAENDE,
-        bruker = JoarkOpprettJournalpostRequest.OpprettJournalpostBruker(GJELDER_ID, idType = null),
-        avsenderMottaker = JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
-            GJELDER_ID,
+        JoarkOpprettJournalpostRequest.Dokument(
+            tittel = TITTEL_VEDLEGG1,
+            dokumentvarianter = listOf(
+                JoarkOpprettJournalpostRequest.DokumentVariant(
+                    fysiskDokument = "Innhold på dokumentet vedlegg".toByteArray(),
+                ),
+            ),
         ),
-        behandlingstema = BEHANDLINGSTEMA,
-        kanal = Kanal.NAV_NO.name,
-        tema = "BID",
-        eksternReferanseId = REFID,
-    )
-}
+    ),
+    journalpostType = JoarkJournalpostType.INNGAAENDE,
+    bruker = JoarkOpprettJournalpostRequest.OpprettJournalpostBruker(GJELDER_ID, idType = null),
+    avsenderMottaker = JoarkOpprettJournalpostRequest.OpprettJournalpostAvsenderMottaker(
+        GJELDER_ID,
+    ),
+    behandlingstema = BEHANDLINGSTEMA,
+    kanal = Kanal.NAV_NO.name,
+    tema = "BID",
+    eksternReferanseId = REFID,
+)
 
-fun createOpprettJournalpostRequest(): OpprettJournalpostRequest {
-    return OpprettJournalpostRequest(
-        skalFerdigstilles = false,
-        datoMottatt = DATO_MOTTATT,
-        dokumenter = listOf(
-            OpprettDokumentDto(
-                tittel = TITTEL_HOVEDDOKUMENT,
-                fysiskDokument = "Innhold på dokumentet".toByteArray(),
-            ),
-            OpprettDokumentDto(
-                tittel = TITTEL_VEDLEGG1,
-                fysiskDokument = "Innhold på dokumentet vedlegg".toByteArray(),
-            ),
+fun createOpprettJournalpostRequest(): OpprettJournalpostRequest = OpprettJournalpostRequest(
+    skalFerdigstilles = false,
+    datoMottatt = DATO_MOTTATT,
+    dokumenter = listOf(
+        OpprettDokumentDto(
+            tittel = TITTEL_HOVEDDOKUMENT,
+            fysiskDokument = "Innhold på dokumentet".toByteArray(),
         ),
-        journalposttype = no.nav.bidrag.transport.dokument.JournalpostType.INNGÅENDE,
-        gjelderIdent = GJELDER_ID,
-        avsenderMottaker = AvsenderMottakerDto(ident = GJELDER_ID),
-        behandlingstema = BEHANDLINGSTEMA,
-        kanal = MottakUtsendingKanal.DIGITALT,
-        referanseId = REFID,
-    )
-}
+        OpprettDokumentDto(
+            tittel = TITTEL_VEDLEGG1,
+            fysiskDokument = "Innhold på dokumentet vedlegg".toByteArray(),
+        ),
+    ),
+    journalposttype = no.nav.bidrag.transport.dokument.JournalpostType.INNGÅENDE,
+    gjelderIdent = GJELDER_ID,
+    avsenderMottaker = AvsenderMottakerDto(ident = GJELDER_ID),
+    behandlingstema = BEHANDLINGSTEMA,
+    kanal = MottakUtsendingKanal.DIGITALT,
+    referanseId = REFID,
+)
+
+fun opprettDokumentSoknadDto() = DokumentSoknadDto(
+    innsendingsId = "213213",
+    skjemanr = "NAV 123",
+    tema = "BID",
+    spraak = "nb",
+    fristForEttersendelse = 14,
+    skalSlettesDato = OffsetDateTime.of(LocalDateTime.of(2022, 1, 1, 1, 1, 1), ZoneOffset.UTC),
+    innsendingsFristDato = OffsetDateTime.of(LocalDateTime.of(2022, 1, 1, 1, 1, 1), ZoneOffset.UTC),
+    opprettetDato = OffsetDateTime.of(LocalDateTime.of(2022, 1, 1, 1, 1, 1), ZoneOffset.UTC),
+    vedleggsListe = listOf(
+        VedleggDto(
+            tittel = "Tittel vedlegg 1",
+            vedleggsnr = "1231",
+            opprettetdato = OffsetDateTime.of(LocalDateTime.of(2022, 1, 1, 1, 1, 1), ZoneOffset.UTC),
+        ),
+        VedleggDto(
+            tittel = "Tittel vedlegg 2",
+            vedleggsnr = "1231",
+            opprettetdato = OffsetDateTime.of(LocalDateTime.of(2022, 1, 1, 1, 1, 1), ZoneOffset.UTC),
+        ),
+    ),
+    tittel = "Tittel dokument",
+    brukerId = "13213",
+    status = Status.OPPRETTET,
+)

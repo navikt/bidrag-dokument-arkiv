@@ -58,9 +58,9 @@ class EndreJournalpostService(
         }
     }
 
-    fun lagreJournalpost(oppdaterJournalpostRequest: OppdaterJournalpostRequest): OppdaterJournalpostResponse {
-        return dokarkivConsumer.endre(oppdaterJournalpostRequest)
-    }
+    fun lagreJournalpost(oppdaterJournalpostRequest: OppdaterJournalpostRequest): OppdaterJournalpostResponse = dokarkivConsumer.endre(
+        oppdaterJournalpostRequest,
+    )
 
     private fun lagreJournalpost(journalpostId: Long, endreJournalpostCommand: EndreJournalpostCommandIntern, journalpost: Journalpost) {
         val oppdaterJournalpostRequest =

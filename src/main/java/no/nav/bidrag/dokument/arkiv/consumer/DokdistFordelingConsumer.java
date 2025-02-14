@@ -98,7 +98,7 @@ public class DokdistFordelingConsumer {
               e.getResponseBodyAsString(), DokDistDistribuerJournalpostResponse.class);
       return response.toDistribuerJournalpostResponse(journalpostId);
     } catch (Exception ex) {
-      return new DistribuerJournalpostResponse(journalpostId.toString(), null);
+      return new DistribuerJournalpostResponse(journalpostId.toString(), null, null);
     }
   }
 

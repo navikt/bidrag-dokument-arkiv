@@ -1,4 +1,4 @@
-SRV_BD_ARKIV_AUTH: changme
+SRV_BD_ARKIV_AUTH: changeme
 server.port: 8083
 KAFKA_GROUP_ID: bidrag-arkiv-consumer
 KAFKA_BROKERS: localhost:9092
@@ -19,3 +19,10 @@ spring:
       auto-offset-reset: latest
     listener:
       ackMode: RECORD
+
+---
+spring.config.activate.on-profile: q2
+
+INNSENDING_API_URL: https://innsending-api-gcp.intern.dev.nav.no
+INNSENDING_API_SCOPE: dev-gcp.team-soknad.innsending-api
+BIDRAG_DOKUMENT_URL: http://localhost:8099/bidrag-dokument

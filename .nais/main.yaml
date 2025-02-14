@@ -33,6 +33,8 @@ env:
   ORGANISASJON_SCOPE: dev-fss.bidrag.bidrag-organisasjon
   DOKDISTKANAL_URL: https://dokdistkanal.dev.intern.nav.no
   DOKDISTKANAL_SCOPE: dev-fss.teamdokumenthandtering.dokdistkanal
+  INNSENDING_API_URL: https://innsending-api-gcp.intern.dev.nav.no
+  INNSENDING_API_SCOPE: dev-gcp.team-soknad.innsending-api
   JAVA_OPTS: -Xmx2500m -Xms2500m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
 vault:
   kvPath: dev
