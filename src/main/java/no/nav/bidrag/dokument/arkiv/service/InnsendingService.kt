@@ -96,7 +96,9 @@ class InnsendingService(private val innsendingConsumer: InnsendingConsumer) {
         )
 
         LOGGER.info("Ettersendingsoppgave opprettet med innsendingsId=${oppgave.innsendingsId} for journalpost ${journalpost.journalpostId}")
-        SECURE_LOGGER.info("Ettersendingsoppgave opprettet med innsendingsId=${oppgave.innsendingsId} for journalpost ${journalpost.journalpostId}: $oppgave")
+        SECURE_LOGGER.info(
+            "Ettersendingsoppgave opprettet med innsendingsId=${oppgave.innsendingsId} for journalpost ${journalpost.journalpostId}: $oppgave",
+        )
         return oppgave
     }
 }
