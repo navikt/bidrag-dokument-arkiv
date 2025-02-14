@@ -83,7 +83,7 @@ class InnsendingService(private val innsendingConsumer: InnsendingConsumer) {
         val eksisterendeOppgaver = hentEttersendingsoppgaverOpprettetEtterJournalpost(journalpost, ettersending)
         if (eksisterendeOppgaver.isNotEmpty()) {
             LOGGER.warn(
-                "Det finnes allerede ${eksisterendeOppgaver.size} ettersendingsoppgaver på journalpost ${journalpost.journalpostId} for skjema ${ettersending.skjemaId}. Oppretter ikke på nytt",
+                "Det finnes allerede ${eksisterendeOppgaver.size} ettersendingsoppgaver på journalpost ${journalpost.journalpostId} for skjema ${ettersending.skjemaId}.",
             )
 //            return eksisterendeOppgaver.maxBy { it.opprettetDato }
         }
@@ -96,6 +96,7 @@ class InnsendingService(private val innsendingConsumer: InnsendingConsumer) {
         )
 
         LOGGER.info("Ettersendingsoppgave opprettet med innsendingsId=${oppgave.innsendingsId} for journalpost ${journalpost.journalpostId}")
+        SECURE_LOGGER.info("Ettersendingsoppgave opprettet med innsendingsId=${oppgave.innsendingsId} for journalpost ${journalpost.journalpostId}: $oppgave")
         return oppgave
     }
 }
