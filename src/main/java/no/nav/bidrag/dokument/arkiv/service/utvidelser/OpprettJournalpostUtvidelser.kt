@@ -40,7 +40,7 @@ fun OpprettEttersendingsppgaveDto.tilRequest(journalpost: Journalpost) = Ekstern
     tema = journalpost.tema!!,
     innsendingsFristDager = innsendingsFristDager,
     brukernotifikasjonstype = Brukernotifikasjonstype.oppgave,
-    koblesTilEksisterendeSoknad = true,
+    koblesTilEksisterendeSoknad = false,
     vedleggsListe =
     vedleggsliste.map {
         InnsendtVedleggDto(
