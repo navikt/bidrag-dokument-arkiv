@@ -322,7 +322,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                     "{\"vedleggsnr\":\"NAV 10-07.17\",\"tittel\":\"Vedlegg 1\",\"url\":\"http://localhost:8080/vedlegg/1\",\"opplastingsValgKommentarLedetekst\":null,\"opplastingsValgKommentar\":null}" +
                     "]," +
                     "\"tittel\":\"Tittel\"," +
-                    "\"brukernotifikasjonstype\":\"oppgave\",\"koblesTilEksisterendeSoknad\":true,\"innsendingsFristDager\":27,\"mellomlagringDager\":null}",
+                    "\"brukernotifikasjonstype\":\"oppgave\",\"koblesTilEksisterendeSoknad\":false,\"innsendingsFristDager\":27,\"mellomlagringDager\":null}",
             )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
