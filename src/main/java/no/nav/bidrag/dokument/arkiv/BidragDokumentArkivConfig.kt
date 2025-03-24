@@ -31,7 +31,6 @@ import no.nav.bidrag.dokument.arkiv.service.OppgaveService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.web.client.RootUriTemplateHandler
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
@@ -40,6 +39,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.client.observation.DefaultClientRequestObservationConvention
 import org.springframework.retry.annotation.EnableRetry
+import org.springframework.web.util.DefaultUriBuilderFactory
 
 @Configuration
 @EnableSecurityConfiguration
@@ -72,7 +72,7 @@ class BidragDokumentArkivConfig {
         environmentProperties: EnvironmentProperties,
     ): SafConsumer {
         httpHeaderRestTemplate.uriTemplateHandler =
-            RootUriTemplateHandler(environmentProperties.safUrl)
+            DefaultUriBuilderFactory(environmentProperties.safUrl)
         httpHeaderRestTemplate.addHeaderGenerator(
             HttpHeaders.CONTENT_TYPE,
         ) { MediaType.APPLICATION_JSON_VALUE }
@@ -86,7 +86,7 @@ class BidragDokumentArkivConfig {
         environmentProperties: EnvironmentProperties,
     ): OppgaveConsumer {
         httpHeaderRestTemplate.uriTemplateHandler =
-            RootUriTemplateHandler(environmentProperties.oppgaveUrl)
+            DefaultUriBuilderFactory(environmentProperties.oppgaveUrl)
         httpHeaderRestTemplate.addHeaderGenerator(
             HttpHeaders.CONTENT_TYPE,
         ) { MediaType.APPLICATION_JSON_VALUE }
@@ -101,7 +101,7 @@ class BidragDokumentArkivConfig {
         objectMapper: ObjectMapper?,
     ): DokarkivConsumer {
         httpHeaderRestTemplate.uriTemplateHandler =
-            RootUriTemplateHandler(environmentProperties.dokarkivUrl)
+            DefaultUriBuilderFactory(environmentProperties.dokarkivUrl)
         httpHeaderRestTemplate.addHeaderGenerator(
             HttpHeaders.CONTENT_TYPE,
         ) { MediaType.APPLICATION_JSON_VALUE }
@@ -117,7 +117,7 @@ class BidragDokumentArkivConfig {
         securityTokenService: SecurityTokenService,
     ): DokdistFordelingConsumer {
         httpHeaderRestTemplate.uriTemplateHandler =
-            RootUriTemplateHandler(environmentProperties.dokdistFordelingUrl)
+            DefaultUriBuilderFactory(environmentProperties.dokdistFordelingUrl)
         httpHeaderRestTemplate.addHeaderGenerator(
             HttpHeaders.CONTENT_TYPE,
         ) { MediaType.APPLICATION_JSON_VALUE }
@@ -136,7 +136,7 @@ class BidragDokumentArkivConfig {
         environmentProperties: EnvironmentProperties,
     ): PersonConsumer {
         httpHeaderRestTemplate.uriTemplateHandler =
-            RootUriTemplateHandler(environmentProperties.bidragPersonUrl + "/bidrag-person")
+            DefaultUriBuilderFactory(environmentProperties.bidragPersonUrl + "/bidrag-person")
         return PersonConsumer(httpHeaderRestTemplate)
     }
 
@@ -145,9 +145,7 @@ class BidragDokumentArkivConfig {
         personConsumers: ResourceByDiscriminator<PersonConsumer>,
         oppgaveConsumers: ResourceByDiscriminator<OppgaveConsumer>,
         saksbehandlerInfoManager: SaksbehandlerInfoManager,
-    ): OppgaveService {
-        return OppgaveService(personConsumers, oppgaveConsumers, saksbehandlerInfoManager)
-    }
+    ): OppgaveService = OppgaveService(personConsumers, oppgaveConsumers, saksbehandlerInfoManager)
 
     @Bean
     fun endreJournalpostService(
@@ -156,15 +154,13 @@ class BidragDokumentArkivConfig {
         dokarkivKnyttTilSakConsumer: DokarkivKnyttTilSakConsumer,
         hendelserProducer: HendelserProducer,
         saksbehandlerInfoManager: SaksbehandlerInfoManager,
-    ): EndreJournalpostService {
-        return EndreJournalpostService(
-            journalpostServices.get(Discriminator.REGULAR_USER),
-            dokarkivConsumers.get(Discriminator.REGULAR_USER),
-            dokarkivKnyttTilSakConsumer,
-            hendelserProducer,
-            saksbehandlerInfoManager,
-        )
-    }
+    ): EndreJournalpostService = EndreJournalpostService(
+        journalpostServices.get(Discriminator.REGULAR_USER),
+        dokarkivConsumers.get(Discriminator.REGULAR_USER),
+        dokarkivKnyttTilSakConsumer,
+        hendelserProducer,
+        saksbehandlerInfoManager,
+    )
 
     @Bean
     fun journalpostServices(
@@ -247,7 +243,7 @@ class BidragDokumentArkivConfig {
         securityTokenService: SecurityTokenService,
     ): DokarkivKnyttTilSakConsumer {
         httpHeaderRestTemplate.uriTemplateHandler =
-            RootUriTemplateHandler(environmentProperties.dokarkivKnyttTilSakUrl)
+            DefaultUriBuilderFactory(environmentProperties.dokarkivKnyttTilSakUrl)
         httpHeaderRestTemplate.addHeaderGenerator(
             HttpHeaders.CONTENT_TYPE,
         ) { MediaType.APPLICATION_JSON_VALUE }
@@ -282,7 +278,7 @@ class BidragDokumentArkivConfig {
         securityTokenService: SecurityTokenService,
         environmentProperties: EnvironmentProperties,
     ): BidragOrganisasjonConsumer {
-        httpHeaderRestTemplate.uriTemplateHandler = RootUriTemplateHandler(
+        httpHeaderRestTemplate.uriTemplateHandler = DefaultUriBuilderFactory(
             environmentProperties.bidragOrganisasjonUrl + "/bidrag-organisasjon",
         )
         httpHeaderRestTemplate
@@ -329,30 +325,28 @@ class BidragDokumentArkivConfig {
         val bidragPersonUrl: String,
         val bidragOrganisasjonUrl: String,
     ) {
-        override fun toString(): String {
-            return (
-                "dokarkivUrl='" +
-                    dokarkivUrl +
-                    '\'' +
-                    ", safUrl='" +
-                    safUrl +
-                    '\'' +
-                    ", bidragPersonUrl='" +
-                    bidragPersonUrl +
-                    '\'' +
-                    ", dokarkivKnyttTilSakUrl='" +
-                    dokarkivKnyttTilSakUrl +
-                    '\'' +
-                    ", securityTokenUrl='" +
-                    securityTokenUrl +
-                    '\'' +
-                    ", bidragOrganisasjonUrl='" +
-                    bidragOrganisasjonUrl +
-                    '\'' +
-                    ", naisAppName='" +
-                    naisAppName
-                )
-        }
+        override fun toString(): String = (
+            "dokarkivUrl='" +
+                dokarkivUrl +
+                '\'' +
+                ", safUrl='" +
+                safUrl +
+                '\'' +
+                ", bidragPersonUrl='" +
+                bidragPersonUrl +
+                '\'' +
+                ", dokarkivKnyttTilSakUrl='" +
+                dokarkivKnyttTilSakUrl +
+                '\'' +
+                ", securityTokenUrl='" +
+                securityTokenUrl +
+                '\'' +
+                ", bidragOrganisasjonUrl='" +
+                bidragOrganisasjonUrl +
+                '\'' +
+                ", naisAppName='" +
+                naisAppName
+            )
     }
 
     companion object {
