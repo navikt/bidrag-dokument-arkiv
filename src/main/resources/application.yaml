@@ -13,7 +13,6 @@ spring.main.allow-bean-definition-overriding: true
 STS_ISSUER_URL: ${STS_ISSUER_URL:${ACCESS_TOKEN_URL}}
 KAFKA_GROUP_ID: bidrag-dokument-arkiv-oppgave-consumer
 SERVICE_USER_USERNAME: srvbdarkiv
-SERVICE_USER_PASSWORD: ${SRV_BD_ARKIV_AUTH}
 ---
 
 spring.config.activate.on-profile: live
@@ -23,7 +22,7 @@ no.nav.security.jwt:
     properties:
       url: ${ACCESS_TOKEN_URL}/rest/v1/sts/token
       username: srvbdarkiv
-      password: ${SRV_BD_ARKIV_AUTH}
+      password: ${SERVICE_USER_PASSWORD}
   client:
     registration:
       bidrag-person:
@@ -64,6 +63,15 @@ no.nav.security.jwt:
           client-auth-method: client_secret_post
       dokarkiv:
         resource-url: ${DOKARKIV_URL}
+        token-endpoint-url: https://login.microsoftonline.com/${AZURE_APP_TENANT_ID}/oauth2/v2.0/token
+        grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
+        scope: api://${DOKARKIV_SCOPE}/.default
+        authentication:
+          client-id: ${AZURE_APP_CLIENT_ID}
+          client-secret: ${AZURE_APP_CLIENT_SECRET}
+          client-auth-method: client_secret_post
+      dokdistfordeling:
+        resource-url: ${DOKDISTFORDELING_URL}
         token-endpoint-url: https://login.microsoftonline.com/${AZURE_APP_TENANT_ID}/oauth2/v2.0/token
         grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
         scope: api://${DOKARKIV_SCOPE}/.default

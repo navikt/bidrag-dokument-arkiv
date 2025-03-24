@@ -64,8 +64,5 @@ spec:
     - name: {{@key}}
       value: "{{this}}"
   {{/each}}
-  vault:
-    enabled: true
-    paths:
-      - kvPath: /serviceuser/data/{{ vault.kvPath }}/srvbdarkiv
-        mountPath: /var/run/secrets/nais.io/srvbdarkiv
+  envFrom:
+    - secret: bidrag-dokument-arkiv-serviceuser

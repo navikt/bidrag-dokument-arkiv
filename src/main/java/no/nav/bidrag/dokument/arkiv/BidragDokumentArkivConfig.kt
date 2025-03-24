@@ -123,6 +123,9 @@ class BidragDokumentArkivConfig {
         ) { MediaType.APPLICATION_JSON_VALUE }
         val dokdistFordelingConsumer =
             DokdistFordelingConsumer(httpHeaderRestTemplate, objectMapper)
+        dokdistFordelingConsumer.leggTilInterceptor(
+            securityTokenService.clientCredentialsTokenInterceptor(null),
+        )
         return dokdistFordelingConsumer
     }
 
