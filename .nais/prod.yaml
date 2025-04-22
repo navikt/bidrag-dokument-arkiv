@@ -7,7 +7,7 @@ kafka:
   pool: nav-prod
 cpu:
   limits: 1000m
-  requests: 100m
+  requests: 200m
 memory:
   limits: 4096Mi
   requests: 2500Mi
