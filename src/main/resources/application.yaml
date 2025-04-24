@@ -13,6 +13,8 @@ spring.main.allow-bean-definition-overriding: true
 STS_ISSUER_URL: ${STS_ISSUER_URL:${ACCESS_TOKEN_URL}}
 KAFKA_GROUP_ID: bidrag-dokument-arkiv-oppgave-consumer
 SERVICE_USER_USERNAME: srvbdarkiv
+management.metrics.distribution.percentiles-histogram.http.server.requests: true
+management.metrics.distribution.percentiles-histogram.http.client.requests: true
 ---
 
 spring.config.activate.on-profile: live
