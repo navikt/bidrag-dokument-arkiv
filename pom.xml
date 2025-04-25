@@ -27,7 +27,7 @@
 
         <!-- dependent versions other than from spring-boot -->
         <apache-avro-version>1.12.0</apache-avro-version>
-        <bidrag-felles.version>2025.03.14.124512</bidrag-felles.version>
+        <bidrag-felles.version>2025.03.24.164435</bidrag-felles.version>
         <commons-codec.version>1.16.0</commons-codec.version>
         <graphq-dgs-client.version>8.4.2</graphq-dgs-client.version>
         <joark-hendelse.version>67a9be4476b63b7247cfacfaf821ab656bd2a952</joark-hendelse.version>
@@ -37,7 +37,7 @@
         <springdoc-openapi-ui.version>2.8.5</springdoc-openapi-ui.version>
         <springframework-cloud.version>4.2.0</springframework-cloud.version>
         <squareup.version>4.12.0</squareup.version>
-        <token-support.version>5.0.19</token-support.version>
+        <token-support.version>5.0.25</token-support.version>
 
         <!-- build -->
         <build-helper-maven.version>3.5.0</build-helper-maven.version>
