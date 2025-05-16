@@ -13,6 +13,11 @@ spec:
     autoInstrumentation:
       enabled: true
       runtime: java
+    logging:
+        destinations:
+          - id: loki
+          - id: elastic
+          - id: secure_logs
   image: {{image}}
   azure:
     application:
@@ -24,6 +29,10 @@ spec:
           - "azp_name"
   webproxy: true
   accessPolicy:
+    outbound:
+        rules:
+         - application: logging
+           namespace: nais-system
     inbound:
       rules:
       {{#each azureAccessInbound}}
@@ -53,7 +62,6 @@ spec:
       cpu: {{ cpu.requests }}
       memory: {{ memory.requests }}
     limits:
-      cpu: {{ cpu.limits }}
       memory: {{ memory.limits }}
   ingresses:
   {{#each ingresses as |url|}}
