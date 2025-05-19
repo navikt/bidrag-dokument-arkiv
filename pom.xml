@@ -37,7 +37,7 @@
         <springdoc-openapi-ui.version>2.8.5</springdoc-openapi-ui.version>
         <springframework-cloud.version>4.2.0</springframework-cloud.version>
         <squareup.version>4.12.0</squareup.version>
-        <token-support.version>5.0.25</token-support.version>
+        <token-support.version>5.0.27</token-support.version>
 
         <!-- build -->
         <build-helper-maven.version>3.5.0</build-helper-maven.version>
