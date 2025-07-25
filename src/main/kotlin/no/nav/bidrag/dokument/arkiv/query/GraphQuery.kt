@@ -7,13 +7,9 @@ abstract class GraphQuery {
     abstract fun getQuery(): String
     abstract fun getVariables(): HashMap<String, Any>
 
-    fun graphqlQuery(pdlResource: String): String {
-        return this::class.java.getResource("/graphql/$pdlResource.graphql")!!
-            .readText()
-            .graphqlCompatible()
-    }
+    fun graphqlQuery(pdlResource: String): String = this::class.java.getResource("/graphql/$pdlResource.graphql")!!
+        .readText()
+        .graphqlCompatible()
 
-    private fun String.graphqlCompatible(): String {
-        return StringUtils.normalizeSpace(this.replace("\n", ""))
-    }
+    private fun String.graphqlCompatible(): String = StringUtils.normalizeSpace(this.replace("\n", ""))
 }

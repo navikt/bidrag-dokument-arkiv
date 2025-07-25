@@ -202,9 +202,7 @@ class DistribuerJournalpostServiceTest {
         }
     }
 
-    private fun createValidDistribuerJournalpostRequest(): DistribuerJournalpostRequest {
-        return DistribuerJournalpostRequest(null, false, createDistribuerTilAdresse())
-    }
+    private fun createValidDistribuerJournalpostRequest(): DistribuerJournalpostRequest = DistribuerJournalpostRequest(null, false, createDistribuerTilAdresse())
 
     private fun createValidJournalpost(): Journalpost {
         val journalpost = Journalpost()

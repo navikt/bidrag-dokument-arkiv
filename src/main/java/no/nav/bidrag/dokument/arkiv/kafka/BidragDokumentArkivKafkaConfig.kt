@@ -42,15 +42,13 @@ class BidragDokumentArkivKafkaConfig {
         saksbehandlerInfoManager: SaksbehandlerInfoManager,
         @Value("\${TOPIC_JOURNALPOST}") topic: String,
         journalpostServices: ResourceByDiscriminator<JournalpostService>,
-    ): HendelserProducer {
-        return HendelserProducer(
-            journalpostServices.get(Discriminator.SERVICE_USER),
-            kafkaTemplate,
-            objectMapper,
-            topic,
-            saksbehandlerInfoManager,
-        )
-    }
+    ): HendelserProducer = HendelserProducer(
+        journalpostServices.get(Discriminator.SERVICE_USER),
+        kafkaTemplate,
+        objectMapper,
+        topic,
+        saksbehandlerInfoManager,
+    )
 
     @Bean
     fun defaultErrorHandler(@Value("\${KAFKA_MAX_RETRY:-1}") maxRetry: Int): DefaultErrorHandler {

@@ -773,10 +773,9 @@ internal class JournalpostTest {
             ).erJournalførtSenereEnnEttÅrSiden() shouldBe false
     }
 
-    private fun getReturDetaljerDOByDate(returDetaljerLogDOList: List<ReturDetaljerLogDO>, dato: String): ReturDetaljerLogDO =
-        returDetaljerLogDOList.stream()
-            .filter { (_, dato1): ReturDetaljerLogDO -> dato1 == LocalDate.parse(dato) }.findFirst()
-            .orElse(
-                ReturDetaljerLogDO("junit", LocalDate.now()),
-            )
+    private fun getReturDetaljerDOByDate(returDetaljerLogDOList: List<ReturDetaljerLogDO>, dato: String): ReturDetaljerLogDO = returDetaljerLogDOList.stream()
+        .filter { (_, dato1): ReturDetaljerLogDO -> dato1 == LocalDate.parse(dato) }.findFirst()
+        .orElse(
+            ReturDetaljerLogDO("junit", LocalDate.now()),
+        )
 }

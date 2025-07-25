@@ -92,20 +92,18 @@ class JournalforingHendelseIntern(var journalforingHendelse: JournalfoeringHende
         return Saksbehandler(null, "bidrag-dokument-arkiv").tilEnhet("9999")
     }
 
-    fun journalforingHendelseToJournalpostHendelse(): JournalpostHendelse {
-        return JournalpostHendelse(
-            sporing = opprettSporingsData(),
-            journalpostId = "JOARK-${journalforingHendelse.journalpostId}",
-            journalstatus = when (journalforingHendelse.journalpostStatus) {
-                "MOTTATT" -> JournalstatusDto.MOTTAKSREGISTRERT
-                "JOURNALFOERT" -> JournalstatusDto.JOURNALFORT
-                "UTGAAR" -> JournalstatusDto.UTGAR
-                else -> null
-            },
-            enhet = null,
-            fagomrade = journalforingHendelse.temaNytt ?: journalforingHendelse.temaGammelt,
-        )
-    }
+    fun journalforingHendelseToJournalpostHendelse(): JournalpostHendelse = JournalpostHendelse(
+        sporing = opprettSporingsData(),
+        journalpostId = "JOARK-${journalforingHendelse.journalpostId}",
+        journalstatus = when (journalforingHendelse.journalpostStatus) {
+            "MOTTATT" -> JournalstatusDto.MOTTAKSREGISTRERT
+            "JOURNALFOERT" -> JournalstatusDto.JOURNALFORT
+            "UTGAAR" -> JournalstatusDto.UTGAR
+            else -> null
+        },
+        enhet = null,
+        fagomrade = journalforingHendelse.temaNytt ?: journalforingHendelse.temaGammelt,
+    )
 
     private fun opprettSporingsData(): Sporingsdata = Sporingsdata(
         CorrelationId.fetchCorrelationIdForThread(),

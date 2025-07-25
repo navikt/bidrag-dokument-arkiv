@@ -553,8 +553,7 @@ data class Journalpost(
     fun isStatusEkspedert(): Boolean = journalstatus == JournalStatus.EKSPEDERT
     fun hasEkspedertDate(): Boolean = hentEkspedertDato() != null
     fun isLokalUtksrift(): Boolean = kanal == JournalpostKanal.LOKAL_UTSKRIFT
-    fun kanTilknytteSaker(): Boolean =
-        journalstatus == JournalStatus.JOURNALFOERT || journalstatus == JournalStatus.FERDIGSTILT || journalstatus == JournalStatus.EKSPEDERT
+    fun kanTilknytteSaker(): Boolean = journalstatus == JournalStatus.JOURNALFOERT || journalstatus == JournalStatus.FERDIGSTILT || journalstatus == JournalStatus.EKSPEDERT
 
     fun isInngaaendeDokument(): Boolean = journalposttype == JournalpostType.I
     fun isNotat(): Boolean = journalposttype == JournalpostType.N

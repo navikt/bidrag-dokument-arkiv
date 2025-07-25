@@ -17,8 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @Protected
-class OpprettJournalpostController(private val opprettJournalpostService: OpprettJournalpostService) :
-    BaseController() {
+class OpprettJournalpostController(private val opprettJournalpostService: OpprettJournalpostService) : BaseController() {
 
     @PostMapping("/journalpost")
     @Operation(

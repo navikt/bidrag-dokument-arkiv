@@ -84,8 +84,7 @@ data class AvvikshendelseIntern(
         OppdaterJournalpostRequest.Bruker(bruker.id, bruker.type),
     )
 
-    fun toEndreFagomradeJournalfortJournalpostRequest(journalpost: Journalpost) =
-        EndreFagomradeJournalfortJournalpostRequest(journalpostId, journalpost)
+    fun toEndreFagomradeJournalfortJournalpostRequest(journalpost: Journalpost) = EndreFagomradeJournalfortJournalpostRequest(journalpostId, journalpost)
 
     fun toKnyttTilGenerellSakRequest(fagomrade: String, bruker: Bruker) = EndreKnyttTilGenerellSakRequest(
         journalpostId,
@@ -100,8 +99,7 @@ data class AvvikshendelseIntern(
     )
 }
 
-data class OverforEnhetRequest(private var journalpostId: Long, override var journalfoerendeEnhet: String?) :
-    OppdaterJournalpostRequest(journalpostId)
+data class OverforEnhetRequest(private var journalpostId: Long, override var journalfoerendeEnhet: String?) : OppdaterJournalpostRequest(journalpostId)
 
 data class EndreFagomradeRequest(private var journalpostId: Long, override var tema: String?) : OppdaterJournalpostRequest(journalpostId)
 
@@ -112,32 +110,28 @@ data class EndreFagomradeOgKnyttTilSakRequest(
     override var sak: Sak? = GenerellSak(),
 ) : OppdaterJournalpostRequest(journalpostId)
 
-data class EndreFagomradeJournalfortJournalpostRequest(private var journalpostId: Long, private var journalpost: Journalpost) :
-    OppdaterJournalpostRequest(journalpostId) {
+data class EndreFagomradeJournalfortJournalpostRequest(private var journalpostId: Long, private var journalpost: Journalpost) : OppdaterJournalpostRequest(journalpostId) {
     init {
         journalpost.tilleggsopplysninger.setEndretTemaFlagg()
         tilleggsopplysninger = journalpost.tilleggsopplysninger
     }
 }
 
-data class OppdaterOriginalBestiltFlagg(private var journalpost: Journalpost) :
-    OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {
+data class OppdaterOriginalBestiltFlagg(private var journalpost: Journalpost) : OppdaterJournalpostRequest(journalpostId = journalpost.hentJournalpostIdLong()) {
     init {
         journalpost.tilleggsopplysninger.setOriginalBestiltFlagg()
         tilleggsopplysninger = journalpost.tilleggsopplysninger
     }
 }
 
-data class OpphevEndreFagomradeJournalfortJournalpostRequest(private var journalpostId: Long, private var journalpost: Journalpost) :
-    OppdaterJournalpostRequest(journalpostId) {
+data class OpphevEndreFagomradeJournalfortJournalpostRequest(private var journalpostId: Long, private var journalpost: Journalpost) : OppdaterJournalpostRequest(journalpostId) {
     init {
         journalpost.tilleggsopplysninger.removeEndretTemaFlagg()
         tilleggsopplysninger = journalpost.tilleggsopplysninger
     }
 }
 
-data class EndreTittelRequest(private var journalpostId: Long, private var _tittel: String?, private var journalpost: Journalpost) :
-    OppdaterJournalpostRequest(journalpostId) {
+data class EndreTittelRequest(private var journalpostId: Long, private var _tittel: String?, private var journalpost: Journalpost) : OppdaterJournalpostRequest(journalpostId) {
 
     init {
         val hoveddokument = journalpost.hentHoveddokument()

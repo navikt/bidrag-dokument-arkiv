@@ -246,12 +246,8 @@ internal class JsonMapperTest {
     }
 
     private class JsonObjects(private val jsonMap: Map<String, Any>) {
-        fun objekt(key: String): Map<String, String>? {
-            return jsonMap[key] as Map<String, String>?
-        }
+        fun objekt(key: String): Map<String, String>? = jsonMap[key] as Map<String, String>?
 
-        fun listeMedObjekter(key: String): List<Map<String, Any>>? {
-            return jsonMap[key] as List<Map<String, Any>>?
-        }
+        fun listeMedObjekter(key: String): List<Map<String, Any>>? = jsonMap[key] as List<Map<String, Any>>?
     }
 }
