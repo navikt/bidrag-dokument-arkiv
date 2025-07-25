@@ -387,6 +387,9 @@ class DistribuerJournalpostService(
             "Distribusjon av journalpost bestilt uten adresse. Henter adresse for mottaker. JournalpostId {}",
             journalpost.journalpostId,
         )
+        if (journalpost.hentAvsenderMottakerId() == null) {
+            throw UgyldigDistribusjonException("Adresse må settes hvis mottaker er samhandler")
+        }
         val adresseResponse = personConsumer.hentAdresse(journalpost.hentAvsenderMottakerId()!!)
         if (Objects.isNull(adresseResponse)) {
             LOGGER.warn("Mottaker i journalpost {} mangler adresse", journalpost.journalpostId)

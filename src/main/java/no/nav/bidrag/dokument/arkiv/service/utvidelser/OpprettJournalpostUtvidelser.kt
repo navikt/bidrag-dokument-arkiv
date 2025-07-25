@@ -35,6 +35,7 @@ fun OpprettEttersendingsppgaveDto.tilRequest(journalpost: Journalpost) = Ekstern
         Språk.DE -> "de_DE"
         Språk.EN -> "en_GB"
         Språk.FR -> "fr_FR"
+        else -> "en_GB"
     },
     tittel = tittel,
     tema = journalpost.tema!!,

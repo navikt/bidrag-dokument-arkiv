@@ -1,6 +1,7 @@
 package no.nav.bidrag.dokument.arkiv.consumer
 
 import mu.KotlinLogging
+import no.nav.bidrag.commons.util.secureLogger
 import no.nav.bidrag.commons.web.client.AbstractRestClient
 import no.nav.bidrag.dokument.arkiv.consumer.dto.DokumentSoknadDto
 import no.nav.bidrag.dokument.arkiv.consumer.dto.EksternEttersendingsOppgave
@@ -36,7 +37,7 @@ class InnsendingConsumer(
             return postForNonNullEntity(createUri(), oppgave)
         } catch (e: HttpStatusCodeException) {
             LOGGER.info("Det skjedde en feil ved opprettelse av ettersendingsoppgave")
-            secureLogger.error("Det skjedde en feil ved opprettelse av ettersendingsoppgave $oppgave", e)
+            secureLogger.error(e) { "Det skjedde en feil ved opprettelse av ettersendingsoppgave $oppgave" }
             throw e
         }
     }
@@ -53,7 +54,7 @@ class InnsendingConsumer(
             }!!
         } catch (e: HttpStatusCodeException) {
             LOGGER.info("Det skjedde en feil ved henting av ettersendingsoppgave")
-            secureLogger.error("Det skjedde en feil ved henting av ettersendingsoppgave $oppgave", e)
+            secureLogger.error(e) { "Det skjedde en feil ved henting av ettersendingsoppgave $oppgave" }
             throw e
         }
     }
