@@ -43,11 +43,7 @@ data class DokumentoversiktFagsakQuery(val saksnummer: String, val tema: List<St
         }
     """.trimIndent()
 
-    override fun getQuery(): String {
-        return query
-    }
+    override fun getQuery(): String = query
 
-    override fun getVariables(): HashMap<String, Any> {
-        return hashMapOf("fagsakId" to saksnummer, "tema" to tema)
-    }
+    override fun getVariables(): HashMap<String, Any> = hashMapOf("fagsakId" to saksnummer, "tema" to tema)
 }

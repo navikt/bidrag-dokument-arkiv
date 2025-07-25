@@ -93,26 +93,24 @@ data class LeggTilKommentarPaaOppgave(
     private var _endretAvEnhetsnr: String,
     private val saksbehandlersInfo: String,
     private val kommentar: String,
-) :
-    OppgaveRequest(
-        id = oppgaveData.id,
-        versjon = oppgaveData.versjon,
-        endretAvEnhetsnr = _endretAvEnhetsnr,
-        beskrivelse = beskrivelseHeader(saksbehandlersInfo) +
-            "$kommentar\r\n\r\n" +
-            "${oppgaveData.beskrivelse}",
-    )
+) : OppgaveRequest(
+    id = oppgaveData.id,
+    versjon = oppgaveData.versjon,
+    endretAvEnhetsnr = _endretAvEnhetsnr,
+    beskrivelse = beskrivelseHeader(saksbehandlersInfo) +
+        "$kommentar\r\n\r\n" +
+        "${oppgaveData.beskrivelse}",
+)
 
 data class FerdigstillOppgaveRequest(
     private var oppgaveData: OppgaveData,
     private var _endretAvEnhetsnr: String,
-) :
-    OppgaveRequest(
-        id = oppgaveData.id,
-        versjon = oppgaveData.versjon,
-        status = OppgaveStatus.FERDIGSTILT,
-        endretAvEnhetsnr = _endretAvEnhetsnr,
-    )
+) : OppgaveRequest(
+    id = oppgaveData.id,
+    versjon = oppgaveData.versjon,
+    status = OppgaveStatus.FERDIGSTILT,
+    endretAvEnhetsnr = _endretAvEnhetsnr,
+)
 
 @Suppress("unused") // used by jackson...
 sealed class OpprettOppgaveRequest(
@@ -145,14 +143,13 @@ data class BestillSplittingoppgaveRequest(
     private var saksbehandlerMedEnhet: SaksbehandlerMedEnhet,
     private var beskrivSplitting: String?,
 
-) :
-    OpprettOppgaveFagpostRequest(
-        journalpostId = journalpost.journalpostId!!,
-        oppgavetype = OppgaveType.BEST_RESCAN,
-        opprettetAvEnhetsnr = saksbehandlerMedEnhet.enhetsnummer,
-        saksreferanse = journalpost.hentSaksnummer(),
-        gjelderId = journalpost.hentGjelderId(),
-    ) {
+) : OpprettOppgaveFagpostRequest(
+    journalpostId = journalpost.journalpostId!!,
+    oppgavetype = OppgaveType.BEST_RESCAN,
+    opprettetAvEnhetsnr = saksbehandlerMedEnhet.enhetsnummer,
+    saksreferanse = journalpost.hentSaksnummer(),
+    gjelderId = journalpost.hentGjelderId(),
+) {
     init {
         beskrivelse = "${beskrivelseHeader(saksbehandlerMedEnhet.hentSaksbehandlerInfo())}\n${
             bestillSplittingKommentar(beskrivSplitting)
@@ -167,14 +164,13 @@ data class BestillReskanningOppgaveRequest(
     private var kommentar: String?,
     override var fristFerdigstillelse: String? = LocalDate.now().plusDays(5).toString(),
 
-) :
-    OpprettOppgaveFagpostRequest(
-        journalpostId = journalpost.journalpostId!!,
-        oppgavetype = OppgaveType.BEST_RESCAN,
-        opprettetAvEnhetsnr = saksbehandlerMedEnhet.enhetsnummer,
-        saksreferanse = journalpost.hentSaksnummer(),
-        gjelderId = journalpost.hentGjelderId(),
-    ) {
+) : OpprettOppgaveFagpostRequest(
+    journalpostId = journalpost.journalpostId!!,
+    oppgavetype = OppgaveType.BEST_RESCAN,
+    opprettetAvEnhetsnr = saksbehandlerMedEnhet.enhetsnummer,
+    saksreferanse = journalpost.hentSaksnummer(),
+    gjelderId = journalpost.hentGjelderId(),
+) {
     init {
         beskrivelse = "${beskrivelseHeader(saksbehandlerMedEnhet.hentSaksbehandlerInfo())}\n${
             bestillReskanningKommentar(kommentar)
@@ -189,14 +185,13 @@ data class BestillOriginalOppgaveRequest(
     private var saksbehandlerMedEnhet: SaksbehandlerMedEnhet,
     private var kommentar: String?,
 
-) :
-    OpprettOppgaveFagpostRequest(
-        journalpostId = journalpost.journalpostId!!,
-        oppgavetype = OppgaveType.BEST_ORGINAL,
-        opprettetAvEnhetsnr = saksbehandlerMedEnhet.enhetsnummer,
-        saksreferanse = journalpost.hentSaksnummer(),
-        gjelderId = journalpost.hentGjelderId(),
-    ) {
+) : OpprettOppgaveFagpostRequest(
+    journalpostId = journalpost.journalpostId!!,
+    oppgavetype = OppgaveType.BEST_ORGINAL,
+    opprettetAvEnhetsnr = saksbehandlerMedEnhet.enhetsnummer,
+    saksreferanse = journalpost.hentSaksnummer(),
+    gjelderId = journalpost.hentGjelderId(),
+) {
     init {
         beskrivelse = """
             ${beskrivelseHeader(saksbehandlerMedEnhet.hentSaksbehandlerInfo())} 
@@ -216,15 +211,14 @@ sealed class OpprettOppgaveFagpostRequest(
     var aktoerId: String? = null,
     private val gjelderId: String?,
 
-) :
-    OpprettOppgaveRequest(
-        journalpostId = journalpostId,
-        oppgavetype = oppgavetype,
-        prioritet = Prioritet.NORM.name,
-        fristFerdigstillelse = LocalDate.now().plusDays(5).toString(),
-        tildeltEnhetsnr = OppgaveEnhet.FAGPOST,
-        tema = "GEN",
-    ) {
+) : OpprettOppgaveRequest(
+    journalpostId = journalpostId,
+    oppgavetype = oppgavetype,
+    prioritet = Prioritet.NORM.name,
+    fristFerdigstillelse = LocalDate.now().plusDays(5).toString(),
+    tildeltEnhetsnr = OppgaveEnhet.FAGPOST,
+    tema = "GEN",
+) {
 
     fun hentGjelderId() = gjelderId
     fun hasGjelderId() = !gjelderId.isNullOrEmpty()
@@ -239,21 +233,20 @@ data class OpprettVurderDokumentOppgaveRequest(
     var aktoerId: String,
     private var saksbehandlerMedEnhet: SaksbehandlerMedEnhet,
     private var kommentar: String?,
-) :
-    OpprettOppgaveRequest(
-        journalpostId = journalpostId,
-        oppgavetype = OppgaveType.VUR,
-        prioritet = Prioritet.NORM.name,
-        opprettetAvEnhetsnr = saksbehandlerMedEnhet.enhetsnummer,
-        fristFerdigstillelse = LocalDate.now().plusDays(1).toString(),
-        beskrivelse = lagVurderDokumentOppgaveBeskrivelse(
-            saksbehandlerMedEnhet,
-            journalpost.dokumenter[0].brevkode,
-            journalpost.tittel!!,
-            kommentar,
-            journalpost.hentDatoRegistrert() ?: LocalDate.now(),
-        ),
-    )
+) : OpprettOppgaveRequest(
+    journalpostId = journalpostId,
+    oppgavetype = OppgaveType.VUR,
+    prioritet = Prioritet.NORM.name,
+    opprettetAvEnhetsnr = saksbehandlerMedEnhet.enhetsnummer,
+    fristFerdigstillelse = LocalDate.now().plusDays(1).toString(),
+    beskrivelse = lagVurderDokumentOppgaveBeskrivelse(
+        saksbehandlerMedEnhet,
+        journalpost.dokumenter[0].brevkode,
+        journalpost.tittel!!,
+        kommentar,
+        journalpost.hentDatoRegistrert() ?: LocalDate.now(),
+    ),
+)
 
 @Suppress("unused") // påkrevd felt som brukes av jackson men som ikke brukes aktivt
 data class OpprettBehandleDokumentOppgaveRequest(
@@ -261,27 +254,24 @@ data class OpprettBehandleDokumentOppgaveRequest(
     var aktoerId: String,
     private val saksnummer: String,
     private var saksbehandlerMedEnhet: SaksbehandlerMedEnhet,
-) :
-    OpprettOppgaveRequest(
-        journalpostId = journalpost.journalpostId!!,
-        beskrivelse = lagDokumentOppgaveTittel(
-            "Behandle dokument",
-            journalpost.tittel!!,
-            journalpost.hentDatoRegistrert() ?: LocalDate.now(),
-        ),
-        fristFerdigstillelse = LocalDate.now().plusDays(1).toString(),
-        opprettetAvEnhetsnr = saksbehandlerMedEnhet.enhetsnummer!!,
-        oppgavetype = OppgaveType.BEH_SAK,
-        saksreferanse = saksnummer,
-        tildeltEnhetsnr = saksbehandlerMedEnhet.enhetsnummer,
-        tilordnetRessurs = saksbehandlerMedEnhet.saksbehandler.ident,
-    )
+) : OpprettOppgaveRequest(
+    journalpostId = journalpost.journalpostId!!,
+    beskrivelse = lagDokumentOppgaveTittel(
+        "Behandle dokument",
+        journalpost.tittel!!,
+        journalpost.hentDatoRegistrert() ?: LocalDate.now(),
+    ),
+    fristFerdigstillelse = LocalDate.now().plusDays(1).toString(),
+    opprettetAvEnhetsnr = saksbehandlerMedEnhet.enhetsnummer!!,
+    oppgavetype = OppgaveType.BEH_SAK,
+    saksreferanse = saksnummer,
+    tildeltEnhetsnr = saksbehandlerMedEnhet.enhetsnummer,
+    tilordnetRessurs = saksbehandlerMedEnhet.saksbehandler.ident,
+)
 
-internal fun lagDokumentOppgaveTittelForEndring(oppgaveNavn: String, dokumentbeskrivelse: String, dokumentdato: LocalDate) =
-    "\u00B7 ${lagDokumentOppgaveTittel(oppgaveNavn, dokumentbeskrivelse, dokumentdato)}"
+internal fun lagDokumentOppgaveTittelForEndring(oppgaveNavn: String, dokumentbeskrivelse: String, dokumentdato: LocalDate) = "\u00B7 ${lagDokumentOppgaveTittel(oppgaveNavn, dokumentbeskrivelse, dokumentdato)}"
 
-internal fun lagDokumentOppgaveTittel(oppgaveNavn: String, dokumentbeskrivelse: String, dokumentdato: LocalDate) =
-    "$oppgaveNavn ($dokumentbeskrivelse) mottatt ${dokumentdato.format(NORSK_DATO_FORMAT)}"
+internal fun lagDokumentOppgaveTittel(oppgaveNavn: String, dokumentbeskrivelse: String, dokumentdato: LocalDate) = "$oppgaveNavn ($dokumentbeskrivelse) mottatt ${dokumentdato.format(NORSK_DATO_FORMAT)}"
 
 internal fun lagVurderDokumentOppgaveBeskrivelse(
     saksbehandlerMedEnhet: SaksbehandlerMedEnhet,
@@ -300,8 +290,7 @@ internal fun lagVurderDokumentOppgaveBeskrivelse(
     return description
 }
 
-internal fun lagDokumenterVedlagtBeskrivelse(journalpost: Journalpost) =
-    "\u00B7 Dokumenter vedlagt: ${journalpost.dokumenter.joinToString { "JOARK-${journalpost.journalpostId}:${it.dokumentInfoId}" }}"
+internal fun lagDokumenterVedlagtBeskrivelse(journalpost: Journalpost) = "\u00B7 Dokumenter vedlagt: ${journalpost.dokumenter.joinToString { "JOARK-${journalpost.journalpostId}:${it.dokumentInfoId}" }}"
 
 enum class OppgaveType {
     BEH_SAK,

@@ -10,20 +10,12 @@ private const val PARAMETER_JOURNALPOSTID = "journalpostId"
 
 data class OppgaveSokParametre(private val parametre: StringBuilder = StringBuilder()) {
 
-    fun brukVurderDokumentSomOppgaveType(): OppgaveSokParametre {
-        return leggTilParameter(PARAMETER_OPPGAVE_TYPE, OppgaveType.VUR)
-    }
+    fun brukVurderDokumentSomOppgaveType(): OppgaveSokParametre = leggTilParameter(PARAMETER_OPPGAVE_TYPE, OppgaveType.VUR)
 
-    fun brukJournalforingSomOppgaveType(): OppgaveSokParametre {
-        return leggTilParameter(PARAMETER_OPPGAVE_TYPE, OppgaveType.JFR)
-    }
+    fun brukJournalforingSomOppgaveType(): OppgaveSokParametre = leggTilParameter(PARAMETER_OPPGAVE_TYPE, OppgaveType.JFR)
 
-    fun leggTilJournalpostId(journalpostId: Long): OppgaveSokParametre {
-        return leggTilParameter(PARAMETER_JOURNALPOSTID, journalpostId)
-    }
-    fun leggTilFagomrade(fagomrade: String): OppgaveSokParametre {
-        return leggTilParameter(PARAMETER_TEMA, fagomrade)
-    }
+    fun leggTilJournalpostId(journalpostId: Long): OppgaveSokParametre = leggTilParameter(PARAMETER_JOURNALPOSTID, journalpostId)
+    fun leggTilFagomrade(fagomrade: String): OppgaveSokParametre = leggTilParameter(PARAMETER_TEMA, fagomrade)
 
     private fun leggTilParameter(navn: String?, verdi: Any?): OppgaveSokParametre {
         if (parametre.isEmpty()) {
@@ -37,7 +29,5 @@ data class OppgaveSokParametre(private val parametre: StringBuilder = StringBuil
         return this
     }
 
-    fun hentParametreForApneOppgaverSortertSynkendeEtterFrist(): String {
-        return "/$parametre&statuskategori=AAPEN&sorteringsrekkefolge=ASC&sorteringsfelt=FRIST&limit=10"
-    }
+    fun hentParametreForApneOppgaverSortertSynkendeEtterFrist(): String = "/$parametre&statuskategori=AAPEN&sorteringsrekkefolge=ASC&sorteringsfelt=FRIST&limit=10"
 }

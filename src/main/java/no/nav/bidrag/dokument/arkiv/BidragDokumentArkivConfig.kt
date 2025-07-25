@@ -17,7 +17,6 @@ import no.nav.bidrag.commons.web.UserMdcFilter
 import no.nav.bidrag.dokument.arkiv.consumer.BidragOrganisasjonConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivKnyttTilSakConsumer
-import no.nav.bidrag.dokument.arkiv.consumer.DokdistFordelingConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.OppgaveConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.PersonConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.SafConsumer
@@ -106,27 +105,6 @@ class BidragDokumentArkivConfig {
             HttpHeaders.CONTENT_TYPE,
         ) { MediaType.APPLICATION_JSON_VALUE }
         return DokarkivConsumer(httpHeaderRestTemplate, objectMapper)
-    }
-
-    @Bean
-    @Scope("prototype")
-    fun dokdistFordelingConsumer(
-        @Qualifier("base") httpHeaderRestTemplate: HttpHeaderRestTemplate,
-        environmentProperties: EnvironmentProperties,
-        objectMapper: ObjectMapper?,
-        securityTokenService: SecurityTokenService,
-    ): DokdistFordelingConsumer {
-        httpHeaderRestTemplate.uriTemplateHandler =
-            DefaultUriBuilderFactory(environmentProperties.dokdistFordelingUrl)
-        httpHeaderRestTemplate.addHeaderGenerator(
-            HttpHeaders.CONTENT_TYPE,
-        ) { MediaType.APPLICATION_JSON_VALUE }
-        val dokdistFordelingConsumer =
-            DokdistFordelingConsumer(httpHeaderRestTemplate, objectMapper)
-        dokdistFordelingConsumer.leggTilInterceptor(
-            securityTokenService.clientCredentialsTokenInterceptor(null),
-        )
-        return dokdistFordelingConsumer
     }
 
     @Bean
@@ -291,7 +269,6 @@ class BidragDokumentArkivConfig {
     fun environmentProperties(
         @Value("\${DOKARKIV_URL}") dokarkivUrl: String,
         @Value("\${DOKARKIV_KNYTT_TIL_SAK_URL}") dokarkivKnyttTilSakUrl: String,
-        @Value("\${DOKDISTFORDELING_URL}") dokdistFordelingUrl: String?,
         @Value("\${BIDRAG_PERSON_URL}") bidragPersonUrl: String,
         @Value("\${SAF_URL}") safUrl: String,
         @Value("\${OPPGAVE_URL}") oppgaveUrl: String?,
@@ -300,7 +277,6 @@ class BidragDokumentArkivConfig {
         @Value("\${NAIS_APP_NAME}") naisAppName: String,
     ): EnvironmentProperties {
         val environmentProperties = EnvironmentProperties(
-            dokdistFordelingUrl,
             dokarkivUrl,
             dokarkivKnyttTilSakUrl,
             safUrl,
@@ -315,7 +291,6 @@ class BidragDokumentArkivConfig {
     }
 
     class EnvironmentProperties(
-        val dokdistFordelingUrl: String?,
         val dokarkivUrl: String,
         val dokarkivKnyttTilSakUrl: String,
         val safUrl: String,

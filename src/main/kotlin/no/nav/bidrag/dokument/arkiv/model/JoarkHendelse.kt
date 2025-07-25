@@ -12,16 +12,12 @@ enum class JoarkHendelseType(val hendelsesType: String) {
     UKJENT("Ukjent"),
     ;
 
-    private fun erAv(hendelsesType: CharSequence?): Boolean {
-        return hendelsesType != null && hendelsesType.toString().compareTo(this.hendelsesType, ignoreCase = true) == 0
-    }
+    private fun erAv(hendelsesType: CharSequence?): Boolean = hendelsesType != null && hendelsesType.toString().compareTo(this.hendelsesType, ignoreCase = true) == 0
 
     companion object {
-        fun from(hendelsesType: CharSequence?): Optional<JoarkHendelseType> {
-            return Arrays.stream(values())
-                .filter { enumeration: JoarkHendelseType -> enumeration.erAv(hendelsesType) }
-                .findFirst()
-        }
+        fun from(hendelsesType: CharSequence?): Optional<JoarkHendelseType> = Arrays.stream(values())
+            .filter { enumeration: JoarkHendelseType -> enumeration.erAv(hendelsesType) }
+            .findFirst()
     }
 }
 class JournalpostTema internal constructor(journalfoeringHendelseRecord: JournalfoeringHendelseRecord) {
@@ -35,7 +31,5 @@ class JournalpostTema internal constructor(journalfoeringHendelseRecord: Journal
         nytt = journalfoeringHendelseRecord.temaNytt ?: ""
     }
 
-    fun erOmhandlingAvBidrag(): Boolean {
-        return BEHANDLINGSTEMA_BIDRAG == gammelt || BEHANDLINGSTEMA_BIDRAG == nytt || BEHANDLINGSTEMA_FAR == gammelt || BEHANDLINGSTEMA_FAR == nytt
-    }
+    fun erOmhandlingAvBidrag(): Boolean = BEHANDLINGSTEMA_BIDRAG == gammelt || BEHANDLINGSTEMA_BIDRAG == nytt || BEHANDLINGSTEMA_FAR == gammelt || BEHANDLINGSTEMA_FAR == nytt
 }

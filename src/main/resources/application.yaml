@@ -76,7 +76,7 @@ no.nav.security.jwt:
         resource-url: ${DOKDISTFORDELING_URL}
         token-endpoint-url: https://login.microsoftonline.com/${AZURE_APP_TENANT_ID}/oauth2/v2.0/token
         grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
-        scope: api://${DOKARKIV_SCOPE}/.default
+        scope: api://${SAF_SCOPE}/.default
         authentication:
           client-id: ${AZURE_APP_CLIENT_ID}
           client-secret: ${AZURE_APP_CLIENT_SECRET}

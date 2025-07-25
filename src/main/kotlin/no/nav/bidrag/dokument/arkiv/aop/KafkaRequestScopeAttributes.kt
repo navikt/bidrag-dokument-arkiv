@@ -4,12 +4,10 @@ import org.springframework.web.context.request.RequestAttributes
 
 class KafkaRequestScopeAttributes : RequestAttributes {
     private val requestAttributeMap: MutableMap<String, Any> = HashMap()
-    override fun getAttribute(name: String, scope: Int): Any? {
-        return if (scope == RequestAttributes.SCOPE_REQUEST) {
-            requestAttributeMap[name]
-        } else {
-            null
-        }
+    override fun getAttribute(name: String, scope: Int): Any? = if (scope == RequestAttributes.SCOPE_REQUEST) {
+        requestAttributeMap[name]
+    } else {
+        null
     }
 
     override fun setAttribute(name: String, value: Any, scope: Int) {
@@ -24,12 +22,10 @@ class KafkaRequestScopeAttributes : RequestAttributes {
         }
     }
 
-    override fun getAttributeNames(scope: Int): Array<String?> {
-        return if (scope == RequestAttributes.SCOPE_REQUEST) {
-            requestAttributeMap.keys.toTypedArray()
-        } else {
-            arrayOfNulls(0)
-        }
+    override fun getAttributeNames(scope: Int): Array<String?> = if (scope == RequestAttributes.SCOPE_REQUEST) {
+        requestAttributeMap.keys.toTypedArray()
+    } else {
+        arrayOfNulls(0)
     }
 
     override fun registerDestructionCallback(name: String, callback: Runnable, scope: Int) {
@@ -41,11 +37,7 @@ class KafkaRequestScopeAttributes : RequestAttributes {
         return null
     }
 
-    override fun getSessionId(): String {
-        return ""
-    }
+    override fun getSessionId(): String = ""
 
-    override fun getSessionMutex(): Any {
-        return ""
-    }
+    override fun getSessionMutex(): Any = ""
 }

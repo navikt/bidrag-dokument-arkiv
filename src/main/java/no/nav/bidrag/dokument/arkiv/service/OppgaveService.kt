@@ -84,11 +84,9 @@ class OppgaveService(
             .patchOppgave(FerdigstillOppgaveRequest(oppgaveData, enhetsnr))
     }
 
-    private fun hentSaksbehandlerMedEnhet(journalforendeEnhet: String?): SaksbehandlerMedEnhet {
-        return saksbehandlerInfoManager.hentSaksbehandler()
-            .map { saksbehandler: Saksbehandler -> saksbehandler.tilEnhet(journalforendeEnhet) }
-            .orElseGet { SaksbehandlerMedEnhet(Saksbehandler(), journalforendeEnhet!!) }
-    }
+    private fun hentSaksbehandlerMedEnhet(journalforendeEnhet: String?): SaksbehandlerMedEnhet = saksbehandlerInfoManager.hentSaksbehandler()
+        .map { saksbehandler: Saksbehandler -> saksbehandler.tilEnhet(journalforendeEnhet) }
+        .orElseGet { SaksbehandlerMedEnhet(Saksbehandler(), journalforendeEnhet!!) }
 
     private fun opprettOppgave(request: OpprettOppgaveRequest) {
         val oppgaveId = oppgaveConsumers.get(Discriminator.REGULAR_USER).opprett(request)

@@ -215,14 +215,12 @@ fun dupliserJournalpost(journalpost: Journalpost, setup: OpprettJournalpostReque
     return opprettJournalpostBuilder.build(journalpost)
 }
 
-fun opprettDokumentVariant(filnavn: String? = null, dokumentByte: ByteArray): JoarkOpprettJournalpostRequest.DokumentVariant {
-    return JoarkOpprettJournalpostRequest.DokumentVariant(
-        variantformat = "ARKIV",
-        filtype = "PDFA",
-        fysiskDokument = dokumentByte,
-        filnavn = if (filnavn != null) "$filnavn.pdf" else null,
-    )
-}
+fun opprettDokumentVariant(filnavn: String? = null, dokumentByte: ByteArray): JoarkOpprettJournalpostRequest.DokumentVariant = JoarkOpprettJournalpostRequest.DokumentVariant(
+    variantformat = "ARKIV",
+    filtype = "PDFA",
+    fysiskDokument = dokumentByte,
+    filnavn = if (filnavn != null) "$filnavn.pdf" else null,
+)
 
 data class JoarkOpprettJournalpostResponse(
     var journalpostId: Long? = null,

@@ -12,11 +12,9 @@ class JsonMapperService(private val objectMapper: ObjectMapper) {
         private val LOGGER = LoggerFactory.getLogger(JsonMapperService::class.java)
     }
 
-    fun mapOppgaveHendelse(hendelse: String): OppgaveKafkaHendelse {
-        return try {
-            objectMapper.readValue(hendelse, OppgaveKafkaHendelse::class.java)
-        } finally {
-            LOGGER.debug("Leser hendelse: {}", hendelse)
-        }
+    fun mapOppgaveHendelse(hendelse: String): OppgaveKafkaHendelse = try {
+        objectMapper.readValue(hendelse, OppgaveKafkaHendelse::class.java)
+    } finally {
+        LOGGER.debug("Leser hendelse: {}", hendelse)
     }
 }

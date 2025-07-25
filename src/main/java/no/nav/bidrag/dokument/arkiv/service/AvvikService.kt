@@ -72,15 +72,11 @@ class AvvikService(
         this.dokarkivConsumer = dokarkivConsumers.get(Discriminator.REGULAR_USER)
     }
 
-    fun hentAvvik(jpid: Long): List<AvvikType> {
-        return journalpostService.hentJournalpost(jpid)?.tilAvvik() ?: emptyList()
-    }
+    fun hentAvvik(jpid: Long): List<AvvikType> = journalpostService.hentJournalpost(jpid)?.tilAvvik() ?: emptyList()
 
-    fun behandleAvvik(behandleAvvikRequest: AvvikshendelseIntern): BehandleAvvikshendelseResponse {
-        return journalpostService.hentJournalpost(behandleAvvikRequest.journalpostId)
-            ?.let { jp: Journalpost -> behandleAvvik(jp, behandleAvvikRequest) }
-            ?: throw JournalpostIkkeFunnetException("Fant ikke journalpost med id lik " + behandleAvvikRequest.journalpostId)
-    }
+    fun behandleAvvik(behandleAvvikRequest: AvvikshendelseIntern): BehandleAvvikshendelseResponse = journalpostService.hentJournalpost(behandleAvvikRequest.journalpostId)
+        ?.let { jp: Journalpost -> behandleAvvik(jp, behandleAvvikRequest) }
+        ?: throw JournalpostIkkeFunnetException("Fant ikke journalpost med id lik " + behandleAvvikRequest.journalpostId)
 
     fun behandleAvvik(journalpost: Journalpost, avvikshendelseIntern: AvvikshendelseIntern): BehandleAvvikshendelseResponse {
         if (!erGyldigAvviksBehandling(journalpost, avvikshendelseIntern.avvikstype)) {
@@ -213,11 +209,9 @@ class AvvikService(
         }
     }
 
-    private fun hentSaksbehandler(enhet: String): SaksbehandlerMedEnhet {
-        return saksbehandlerInfoManager.hentSaksbehandler()
-            .map { it.tilEnhet(enhet) }
-            .orElseGet { SaksbehandlerMedEnhet(Saksbehandler(), enhet) }
-    }
+    private fun hentSaksbehandler(enhet: String): SaksbehandlerMedEnhet = saksbehandlerInfoManager.hentSaksbehandler()
+        .map { it.tilEnhet(enhet) }
+        .orElseGet { SaksbehandlerMedEnhet(Saksbehandler(), enhet) }
 
     fun kopierFraAnnenFagomrade(journalpost: Journalpost, avvikshendelseIntern: AvvikshendelseIntern) {
         if (journalpost.isUtgaaendeDokument()) {
@@ -366,17 +360,13 @@ class AvvikService(
         saksnummer: String,
         tema: String,
         journalpost: Journalpost,
-    ): Stream<Journalpost> {
-        return journalpostService.finnJournalposterForSaksnummer(saksnummer, listOf(tema)).stream()
-            .filter { obj: Journalpost -> obj.isStatusFeilregistrert() }
-            .filter { jp: Journalpost -> harSammeDokumenter(jp, journalpost) }
-    }
+    ): Stream<Journalpost> = journalpostService.finnJournalposterForSaksnummer(saksnummer, listOf(tema)).stream()
+        .filter { obj: Journalpost -> obj.isStatusFeilregistrert() }
+        .filter { jp: Journalpost -> harSammeDokumenter(jp, journalpost) }
 
-    private fun harSammeDokumenter(journalpost1: Journalpost, journalpost2: Journalpost): Boolean {
-        return journalpost1.dokumenter.stream().allMatch { (_, dokumentInfoId): Dokument ->
-            journalpost2.dokumenter.stream()
-                .anyMatch { (_, dokumentInfoId1): Dokument -> dokumentInfoId1 == dokumentInfoId }
-        }
+    private fun harSammeDokumenter(journalpost1: Journalpost, journalpost2: Journalpost): Boolean = journalpost1.dokumenter.stream().allMatch { (_, dokumentInfoId): Dokument ->
+        journalpost2.dokumenter.stream()
+            .anyMatch { (_, dokumentInfoId1): Dokument -> dokumentInfoId1 == dokumentInfoId }
     }
 
     fun endreFagomradeJournalfortJournalpost(journalpost: Journalpost, avvikshendelseIntern: AvvikshendelseIntern) {
@@ -502,9 +492,7 @@ class AvvikService(
         dokarkivConsumer.endre(oppdaterJournalpostRequest)
     }
 
-    fun erGyldigAvviksBehandling(journalpost: Journalpost, avvikType: AvvikType?): Boolean {
-        return journalpost.tilAvvik().contains(avvikType)
-    }
+    fun erGyldigAvviksBehandling(journalpost: Journalpost, avvikType: AvvikType?): Boolean = journalpost.tilAvvik().contains(avvikType)
 
     fun oppdaterDistribusjonsInfoIngenDistribusjon(journalpost: Journalpost) {
         val tilknyttedeJournalpost = journalpostService.hentTilknyttedeJournalposter(journalpost)

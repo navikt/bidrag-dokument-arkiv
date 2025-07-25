@@ -12,12 +12,10 @@ class SaksbehandlerInfoManager(
     private val bidragOrganisasjonConsumer: BidragOrganisasjonConsumer,
     private val oidcTokenManager: OidcTokenManager,
 ) {
-    fun hentSaksbehandlerBrukerId(): String? {
-        return try {
-            henteSubject(oidcTokenManager.fetchTokenAsString())
-        } catch (e: Exception) {
-            null
-        }
+    fun hentSaksbehandlerBrukerId(): String? = try {
+        henteSubject(oidcTokenManager.fetchTokenAsString())
+    } catch (e: Exception) {
+        null
     }
 
     fun hentSaksbehandler(_saksbehandlerIdent: String? = null): Optional<Saksbehandler> {

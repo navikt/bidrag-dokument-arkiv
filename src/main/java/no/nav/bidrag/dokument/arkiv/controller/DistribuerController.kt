@@ -29,8 +29,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @Protected
-class DistribuerController(private val distribuerJournalpostService: DistribuerJournalpostService) :
-    BaseController() {
+class DistribuerController(private val distribuerJournalpostService: DistribuerJournalpostService) : BaseController() {
     @PostMapping("$ROOT_JOURNAL/distribuer/{joarkJournalpostId}")
     @Operation(description = "Bestill distribusjon av journalpost")
     @ApiResponses(
@@ -156,9 +155,7 @@ class DistribuerController(private val distribuerJournalpostService: DistribuerJ
         ],
     )
     @ResponseBody
-    fun hentDistribusjonKanal(@RequestBody request: BestemDistribusjonKanalRequest): BestemKanalResponse {
-        return distribuerJournalpostService.hentDistribusjonKanal(request)
-    }
+    fun hentDistribusjonKanal(@RequestBody request: BestemDistribusjonKanalRequest): BestemKanalResponse = distribuerJournalpostService.hentDistribusjonKanal(request)
 
     companion object {
         private val LOGGER = LoggerFactory.getLogger(DistribuerController::class.java)

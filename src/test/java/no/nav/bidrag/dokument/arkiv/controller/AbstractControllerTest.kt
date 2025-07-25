@@ -84,7 +84,5 @@ abstract class AbstractControllerTest {
         WireMock.resetToDefault()
     }
 
-    protected fun initUrl(): String {
-        return "http://localhost:$port$contextPath"
-    }
+    protected fun initUrl(): String = "http://localhost:$port$contextPath"
 }
