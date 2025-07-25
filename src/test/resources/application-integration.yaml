@@ -1,7 +1,7 @@
 SAF_URL: http://localhost:${wiremock.server.port}/saf
 DOKARKIV_URL: http://localhost:${wiremock.server.port}/dokarkiv
 OPPGAVE_URL: http://localhost:${wiremock.server.port}/oppgave
-DOKDISTFORDELING_URL: http://localhost:${wiremock.server.port}/dokdistfordeling
+DOKDISTFORDELING_URL: http://localhost:${wiremock.server.port}/dokdistfordeling/
 DOKARKIV_KNYTT_TIL_SAK_URL: http://localhost:${wiremock.server.port}/dokarkivknytt
 ACCESS_TOKEN_URL: http://localhost:${wiremock.server.port}/sts
 BIDRAG_PERSON_URL: http://localhost:${wiremock.server.port}/person
@@ -58,6 +58,15 @@ no.nav.security.jwt:
           client-auth-method: client_secret_basic
       dokarkiv:
         resource-url: ${DOKARKIV_URL}
+        token-endpoint-url: http://localhost:${mock-oauth2-server.port:1234}/aad/token
+        grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
+        scope: api://123/.default
+        authentication:
+          client-id: 123
+          client-secret: 123
+          client-auth-method: client_secret_basic
+      dokdistfordeling:
+        resource-url: ${DOKDISTFORDELING_URL}
         token-endpoint-url: http://localhost:${mock-oauth2-server.port:1234}/aad/token
         grant-type: urn:ietf:params:oauth:grant-type:jwt-bearer
         scope: api://123/.default
