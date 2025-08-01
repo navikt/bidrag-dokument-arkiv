@@ -9,8 +9,8 @@ cpu:
   limits: 1000m
   requests: 200m
 memory:
-  limits: 4096Mi
-  requests: 2500Mi
+  limits: 6500Mi
+  requests: 4400Mi
 env:
   ACCEPTED_SERVICE_USER_AUDIENCE: srvbdarkivering,srvbisys
   STS_ISSUER_URL: https://security-token-service.nais.adeo.no
