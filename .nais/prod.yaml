@@ -18,6 +18,7 @@ env:
   DOKARKIV_URL: https://dokarkiv.intern.nav.no/
   DOKARKIV_KNYTT_TIL_SAK_URL: https://dokarkiv.intern.nav.no
   DOKDISTFORDELING_URL: https://dokdistfordeling.intern.nav.no
+  DOKDISTFORDELING_SCOPE: prod-fss.teamdokumenthandtering.dokdistfordeling
   SAF_URL: https://saf.intern.nav.no
   OPPGAVE_URL: https://oppgave.nais.adeo.no/api/v1/oppgaver
   OPPGAVE_SCOPE: prod-fss.oppgavehandtering.oppgave
