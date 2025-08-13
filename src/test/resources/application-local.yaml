@@ -23,7 +23,7 @@ SAF_SCOPE: dev-fss.teamdokumenthandtering.saf-q1
 PERSON_SCOPE: dev-fss.bidrag.bidrag-person-feature
 ORGANISASJON_SCOPE: dev-fss.bidrag.bidrag-organisasjon-feature
 DOKARKIV_SCOPE: dev-fss.teamdokumenthandtering.dokarkiv-q1
-
+DOKDISTFORDELING_SCOPE: dev-fss.teamdokumenthandtering.dokdistfordeling-q1
 
 ACCESS_TOKEN_URL: https://security-token-service.dev.adeo.no
 AKTORREGISTER_URL: https://app-q1.adeo.no/aktoerregister

@@ -17,6 +17,7 @@ env:
   DOKARKIV_URL: https://dokarkiv-q1.dev.intern.nav.no/
   DOKARKIV_KNYTT_TIL_SAK_URL: https://dokarkiv-q1.dev.intern.nav.no
   DOKDISTFORDELING_URL: https://dokdistfordeling-q1.dev.intern.nav.no
+  DOKDISTFORDELING_SCOPE: dev-fss.teamdokumenthandtering.dokdistfordeling-q1
   SAF_URL: https://saf-q1.dev.intern.nav.no
   OPPGAVE_URL: https://oppgave-q1.dev.intern.nav.no/api/v1/oppgaver
   OPPGAVE_SCOPE: dev-fss.oppgavehandtering.oppgave-q1
