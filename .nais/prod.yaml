@@ -9,7 +9,7 @@ cpu:
   limits: 1000m
   requests: 200m
 memory:
-  limits: 6500Mi
+  limits: 8000Mi
   requests: 4400Mi
 env:
   ACCEPTED_SERVICE_USER_AUDIENCE: srvbdarkivering,srvbisys
@@ -37,7 +37,7 @@ env:
   DOKDISTKANAL_SCOPE: prod-fss.teamdokumenthandtering.dokdistkanal
   INNSENDING_API_URL: https://innsending-api-gcp.intern.nav.no
   INNSENDING_API_SCOPE: prod-gcp.team-soknad.innsending-api
-  JAVA_OPTS: -XX:MaxRAMPercentage=75
+  JAVA_OPTS: -XX:MaxRAMPercentage=80
 vault:
   kvPath: prod
 azureAccessInbound:
