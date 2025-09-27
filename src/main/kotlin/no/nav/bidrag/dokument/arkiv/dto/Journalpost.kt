@@ -480,7 +480,7 @@ data class Journalpost(
             feilfort = isFeilregistrert(),
             innhold = hentTittel().let {
                 if (dokumenter.any { it.brevkode == "VOFORSIDE" }) {
-                    "$it med forside"
+                    "$it (med forside)"
                 } else {
                     it
                 }
