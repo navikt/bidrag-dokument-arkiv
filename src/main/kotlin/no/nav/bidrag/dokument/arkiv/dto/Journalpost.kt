@@ -478,7 +478,13 @@ data class Journalpost(
             kanal = hentKanal(),
             gjelderAktor = bruker?.tilAktorDto(),
             feilfort = isFeilregistrert(),
-            innhold = hentTittel(),
+            innhold = hentTittel().let {
+                if (dokumenter.any { it.brevkode == "VOFORSIDE" }) {
+                    "$it med forside"
+                } else {
+                    it
+                }
+            },
             journalfortDato = hentDatoJournalfort(),
             journalforendeEnhet = journalforendeEnhet,
             journalfortAv = hentJournalfortAvNavn(),
