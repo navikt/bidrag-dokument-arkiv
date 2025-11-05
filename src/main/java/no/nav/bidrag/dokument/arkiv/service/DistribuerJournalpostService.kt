@@ -233,6 +233,8 @@ class DistribuerJournalpostService(
                 "Bestillte distribusjon av journalpost $journalpostId med bestillingsId ${distribuerResponse.bestillingsId}, " +
                     "antall dokumenter ${journalpost.dokumenter.size} og kanal ${distribusjonKanal.distribusjonskanal}(${distribusjonKanal.regel}-${distribusjonKanal.regelBegrunnelse}).",
             )
+            // Legg til delay slik at det ikke fører til race condition når dokument skal oppdatere journalpost samtidig
+            ventFørGåVidere(500)
 
             val journalpostEtter = hentJournalpost(journalpostId)
             leggTilEksisterendeTilleggsopplysninger(journalpostEtter, journalpost)
@@ -258,6 +260,13 @@ class DistribuerJournalpostService(
         }
     }
 
+    private fun ventFørGåVidere(ms: Long) {
+        try {
+            Thread.sleep(ms)
+        } catch (e: InterruptedException) {
+            LOGGER.error(e) { "Det skjedde en feil ved venting" }
+        }
+    }
     private fun opprettEttersendingsoppgave(journalpost: Journalpost, requestInternal: DistribuerJournalpostRequestInternal): String? {
         try {
             val oppgave = innsendingService.opprettEttersendingsoppgave(
