@@ -234,7 +234,7 @@ class DistribuerJournalpostService(
                     "antall dokumenter ${journalpost.dokumenter.size} og kanal ${distribusjonKanal.distribusjonskanal}(${distribusjonKanal.regel}-${distribusjonKanal.regelBegrunnelse}).",
             )
             // Legg til delay slik at det ikke fører til race condition når dokument skal oppdatere journalpost samtidig
-            ventFørGåVidere(1000)
+            ventFørGåVidere(3000)
 
             val journalpostEtter = hentJournalpost(journalpostId)
             leggTilEksisterendeTilleggsopplysninger(journalpostEtter, journalpost)
