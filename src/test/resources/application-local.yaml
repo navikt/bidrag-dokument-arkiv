@@ -4,7 +4,7 @@ TOPIC_JOURNALFOERING: joark-hendelse
 STS_ISSUER_URL: http://localhost:8888/sts
 ACCEPTED_SERVICE_USER_AUDIENCE: srvbdarkivering,srvbisys
 FEATURE_ENABLED: KAFKA_ARBEIDSFLYT
-AZURE_APP_TENANT_ID: 966ac572-f5b7-4bbe-aa88-c76419c0f851
+AZURE_APP_TENANT_ID: <tenant-id>
 KAFKA_GROUP_ID: bidrag-arkiv-consumer
 KAFKA_BROKERS: localhost:9092
 NAV_TRUSTSTORE_PATH: test
@@ -52,7 +52,7 @@ spring.config.activate.on-profile: q2
 OPPGAVE_URL: https://oppgave.dev-fss-pub.nais.io/api/v1/oppgaver
 OPPGAVE_SCOPE: dev-fss.oppgavehandtering.oppgave
 SAF_SCOPE: dev-fss.teamdokumenthandtering.saf
-PERSON_SCOPE: dev-fss.bidrag.bidrag-person
+PERSON_SCOPE: dev-fss.bidrag.bidrag-person-q2
 ORGANISASJON_SCOPE: dev-fss.bidrag.bidrag-organisasjon
 DOKARKIV_SCOPE: dev-fss.teamdokumenthandtering.dokarkiv
 BIDRAG_DOKUMENT_URL: http://localhost:8099/bidrag-dokument
