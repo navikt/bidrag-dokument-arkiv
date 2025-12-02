@@ -1,7 +1,8 @@
 name: bidrag-dokument-arkiv
 serviceuser: q
 ingresses:
-  - https://bidrag-dokument-arkiv.dev.intern.nav.no/
+  - https://bidrag-dokument-arkiv.dev.intern.nav.no
+  - https://bidrag-dokument-arkiv.intern.dev.nav.no
 kafka:
   pool: nav-dev
 cpu:
