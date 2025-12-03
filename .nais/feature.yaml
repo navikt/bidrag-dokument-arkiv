@@ -1,7 +1,7 @@
 name: bidrag-dokument-arkiv-feature
 serviceuser: q
 ingresses:
-  - https://bidrag-dokument-arkiv-feature.dev.intern.nav.no/
+  - https://bidrag-dokument-arkiv-feature.intern.dev.nav.no
 kafka:
   pool: nav-dev
 cpu:
@@ -14,11 +14,11 @@ env:
   ACCEPTED_SERVICE_USER_AUDIENCE: srvbdarkivering,srvbisys
   STS_ISSUER_URL: https://security-token-service.dev.adeo.no
   ACCESS_TOKEN_URL: https://security-token-service.dev.adeo.no
-  DOKARKIV_URL: https://dokarkiv-q1.dev.intern.nav.no/
-  DOKARKIV_KNYTT_TIL_SAK_URL: https://dokarkiv-q1.dev.intern.nav.no
-  DOKDISTFORDELING_URL: https://dokdistfordeling-q1.dev.intern.nav.no
+  DOKARKIV_URL: https://dokarkiv-q1.intern.dev.nav.no/
+  DOKARKIV_KNYTT_TIL_SAK_URL: https://dokarkiv-q1.intern.dev.nav.no
+  DOKDISTFORDELING_URL: https://dokdistfordeling-q1.intern.dev.nav.no
   DOKDISTFORDELING_SCOPE: dev-fss.teamdokumenthandtering.dokdistfordeling-q1
-  SAF_URL: https://saf-q1.dev.intern.nav.no
+  SAF_URL: https://saf-q1.intern.dev.nav.no
   OPPGAVE_URL: https://oppgave-q1.intern.dev.nav.no/api/v1/oppgaver
   OPPGAVE_SCOPE: dev-fss.oppgavehandtering.oppgave-q1
   SAF_SCOPE: dev-fss.teamdokumenthandtering.saf-q1
@@ -26,11 +26,11 @@ env:
   TOPIC_JOURNALPOST: bidrag.journalpost-feature
   TOPIC_OPPGAVE_HENDELSE: oppgavehandtering.oppgavehendelse-q1-v1
   TOPIC_JOURNALFOERING: teamdokumenthandtering.aapen-dok-journalfoering-q1
-  BIDRAG_PERSON_URL: https://bidrag-person-q1.dev.intern.nav.no
+  BIDRAG_PERSON_URL: https://bidrag-person-q1.intern.dev.nav.no
   PERSON_SCOPE: dev-fss.bidrag.bidrag-person-q1
-  BIDRAG_DOKUMENT_URL: https://bidrag-dokument-feature.dev.intern.nav.no/bidrag-dokument
+  BIDRAG_DOKUMENT_URL: https://bidrag-dokument-feature.intern.dev.nav.no/bidrag-dokument
   BIDRAG_DOKUMENT_SCOPE: dev-fss.bidrag.bidrag-dokument-feature
-  BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon-feature.dev.intern.nav.no
+  BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon-feature.intern.dev.nav.no
   ORGANISASJON_SCOPE: dev-fss.bidrag.bidrag-organisasjon-feature
   DOKDISTKANAL_URL: https://dokdistkanal-q1.dev.intern.nav.no
   DOKDISTKANAL_SCOPE: dev-fss.teamdokumenthandtering.dokdistkanal-q1

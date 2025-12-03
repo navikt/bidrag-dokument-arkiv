@@ -61,9 +61,9 @@ INNSENDING_API_SCOPE: dev-gcp.team-soknad.innsending-api
 
 ACCESS_TOKEN_URL: https://security-token-service.dev.adeo.no
 AKTORREGISTER_URL: https://app-q2.adeo.no/aktoerregister
-DOKARKIV_URL: https://dokarkiv-q2.dev.adeo.no
-DOKDISTFORDELING_URL: https://dokdistfordeling-q2.dev.adeo.no
-DOKARKIV_PROXY_URL: https://dokarkivproxy-q2.dev.intern.nav.no
-BIDRAG_PERSON_URL: https://bidrag-person.dev.adeo.no
-BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon.dev.adeo.no
-SAF_URL: https://saf-q2.dev.adeo.no
+DOKARKIV_URL: https://dokarkiv-q2.intern.dev.nav.no
+DOKDISTFORDELING_URL: https://dokdistfordeling-q2.intern.dev.nav.no
+DOKARKIV_PROXY_URL: https://dokarkivproxy-q2.intern.dev.nav.no
+BIDRAG_PERSON_URL: https://bidrag-person-q2.intern.dev.nav.no
+BIDRAG_ORGANISASJON_URL: https://bidrag-organisasjon.intern.dev.nav.no
+SAF_URL: https://saf-q2.intern.dev.nav.no
