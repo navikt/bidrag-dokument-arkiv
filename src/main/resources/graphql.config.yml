@@ -2,7 +2,7 @@ schema: saf-api-schema.graphql
 extensions:
   endpoints:
     PDL GraphQL Endpoint:
-      url: https://saf-q1.dev.intern.nav.no/graphql
+      url: https://saf-q1.intern.dev.nav.no/graphql
       headers:
         user-agent: bidrag-dokument-arkiv
         Authorization: Bearer <changeme>
