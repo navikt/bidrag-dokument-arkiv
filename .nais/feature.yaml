@@ -1,7 +1,6 @@
 name: bidrag-dokument-arkiv-feature
 serviceuser: q
 ingresses:
-  - https://bidrag-dokument-arkiv-feature.dev.intern.nav.no
   - https://bidrag-dokument-arkiv-feature.intern.dev.nav.no
 kafka:
   pool: nav-dev
