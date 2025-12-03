@@ -14,11 +14,11 @@ env:
   ACCEPTED_SERVICE_USER_AUDIENCE: srvbdarkivering,srvbisys
   STS_ISSUER_URL: https://security-token-service.dev.adeo.no
   ACCESS_TOKEN_URL: https://security-token-service.dev.adeo.no
-  DOKARKIV_URL: https://dokarkiv-q2.dev.intern.nav.no/
-  DOKARKIV_KNYTT_TIL_SAK_URL: https://dokarkiv-q2.dev.intern.nav.no
-  DOKDISTFORDELING_URL: https://dokdistfordeling-q2.dev.intern.nav.no
+  DOKARKIV_URL: https://dokarkiv-q2.intern.dev.nav.no/
+  DOKARKIV_KNYTT_TIL_SAK_URL: https://dokarkiv-q2.intern.dev.nav.no
+  DOKDISTFORDELING_URL: https://dokdistfordeling-q2.intern.dev.nav.no
   DOKDISTFORDELING_SCOPE: dev-fss.teamdokumenthandtering.dokdistfordeling
-  SAF_URL: https://saf-q2.dev.intern.nav.no
+  SAF_URL: https://saf-q2.intern.dev.nav.no
   OPPGAVE_URL: https://oppgave.intern.dev.nav.no/api/v1/oppgaver
   OPPGAVE_SCOPE: dev-fss.oppgavehandtering.oppgave
   SAF_SCOPE: dev-fss.teamdokumenthandtering.saf
