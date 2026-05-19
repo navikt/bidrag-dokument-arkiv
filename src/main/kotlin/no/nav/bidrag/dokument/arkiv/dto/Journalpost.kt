@@ -116,9 +116,13 @@ data class DistribusjonsInfo(
 
     fun hentJournalStatus(): JournalpostStatus = when (journalstatus) {
         JournalStatus.MOTTATT.name -> JournalpostStatus.MOTTATT
+
         JournalStatus.JOURNALFOERT.name -> JournalpostStatus.JOURNALFØRT
+
         JournalStatus.FEILREGISTRERT.name -> JournalpostStatus.FEILREGISTRERT
+
         JournalStatus.EKSPEDERT.name -> JournalpostStatus.EKSPEDERT
+
         JournalStatus.FERDIGSTILT.name ->
             if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
                 if (isDistribusjonBestilt() || kanal == JournalpostKanal.LOKAL_UTSKRIFT) {
@@ -131,8 +135,11 @@ data class DistribusjonsInfo(
             }
 
         JournalStatus.UNDER_ARBEID.name, JournalStatus.RESERVERT.name -> JournalpostStatus.UNDER_PRODUKSJON
+
         JournalStatus.UTGAAR.name -> JournalpostStatus.UTGÅR
+
         JournalStatus.AVBRUTT.name -> JournalpostStatus.AVBRUTT
+
         else -> JournalpostStatus.UKJENT
     }
 }
@@ -286,9 +293,13 @@ data class Journalpost(
     } else {
         when (journalstatus) {
             JournalStatus.MOTTATT -> JournalpostStatus.MOTTATT
+
             JournalStatus.JOURNALFOERT -> JournalpostStatus.JOURNALFØRT
+
             JournalStatus.FEILREGISTRERT -> JournalpostStatus.FEILREGISTRERT
+
             JournalStatus.EKSPEDERT -> JournalpostStatus.EKSPEDERT
+
             JournalStatus.FERDIGSTILT ->
                 if (hentBrevkodeDto()?.kode == "CRM_MELDINGSKJEDE") {
                     JournalpostStatus.JOURNALFØRT
@@ -305,8 +316,11 @@ data class Journalpost(
                 }
 
             JournalStatus.UNDER_ARBEID, JournalStatus.RESERVERT -> JournalpostStatus.UNDER_PRODUKSJON
+
             JournalStatus.UTGAAR -> JournalpostStatus.UTGÅR
+
             JournalStatus.AVBRUTT -> JournalpostStatus.AVBRUTT
+
             else -> JournalpostStatus.fraKode(journalstatus?.name)
         }
     }
@@ -321,14 +335,22 @@ data class Journalpost(
 
     fun hentKanal(): Kanal? = when (kanal) {
         JournalpostKanal.NAV_NO -> Kanal.NAV_NO
+
         JournalpostKanal.NAV_NO_CHAT -> Kanal.NAV_NO
+
         JournalpostKanal.NAV_NO_UINNLOGGET -> Kanal.NAV_NO
+
         JournalpostKanal.SKAN_NETS -> Kanal.SKAN_NETS
-//            JournalpostKanal.SKAN_IM -> Kanal.SKAN_IM
+
+        //            JournalpostKanal.SKAN_IM -> Kanal.SKAN_IM
         JournalpostKanal.LOKAL_UTSKRIFT -> Kanal.LOKAL_UTSKRIFT
+
         JournalpostKanal.SENTRAL_UTSKRIFT -> Kanal.SENTRAL_UTSKRIFT
+
         JournalpostKanal.SDP -> Kanal.SDP
+
         JournalpostKanal.INGEN_DISTRIBUSJON -> Kanal.INGEN_DISTRIBUSJON
+
         else -> null
     }
 
@@ -524,6 +546,7 @@ data class Journalpost(
             )
         }
         if (isUtgaaendeDokument() && kanal != JournalpostKanal.INGEN_DISTRIBUSJON) {
+            @Suppress("ktlint:standard:mixed-condition-operators")
             if ((isStatusFerdigsstilt() || isStatusEkspedert()) &&
                 isDistribusjonKommetIRetur() ||
                 isStatusFerdigsstilt() &&

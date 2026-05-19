@@ -244,9 +244,13 @@ class OpprettJournalpostService(
             tittel = hovedTittel,
             tema = request.tema ?: "BID",
             journalpostType = when (request.journalposttype) {
-                JournalpostType.UTGÅENDE, JournalpostType.UTGAAENDE -> JoarkJournalpostType.UTGAAENDE // DEPRECATED
+                JournalpostType.UTGÅENDE, JournalpostType.UTGAAENDE -> JoarkJournalpostType.UTGAAENDE
+
+                // DEPRECATED
                 JournalpostType.INNGÅENDE -> JoarkJournalpostType.INNGAAENDE
+
                 JournalpostType.NOTAT -> JoarkJournalpostType.NOTAT
+
                 else -> JoarkJournalpostType.UTGAAENDE
             },
             eksternReferanseId = request.referanseId,

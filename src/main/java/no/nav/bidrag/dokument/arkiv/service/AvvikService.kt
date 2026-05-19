@@ -90,8 +90,11 @@ class AvvikService(
         }
         when (avvikshendelseIntern.avvikstype) {
             AvvikType.BESTILL_ORIGINAL -> bestillOriginal(journalpost, avvikshendelseIntern)
+
             AvvikType.BESTILL_SPLITTING -> bestillSplitting(journalpost, avvikshendelseIntern)
+
             AvvikType.BESTILL_RESKANNING -> bestillReskanning(journalpost, avvikshendelseIntern)
+
             AvvikType.KOPIER_FRA_ANNEN_FAGOMRADE -> kopierFraAnnenFagomrade(
                 journalpost,
                 avvikshendelseIntern,
@@ -103,17 +106,24 @@ class AvvikService(
             )
 
             AvvikType.ENDRE_FAGOMRADE -> endreFagomrade(journalpost, avvikshendelseIntern)
+
             AvvikType.SEND_TIL_FAGOMRADE -> onlyLogging()
+
             AvvikType.TREKK_JOURNALPOST -> trekkJournalpost(journalpost, avvikshendelseIntern)
+
             AvvikType.FEILFORE_SAK -> feilregistrerSakstilknytning(avvikshendelseIntern.journalpostId)
+
             AvvikType.REGISTRER_RETUR -> registrerRetur(journalpost, avvikshendelseIntern)
+
             AvvikType.BESTILL_NY_DISTRIBUSJON -> bestillNyDistribusjon(
                 journalpost,
                 avvikshendelseIntern,
             )
 
             AvvikType.MANGLER_ADRESSE -> manglerAdresse(journalpost)
+
             AvvikType.FARSKAP_UTELUKKET -> farskapUtelukket(journalpost, avvikshendelseIntern)
+
             else -> throw AvvikNotSupportedException("Avvik ${avvikshendelseIntern.avvikstype} ikke støttet")
         }
         publiserHendelse(journalpost, avvikshendelseIntern.saksbehandlersEnhet)
