@@ -49,12 +49,12 @@ public class BehandleJournalforingHendelseService {
   }
 
   public void behandleJournalforingHendelse(JournalfoeringHendelseRecord record) {
-    var journalpostId = record.getJournalpostId();
+    Long journalpostId = record.getJournalpostId();
     var journalpost =
         hentJournalpostMedSaksbehandlerIdent(journalpostId, record.getJournalpostStatus());
     SECURE_LOGGER.info("Mottok journalføringshendelse med id {} og journalpost {}", record, journalpost);
     if (erOpprettetAvNKS(journalpost)) {
-      var brevKoder =
+      String brevKoder =
           journalpost.getDokumenter().stream()
               .map(Dokument::getBrevkode)
               .collect(Collectors.joining(","));
@@ -77,7 +77,7 @@ public class BehandleJournalforingHendelseService {
 
   private void measureHendelse(JournalfoeringHendelseRecord record, Journalpost journalpost) {
     try {
-      var hendelsesType =
+      JoarkHendelseType hendelsesType =
           JoarkHendelseType.Companion.from(record.getHendelsesType())
               .orElse(JoarkHendelseType.UKJENT);
       var tema =
@@ -105,7 +105,7 @@ public class BehandleJournalforingHendelseService {
 
   private void loggHendelse(JournalfoeringHendelseRecord hendelseRecord, Journalpost journalpost) {
     try {
-      var antallDokumenter = journalpost.hentAntallDokumenter();
+      int antallDokumenter = journalpost.hentAntallDokumenter();
       SECURE_LOGGER.info(
           "Behandlet journalføringshendelse {}, bruker={}, avsender={}, journalfortAvNavn={}, opprettetAvNavn={}, brevkoder={} og antall dokumenter {}",
           hendelseRecord,
@@ -184,7 +184,7 @@ public class BehandleJournalforingHendelseService {
 
   private boolean erOpprettetAvNKS(Journalpost journalpost) {
     var erKanalNavNoChat = JournalpostKanal.NAV_NO_CHAT.name().equals(journalpost.getKanal());
-    var opprettetAvSalesforce = "NKSsalesforce".equals(journalpost.getOpprettetAvNavn());
+    boolean opprettetAvSalesforce = "NKSsalesforce".equals(journalpost.getOpprettetAvNavn());
     var brevkodeCRM =
         journalpost.getDokumenter().stream()
             .anyMatch(

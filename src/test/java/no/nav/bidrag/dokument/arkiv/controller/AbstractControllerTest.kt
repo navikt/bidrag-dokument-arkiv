@@ -2,10 +2,12 @@ package no.nav.bidrag.dokument.arkiv.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
+import com.ninjasquad.springmockk.MockkBean
 import no.nav.bidrag.commons.web.EnhetFilter
 import no.nav.bidrag.commons.web.test.HttpHeaderTestRestTemplate
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivTest
+import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivTest.Companion.PROFILE_INTEGRATION
 import no.nav.bidrag.dokument.arkiv.stubs.Stubs
 import no.nav.bidrag.dokument.arkiv.stubs.X_ENHET_HEADER
 import no.nav.bidrag.domene.ident.Personident
@@ -16,22 +18,25 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.resttestclient.TestRestTemplate
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.web.server.LocalServerPort
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
+import org.wiremock.spring.ConfigureWireMock
+import org.wiremock.spring.EnableWireMock
+import tools.jackson.databind.json.JsonMapper
 
-@ActiveProfiles(BidragDokumentArkivConfig.PROFILE_TEST, BidragDokumentArkivTest.PROFILE_INTEGRATION)
+@ActiveProfiles(BidragDokumentArkivConfig.PROFILE_TEST, PROFILE_INTEGRATION)
 @DisplayName("JournalpostController")
 @SpringBootTest(
     classes = [BidragDokumentArkivTest::class],
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 )
-@AutoConfigureWireMock(port = 0)
+@EnableWireMock(ConfigureWireMock(port = 0))
 @EnableMockOAuth2Server
 abstract class AbstractControllerTest {
     protected var PERSON_IDENT = Personident("12345678910")
@@ -51,18 +56,18 @@ abstract class AbstractControllerTest {
     protected var contextPath: String? = null
 
     @Autowired
-    lateinit var httpHeaderTestRestTemplate: HttpHeaderTestRestTemplate
+    lateinit var httpHeaderTestRestTemplate: TestRestTemplate
 
     var stubs: Stubs = Stubs()
 
-    @MockBean
+    @MockitoBean
     lateinit var kafkaTemplateMock: KafkaTemplate<String, String>
 
     @Value("\${TOPIC_JOURNALPOST}")
     lateinit var topicJournalpost: String
 
     @Autowired
-    lateinit var objectMapper: ObjectMapper
+    lateinit var objectMapper: JsonMapper
 
     var headerMedEnhet = HttpHeaders()
 

@@ -4,11 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.bidrag.dokument.arkiv.StaticContextAccessor
+import no.nav.bidrag.transport.felles.commonObjectmapper
 import org.slf4j.LoggerFactory
 
 object JsonMapper {
     inline fun <reified T> fromJsonString(jsonString: String): T? = try {
-        StaticContextAccessor.getBean(ObjectMapper::class.java).readValue(jsonString)
+        commonObjectmapper.readValue(jsonString)
     } catch (e: Exception) {
         LoggerFactory.getLogger(
             JsonMapper::class.java,
@@ -20,7 +21,7 @@ object JsonMapper {
     }
 
     fun toJsonString(dataObject: Any?): String = try {
-        StaticContextAccessor.getBean(ObjectMapper::class.java).writeValueAsString(dataObject)
+        commonObjectmapper.writeValueAsString(dataObject)
     } catch (e: Exception) {
         LoggerFactory.getLogger(
             JsonMapper::class.java,

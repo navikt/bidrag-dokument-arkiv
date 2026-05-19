@@ -40,7 +40,7 @@ class HttpStatusRestControllerAdvice {
             .status(HttpStatus.BAD_REQUEST)
             .header(
                 HttpHeaders.WARNING,
-                valideringsFeil ?: exception.message,
+                valideringsFeil ?: exception.message!!,
             )
             .build<Any>()
     }
@@ -50,7 +50,7 @@ class HttpStatusRestControllerAdvice {
     fun handleTechnicalException(exception: Exception): ResponseEntity<*> {
         LOGGER.warn(exception.message)
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .header(HttpHeaders.WARNING, exception.message)
+            .header(HttpHeaders.WARNING, exception.message ?: "")
             .build<Any>()
     }
 
@@ -59,7 +59,7 @@ class HttpStatusRestControllerAdvice {
     fun handleViolationException(exception: ViolationException): ResponseEntity<*> {
         LOGGER.warn(exception.message)
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .header(HttpHeaders.WARNING, exception.message)
+            .header(HttpHeaders.WARNING, exception.message ?: "Ukjent feil")
             .build<Any>()
     }
 
@@ -70,7 +70,7 @@ class HttpStatusRestControllerAdvice {
     fun handleBadRequest(exception: Exception): ResponseEntity<*> {
         LOGGER.warn(exception.message)
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .header(HttpHeaders.WARNING, exception.message)
+            .header(HttpHeaders.WARNING, exception.message ?: "Ukjent feil")
             .build<Any>()
     }
 
@@ -79,7 +79,7 @@ class HttpStatusRestControllerAdvice {
     fun handleOtherExceptions(exception: Exception): ResponseEntity<*> {
         LOGGER.error(exception.message, exception)
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .header(HttpHeaders.WARNING, exception.message)
+            .header(HttpHeaders.WARNING, exception.message ?: "Ukjent feil")
             .build<Any>()
     }
 
@@ -88,7 +88,7 @@ class HttpStatusRestControllerAdvice {
     fun handleUnauthorizedException(exception: Exception): ResponseEntity<*> {
         LOGGER.warn(exception.message)
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .header(HttpHeaders.WARNING, exception.message)
+            .header(HttpHeaders.WARNING, exception.message ?: "Ukjent feil")
             .build<Any>()
     }
 
@@ -97,7 +97,7 @@ class HttpStatusRestControllerAdvice {
     fun handleHttpStatusException(httpStatusException: HttpStatusException): ResponseEntity<*> {
         LOGGER.warn(httpStatusException.message)
         return ResponseEntity.status(httpStatusException.status)
-            .header(HttpHeaders.WARNING, httpStatusException.message)
+            .header(HttpHeaders.WARNING, httpStatusException.message ?: "Ukjent feil")
             .build<Any>()
     }
 
@@ -110,7 +110,7 @@ class HttpStatusRestControllerAdvice {
     fun ugyldigInput(exception: Exception): ResponseEntity<*> {
         LOGGER.warn(exception.message)
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .header(HttpHeaders.WARNING, exception.message)
+            .header(HttpHeaders.WARNING, exception.message ?: "Ukjent feil")
             .build<Any>()
     }
 
@@ -119,7 +119,7 @@ class HttpStatusRestControllerAdvice {
     fun journalpostIkkeFunnet(exception: Exception): ResponseEntity<*> {
         LOGGER.warn(exception.message)
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .header(HttpHeaders.WARNING, exception.message)
+            .header(HttpHeaders.WARNING, exception.message ?: "Ukjent feil")
             .build<Any>()
     }
 

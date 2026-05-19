@@ -20,6 +20,7 @@ import org.junit.jupiter.api.function.Executable
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
+import tools.jackson.databind.json.JsonMapper
 
 @ActiveProfiles(BidragDokumentArkivConfig.PROFILE_TEST)
 @DisplayName("Mapping av json verdier")
@@ -27,7 +28,7 @@ import org.springframework.test.context.ActiveProfiles
 @EnableMockOAuth2Server
 internal class JsonMapperTest {
     @Autowired
-    private lateinit var objectMapper: ObjectMapper
+    private lateinit var objectMapper: JsonMapper
 
     @Test
     @DisplayName("skal mappe OppdaterJournalpost til json")

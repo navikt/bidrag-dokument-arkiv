@@ -22,10 +22,10 @@ class KafkaRequestScopeAttributes : RequestAttributes {
         }
     }
 
-    override fun getAttributeNames(scope: Int): Array<String?> = if (scope == RequestAttributes.SCOPE_REQUEST) {
+    override fun getAttributeNames(scope: Int): Array<String> = if (scope == RequestAttributes.SCOPE_REQUEST) {
         requestAttributeMap.keys.toTypedArray()
     } else {
-        arrayOfNulls(0)
+        emptyArray()
     }
 
     override fun registerDestructionCallback(name: String, callback: Runnable, scope: Int) {

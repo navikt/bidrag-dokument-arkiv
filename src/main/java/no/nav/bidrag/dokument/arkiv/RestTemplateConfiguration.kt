@@ -5,7 +5,7 @@ import no.nav.bidrag.commons.web.HttpHeaderRestTemplate
 import no.nav.bidrag.commons.web.config.RestOperationsAzure
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig.EnvironmentProperties
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.boot.actuate.metrics.web.client.ObservationRestTemplateCustomizer
+import org.springframework.boot.restclient.observation.ObservationRestTemplateCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import

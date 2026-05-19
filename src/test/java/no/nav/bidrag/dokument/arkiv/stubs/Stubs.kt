@@ -8,6 +8,7 @@ import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.MatchResult
 import com.github.tomakehurst.wiremock.matching.StringValuePattern
 import com.github.tomakehurst.wiremock.stubbing.Scenario
+import io.kotest.matchers.shouldBe
 import no.nav.bidrag.dokument.arkiv.consumer.BestemKanalResponse
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivConsumer
 import no.nav.bidrag.dokument.arkiv.consumer.DokarkivKnyttTilSakConsumer
@@ -735,10 +736,10 @@ class Stubs {
                 )
             }
             WireMock.verify(requestPattern)
-            // val allMatches = WireMock.findAll(requestPattern)
-            // val anyMatch = allMatches.stream()
-            //    .anyMatch { match -> Arrays.stream(contains).allMatch { match.bodyAsString.contains(it.toString()) } }
-            // anyMatch shouldBe true
+//            val allMatches = WireMock.findAll(requestPattern)
+//            val anyMatch = allMatches.stream()
+//                .anyMatch { match -> Arrays.stream(contains).allMatch { match.bodyAsString.contains(it.toString()) } }
+//            anyMatch shouldBe true
         }
 
         fun bidragDokumentHentKalt(dokumentId: String) {
@@ -775,16 +776,6 @@ class Stubs {
                     ContainsPattern(contain),
                 )
             }
-            WireMock.verify(requestPattern)
-        }
-
-        fun dokarkivOpprettKaltNotContains(ferdigstill: Boolean = true, vararg contains: String?) {
-            val requestPattern =
-                WireMock.postRequestedFor(
-                    WireMock.urlEqualTo("/dokarkiv" + DokarkivConsumer.URL_JOURNALPOSTAPI_V1 + "?forsoekFerdigstill=$ferdigstill"),
-                )
-            Arrays.stream(contains)
-                .forEach { requestPattern.withRequestBody(NotContainsPattern(it)) }
             WireMock.verify(requestPattern)
         }
 
@@ -953,4 +944,5 @@ class NotContainsPattern(@JsonProperty("contains") expectedValue: String?) : Str
         get() = expectedValue as String
 
     override fun match(value: String?): MatchResult = MatchResult.of(value?.contains((expectedValue as CharSequence)) == false)
+    fun isExactMatch(value: String?): MatchResult = MatchResult.of(value?.contains((expectedValue as CharSequence)) == false)
 }

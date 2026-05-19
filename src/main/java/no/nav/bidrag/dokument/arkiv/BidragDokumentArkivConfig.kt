@@ -1,6 +1,5 @@
 package no.nav.bidrag.dokument.arkiv
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType
 import io.swagger.v3.oas.annotations.info.Info
@@ -39,6 +38,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.client.observation.DefaultClientRequestObservationConvention
 import org.springframework.retry.annotation.EnableRetry
 import org.springframework.web.util.DefaultUriBuilderFactory
+import tools.jackson.databind.json.JsonMapper
 
 @Configuration
 @EnableSecurityConfiguration
@@ -85,7 +85,7 @@ class BidragDokumentArkivConfig {
         environmentProperties: EnvironmentProperties,
     ): OppgaveConsumer {
         httpHeaderRestTemplate.uriTemplateHandler =
-            DefaultUriBuilderFactory(environmentProperties.oppgaveUrl)
+            DefaultUriBuilderFactory(environmentProperties.oppgaveUrl!!)
         httpHeaderRestTemplate.addHeaderGenerator(
             HttpHeaders.CONTENT_TYPE,
         ) { MediaType.APPLICATION_JSON_VALUE }
@@ -97,7 +97,7 @@ class BidragDokumentArkivConfig {
     fun baseDokarkivConsumer(
         @Qualifier("base") httpHeaderRestTemplate: HttpHeaderRestTemplate,
         environmentProperties: EnvironmentProperties,
-        objectMapper: ObjectMapper?,
+        objectMapper: JsonMapper,
     ): DokarkivConsumer {
         httpHeaderRestTemplate.uriTemplateHandler =
             DefaultUriBuilderFactory(environmentProperties.dokarkivUrl)
@@ -168,7 +168,7 @@ class BidragDokumentArkivConfig {
     ): ResourceByDiscriminator<SafConsumer> {
         safConsumerRegularUser.leggTilInterceptor(securityTokenService.authTokenInterceptor("saf"))
         safConsumerServiceUser.leggTilInterceptor(
-            securityTokenService.clientCredentialsTokenInterceptor("saf"),
+            securityTokenService.clientCredentialsTokenInterceptor("saf")!!,
         )
         val safConsumers = HashMap<Discriminator, SafConsumer>()
         safConsumers[Discriminator.REGULAR_USER] =
@@ -261,7 +261,7 @@ class BidragDokumentArkivConfig {
         )
         httpHeaderRestTemplate
             .interceptors
-            .add(securityTokenService.clientCredentialsTokenInterceptor("bidrag-organisasjon"))
+            .add(securityTokenService.clientCredentialsTokenInterceptor("bidrag-organisasjon")!!)
         return BidragOrganisasjonConsumer(httpHeaderRestTemplate)
     }
 

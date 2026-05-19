@@ -23,14 +23,16 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class DokarkivConsumer extends AbstractConsumer {
   private static final Logger LOGGER = LoggerFactory.getLogger(DokarkivConsumer.class);
-  private final ObjectMapper objectMapper;
+  private final JsonMapper objectMapper;
   public static final String URL_JOURNALPOSTAPI_V1 = "/rest/journalpostapi/v1/journalpost";
   public static final String URL_JOURNALPOSTAPI_V1_FEILREGISTRER = "/rest/journalpostapi/v1/journalpost/%s/feilregistrer";
 
-  public DokarkivConsumer(RestTemplate restTemplate, ObjectMapper objectMapper) {
+  public DokarkivConsumer(RestTemplate restTemplate, JsonMapper objectMapper) {
     super(restTemplate);
     this.objectMapper = objectMapper;
   }
@@ -116,7 +118,7 @@ public class DokarkivConsumer extends AbstractConsumer {
   private JoarkOpprettJournalpostResponse convertStringToResponse(String responseString){
     try {
       return objectMapper.readValue(responseString, JoarkOpprettJournalpostResponse.class);
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       return null;
     }
   }

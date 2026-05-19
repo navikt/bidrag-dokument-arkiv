@@ -1,6 +1,8 @@
 package no.nav.bidrag.dokument.arkiv.consumer
 
 import com.netflix.graphql.dgs.client.CustomGraphQLClient
+import com.netflix.graphql.dgs.client.DgsCustomGraphQLClient
+import com.netflix.graphql.dgs.client.DgsGraphQLResponse
 import com.netflix.graphql.dgs.client.GraphQLError
 import com.netflix.graphql.dgs.client.GraphQLResponse
 import com.netflix.graphql.dgs.client.HttpResponse
@@ -23,6 +25,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.client.exchange
 
 open class SafConsumer(private val restTemplate: RestTemplate) {
     fun hentDokument(journalpostId: Long, dokumentReferanse: Long): ResponseEntity<ByteArray> = restTemplate.exchange(
@@ -58,10 +61,10 @@ open class SafConsumer(private val restTemplate: RestTemplate) {
 
     private fun journalpostIkkeFunnetException(message: String?): RuntimeException = JournalpostIkkeFunnetException(message ?: "")
 
-    private fun consumeQuery(query: GraphQuery, notFoundException: NotFoundException): GraphQLResponse {
+    private fun consumeQuery(query: GraphQuery, notFoundException: NotFoundException): DgsGraphQLResponse {
         val queryString = query.getQuery()
-        val graphQLClient = CustomGraphQLClient("") { _: String, _: Map<String, List<String>>, body: String ->
-            val exchange = restTemplate.exchange("/graphql", HttpMethod.POST, HttpEntity(body), String::class.java)
+        val graphQLClient = DgsCustomGraphQLClient("") { _: String, _: Map<String, List<String>>, body: String ->
+            val exchange = restTemplate.exchange<String>("/graphql", HttpMethod.POST, HttpEntity(body))
             HttpResponse(exchange.statusCode.value(), exchange.body)
         }
         val response = graphQLClient.executeQuery(queryString, query.getVariables())
@@ -92,7 +95,7 @@ open class SafConsumer(private val restTemplate: RestTemplate) {
         fun init(message: String?): RuntimeException?
     }
 
-    fun leggTilInterceptor(requestInterceptor: ClientHttpRequestInterceptor?) {
+    fun leggTilInterceptor(requestInterceptor: ClientHttpRequestInterceptor) {
         (restTemplate as? HttpHeaderRestTemplate)?.interceptors?.add(requestInterceptor)
     }
 }

@@ -463,9 +463,9 @@ class DistribuerJournalpostService(
             meterRegistry.counter(
                 DISTRIBUSJON_COUNTER_NAME,
                 "batchId",
-                if (Strings.isNullOrEmpty(batchId)) "NONE" else batchId,
-                "enhet", journalpost.journalforendeEnhet,
-                "tema", journalpost.tema,
+                if (Strings.isNullOrEmpty(batchId)) "NONE" else batchId ?: "",
+                "enhet", journalpost.journalforendeEnhet ?: "",
+                "tema", journalpost.tema ?: "",
                 "kanal", kanal,
             ).increment()
 
