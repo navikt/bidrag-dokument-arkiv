@@ -81,7 +81,7 @@ class BehandleOppgaveHendelseService(
                     "Fant ingen journalpost med id ${oppgave.journalpostId}"
                 }
             }
-        meterRegistry.counter("ny_retur_oppgave", "tema", oppgaveHendelse.tema).increment()
+        meterRegistry.counter("ny_retur_oppgave", "tema", oppgaveHendelse.tema ?: "UKJENT").increment()
     }
 
     private fun validerOgHentOppgave(oppgaveHendelse: OppgaveKafkaHendelse): OppgaveData? {

@@ -1,6 +1,5 @@
 package no.nav.bidrag.dokument.arkiv.kafka
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import no.nav.bidrag.dokument.arkiv.BidragDokumentArkivConfig
 import no.nav.bidrag.dokument.arkiv.SECURE_LOGGER
 import no.nav.bidrag.dokument.arkiv.model.Discriminator
@@ -30,6 +29,7 @@ import org.springframework.kafka.listener.DefaultErrorHandler
 import org.springframework.kafka.support.ExponentialBackOffWithMaxRetries
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
 import org.springframework.util.backoff.ExponentialBackOff
+import tools.jackson.databind.json.JsonMapper
 import java.time.Duration
 
 @Configuration
@@ -38,7 +38,7 @@ class BidragDokumentArkivKafkaConfig {
     @Lazy
     fun hendelserProducer(
         kafkaTemplate: KafkaTemplate<String, String>,
-        objectMapper: ObjectMapper,
+        objectMapper: JsonMapper,
         saksbehandlerInfoManager: SaksbehandlerInfoManager,
         @Value("\${TOPIC_JOURNALPOST}") topic: String,
         journalpostServices: ResourceByDiscriminator<JournalpostService>,
@@ -91,11 +91,11 @@ class BidragDokumentArkivKafkaConfig {
         defaultErrorHandler: DefaultErrorHandler,
     ): ConcurrentKafkaListenerContainerFactory<Long, String> {
         val factory = ConcurrentKafkaListenerContainerFactory<Long, String>()
-        factory.consumerFactory = oppgaveConsumerFactory
+        factory.setConsumerFactory(oppgaveConsumerFactory)
         factory.containerProperties.ackMode = ContainerProperties.AckMode.RECORD
         // Retry consumer/listener even if authorization fails
         factory.setContainerCustomizer { container: ConcurrentMessageListenerContainer<Long, String> ->
-            container.containerProperties.authExceptionRetryInterval = Duration.ofSeconds(10)
+            container.containerProperties.setAuthExceptionRetryInterval(Duration.ofSeconds(10))
         }
         factory.setCommonErrorHandler(defaultErrorHandler)
         return factory

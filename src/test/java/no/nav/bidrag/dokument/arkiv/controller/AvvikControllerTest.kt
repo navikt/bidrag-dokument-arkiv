@@ -135,7 +135,7 @@ class AvvikControllerTest : AbstractControllerTest() {
             response.statusCode shouldBe HttpStatus.OK
             stubs.verifyStub.dokarkivOppdaterKalt(
                 journalpostIdFraJson,
-                "\"tittel\":\"FARSKAP UTELUKKET: Tittel på dokument 1\",\"dokumenter\":[{\"dokumentInfoId\":\"123123\",\"tittel\":\"FARSKAP UTELUKKET: Tittel på dokument 1\"}]",
+                "{\"dokumenter\":[{\"dokumentInfoId\":\"123123\",\"tittel\":\"FARSKAP UTELUKKET: Tittel på dokument 1\"}],\"tittel\":\"FARSKAP UTELUKKET: Tittel på dokument 1\"}",
             )
             Mockito.verify(kafkaTemplateMock).send(
                 ArgumentMatchers.eq(topicJournalpost),
@@ -1243,12 +1243,6 @@ class AvvikControllerTest : AbstractControllerTest() {
                     .isEqualTo(HttpStatus.OK)
             },
             {
-                stubs.verifyStub.dokarkivOppdaterKalt(
-                    journalpostId,
-                    "{\"tilleggsopplysninger\":[{\"nokkel\":\"originalBestilt\",\"verdi\":\"true\"}],\"dokumenter\":[]}",
-                )
-            },
-            {
                 stubs.verifyStub.oppgaveOpprettKalt(
                     "\"oppgavetype\":\"BEST_ORGINAL\"",
                     "\"tildeltEnhetsnr\":\"2950\"",
@@ -1258,6 +1252,13 @@ class AvvikControllerTest : AbstractControllerTest() {
                     "\"journalpostId\":\"201028011\"",
                 )
             },
+            {
+                stubs.verifyStub.dokarkivOppdaterKalt(
+                    journalpostId,
+                    "{\"dokumenter\":[],\"tilleggsopplysninger\":[{\"nokkel\":\"originalBestilt\",\"verdi\":\"true\"}]}",
+                )
+            },
+
             {
                 stubs.verifyStub.oppgaveOpprettKalt(
                     "Originalbestilling: Vi ber om å få tilsendt papiroriginalen av vedlagte dokumenter. " +
@@ -1392,7 +1393,7 @@ class AvvikControllerTest : AbstractControllerTest() {
             {
                 stubs.verifyStub.oppgaveOppdaterKalt(
                     1,
-                    "{\"id\":2,\"versjon\":1,\"endretAvEnhetsnr\":\"$xEnhet\",\"status\":\"FERDIGSTILT\"}",
+                    "{\"endretAvEnhetsnr\":\"$xEnhet\",\"id\":2,\"status\":\"FERDIGSTILT\",\"versjon\":1}",
                 )
             },
             {

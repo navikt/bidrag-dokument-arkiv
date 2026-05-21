@@ -15,6 +15,7 @@ import no.nav.bidrag.transport.dokument.DokumentFormatDto
 import no.nav.bidrag.transport.dokument.DokumentMetadata
 import no.nav.bidrag.transport.dokument.DokumentStatusDto
 import org.junit.jupiter.api.Test
+import org.springframework.boot.resttestclient.getForEntity
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
@@ -71,9 +72,9 @@ class DokumentControllerTest : AbstractControllerTest() {
         )
 
         response.statusCode shouldBe HttpStatus.OK
-        response.body.size shouldBe 1
+        response.body!!.size shouldBe 1
 
-        val dokumentmetadata = response.body[0]
+        val dokumentmetadata = response.body?.get(0)!!
         dokumentmetadata.dokumentreferanse shouldBe DOKUMENT_1_ID
         dokumentmetadata.journalpostId shouldBe "JOARK-$journalpostId"
         dokumentmetadata.arkivsystem shouldBe DokumentArkivSystemDto.JOARK
@@ -118,9 +119,9 @@ class DokumentControllerTest : AbstractControllerTest() {
         )
 
         response.statusCode shouldBe HttpStatus.OK
-        response.body.size shouldBe 1
+        response.body!!.size shouldBe 1
 
-        val dokumentmetadata = response.body[0]
+        val dokumentmetadata = response.body?.get(0)!!
         dokumentmetadata.dokumentreferanse shouldBe DOKUMENT_1_ID
         dokumentmetadata.journalpostId shouldBe "JOARK-$journalpostId"
         dokumentmetadata.arkivsystem shouldBe DokumentArkivSystemDto.JOARK
@@ -165,16 +166,16 @@ class DokumentControllerTest : AbstractControllerTest() {
         )
 
         response.statusCode shouldBe HttpStatus.OK
-        response.body.size shouldBe 2
+        response.body!!.size shouldBe 2
 
-        val dokumentmetadata = response.body[0]
+        val dokumentmetadata = response.body?.get(0)!!
         dokumentmetadata.dokumentreferanse shouldBe DOKUMENT_1_ID
         dokumentmetadata.journalpostId shouldBe "JOARK-$journalpostId"
         dokumentmetadata.arkivsystem shouldBe DokumentArkivSystemDto.JOARK
         dokumentmetadata.format shouldBe DokumentFormatDto.PDF
         dokumentmetadata.status shouldBe DokumentStatusDto.FERDIGSTILT
 
-        val dokumentmetadata2 = response.body[1]
+        val dokumentmetadata2 = response.body?.get(1)!!
         dokumentmetadata2.dokumentreferanse shouldBe DOKUMENT_2_ID
         dokumentmetadata2.journalpostId shouldBe "JOARK-$journalpostId"
         dokumentmetadata2.arkivsystem shouldBe DokumentArkivSystemDto.JOARK

@@ -5,7 +5,9 @@ import no.nav.bidrag.transport.dokument.UtsendingsInfoVarselTypeDto
 
 fun UtsendingsInfo.tilVarselTypeDto() = when (sisteVarselSendt?.type) {
     "EPOST" -> UtsendingsInfoVarselTypeDto.EPOST
+
     "SMS" -> UtsendingsInfoVarselTypeDto.SMS
+
     else -> if (smsVarselSendt != null) {
         UtsendingsInfoVarselTypeDto.SMS
     } else if (digitalpostSendt != null) {

@@ -22,20 +22,22 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
 import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.test.EmbeddedKafkaBroker
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.kafka.test.utils.KafkaTestUtils
 import org.springframework.test.context.ActiveProfiles
+import org.wiremock.spring.ConfigureWireMock
+import org.wiremock.spring.EnableWireMock
+import tools.jackson.databind.json.JsonMapper
 import java.time.Duration
 
 @SpringBootTest(classes = [BidragDokumentArkivTest::class])
 @ActiveProfiles(value = [PROFILE_KAFKA_TEST, PROFILE_TEST, BidragDokumentArkivTest.PROFILE_INTEGRATION])
 @DisplayName("OppgaveEndretHendelseListenerTest")
 @EnableMockOAuth2Server
-@AutoConfigureWireMock(port = 0)
+@EnableWireMock(ConfigureWireMock(port = 0))
 @EmbeddedKafka(
     partitions = 1,
     brokerProperties = ["listeners=PLAINTEXT://localhost:9092", "port=9092"],
@@ -48,7 +50,7 @@ abstract class BaseKafkaHendelseTest {
     lateinit var embeddedKafkaBroker: EmbeddedKafkaBroker
 
     @Autowired
-    lateinit var objectMapper: ObjectMapper
+    lateinit var objectMapper: JsonMapper
 
     @Value("\${TOPIC_JOURNALPOST}")
     protected val topicJournalpost: String? = null
@@ -72,7 +74,7 @@ abstract class BaseKafkaHendelseTest {
         val consumer = configureConsumer(topicJournalpost!!)
         return try {
             val singleRecord =
-                KafkaTestUtils.getSingleRecord(consumer, topicJournalpost, Duration.ofMillis(4000))
+                KafkaTestUtils.getSingleRecord(consumer, topicJournalpost!!, Duration.ofMillis(4000))
             Assertions.assertThat(singleRecord).isNotNull
             objectMapper.readValue(singleRecord.value(), JournalpostHendelse::class.java)
         } catch (e: Exception) {

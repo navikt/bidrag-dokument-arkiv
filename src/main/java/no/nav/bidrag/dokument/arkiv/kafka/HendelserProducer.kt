@@ -16,12 +16,13 @@ import org.slf4j.LoggerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Retryable
+import tools.jackson.databind.json.JsonMapper
 import java.util.Optional
 
 open class HendelserProducer(
     open val journalpostService: JournalpostService,
     open val kafkaTemplate: KafkaTemplate<String, String>,
-    open val objectMapper: ObjectMapper,
+    open val objectMapper: JsonMapper,
     open val topic: String,
     open val saksbehandlerInfoManager: SaksbehandlerInfoManager,
 ) {

@@ -20,6 +20,7 @@ import no.nav.bidrag.transport.person.PersonDto
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.springframework.boot.resttestclient.getForEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import java.io.IOException

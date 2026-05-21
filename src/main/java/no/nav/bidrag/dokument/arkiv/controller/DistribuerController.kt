@@ -104,7 +104,7 @@ class DistribuerController(private val distribuerJournalpostService: DistribuerJ
             ResponseEntity.ok().build()
         } catch (e: IllegalArgumentException) {
             ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
-                .header(HttpHeaders.WARNING, e.message)
+                .header(HttpHeaders.WARNING, e.message ?: "")
                 .build()
         }
     }

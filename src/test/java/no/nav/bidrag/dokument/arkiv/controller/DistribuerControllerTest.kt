@@ -51,6 +51,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.springframework.boot.resttestclient.getForEntity
+import org.springframework.boot.resttestclient.postForEntity
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -168,12 +170,12 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
-                "{\"tilleggsopplysninger\":[" +
+                "{\"dokumenter\":[],\"tilleggsopplysninger\":[" +
                     "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
                     "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
                     "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
                     "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
-                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}",
+                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}]}",
             )
         }
     }
@@ -326,7 +328,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
-                "{\"tilleggsopplysninger\":[{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
+                "{\"dokumenter\":[],\"tilleggsopplysninger\":[{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
                     "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"ettOppgave0\",\"verdi\":\"{\\\"tittel\\\":\\\"Tittel dokument\\\",\\\"skjemaId\\\":\\\"NAV 123\\\",\\\"språk\\\":\\\"nb\\\",\\\"innsendingsId\\\":\\\"213213\\\",\\\"innsendingsF\"}," +
                     "{\"nokkel\":\"ettOppgave1\",\"verdi\":\"ristDager\\\":27,\\\"fristDato\\\":\\\"2022-01-01\\\",\\\"slettesDato\\\":\\\"2022-01-01\\\",\\\"vedleggsliste\\\":[{\\\"tittel\\\":\\\"Tittel\"}," +
                     "{\"nokkel\":\"ettOppgave2\",\"verdi\":\" vedlegg 1\\\",\\\"url\\\":\\\"http://localhost:8080/vedlegg/1\\\",\\\"vedleggsnr\\\":\\\"1231\\\"},{\\\"tittel\\\":\\\"Tittel vedlegg 2\"}," +
@@ -334,7 +336,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                     "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
                     "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
                     "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
-                    "{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}",
+                    "{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}]}",
             )
         }
     }
@@ -432,13 +434,13 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             response.body?.ettersendingsoppgave?.innsendingsId shouldBe "213213"
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
-                "{\"tilleggsopplysninger\":[{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
+                "{\"dokumenter\":[],\"tilleggsopplysninger\":[{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
                     "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
                     "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
                     "{\"nokkel\":\"ettOppgave0\",\"verdi\":\"{\\\"tittel\\\":\\\"Tittel dokument\\\",\\\"skjemaId\\\":\\\"NAV 123\\\",\\\"språk\\\":\\\"nb\\\",\\\"innsendingsId\\\":\\\"213213\\\",\\\"innsendingsF\"}," +
                     "{\"nokkel\":\"ettOppgave1\",\"verdi\":\"ristDager\\\":27,\\\"fristDato\\\":\\\"2022-01-01\\\",\\\"slettesDato\\\":\\\"2022-01-01\\\",\\\"vedleggsliste\\\":[{\\\"tittel\\\":\\\"Tittel\"}," +
                     "{\"nokkel\":\"ettOppgave2\",\"verdi\":\" vedlegg 1\\\",\\\"url\\\":null,\\\"vedleggsnr\\\":\\\"1231\\\"},{\\\"tittel\\\":\\\"Tittel vedlegg 2\\\",\\\"url\\\":null,\\\"vedleggsnr\\\":\\\"12\"}," +
-                    "{\"nokkel\":\"ettOppgave3\",\"verdi\":\"31\\\"}]}\"}],\"dokumenter\":[]}",
+                    "{\"nokkel\":\"ettOppgave3\",\"verdi\":\"31\\\"}]}\"}]}",
             )
         }
     }
@@ -650,7 +652,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                     "{\"nokkel\":\"ettOppgave1\",\"verdi\":\"innsendingsFristDager\\\":14,\\\"fristDato\\\":\\\"2022-01-01\\\",\\\"slettesDato\\\":\\\"2022-01-01\\\",\\\"vedleggsliste\\\":[{\\\"tit\"}," +
                     "{\"nokkel\":\"ettOppgave2\",\"verdi\":\"tel\\\":\\\"Tittel vedlegg 1\\\",\\\"vedleggsnr\\\":\\\"1231\\\"},{\\\"tittel\\\":\\\"Tittel vedlegg 2\\\",\\\"vedleggsnr\\\":\\\"1231\\\"}]}\"}],\"dokumenter\":[]}",
             )
-            response.body.ettersendingsoppgave?.innsendingsId shouldBe "INNSENDING_ID"
+            response.body!!.ettersendingsoppgave?.innsendingsId shouldBe "INNSENDING_ID"
         }
     }
 
@@ -737,7 +739,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             stubs.verifyStub.opprettEttersendingKalt(0)
 
             stubs.verifyStub.dokarkivOppdaterIkkeKalt(JOURNALPOST_ID)
-            response.body.ettersendingsoppgave?.innsendingsId shouldBe null
+            response.body!!.ettersendingsoppgave?.innsendingsId shouldBe null
         }
     }
 
@@ -811,7 +813,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             stubs.verifyStub.opprettEttersendingKalt(0)
 
             stubs.verifyStub.dokarkivOppdaterIkkeKalt(JOURNALPOST_ID)
-            response.body.ettersendingsoppgave?.innsendingsId shouldBe "innsending_id"
+            response.body!!.ettersendingsoppgave?.innsendingsId shouldBe "innsending_id"
         }
     }
 
@@ -899,7 +901,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             stubs.verifyStub.opprettEttersendingKalt(0)
 
             stubs.verifyStub.dokarkivOppdaterIkkeKalt(JOURNALPOST_ID)
-            response.body.ettersendingsoppgave?.innsendingsId shouldBe "innsending_id"
+            response.body!!.ettersendingsoppgave?.innsendingsId shouldBe "innsending_id"
         }
     }
 
@@ -989,11 +991,11 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
-                "{\"tilleggsopplysninger\":[" +
+                "{\"dokumenter\":[],\"tilleggsopplysninger\":[" +
                     "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
                     "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"}," +
                     "{\"nokkel\":\"origDistDigitalt\",\"verdi\":\"true\"}," +
-                    "{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}",
+                    "{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}]}",
             )
         }
     }
@@ -1082,12 +1084,12 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 JOURNALPOST_ID,
-                "{\"tilleggsopplysninger\":[" +
+                "{\"dokumenter\":[],\"tilleggsopplysninger\":[" +
                     "{\"nokkel\":\"dokdistBestillingsId\",\"verdi\":\"asdsadasdsadasdasd\"}," +
                     "{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"}," +
                     "{\"nokkel\":\"distAdresse0\",\"verdi\":\"{\\\"adresselinje1\\\":\\\"Adresselinje1\\\",\\\"adresselinje2\\\":\\\"Adresselinje2\\\",\\\"adresselinje3\\\":\\\"Adresselinje3\\\",\\\"la\"}," +
                     "{\"nokkel\":\"distAdresse1\",\"verdi\":\"nd\\\":\\\"NO\\\",\\\"postnummer\\\":\\\"3000\\\",\\\"poststed\\\":\\\"Ingen\\\"}\"}," +
-                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}",
+                    "{\"nokkel\":\"distribusjonBestilt\",\"verdi\":\"true\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}]}",
             )
         }
     }
@@ -1364,7 +1366,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 journalpostId,
-                "{\"tilleggsopplysninger\":[{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}",
+                "{\"dokumenter\":[],\"tilleggsopplysninger\":[{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}]}",
             )
             stubs.verifyStub.dokarkivIkkeOppdaterKalt(
                 journalpostId,
@@ -1435,13 +1437,14 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
                 journalpostId,
                 "{\"settStatusEkspedert\":true,\"utsendingsKanal\":\"L\"}",
             )
-            stubs.verifyStub.dokarkivOppdaterKalt(
-                journalpostId,
-                "{\"tilleggsopplysninger\":[{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}",
-            )
+
             stubs.verifyStub.dokarkivOppdaterKalt(
                 journalpostId,
                 "{\"dokumenter\":[{\"dokumentInfoId\":\"$DOKUMENT_1_ID\",\"tittel\":\"Tittel på dokument 1 (dokumentet er sendt per post med vedlegg)\"}]}",
+            )
+            stubs.verifyStub.dokarkivOppdaterKalt(
+                journalpostId,
+                "{\"dokumenter\":[],\"tilleggsopplysninger\":[{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}]}",
             )
         }
     }
@@ -1511,7 +1514,7 @@ internal class DistribuerControllerTest : AbstractControllerTest() {
             )
             stubs.verifyStub.dokarkivOppdaterKalt(
                 journalpostId,
-                "{\"tilleggsopplysninger\":[{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}],\"dokumenter\":[]}",
+                "{\"dokumenter\":[],\"tilleggsopplysninger\":[{\"nokkel\":\"journalfortAvIdent\",\"verdi\":\"Z99999\"},{\"nokkel\":\"distribuertAvIdent\",\"verdi\":\"aud-localhost\"}]}",
             )
             stubs.verifyStub.dokarkivIkkeOppdaterKalt(
                 journalpostId,

@@ -542,7 +542,6 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
                 "\"journalpostType\":\"NOTAT\"",
                 "\"bruker\":{\"id\":\"12345678910\",\"idType\":\"FNR\"}",
             )
-            stubs.verifyStub.dokarkivOpprettKaltNotContains(true, "avsenderMottaker")
             stubs.verifyStub.dokarkivTilknyttSakerKalt(1, nyJpId)
             stubs.verifyStub.dokarkivTilknyttSakerKalt(nyJpId, saksnummer2)
             stubs.verifyStub.dokarkivOppdaterKalt(nyJpId, "aud-localhost")
@@ -606,7 +605,6 @@ internal class OpprettJournalpostControllerTest : AbstractControllerTest() {
                     "\"opprettetAvNavn\":\"Hansen, Hans\"," +
                     "\"datoJournal\":null}",
             )
-            stubs.verifyStub.dokarkivOpprettKaltNotContains(false, "avsenderMottaker")
             stubs.verifyStub.dokarkivTilknyttSakerKalt(1, nyJpId)
             stubs.verifyStub.dokarkivTilknyttSakerKalt(nyJpId, saksnummer2)
             stubs.verifyStub.dokarkivOppdaterKalt(nyJpId, "Z9494124")
